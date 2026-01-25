@@ -1,0 +1,6 @@
+{
+  "*.{js,ts,tsx}": [
+    "biome check --write",
+    "tsc --noEmit"
+  ]
+}
