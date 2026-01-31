@@ -1,0 +1,18 @@
+{
+  "hosting": {
+    "target": "production",
+    "public": "dist",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      { "source": "/pages-mfe/**", "destination": "/pages-mfe/index.html" },
+      { "source": "/user-mfe/**", "destination": "/user-mfe/index.html" },
+      { "source": "**", "destination": "/index.html" }
+    ],
+    "headers": [
+      {
+        "source": "**/*.js",
+        "headers": [{ "key": "Access-Control-Allow-Origin", "value": "*" }]
+      }
+    ]
+  }
+}
