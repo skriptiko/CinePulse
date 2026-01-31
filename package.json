@@ -1,0 +1,31 @@
+{
+  "name": "cinepulse",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "format": "biome format --write .",
+    "check": "biome check --apply .",
+    "typecheck": "turbo typecheck",
+    "sync-types": "turbo sync-types",
+    "prepare": "husky",
+    "merge-dist": "node scripts/merge-dist.js",
+    "build:deploy": "pnpm build && pnpm merge-dist",
+    "deploy": "pnpm build:deploy && firebase deploy --only hosting:production"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.11",
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.3"
+  },
+  "packageManager": "pnpm@9.15.4",
+  "engines": {
+    "node": ">=20"
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx,json}": ["biome check --apply"]
+  }
+}

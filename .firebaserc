@@ -1,0 +1,12 @@
+{
+  "projects": {
+    "default": "cinepulse-eec15"
+  },
+  "targets": {
+    "cinepulse-eec15": {
+      "hosting": {
+        "production": ["cinepulse-eec15"]
+      }
+    }
+  }
+}
