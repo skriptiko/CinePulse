@@ -7,23 +7,21 @@ export default defineConfig({
   plugins: [
     react(),
     federation({
-      name: 'helloMfe',
+      name: 'userMfe',
       filename: 'remoteEntry.js',
       exposes: {
-        './HelloWorld': './src/components/HelloWorld.tsx',
+        './routes': './src/routes.tsx',
       },
       shared: {
         react: {
-          singleton: true,
           requiredVersion: '^18.3.1',
         },
         'react-dom': {
-          singleton: true,
           requiredVersion: '^18.3.1',
         },
-        '@repo/events': {
-          singleton: true,
-        },
+        'react-router-dom': {},
+        '@repo/events': {},
+        '@repo/routes': {},
       },
     }),
   ],
@@ -32,7 +30,7 @@ export default defineConfig({
       '@': resolve(__dirname, './src'),
     },
   },
-  base: '/hello-mfe/',
+  base: '/user-mfe/',
   build: {
     modulePreload: false,
     target: 'esnext',
@@ -40,12 +38,12 @@ export default defineConfig({
     cssCodeSplit: false,
   },
   server: {
-    port: 5001,
+    port: 5002,
     strictPort: true,
     cors: true,
   },
   preview: {
-    port: 5001,
+    port: 5002,
     strictPort: true,
     cors: true,
   },

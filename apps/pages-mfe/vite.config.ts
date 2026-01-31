@@ -7,16 +7,10 @@ export default defineConfig({
   plugins: [
     react(),
     federation({
-      name: 'host',
-      remotes: {
-        pagesMfe: {
-          external: process.env.PAGES_MFE_URL || 'http://localhost:5001/assets/remoteEntry.js',
-          externalType: 'url',
-        },
-        userMfe: {
-          external: process.env.USER_MFE_URL || 'http://localhost:5002/assets/remoteEntry.js',
-          externalType: 'url',
-        },
+      name: 'pagesMfe',
+      filename: 'remoteEntry.js',
+      exposes: {
+        './routes': './src/routes.tsx',
       },
       shared: {
         react: {
@@ -36,6 +30,7 @@ export default defineConfig({
       '@': resolve(__dirname, './src'),
     },
   },
+  base: '/pages-mfe/',
   build: {
     modulePreload: false,
     target: 'esnext',
@@ -43,11 +38,13 @@ export default defineConfig({
     cssCodeSplit: false,
   },
   server: {
-    port: 5000,
+    port: 5001,
     strictPort: true,
+    cors: true,
   },
   preview: {
-    port: 5000,
+    port: 5001,
     strictPort: true,
+    cors: true,
   },
 });

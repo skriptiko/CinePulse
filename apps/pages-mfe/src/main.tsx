@@ -1,8 +1,12 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import App from './App';
+import { BrowserRouter, useRoutes } from 'react-router-dom';
+import { routes } from './routes';
 import './styles/globals.css';
+
+function App() {
+  return useRoutes(routes);
+}
 
 const rootElement = document.getElementById('root');
 
@@ -13,7 +17,9 @@ if (!rootElement) {
 createRoot(rootElement).render(
   <StrictMode>
     <BrowserRouter>
-      <App />
+      <div id="mfe-pages-root" className="min-h-screen bg-background">
+        <App />
+      </div>
     </BrowserRouter>
   </StrictMode>
 );

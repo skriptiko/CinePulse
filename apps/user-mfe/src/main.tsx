@@ -1,7 +1,12 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import HelloWorld from './components/HelloWorld';
+import { BrowserRouter, useRoutes } from 'react-router-dom';
+import { routes } from './routes';
 import './styles/globals.css';
+
+function App() {
+  return useRoutes(routes);
+}
 
 const rootElement = document.getElementById('root');
 
@@ -11,8 +16,10 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <div id="mfe-hello-root" className="min-h-screen bg-background">
-      <HelloWorld />
-    </div>
+    <BrowserRouter>
+      <div id="mfe-user-root" className="min-h-screen bg-background">
+        <App />
+      </div>
+    </BrowserRouter>
   </StrictMode>
 );

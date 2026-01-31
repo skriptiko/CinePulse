@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  important: '#mfe-hello-root',
+  important: '#mfe-pages-root',
   content: [
     './index.html',
     './src/**/*.{js,ts,jsx,tsx}',
