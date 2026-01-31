@@ -9,7 +9,10 @@
     "check": "biome check --apply .",
     "typecheck": "turbo typecheck",
     "sync-types": "turbo sync-types",
-    "prepare": "husky"
+    "prepare": "husky",
+    "merge-dist": "node scripts/merge-dist.js",
+    "build:deploy": "pnpm build && pnpm merge-dist",
+    "deploy": "pnpm build:deploy && firebase deploy --only hosting:production"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
