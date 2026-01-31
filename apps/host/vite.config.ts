@@ -9,23 +9,25 @@ export default defineConfig({
     federation({
       name: 'host',
       remotes: {
-        helloMfe: {
-          external: process.env.HELLO_MFE_URL || 'http://localhost:5001/assets/remoteEntry.js',
+        pagesMfe: {
+          external: process.env.PAGES_MFE_URL || 'http://localhost:5001/assets/remoteEntry.js',
+          externalType: 'url',
+        },
+        userMfe: {
+          external: process.env.USER_MFE_URL || 'http://localhost:5002/assets/remoteEntry.js',
           externalType: 'url',
         },
       },
       shared: {
         react: {
-          singleton: true,
           requiredVersion: '^18.3.1',
         },
         'react-dom': {
-          singleton: true,
           requiredVersion: '^18.3.1',
         },
-        '@repo/events': {
-          singleton: true,
-        },
+        'react-router-dom': {},
+        '@repo/events': {},
+        '@repo/routes': {},
       },
     }),
   ],

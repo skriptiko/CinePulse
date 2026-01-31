@@ -1,30 +1,51 @@
-import { ErrorBoundary, MfeContainer } from '@repo/ui';
-import { Suspense, lazy } from 'react';
+import { AppLayout } from '@/core';
+import { ErrorBoundary } from '@repo/ui';
+import { Suspense, useEffect, useState } from 'react';
+import type { RouteObject } from 'react-router-dom';
+import { useRoutes } from 'react-router-dom';
 
-const HelloWorld = lazy(() => import('helloMfe/HelloWorld'));
+function AppRoutes() {
+  const [remoteRoutes, setRemoteRoutes] = useState<RouteObject[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-function MfeLoadingFallback() {
-  return (
-    <MfeContainer id="mfe-hello-loading" isLoading>
-      <div />
-    </MfeContainer>
-  );
+  useEffect(() => {
+    async function loadRemoteRoutes() {
+      try {
+        const [pagesModule, userModule] = await Promise.all([
+          import('pagesMfe/routes'),
+          import('userMfe/routes'),
+        ]);
+
+        setRemoteRoutes([...pagesModule.routes, ...userModule.routes]);
+      } catch (error) {
+        console.error('Failed to load remote routes:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadRemoteRoutes();
+  }, []);
+
+  const element = useRoutes(remoteRoutes);
+
+  if (isLoading) {
+    return (
+      <Suspense fallback={<div className="p-4">Loading...</div>}>
+        <div className="p-4">Loading routes...</div>
+      </Suspense>
+    );
+  }
+
+  return element;
 }
 
 function App() {
   return (
     <ErrorBoundary level="shell">
-      <div className="min-h-screen bg-background">
-        <main className="container mx-auto px-4 py-8">
-          <ErrorBoundary level="module">
-            <MfeContainer id="mfe-hello-root" minHeight="100px">
-              <Suspense fallback={<MfeLoadingFallback />}>
-                <HelloWorld />
-              </Suspense>
-            </MfeContainer>
-          </ErrorBoundary>
-        </main>
-      </div>
+      <AppLayout>
+        <AppRoutes />
+      </AppLayout>
     </ErrorBoundary>
   );
 }

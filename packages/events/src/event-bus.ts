@@ -1,6 +1,8 @@
-import type { EventMap, EventName, EventPayload } from './types';
+import type { EventName, EventPayload } from './types';
 
 type Listener<T extends EventName> = (payload: EventPayload<T>) => void;
+
+type EmitArgs<T extends EventName> = EventPayload<T> extends undefined ? [] : [EventPayload<T>];
 
 class TypedEventBus {
   private listeners = new Map<EventName, Set<Listener<EventName>>>();
@@ -26,10 +28,7 @@ class TypedEventBus {
     }
   }
 
-  emit<T extends EventName>(
-    event: T,
-    ...args: EventPayload<T> extends undefined ? [] : [EventPayload<T>]
-  ): void {
+  emit<T extends EventName>(event: T, ...args: EmitArgs<T>): void {
     const eventListeners = this.listeners.get(event);
     if (eventListeners) {
       for (const listener of eventListeners) {
@@ -72,8 +71,8 @@ function getEventBus(): TypedEventBus {
 export const eventBus = getEventBus();
 
 export function createTypedEmitter<T extends EventName>(event: T) {
-  return (...args: EventMap[T] extends undefined ? [] : [EventMap[T]]): void => {
-    eventBus.emit(event, ...(args as [EventPayload<T>]));
+  return (...args: EmitArgs<T>): void => {
+    eventBus.emit(event, ...args);
   };
 }
 

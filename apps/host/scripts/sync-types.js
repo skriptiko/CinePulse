@@ -8,8 +8,12 @@ const typesDir = resolve(hostRoot, 'src/@types/remotes');
 
 const remotes = [
   {
-    name: 'helloMfe',
-    typesSource: resolve(hostRoot, '../hello-mfe/dist/types'),
+    name: 'pagesMfe',
+    typesSource: resolve(hostRoot, '../pages-mfe/dist/types'),
+  },
+  {
+    name: 'userMfe',
+    typesSource: resolve(hostRoot, '../user-mfe/dist/types'),
   },
 ];
 
