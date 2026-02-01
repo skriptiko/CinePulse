@@ -4,6 +4,7 @@
     "public": "dist",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
+      { "source": "/api/tmdb/**", "function": "tmdbProxy" },
       { "source": "/pages-mfe/**", "destination": "/pages-mfe/index.html" },
       { "source": "/user-mfe/**", "destination": "/user-mfe/index.html" },
       { "source": "**", "destination": "/index.html" }
@@ -14,5 +15,22 @@
         "headers": [{ "key": "Access-Control-Allow-Origin", "value": "*" }]
       }
     ]
+  },
+  "functions": {
+    "source": "functions",
+    "codebase": "default",
+    "ignore": ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log", "*.local"],
+    "predeploy": ["pnpm --filter @repo/functions build"]
+  },
+  "emulators": {
+    "hosting": {
+      "port": 5050
+    },
+    "functions": {
+      "port": 5051
+    },
+    "ui": {
+      "enabled": true
+    }
   }
 }

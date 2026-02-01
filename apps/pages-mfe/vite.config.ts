@@ -22,6 +22,8 @@ export default defineConfig({
         'react-router-dom': {},
         '@repo/events': {},
         '@repo/routes': {},
+        '@repo/api': {},
+        '@tanstack/react-query': {},
       },
     }),
   ],
