@@ -28,6 +28,8 @@ export default defineConfig({
         'react-router-dom': {},
         '@repo/events': {},
         '@repo/routes': {},
+        '@repo/api': {},
+        '@tanstack/react-query': {},
       },
     }),
   ],
@@ -45,6 +47,13 @@ export default defineConfig({
   server: {
     port: 5000,
     strictPort: true,
+    proxy: {
+      '/api/tmdb': {
+        target: 'http://127.0.0.1:5001/cinepulse-eec15/us-central1/tmdbProxy',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/tmdb/, ''),
+      },
+    },
   },
   preview: {
     port: 5000,
