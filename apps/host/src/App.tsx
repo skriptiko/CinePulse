@@ -1,5 +1,4 @@
-import { AppLayout } from '@/core';
-import { ErrorBoundary } from '@repo/ui';
+import { AppLayout, ErrorBoundary } from '@repo/ui';
 import { Suspense, useEffect, useState } from 'react';
 import type { RouteObject } from 'react-router-dom';
 import { useRoutes } from 'react-router-dom';

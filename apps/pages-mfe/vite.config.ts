@@ -32,7 +32,6 @@ export default defineConfig({
       '@': resolve(__dirname, './src'),
     },
   },
-  base: '/pages-mfe/',
   build: {
     modulePreload: false,
     target: 'esnext',
