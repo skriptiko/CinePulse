@@ -6,6 +6,10 @@ node_modules
 dist
 *.tsbuildinfo
 
+# Module Federation generated files
+.__mf__temp
+@mf-types
+
 # Turbo
 .turbo
 

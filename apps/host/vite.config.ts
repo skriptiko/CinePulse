@@ -1,5 +1,5 @@
 import { resolve } from 'node:path';
-import federation from '@originjs/vite-plugin-federation';
+import { federation } from '@module-federation/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
@@ -10,12 +10,18 @@ export default defineConfig({
       name: 'host',
       remotes: {
         pagesMfe: {
-          external: process.env.PAGES_MFE_URL || 'http://localhost:5001/assets/remoteEntry.js',
-          externalType: 'url',
+          type: 'module',
+          name: 'pagesMfe',
+          entry: process.env.PAGES_MFE_URL || 'http://localhost:5001/remoteEntry.js',
+          entryGlobalName: 'pagesMfe',
+          shareScope: 'default',
         },
         userMfe: {
-          external: process.env.USER_MFE_URL || 'http://localhost:5002/assets/remoteEntry.js',
-          externalType: 'url',
+          type: 'module',
+          name: 'userMfe',
+          entry: process.env.USER_MFE_URL || 'http://localhost:5002/remoteEntry.js',
+          entryGlobalName: 'userMfe',
+          shareScope: 'default',
         },
       },
       shared: {
@@ -40,13 +46,14 @@ export default defineConfig({
   },
   build: {
     modulePreload: false,
-    target: 'esnext',
+    target: 'chrome89',
     minify: false,
     cssCodeSplit: false,
   },
   server: {
     port: 5000,
     strictPort: true,
+    origin: 'http://localhost:5000',
     proxy: {
       '/api/tmdb': {
         target: 'http://127.0.0.1:5001/cinepulse-eec15/us-central1/tmdbProxy',
