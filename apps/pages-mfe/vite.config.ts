@@ -1,5 +1,5 @@
 import { resolve } from 'node:path';
-import federation from '@originjs/vite-plugin-federation';
+import { federation } from '@module-federation/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
@@ -34,7 +34,7 @@ export default defineConfig({
   },
   build: {
     modulePreload: false,
-    target: 'esnext',
+    target: 'chrome89',
     minify: false,
     cssCodeSplit: false,
   },
@@ -42,6 +42,7 @@ export default defineConfig({
     port: 5001,
     strictPort: true,
     cors: true,
+    origin: 'http://localhost:5001',
   },
   preview: {
     port: 5001,
