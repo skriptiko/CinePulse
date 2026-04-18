@@ -43,6 +43,18 @@ export default defineConfig({
     strictPort: true,
     cors: true,
     origin: 'http://localhost:5001',
+    proxy: {
+      '/api/tmdb': {
+        target: 'https://api.themoviedb.org/3',
+        changeOrigin: true,
+        secure: true,
+        headers: {
+          Authorization: `Bearer ${process.env.TMDB_API_READ_TOKEN || ''}`,
+          'Content-Type': 'application/json',
+        },
+        rewrite: (path) => path.replace(/^\/api\/tmdb/, ''),
+      },
+    },
   },
   preview: {
     port: 5001,

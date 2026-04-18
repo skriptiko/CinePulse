@@ -16,7 +16,10 @@ function App() {
 
         setRemoteRoutes([...pagesModule.routes, ...userModule.routes]);
       } catch (error) {
-        console.error('Failed to load remote routes:', error);
+        // Log to console only in development
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Failed to load remote routes:', error);
+        }
         setRemoteRoutes([]);
       }
     }
