@@ -38,3 +38,9 @@ coverage
 
 # Misc
 *.local
+
+# Ai
+.ai
+
+# CinePulse Design
+cine-pulse-ui-design
