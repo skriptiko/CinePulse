@@ -11,7 +11,7 @@ function App() {
   return useRoutes(routes);
 }
 
-const rootElement = document.getElementById('root');
+const rootElement = document.getElementById('mfe-pages-root');
 
 if (!rootElement) {
   throw new Error('Root element not found');
