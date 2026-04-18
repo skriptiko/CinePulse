@@ -45,7 +45,7 @@
       ".husky",
       ".github",
       "*.d.ts",
-      "cine-pulse-ui-design"
+      "**/.__mf__temp/**"
     ]
   }
 }
