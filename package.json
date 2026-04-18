@@ -6,7 +6,7 @@
     "build": "turbo build",
     "lint": "turbo lint",
     "format": "biome format --write .",
-    "check": "biome check --apply .",
+    "check": "biome check --write --ignore=\"**/.__mf__temp/**\" .",
     "typecheck": "turbo typecheck",
     "sync-types": "turbo sync-types",
     "prepare": "husky",
