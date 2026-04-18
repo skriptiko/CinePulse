@@ -56,8 +56,13 @@ export default defineConfig({
     origin: 'http://localhost:5000',
     proxy: {
       '/api/tmdb': {
-        target: 'http://127.0.0.1:5001/cinepulse-eec15/us-central1/tmdbProxy',
+        target: 'https://api.themoviedb.org/3',
         changeOrigin: true,
+        secure: true,
+        headers: {
+          Authorization: `Bearer ${process.env.TMDB_API_READ_TOKEN || ''}`,
+          'Content-Type': 'application/json',
+        },
         rewrite: (path) => path.replace(/^\/api\/tmdb/, ''),
       },
     },
