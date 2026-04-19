@@ -6,8 +6,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  Footer,
-  Header,
   Input,
   MovieCard,
   mapTmdbToMovieCard,
@@ -80,9 +78,7 @@ function Movies() {
   }, [categories, activeCategory]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Header />
-
+    <>
       <main className="pt-20 sm:pt-24">
         {/* Page Header */}
         <div className="px-4 sm:px-6 lg:px-12 py-8 sm:py-12">
@@ -235,9 +231,7 @@ function Movies() {
           )}
         </div>
       </main>
-
-      <Footer />
-    </div>
+    </>
   );
 }
 

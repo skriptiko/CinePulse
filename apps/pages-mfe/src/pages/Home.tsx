@@ -1,13 +1,5 @@
 import { getImageUrl, useMovieGenres, useMovies, useTrending } from '@repo/api';
-import {
-  CategoryPills,
-  ContentRow,
-  FeaturedGrid,
-  Footer,
-  Header,
-  Hero,
-  mapTmdbToMovieCard,
-} from '@repo/ui';
+import { CategoryPills, ContentRow, FeaturedGrid, Hero, mapTmdbToMovieCard } from '@repo/ui';
 import { useMemo } from 'react';
 
 function Home() {
@@ -93,9 +85,7 @@ function Home() {
   }, [trendingData]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Header />
-
+    <>
       <main>
         {/* Hero Section */}
         {heroMovie && (
@@ -136,9 +126,7 @@ function Home() {
           {popularMovies.length > 0 && <ContentRow title="Popular" movies={popularMovies} />}
         </div>
       </main>
-
-      <Footer />
-    </div>
+    </>
   );
 }
 
