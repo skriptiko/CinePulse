@@ -33,6 +33,9 @@ export { Separator } from './components/separator';
 
 export { MovieCard } from './components/movie-card';
 export { CategoryPills } from './components/category-pills';
+export { Hero } from './components/hero';
+export { ContentRow } from './components/content-row';
+export { FeaturedGrid } from './components/featured-grid';
 export { Header } from './components/header';
 export { Footer } from './components/footer';
 
