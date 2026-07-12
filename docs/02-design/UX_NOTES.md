@@ -6,6 +6,7 @@
 
 ## Компоненти дизайн-системи
 
+
 Дизайн-система живе в `@repo/ui` (`packages/ui/src`). Стек: **Shadcn UI + Radix UI + Tailwind CSS**, іконки — `lucide-react`.
 
 **Примітиви (UI-kit):**
