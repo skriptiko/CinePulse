@@ -1,77 +1,89 @@
 # CinePulse
 
-A Micro Frontend (MFE) application built with Turborepo, Vite, and React.
+Micro-frontend (MFE) застосунок, побудований на Turborepo, Vite та React.
 
-## Architecture
+## Архітектура
 
-- **Monorepo Orchestrator**: Turborepo
-- **Package Manager**: pnpm
-- **Static Analysis**: Biome.js
-- **Federation Engine**: @originjs/vite-plugin-federation
-- **UI Library**: Shadcn UI + Radix
+- **Оркестрація монорепозиторію**: Turborepo
+- **Пакетний менеджер**: pnpm
+- **Статичний аналіз**: Biome.js
+- **Механізм федерації**: `@module-federation/vite`
+- **UI-бібліотека**: Shadcn UI + Radix
 
-## Project Structure
+## Структура проєкту
 
 ```
 ├── apps/
-│   ├── host/           # Host application (Shell)
-│   └── hello-mfe/      # Hello World MFE (Remote)
+│   ├── host/           # Host-застосунок (оболонка) — порт 5000
+│   ├── pages-mfe/      # MFE публічного каталогу: Home, Movies, ... (remote) — порт 5001
+│   └── user-mfe/       # MFE особистого кабінету: Profile, Settings, ... (remote) — порт 5002
 ├── packages/
-│   ├── events/         # Type-safe event bus & global store
-│   ├── ui/             # Shared UI components
-│   └── typescript-config/  # Shared TypeScript configs
+│   ├── api/             # Клієнт TMDB API + React Query хуки
+│   ├── routes/          # Спільні константи шляхів маршрутизації
+│   ├── events/          # Типізована шина подій і глобальний стор
+│   ├── ui/               # Спільні UI-компоненти / дизайн-система
+│   └── typescript-config/  # Спільні конфігурації TypeScript
+└── functions/           # Firebase Cloud Functions (проксі до TMDB)
 ```
 
-## Getting Started
+## Документація
 
-### Prerequisites
+Детальна технічна документація — архітектура, каталог сторінок зі статусом реалізації, покриття TMDB API та специфікація особистого кабінету — міститься в [`docs/`](./docs/README.md).
+
+## Початок роботи
+
+### Передумови
 
 - Node.js >= 20
 - pnpm >= 9
 
-### Installation
+### Встановлення
 
 ```bash
 pnpm install
 ```
 
-### Development
+### Розробка
 
-Run all apps in development mode:
+Запуск усіх застосунків у режимі розробки:
 
 ```bash
 pnpm dev
 ```
 
-Or run individual apps:
+Або запуск окремих застосунків:
 
 ```bash
-# Host (port 5000)
+# Host (порт 5000)
 pnpm --filter @repo/host dev
 
-# Hello MFE (port 5001)
-pnpm --filter @repo/hello-mfe dev
+# Pages MFE (порт 5001)
+pnpm --filter @repo/pages-mfe dev
+
+# User MFE (порт 5002)
+pnpm --filter @repo/user-mfe dev
 ```
 
-### Build
+### Збірка
 
 ```bash
 pnpm build
 ```
 
-### Hybrid Development Mode
+### Гібридний режим розробки
 
-You can point to staging remote entries via environment variables:
+Можна вказати staging-адреси remote-модулів через змінні оточення:
 
 ```bash
-HELLO_MFE_URL=https://staging.example.com/hello-mfe/assets/remoteEntry.js pnpm --filter @repo/host dev
+PAGES_MFE_URL=https://staging.example.com/pages-mfe/remoteEntry.js pnpm --filter @repo/host dev
+USER_MFE_URL=https://staging.example.com/user-mfe/remoteEntry.js pnpm --filter @repo/host dev
 ```
 
-## Key Features
+## Ключові можливості
 
-### Type-Safe Events
+### Типобезпечні події
 
-All cross-MFE communication uses typed emitters/listeners from `@repo/events`:
+Уся крос-MFE комунікація використовує типізовані emitter/listener з `@repo/events`:
 
 ```typescript
 import { createTypedEmitter, createTypedListener } from '@repo/events';
@@ -80,26 +92,29 @@ const emitUserLogin = createTypedEmitter('user:login');
 const onUserLogin = createTypedListener('user:login');
 ```
 
-### Error Boundaries
+### Межі обробки помилок (Error Boundaries)
 
-Tiered error boundaries for graceful degradation:
+Дворівневі межі обробки помилок для плавної деградації:
 
-- **Shell-level**: Catches total crashes, offers app reload
-- **Module-level**: Allows individual MFEs to retry without full refresh
+- **Рівень оболонки (shell-level)**: перехоплює критичні збої, пропонує перезавантажити застосунок
+- **Рівень модуля (module-level)**: окремий MFE може повторити спробу без перезавантаження всього застосунку
 
-### Style Encapsulation
+### Ізоляція стилів
 
-Each MFE uses Tailwind scoping with unique ID prefixes to prevent style conflicts.
+Кожен MFE використовує Tailwind-скоупінг з унікальними ID-префіксами, щоб уникнути конфліктів стилів.
 
-## Scripts
+## Скрипти
 
-- `pnpm dev` - Start development servers
-- `pnpm build` - Build all packages and apps
-- `pnpm lint` - Run Biome linting
-- `pnpm format` - Format code with Biome
-- `pnpm typecheck` - Run TypeScript type checking
-- `pnpm sync-types` - Sync remote MFE types to host
+- `pnpm dev` — запуск серверів розробки
+- `pnpm build` — збірка всіх пакетів і застосунків
+- `pnpm lint` — лінтинг через Biome
+- `pnpm format` — форматування коду через Biome
+- `pnpm check` — перевірка Biome з автоматичним застосуванням виправлень
+- `pnpm typecheck` — перевірка типів TypeScript
+- `pnpm sync-types` — синхронізація типів remote-модулів у host
+- `pnpm build:deploy` — збірка всіх застосунків і об'єднання їхніх `dist/` для Firebase Hosting
+- `pnpm deploy` — збірка, об'єднання та деплой на Firebase Hosting (продакшн-таргет)
 
-## License
+## Ліцензія
 
 MIT
