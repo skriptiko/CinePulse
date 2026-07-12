@@ -1,12 +1,10 @@
-import { AppLayout } from '@/core';
-import { ErrorBoundary } from '@repo/ui';
-import { Suspense, useEffect, useState } from 'react';
+import { AppRoutes } from '@/AppRoutes';
+import { AppLayout, ErrorBoundary } from '@repo/ui';
+import { useEffect, useState } from 'react';
 import type { RouteObject } from 'react-router-dom';
-import { useRoutes } from 'react-router-dom';
 
-function AppRoutes() {
-  const [remoteRoutes, setRemoteRoutes] = useState<RouteObject[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+function App() {
+  const [remoteRoutes, setRemoteRoutes] = useState<RouteObject[] | null>(null);
 
   useEffect(() => {
     async function loadRemoteRoutes() {
@@ -18,33 +16,25 @@ function AppRoutes() {
 
         setRemoteRoutes([...pagesModule.routes, ...userModule.routes]);
       } catch (error) {
-        console.error('Failed to load remote routes:', error);
-      } finally {
-        setIsLoading(false);
+        // Log to console only in development
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Failed to load remote routes:', error);
+        }
+        setRemoteRoutes([]);
       }
     }
 
     loadRemoteRoutes();
   }, []);
 
-  const element = useRoutes(remoteRoutes);
-
-  if (isLoading) {
-    return (
-      <Suspense fallback={<div className="p-4">Loading...</div>}>
-        <div className="p-4">Loading routes...</div>
-      </Suspense>
-    );
-  }
-
-  return element;
-}
-
-function App() {
   return (
     <ErrorBoundary level="shell">
       <AppLayout>
-        <AppRoutes />
+        {remoteRoutes === null ? (
+          <div className="p-4">Loading...</div>
+        ) : (
+          <AppRoutes routes={remoteRoutes} />
+        )}
       </AppLayout>
     </ErrorBoundary>
   );

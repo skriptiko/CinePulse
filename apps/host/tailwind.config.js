@@ -4,6 +4,8 @@ export default {
     './index.html',
     './src/**/*.{js,ts,jsx,tsx}',
     '../../packages/ui/src/**/*.{js,ts,jsx,tsx}',
+    '../pages-mfe/src/**/*.{js,ts,jsx,tsx}',
+    '../user-mfe/src/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
     extend: {

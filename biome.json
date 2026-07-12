@@ -37,6 +37,15 @@
     }
   },
   "files": {
-    "ignore": ["node_modules", "dist", ".turbo", "*.d.ts"]
+    "ignore": [
+      "node_modules",
+      "dist",
+      ".turbo",
+      ".idea",
+      ".husky",
+      ".github",
+      "*.d.ts",
+      "**/.__mf__temp/**"
+    ]
   }
 }
