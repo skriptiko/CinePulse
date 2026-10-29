@@ -10,8 +10,8 @@
 Дизайн-система живе в `@repo/ui` (`packages/ui/src`). Стек: **Shadcn UI + Radix UI + Tailwind CSS**, іконки — `lucide-react`.
 
 **Примітиви (UI-kit):**
-- `Button` (+ `buttonVariants`), `Input`, `Badge`
-- `DropdownMenu` (`Trigger`, `Content`, `Item`, `RadioGroup`, `RadioItem`)
+- `Button` (+ `buttonVariants`), `Input`
+- `DropdownMenu` (`Trigger`, `Content`, `RadioGroup`, `RadioItem`)
 - `Skeleton`
 
 **Доменні компоненти (кіно):**

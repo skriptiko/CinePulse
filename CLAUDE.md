@@ -22,7 +22,7 @@ pnpm dev                              # усі застосунки (host 5000, 
 pnpm --filter @repo/host dev          # окремий застосунок (@repo/pages-mfe, @repo/user-mfe)
 pnpm build                            # turbo build (tsc + vite build)
 pnpm typecheck                        # turbo typecheck (tsc --noEmit у кожному пакеті)
-pnpm lint                             # biome check src/ у кожному пакеті
+pnpm lint                             # biome check src/ у кожному пакеті + заборона JSX-spread
 pnpm check                            # biome check --write по всьому репо
 pnpm --filter @repo/api typecheck     # перевірка одного пакета
 pnpm build:deploy                     # build + scripts/merge-dist.js → кореневий dist/
@@ -44,7 +44,7 @@ pnpm size                             # бюджет JS host (.size-limit.json);
 - У MSW 3 опція називається `onUnhandledFrame: 'error'`: стару `onUnhandledRequest` MSW тихо ігнорує.
 - Мокаємо мережу, а не наші модулі (`vi.mock` для `@repo/api` заборонений).
 
-Husky pre-commit запускає `lint-staged` → `biome check --write --no-errors-on-unmatched` на `*.{js,ts,tsx,json}`; `commit-msg` перевіряє формат `CIN-<N>: …` (≤ 72 символи). Biome (не ESLint/Prettier): одинарні лапки, `;` завжди, 2 пробіли, ширина 100; error — `noUnusedImports`/`noUnusedVariables`, `noExplicitAny`, `noNonNullAssertion`, `noDefaultExport` (крім `*.config.*`), `useFilenamingConvention` (kebab-case), група `a11y`.
+Husky pre-commit запускає `lint-staged` → `biome check --write --no-errors-on-unmatched` на `*.{js,ts,tsx,json}`; `commit-msg` перевіряє формат `CIN-<N>: …` (≤ 72 символи). Biome (не ESLint/Prettier): одинарні лапки, `;` завжди, 2 пробіли, ширина 100; error — `noUnusedImports`/`noUnusedVariables`, `noExplicitAny`, `noNonNullAssertion`, `noDefaultExport` (крім `*.config.*`), `useFilenamingConvention` (kebab-case), група `a11y`. JSX-spread (`{...props}`) і `asChild` заборонені (стандарти §5.2): Biome цього не ловить, тому `pnpm lint` додатково запускає `scripts/check-jsx-spread.js`. Примітиви `@repo/ui` оголошують `Pick<ComponentProps<…>, …>` з потрібними атрибутами й передають кожен явно; новий атрибут — додай у тип і JSX. Тригер Radix стилізується `className={cn(buttonVariants(…), …)}`.
 
 Для TMDB потрібен `TMDB_API_READ_TOKEN` у кореневому `.env` (Vite `loadEnv` читає корінь репо); для functions — `functions/.env` (приклад у `functions/.env.example`).
 
@@ -66,7 +66,7 @@ Husky pre-commit запускає `lint-staged` → `biome check --write --no-er
 - `@repo/routes` — `ROUTE_PATHS`, єдине джерело істини для шляхів. Remotes будують `routes` з цих констант; динамічних (`:id`) маршрутів поки немає.
 - `@repo/api` — TMDB-клієнт. Усі запити йдуть на відносний `/api/tmdb/*` (`apiGet`), токен ніколи не потрапляє в браузер: у dev це Vite proxy (host і pages-mfe) з Bearer-токеном, у продакшні — Firebase rewrite на функцію `tmdbProxy` (`functions/src/index.ts`). Шари: `endpoints/` (fetch-функції) → `hooks/` (на `useSuspenseQuery`/`useSuspenseInfiniteQuery`, тож сторінкам потрібен `Suspense`) → `queries/keys.ts` (фабрика query keys). 5xx/мережеві помилки емітять подію `notification:show`.
 - `@repo/events` — типізована шина подій (`EventMap` у `types.ts`; `createTypedEmitter`/`createTypedListener`) і `globalStore`. Обидва — синглтони на `window.__CINEPULSE_EVENT_BUS__` / `window.__CINEPULSE_STORE__`, тому працюють між MFE. Крос-MFE комунікація — тільки через цей пакет, без прямих імпортів між `apps/*`.
-- `@repo/ui` — дизайн-система (shadcn-компоненти, kebab-case файли), доменні компоненти (`MovieCard`, `Hero`, `ContentRow`…), `Providers` (QueryClient), `AppLayout`, `ErrorBoundary` (рівні shell/module), `mapTmdbToMovieCard`.
+- `@repo/ui` — дизайн-система (shadcn-примітиви без spread і `asChild`, kebab-case файли), доменні компоненти (`MovieCard`, `Hero`, `ContentRow`…), `Providers` (QueryClient), `AppLayout`, `ErrorBoundary` (рівні shell/module), `mapTmdbToMovieCard`.
 
 ### Деплой
 

@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
-    "lint": "turbo lint",
+    "lint": "turbo lint && pnpm lint:jsx-spread",
+    "lint:jsx-spread": "node scripts/check-jsx-spread.js",
     "format": "biome format --write .",
     "check": "biome check --write --ignore=\"**/.__mf__temp/**\" .",
     "typecheck": "turbo typecheck",

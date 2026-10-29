@@ -2,14 +2,20 @@ export { Button, buttonVariants } from './components/button';
 export type { ButtonProps } from './components/button';
 
 export { Input } from './components/input';
-export { Badge } from './components/badge';
+export type { InputProps } from './components/input';
 export {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+} from './components/dropdown-menu';
+export type {
+  DropdownMenuProps,
+  DropdownMenuTriggerProps,
+  DropdownMenuContentProps,
+  DropdownMenuRadioGroupProps,
+  DropdownMenuRadioItemProps,
 } from './components/dropdown-menu';
 
 export { MovieCard } from './components/movie-card';
@@ -21,6 +27,7 @@ export { Header } from './components/header';
 export { Footer } from './components/footer';
 
 export { Skeleton } from './components/skeleton';
+export type { SkeletonProps } from './components/skeleton';
 
 export { ErrorBoundary } from './components/error-boundary';
 export type { ErrorBoundaryProps } from './components/error-boundary';
