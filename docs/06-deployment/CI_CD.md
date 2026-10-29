@@ -2,24 +2,25 @@
 
 # CI/CD
 
-Автоматичний деплой на Firebase Hosting (+ Cloud Functions) через GitHub Actions. Статус етапу: **🟡 частково** — деплой і quality gates (lint + typecheck) працюють, немає тестів і документованого rollback.
+Автоматичний деплой на Firebase Hosting (+ Cloud Functions) через GitHub Actions. Статус етапу: **🟡 частково** — деплой і quality gates (lint + typecheck + test) працюють, немає документованого rollback.
 
 ## GitHub Actions
 
 Пайплайн: [`.github/workflows/firebase-deploy.yml`](../../.github/workflows/firebase-deploy.yml).
 
-- **Тригери:** `push` у гілку `main` і будь-який `pull_request`.
-- **Runner:** `ubuntu-latest`, Node.js `20`.
-- **Job `quality`** (і на push, і на PR):
-  1. `actions/checkout@v4`.
-  2. `pnpm/action-setup@v4` — pnpm `9.15.4`.
-  3. `actions/setup-node@v4` — Node `20`, кеш `pnpm`.
-  4. `pnpm install --frozen-lockfile` — падає, якщо `pnpm-lock.yaml` не синхронізований з `package.json`.
-  5. `pnpm lint`.
-  6. `pnpm typecheck`.
-- **Job `build-and-deploy`** (`needs: quality`, лише на `push`):
+- **Тригери:** `push` у `main` і `develop`, будь-який `pull_request`.
+- **Runner:** `ubuntu-latest`, Node.js `24`, pnpm з `packageManager` у `package.json`.
+- **Job `quality`** (на кожен тригер):
+  1. checkout, pnpm, Node (кеш `pnpm`).
+  2. `pnpm install --frozen-lockfile` — падає, якщо `pnpm-lock.yaml` не синхронізований з `package.json`.
+  3. `pnpm lint` (Biome + заборона JSX-spread).
+  4. `pnpm typecheck`.
+  5. `pnpm test`.
+- **Job `size`** (на кожен тригер, не обов'язковий для мерджу): `pnpm turbo build --filter=@repo/host` → `pnpm size` (бюджет у `.size-limit.json`).
+- **Job `build-and-deploy`** (`needs: quality`, лише push у `main`, без паралельних деплоїв):
   1. Ті самі checkout / pnpm / Node / install.
   2. `pnpm build:deploy` — Turbo збирає всі застосунки й пакети, крім sandbox `apps/design` (у прод не йде), і `scripts/merge-dist.js` об'єднує `dist/` (див. нижче). Локально — та сама команда.
+  3. Деплой функцій (`firebase deploy --only functions`) — спершу, бо rewrite `/api/tmdb/**` веде на `tmdbProxy`.
   4. `FirebaseExtended/action-hosting-deploy@v0` — деплой на `projectId: cinepulse-eec15`, `target: production`, `channelId: live`.
 
 **Секрети GitHub:**
