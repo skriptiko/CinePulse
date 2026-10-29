@@ -11,7 +11,8 @@ import {
   mapTmdbToMovieCard,
 } from '@repo/ui';
 import { ChevronDown, Grid3X3, LayoutGrid, Search, SlidersHorizontal } from 'lucide-react';
-import { useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { useDeferredValue, useMemo, useState } from 'react';
+import { useDebouncedValue } from './use-debounced-value';
 
 const sortOptions = ['Popular', 'Newest', 'Rating'];
 const SEARCH_DEBOUNCE_MS = 300;
@@ -242,15 +243,4 @@ export function Movies() {
       </main>
     </>
   );
-}
-
-function useDebouncedValue<T>(value: T, delayMs: number): T {
-  const [debounced, setDebounced] = useState(value);
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => setDebounced(value), delayMs);
-    return () => clearTimeout(timeoutId);
-  }, [value, delayMs]);
-
-  return debounced;
 }
