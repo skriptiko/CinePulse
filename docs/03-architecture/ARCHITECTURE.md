@@ -96,16 +96,16 @@ TMDB API  https://api.themoviedb.org/3
 
 Клієнт завжди звертається до відносного шляху `/api/tmdb/...` (`API_CONFIG.PROXY_BASE_URL`). У продакшні Firebase Hosting переписує `/api/tmdb/**` на функцію `tmdbProxy`; у dev той самий шлях перехоплює Vite-proxy. Токен додається виключно на боці проксі (див. [ADR-0003](./decisions/ADR-0003-tmdb-proxy.md)).
 
-Дані для запитів кешуються React Query із `staleTime` 5 хвилин, `retry: 1`, `refetchOnWindowFocus: false` (`packages/ui/src/components/providers.tsx`). Списки використовують infinite-query (`useSuspenseInfiniteQuery`) з пагінацією за `page < total_pages`.
+Дані для запитів кешуються React Query із `staleTime` 5 хвилин, `retry: 1`, `refetchOnWindowFocus: false` (`packages/ui/src/components/providers.tsx`). Списки використовують infinite-query (`useSuspenseInfiniteQuery`) with the shared `getNextPageParam` (capped at TMDB's 500 pages).
 
 ## Крос-MFE комунікація
 
 MFE не мають прямих імпортів один з одного. Комунікація — через `@repo/events`:
 
-- **Event bus** (`packages/events/src/event-bus.ts`) — типізований emitter/listener поверх `window.__CINEPULSE_EVENT_BUS__` (singleton на `window`). Типи подій фіксовані в `EventMap` (`user:login`, `user:logout`, `navigation:change`, `notification:show`, `mfe:ready`, `mfe:error` тощо).
+- **Event bus** (`packages/events/src/event-bus.ts`) — типізований emitter/listener поверх `window.__CINEPULSE_EVENT_BUS__` (singleton на `window`). Event types are fixed in `EventMap` (`notification:show`, `mfe:error`, `error:report`).
 - **Global store** (`packages/events/src/store.ts`) — `window.__CINEPULSE_STORE__` singleton зі станом `{ user, isAuthenticated, theme }` і діями (`setUser`, `updateUser`, `setTheme`, `reset`).
 
-Singleton саме на `window` гарантує єдиний екземпляр навіть якщо федерація завантажить пакет двічі. Приклад використання — клієнт API емітить `notification:show` при 5xx/мережевій помилці (`packages/api/src/core/client.ts`).
+Singleton саме на `window` гарантує єдиний екземпляр навіть якщо федерація завантажить пакет двічі. The API transport does not emit events; error toasts and reports go through `QueryCache.onError` (refactoring plan, item 5.10).
 
 Деталі моделі — [DATA_MODEL.md](./DATA_MODEL.md), деталі рішення — [ADR-0004](./decisions/ADR-0004-typed-event-bus.md).
 
@@ -118,7 +118,7 @@ Singleton саме на `window` гарантує єдиний екземпля�
 
 Додатково:
 - **Помилки завантаження remote-роутів** — `App.tsx` ловить помилку `import('pagesMfe/routes')` і деградує до порожнього набору роутів (у dev логує в консоль).
-- **Помилки API** — `ApiError` з полями `status`/`statusText`/`isNetworkError`; на 5xx і мережеві помилки емітиться `notification:show` для показу користувачу.
+- **API errors** — `ApiError` with `kind` (`network`, `not_found`, `server`, `client`, `validation`), `status` and `cause`; an abort is rethrown unchanged. See [API_SPEC.md](./API_SPEC.md#обробка-помилок).
 - **Suspense** — усі дані-хуки суспенсні, тож стани завантаження обробляються через `<Suspense>` межі в роутах.
 
 **Відоме обмеження:** module-level boundary та уніфіковані loading/empty-стани реалізовані не всюди (напр. Home без skeleton) — див. роадмап, Етап 2.

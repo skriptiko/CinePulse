@@ -5,7 +5,7 @@ import { queryKeys } from '../queries/keys';
 export function useMovieGenres() {
   return useSuspenseQuery({
     queryKey: queryKeys.genres.movies(),
-    queryFn: getMovieGenres,
+    queryFn: ({ signal }) => getMovieGenres({ signal }),
     staleTime: 1000 * 60 * 60 * 24,
   });
 }
@@ -13,7 +13,7 @@ export function useMovieGenres() {
 export function useTVGenres() {
   return useSuspenseQuery({
     queryKey: queryKeys.genres.tv(),
-    queryFn: getTVGenres,
+    queryFn: ({ signal }) => getTVGenres({ signal }),
     staleTime: 1000 * 60 * 60 * 24,
   });
 }

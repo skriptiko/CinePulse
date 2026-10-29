@@ -9,7 +9,7 @@
 > Для кожного інциденту заповнити: **симптоми → діагностика → дії → верифікація → післядія**. Зараз — каркас.
 
 ### TMDB proxy повертає 5xx
-- **Симптоми:** сторінки без контенту; у клієнті сплив `notification:show` («Server error»).
+- **Симптоми:** сторінки без контенту; fallback with Retry on pages (`ApiError` of kind `server`).
 - **Діагностика:** TODO — логи функції `tmdbProxy` (Firebase Console → Functions → Logs); перевірити валідність `TMDB_API_READ_TOKEN`; статус TMDB API.
 - **Дії:** TODO.
 

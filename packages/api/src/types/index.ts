@@ -1,10 +1,9 @@
-export type { PaginatedResponse } from './common';
+export type { PageParams, PaginatedResponse, ProductionCompany } from './common';
 export type { Genre, GenresResponse } from './genre';
 export type {
   Collection,
   Movie,
   MovieDetails,
-  ProductionCompany,
   ProductionCountry,
   SpokenLanguage,
 } from './movie';
@@ -25,5 +24,4 @@ export type {
   Season,
   TV,
   TVDetails,
-  ProductionCompany as TVProductionCompany,
 } from './tv';

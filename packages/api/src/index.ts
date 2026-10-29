@@ -1,5 +1,23 @@
-export { ApiError, apiGet, API_CONFIG, buildQueryString, getImageUrl } from './core';
-export type { BackdropSize, ImageSize, ProfileSize, RequestOptions } from './core';
+export {
+  ApiError,
+  apiGet,
+  API_CONFIG,
+  buildQueryString,
+  getImageUrl,
+  isAbortError,
+  isApiError,
+  isNotFound,
+  toHttpError,
+} from './core';
+export type {
+  ApiErrorKind,
+  ApiErrorOptions,
+  BackdropSize,
+  EndpointOptions,
+  ImageSize,
+  ProfileSize,
+  RequestOptions,
+} from './core';
 export { BACKDROP_SIZE_FEATURED, BACKDROP_SIZE_HERO, POSTER_SIZE_CARD } from './core';
 
 export {
@@ -16,14 +34,7 @@ export {
   searchPerson,
   searchTV,
 } from './endpoints';
-export type {
-  MovieCategory,
-  MovieListParams,
-  SearchParams,
-  TrendingParams,
-  TVCategory,
-  TVListParams,
-} from './endpoints';
+export type { MovieCategory, SearchParams, TVCategory } from './endpoints';
 
 export {
   useMovieDetails,
@@ -58,6 +69,7 @@ export type {
   MovieDetails,
   MultiSearchResult,
   Network,
+  PageParams,
   PaginatedResponse,
   Person,
   PersonDetails,
@@ -75,5 +87,4 @@ export type {
   TrendingTV,
   TV,
   TVDetails,
-  TVProductionCompany,
 } from './types';

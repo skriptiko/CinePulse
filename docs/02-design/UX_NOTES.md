@@ -51,7 +51,7 @@
 🟡 Частково уніфіковано:
 - **Loading:** компонент `Skeleton` існує, але застосований не всюди — зокрема на **Home skeleton немає** (контент «стрибає» під час завантаження). Сторінки використовують Suspense (`fallback={<div>Loading...</div>}`) — грубий стан.
 - **Empty:** реалізовано в **Movies** («No movies found» + кнопка «Clear filters»). На інших сторінках порожніх станів немає.
-- **Error:** глобально через `ErrorBoundary` + сповіщення (`notification:show`) на серверні/мережеві помилки з `@repo/api`.
+- **Error:** глобально через `ErrorBoundary` ; `@repo/api` itself shows nothing — toasts for background refetch errors come with `QueryCache.onError` (refactoring plan, item 5.10).
 
 TODO: єдиний патерн loading/empty/error для всіх сторінок; замінити `<div>Loading...</div>` на Skeleton-екрани.
 

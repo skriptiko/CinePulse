@@ -7,21 +7,29 @@
 ## Транспорт і безпека
 
 - Базовий шлях — **відносний** `/api/tmdb` (`API_CONFIG.PROXY_BASE_URL`, `core/config.ts`). Клієнт **ніколи** не бачить TMDB-токен.
-- `apiGet<T>(endpoint, { params, signal })` (`core/client.ts`) будує URL, робить `fetch`, підтримує `AbortSignal`.
+- `apiGet<T>(endpoint, { params, signal })` (`core/client.ts`) builds the URL and calls `fetch`. Every endpoint takes `{ signal }` as its last argument, and every `queryFn` passes the TanStack `signal` through.
 - `buildQueryString()` серіалізує лише визначені параметри (`core/utils.ts`).
 - Маршрутизація проксі: dev — Vite `server.proxy`; prod — Firebase Function `tmdbProxy`. Обидва додають `Authorization: Bearer <TMDB_API_READ_TOKEN>` (див. [ADR-0003](./decisions/ADR-0003-tmdb-proxy.md)).
 
 ## Обробка помилок
 
-`ApiError extends Error` з полями `status`, `statusText`, `isNetworkError` (`core/client.ts`):
+`apiGet` rejects with one class, `ApiError(kind, message, { status, cause })` (`core/errors.ts`). The original error is kept in `cause`.
 
-- **Не-OK відповідь** → кидається `ApiError`. Для «глобальних» помилок (`status >= 500` або `status === 0`) додатково емітиться подія `notification:show` (`type: 'error'`).
-- **Мережева помилка** → `ApiError('Network error', 0, ...)` + `notification:show`.
-- **Abort** (`DOMException` `AbortError`) — прокидається далі без нотифікації.
+| `kind` | When | `status` |
+|---|---|---|
+| `network` | `fetch` itself failed (offline, DNS, CORS) | — |
+| `not_found` | HTTP 404 | 404 |
+| `server` | HTTP 5xx or 429 | yes |
+| `client` | any other non-OK status (a bug in params or proxy config) | yes |
+| `validation` | the body is not valid JSON | response status |
+
+- **Abort** (`name === 'AbortError'`, or the request's `signal` is aborted) is rethrown unchanged, never wrapped.
+- Guards: `isApiError` (checks `name`, so it works across MFE bundles), `isNotFound`, `isAbortError`; `toHttpError(response)` builds the error for a non-OK response.
+- The transport shows no UI and emits no events. The toast channel moves to `QueryCache.onError` (refactoring plan, item 5.10).
 
 ## Режим React Query (Suspense)
 
-Усі хуки — **суспенсні**: `useSuspenseQuery` (деталі) або `useSuspenseInfiniteQuery` (списки/пошук). Пагінація: `initialPageParam: 1`, `getNextPageParam` за `page < total_pages`.
+Усі хуки — **суспенсні**: `useSuspenseQuery` (деталі) або `useSuspenseInfiniteQuery` (списки/пошук). Pagination: `initialPageParam: 1` and the shared `getNextPageParam` (`core/pagination.ts`), which ends the list at `min(total_pages, TMDB_MAX_PAGES)`; TMDB serves at most 500 pages.
 
 **QueryClient** (`packages/ui/src/components/providers.tsx`): `staleTime` = 5 хв, `retry` = 1, `refetchOnWindowFocus` = false. Ключі кешу — централізовано в `queryKeys` (`queries/keys.ts`).
 

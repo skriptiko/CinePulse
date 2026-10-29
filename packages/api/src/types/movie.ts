@@ -1,6 +1,7 @@
+import type { ProductionCompany } from './common';
 import type { Genre } from './genre';
 
-export interface Movie {
+export type Movie = {
   id: number;
   title: string;
   original_title: string;
@@ -15,9 +16,9 @@ export interface Movie {
   genre_ids: number[];
   original_language: string;
   video: boolean;
-}
+};
 
-export interface MovieDetails extends Omit<Movie, 'genre_ids'> {
+export type MovieDetails = Omit<Movie, 'genre_ids'> & {
   genres: Genre[];
   budget: number;
   revenue: number;
@@ -30,29 +31,22 @@ export interface MovieDetails extends Omit<Movie, 'genre_ids'> {
   production_countries: ProductionCountry[];
   spoken_languages: SpokenLanguage[];
   belongs_to_collection: Collection | null;
-}
+};
 
-export interface ProductionCompany {
-  id: number;
-  name: string;
-  logo_path: string | null;
-  origin_country: string;
-}
-
-export interface ProductionCountry {
+export type ProductionCountry = {
   iso_3166_1: string;
   name: string;
-}
+};
 
-export interface SpokenLanguage {
+export type SpokenLanguage = {
   iso_639_1: string;
   name: string;
   english_name: string;
-}
+};
 
-export interface Collection {
+export type Collection = {
   id: number;
   name: string;
   poster_path: string | null;
   backdrop_path: string | null;
-}
+};
