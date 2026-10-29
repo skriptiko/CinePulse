@@ -12,12 +12,15 @@
     "prepare": "husky",
     "merge-dist": "node scripts/merge-dist.js",
     "build:deploy": "pnpm build && pnpm merge-dist",
-    "deploy": "pnpm build:deploy && firebase deploy --only hosting:production"
+    "deploy": "pnpm build:deploy && firebase deploy --only hosting:production",
+    "size": "size-limit"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "@size-limit/file": "^11.2.0",
     "husky": "^9.1.7",
     "lint-staged": "^15.2.11",
+    "size-limit": "^11.2.0",
     "turbo": "^2.3.3",
     "typescript": "catalog:"
   },
