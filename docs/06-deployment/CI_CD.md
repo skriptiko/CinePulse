@@ -62,7 +62,7 @@ Rewrites у `firebase.json` спрямовують `/pages-mfe/**` і `/user-mfe
 
 ⬜ **Тести** — `pnpm test` додається в job `quality` після впровадження тестів.
 
-⬜ **Branch protection** — щоб PR не можна було змерджити з червоним `quality`, увімкни required check у налаштуваннях репо (GitHub → Settings → Branches → `main`). Див. [TEST_STRATEGY → CI-інтеграція](../05-testing/TEST_STRATEGY.md#ci-інтеграція).
+⬜ **Branch protection** — щоб PR не можна було змерджити з червоним `quality`, увімкни required check у налаштуваннях репо (GitHub → Settings → Branches → `main`). Див. [TEST_STRATEGY → CI](../05-testing/TEST_STRATEGY.md#ci).
 
 ## Rollback
 
