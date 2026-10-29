@@ -11,9 +11,8 @@
 
 **Примітиви (UI-kit):**
 - `Button` (+ `buttonVariants`), `Input`, `Badge`
-- `Card` (+ `CardHeader/Content/Footer/Title/Description`)
-- `DropdownMenu` (повний набір Radix-підкомпонентів)
-- `ScrollArea` / `ScrollBar`, `Separator`, `Skeleton`
+- `DropdownMenu` (`Trigger`, `Content`, `Item`, `RadioGroup`, `RadioItem`)
+- `Skeleton`
 
 **Доменні компоненти (кіно):**
 - `MovieCard` — картка фільму (пропси мапляться через `mapTmdbToMovieCard`)
@@ -24,7 +23,6 @@
 
 **Каркас застосунку:**
 - `Header`, `Footer`, `AppLayout` — оболонка сторінки
-- `MfeContainer` — контейнер для MFE
 - `ErrorBoundary` — межа обробки помилок (shell/module)
 - `Providers` — обгортка з `QueryClientProvider` (React Query)
 

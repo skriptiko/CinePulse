@@ -43,7 +43,7 @@
 
 - **`@repo/api`** — клієнт TMDB, endpoints, React Query хуки, типи.
 - **`@repo/ui`** — дизайн-система (компоненти, тема, mappers, provider).
-- **`@repo/routes`** — константи шляхів (`ROUTE_PATHS`) і хелпери (`joinPaths`, `createPath`).
+- **`@repo/routes`** — константи шляхів (`ROUTE_PATHS`) і тип `RoutePath`.
 - **`@repo/events`** — event bus і global store.
 - **`@repo/typescript-config`** — спільні TS-конфіги (`base.json`, `react-library.json`).
 - **ROUTE_PATHS** — єдине джерело істини для шляхів маршрутизації (`HOME`, `MOVIES`, `USER_PROFILE`, `USER_SETTINGS`).

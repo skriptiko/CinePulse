@@ -59,8 +59,6 @@ Git hooks (**Husky**): `.husky/pre-commit` → `pnpm lint-staged`, який на
 HOME '/', MOVIES '/movies', USER '/user', USER_PROFILE '/user/profile', USER_SETTINGS '/user/settings'
 ```
 
-Хелпери: `joinPaths(...)`, `createPath(base, ...segments)`.
-
 Кожен MFE експонує масив `routes` (`RouteObject[]`) через Module Federation (`exposes: { './routes': './src/routes.tsx' }`); host збирає їх разом і рендерить через `useRoutes`.
 
 > ⬜ **Динамічних роутів (`:id`) поки немає.** Для майбутніх сторінок (Movie Detail `/movies/:id`, TV, Person) треба додати параметризовані шляхи в `ROUTE_PATHS` і патерн зчитування параметра. API-хуки під них уже існують (`useMovieDetails`, `useTVDetails`, `usePersonDetails`).
