@@ -1,4 +1,5 @@
 import { getImageUrl, useMovieGenres, useMovies, useTrending } from '@repo/api';
+import type { TrendingItem, TrendingMovie } from '@repo/api';
 import { CategoryPills, ContentRow, FeaturedGrid, Hero, mapTmdbToMovieCard } from '@repo/ui';
 import { useMemo } from 'react';
 
@@ -17,12 +18,10 @@ export function Home() {
   // Transform TMDB data for our components
   const trendingMovies = useMemo(() => {
     if (!trendingData?.pages[0]?.results) return [];
-    return trendingData.pages[0].results
-      .filter((m): m is any => m.media_type === 'movie')
-      .map((m) => ({
-        ...mapTmdbToMovieCard(m),
-        id: m.id,
-      }));
+    return trendingData.pages[0].results.filter(isTrendingMovie).map((m) => ({
+      ...mapTmdbToMovieCard(m),
+      id: m.id,
+    }));
   }, [trendingData]);
 
   const popularMovies = useMemo(() => {
@@ -69,9 +68,7 @@ export function Home() {
   }, [topRatedData, genresData]);
 
   const heroMovie = useMemo(() => {
-    const movies = trendingData?.pages[0]?.results.filter(
-      (m): m is any => m.media_type === 'movie'
-    );
+    const movies = trendingData?.pages[0]?.results.filter(isTrendingMovie);
     if (!movies?.[0]) return null;
     const m = movies[0];
     return {
@@ -126,4 +123,8 @@ export function Home() {
       </main>
     </>
   );
+}
+
+function isTrendingMovie(item: TrendingItem): item is TrendingMovie {
+  return item.media_type === 'movie';
 }

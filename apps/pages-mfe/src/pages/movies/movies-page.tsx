@@ -53,9 +53,7 @@ export function Movies() {
 
     // Filter by genre locally
     if (activeCategory !== 'All') {
-      allResults = allResults.filter((movie) =>
-        movie.genre_ids?.includes(activeCategory as number)
-      );
+      allResults = allResults.filter((movie) => movie.genre_ids?.includes(activeCategory));
     }
 
     // Sort locally
