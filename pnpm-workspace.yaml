@@ -6,13 +6,13 @@ packages:
 # Single source of versions shared across workspace packages (`"catalog:"` in package.json).
 # functions/ stays on plain ranges: Cloud Build installs it with npm, which has no catalog protocol.
 catalog:
-  react: ^18.3.1
-  react-dom: ^18.3.1
+  react: ^19.3.1
+  react-dom: ^19.3.1
   react-router-dom: ^7.13.0
   "@tanstack/react-query": ^5.62.14
   lucide-react: ^1.8.0
-  "@types/react": ^18.3.18
-  "@types/react-dom": ^18.3.5
+  "@types/react": ^19.3.0
+  "@types/react-dom": ^19.3.0
   "@types/node": ^24.0.0
   typescript: ^5.7.3
   vite: ^5.4.14
