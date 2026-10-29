@@ -55,4 +55,12 @@ describe('getMovies', () => {
 
     expect(await pending).toMatchObject({ name: 'AbortError' });
   });
+
+  it('accepts only known params', () => {
+    // Compile-time check (tsc runs over tests): no index signature on PageParams.
+    // @ts-expect-error: `sort` is not a PageParams key.
+    const call = (): unknown => getMovies('popular', { sort: 'asc' });
+
+    expect(call).toBeTypeOf('function');
+  });
 });

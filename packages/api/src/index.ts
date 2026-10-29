@@ -33,14 +33,7 @@ export {
   searchPerson,
   searchTV,
 } from './endpoints';
-export type {
-  MovieCategory,
-  MovieListParams,
-  SearchParams,
-  TrendingParams,
-  TVCategory,
-  TVListParams,
-} from './endpoints';
+export type { MovieCategory, SearchParams, TVCategory } from './endpoints';
 
 export {
   useMovieDetails,
@@ -75,6 +68,7 @@ export type {
   MovieDetails,
   MultiSearchResult,
   Network,
+  PageParams,
   PaginatedResponse,
   Person,
   PersonDetails,
@@ -92,5 +86,4 @@ export type {
   TrendingTV,
   TV,
   TVDetails,
-  TVProductionCompany,
 } from './types';

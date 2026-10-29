@@ -1,6 +1,7 @@
+import type { ProductionCompany } from './common';
 import type { Genre } from './genre';
 
-export interface TV {
+export type TV = {
   id: number;
   name: string;
   original_name: string;
@@ -15,9 +16,9 @@ export interface TV {
   genre_ids: number[];
   original_language: string;
   origin_country: string[];
-}
+};
 
-export interface TVDetails extends Omit<TV, 'genre_ids'> {
+export type TVDetails = Omit<TV, 'genre_ids'> & {
   genres: Genre[];
   created_by: Creator[];
   episode_run_time: number[];
@@ -35,17 +36,17 @@ export interface TVDetails extends Omit<TV, 'genre_ids'> {
   status: string;
   tagline: string | null;
   type: string;
-}
+};
 
-export interface Creator {
+export type Creator = {
   id: number;
   credit_id: string;
   name: string;
   gender: number;
   profile_path: string | null;
-}
+};
 
-export interface Episode {
+export type Episode = {
   id: number;
   name: string;
   overview: string;
@@ -55,23 +56,16 @@ export interface Episode {
   still_path: string | null;
   vote_average: number;
   vote_count: number;
-}
+};
 
-export interface Network {
+export type Network = {
   id: number;
   name: string;
   logo_path: string | null;
   origin_country: string;
-}
+};
 
-export interface ProductionCompany {
-  id: number;
-  name: string;
-  logo_path: string | null;
-  origin_country: string;
-}
-
-export interface Season {
+export type Season = {
   id: number;
   name: string;
   overview: string;
@@ -79,4 +73,4 @@ export interface Season {
   episode_count: number;
   poster_path: string | null;
   season_number: number;
-}
+};

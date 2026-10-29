@@ -1,8 +1,6 @@
 import { API_CONFIG } from './config';
 import { ApiError, isAbortError, toHttpError } from './errors';
-import { buildQueryString } from './utils';
-
-export type QueryParams = Record<string, string | number | boolean | undefined>;
+import { type QueryParams, buildQueryString } from './utils';
 
 export type RequestOptions = {
   params?: QueryParams;

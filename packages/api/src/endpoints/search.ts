@@ -1,10 +1,8 @@
 import { type EndpointOptions, apiGet } from '../core';
-import type { Movie, MultiSearchResult, PaginatedResponse, Person, TV } from '../types';
+import type { Movie, MultiSearchResult, PageParams, PaginatedResponse, Person, TV } from '../types';
 
-export type SearchParams = {
+export type SearchParams = PageParams & {
   query: string;
-  page?: number;
-  [key: string]: string | number | boolean | undefined;
 };
 
 export async function searchMulti(

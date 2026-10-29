@@ -1,16 +1,11 @@
 import { type EndpointOptions, apiGet } from '../core';
-import type { PaginatedResponse, TV, TVDetails } from '../types';
+import type { PageParams, PaginatedResponse, TV, TVDetails } from '../types';
 
 export type TVCategory = 'popular' | 'top_rated' | 'on_the_air' | 'airing_today';
 
-export type TVListParams = {
-  page?: number;
-  [key: string]: string | number | boolean | undefined;
-};
-
 export async function getTVShows(
   category: TVCategory,
-  params: TVListParams = {},
+  params: PageParams = {},
   { signal }: EndpointOptions = {}
 ): Promise<PaginatedResponse<TV>> {
   return apiGet<PaginatedResponse<TV>>(`/tv/${category}`, { params, signal });
