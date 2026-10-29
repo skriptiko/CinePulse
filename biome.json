@@ -12,14 +12,31 @@
       },
       "correctness": {
         "noUnusedImports": "error",
-        "noUnusedVariables": "error"
+        "noUnusedVariables": "error",
+        "useHookAtTopLevel": "error"
       },
       "style": {
-        "noNonNullAssertion": "warn",
-        "useConst": "error"
+        "noNonNullAssertion": "error",
+        "useConst": "error",
+        "noDefaultExport": "error",
+        "useFilenamingConvention": {
+          "level": "error",
+          "options": {
+            "filenameCases": ["kebab-case"]
+          }
+        }
       },
       "suspicious": {
-        "noExplicitAny": "warn"
+        "noExplicitAny": "error"
+      },
+      "a11y": {
+        "all": true
+      },
+      "performance": {
+        "noReExportAll": "error"
+      },
+      "security": {
+        "noDangerouslySetInnerHtml": "error"
       }
     }
   },
@@ -45,7 +62,20 @@
       ".husky",
       ".github",
       "*.d.ts",
-      "**/.__mf__temp/**"
+      "**/.__mf__temp/**",
+      "docs/08-design-files"
     ]
-  }
+  },
+  "overrides": [
+    {
+      "include": ["*.config.*", "**/*.config.*"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDefaultExport": "off"
+          }
+        }
+      }
+    }
+  ]
 }
