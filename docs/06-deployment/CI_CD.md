@@ -19,7 +19,7 @@
   6. `pnpm typecheck`.
 - **Job `build-and-deploy`** (`needs: quality`, лише на `push`):
   1. Ті самі checkout / pnpm / Node / install.
-  2. `pnpm build` — Turbo збирає всі застосунки й пакети.
+  2. `pnpm turbo build --filter='!@repo/design'` — Turbo збирає всі застосунки й пакети, крім sandbox `apps/design` (у прод не йде).
   3. `node scripts/merge-dist.js` — об'єднання `dist/` (див. нижче).
   4. `FirebaseExtended/action-hosting-deploy@v0` — деплой на `projectId: cinepulse-eec15`, `target: production`, `channelId: live`.
 

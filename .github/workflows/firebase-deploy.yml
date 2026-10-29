@@ -60,8 +60,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # apps/design — локальний sandbox, у прод не деплоїться
       - name: Build
-        run: pnpm build
+        run: pnpm turbo build --filter='!@repo/design'
 
       - name: Merge dist folders
         run: node scripts/merge-dist.js
