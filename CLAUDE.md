@@ -47,7 +47,7 @@ Husky pre-commit запускає `lint-staged` → `biome check --write --no-er
 
 ### Спільні пакети (`packages/*`)
 
-Пакети не збираються для споживання — `exports` вказують прямо на `src/index.ts`.
+Пакети не збираються для споживання — `exports` вказують прямо на `src/index.ts`. Версії спільних залежностей (react, router, query, TS, vite, MF, tailwind, types) живуть у `catalog` у `pnpm-workspace.yaml`, а в `package.json` пишемо `"catalog:"`; виняток — `functions/` (Cloud Build ставить його через npm). Залежності, що мають бути синглтоном (`react`, `react-router-dom`, `@tanstack/react-query`), у `packages/*` — `peerDependencies` + `devDependencies`, не `dependencies`; внутрішні пакети — `workspace:*`.
 
 - `@repo/routes` — `ROUTE_PATHS`, єдине джерело істини для шляхів. Remotes будують `routes` з цих констант; динамічних (`:id`) маршрутів поки немає.
 - `@repo/api` — TMDB-клієнт. Усі запити йдуть на відносний `/api/tmdb/*` (`apiGet`), токен ніколи не потрапляє в браузер: у dev це Vite proxy (host і pages-mfe) з Bearer-токеном, у продакшні — Firebase rewrite на функцію `tmdbProxy` (`functions/src/index.ts`). Шари: `endpoints/` (fetch-функції) → `hooks/` (на `useSuspenseQuery`/`useSuspenseInfiniteQuery`, тож сторінкам потрібен `Suspense`) → `queries/keys.ts` (фабрика query keys). 5xx/мережеві помилки емітять подію `notification:show`.

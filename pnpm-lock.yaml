@@ -4,6 +4,57 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    '@module-federation/dts-plugin':
+      specifier: ^0.11.0
+      version: 0.11.4
+    '@module-federation/vite':
+      specifier: ^1.11.0
+      version: 1.11.0
+    '@tanstack/react-query':
+      specifier: ^5.62.14
+      version: 5.90.20
+    '@types/node':
+      specifier: ^24.0.0
+      version: 24.19.2
+    '@types/react':
+      specifier: ^18.3.18
+      version: 18.3.27
+    '@types/react-dom':
+      specifier: ^18.3.5
+      version: 18.3.7
+    '@vitejs/plugin-react':
+      specifier: ^4.3.4
+      version: 4.7.0
+    autoprefixer:
+      specifier: ^10.4.20
+      version: 10.4.23
+    lucide-react:
+      specifier: ^1.8.0
+      version: 1.8.0
+    postcss:
+      specifier: ^8.4.49
+      version: 8.5.6
+    react:
+      specifier: ^18.3.1
+      version: 18.3.1
+    react-dom:
+      specifier: ^18.3.1
+      version: 18.3.1
+    react-router-dom:
+      specifier: ^7.13.0
+      version: 7.13.0
+    tailwindcss:
+      specifier: ^3.4.17
+      version: 3.4.19
+    typescript:
+      specifier: ^5.7.3
+      version: 5.9.3
+    vite:
+      specifier: ^5.4.14
+      version: 5.4.21
+
 importers:
 
   .:
@@ -21,7 +72,7 @@ importers:
         specifier: ^2.3.3
         version: 2.8.0
       typescript:
-        specifier: ^5.7.3
+        specifier: 'catalog:'
         version: 5.9.3
 
   apps/design:
@@ -39,50 +90,50 @@ importers:
         specifier: workspace:*
         version: link:../../packages/ui
       '@tanstack/react-query':
-        specifier: ^5.62.0
+        specifier: 'catalog:'
         version: 5.90.20(react@18.3.1)
       lucide-react:
-        specifier: ^1.8.0
+        specifier: 'catalog:'
         version: 1.8.0(react@18.3.1)
       react:
-        specifier: ^18.3.1
+        specifier: 'catalog:'
         version: 18.3.1
       react-dom:
-        specifier: ^18.3.1
+        specifier: 'catalog:'
         version: 18.3.1(react@18.3.1)
       react-router-dom:
-        specifier: ^7.13.0
+        specifier: 'catalog:'
         version: 7.13.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
       '@types/node':
-        specifier: ^24.0.0
+        specifier: 'catalog:'
         version: 24.19.2
       '@types/react':
-        specifier: ^18.3.18
+        specifier: 'catalog:'
         version: 18.3.27
       '@types/react-dom':
-        specifier: ^18.3.5
+        specifier: 'catalog:'
         version: 18.3.7(@types/react@18.3.27)
       '@vitejs/plugin-react':
-        specifier: ^4.3.4
+        specifier: 'catalog:'
         version: 4.7.0(vite@5.4.21(@types/node@24.19.2))
       autoprefixer:
-        specifier: ^10.4.20
+        specifier: 'catalog:'
         version: 10.4.23(postcss@8.5.6)
       postcss:
-        specifier: ^8.4.49
+        specifier: 'catalog:'
         version: 8.5.6
       tailwindcss:
-        specifier: ^3.4.17
+        specifier: 'catalog:'
         version: 3.4.19(yaml@2.8.2)
       typescript:
-        specifier: ^5.7.3
+        specifier: 'catalog:'
         version: 5.9.3
       vite:
-        specifier: ^5.4.14
+        specifier: 'catalog:'
         version: 5.4.21(@types/node@24.19.2)
 
   apps/host:
@@ -100,53 +151,53 @@ importers:
         specifier: workspace:*
         version: link:../../packages/ui
       '@tanstack/react-query':
-        specifier: ^5.62.0
+        specifier: 'catalog:'
         version: 5.90.20(react@18.3.1)
       react:
-        specifier: ^18.3.1
+        specifier: 'catalog:'
         version: 18.3.1
       react-dom:
-        specifier: ^18.3.1
+        specifier: 'catalog:'
         version: 18.3.1(react@18.3.1)
       react-router-dom:
-        specifier: ^7.13.0
+        specifier: 'catalog:'
         version: 7.13.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     devDependencies:
       '@module-federation/dts-plugin':
-        specifier: ^0.11.0
+        specifier: 'catalog:'
         version: 0.11.4(typescript@5.9.3)
       '@module-federation/vite':
-        specifier: ^1.11.0
+        specifier: 'catalog:'
         version: 1.11.0(rollup@4.57.1)(typescript@5.9.3)(vite@5.4.21(@types/node@24.19.2))
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
       '@types/node':
-        specifier: ^24.0.0
+        specifier: 'catalog:'
         version: 24.19.2
       '@types/react':
-        specifier: ^18.3.18
+        specifier: 'catalog:'
         version: 18.3.27
       '@types/react-dom':
-        specifier: ^18.3.5
+        specifier: 'catalog:'
         version: 18.3.7(@types/react@18.3.27)
       '@vitejs/plugin-react':
-        specifier: ^4.3.4
+        specifier: 'catalog:'
         version: 4.7.0(vite@5.4.21(@types/node@24.19.2))
       autoprefixer:
-        specifier: ^10.4.20
+        specifier: 'catalog:'
         version: 10.4.23(postcss@8.5.6)
       postcss:
-        specifier: ^8.4.49
+        specifier: 'catalog:'
         version: 8.5.6
       tailwindcss:
-        specifier: ^3.4.17
+        specifier: 'catalog:'
         version: 3.4.19(yaml@2.8.2)
       typescript:
-        specifier: ^5.7.3
+        specifier: 'catalog:'
         version: 5.9.3
       vite:
-        specifier: ^5.4.14
+        specifier: 'catalog:'
         version: 5.4.21(@types/node@24.19.2)
 
   apps/pages-mfe:
@@ -164,56 +215,56 @@ importers:
         specifier: workspace:*
         version: link:../../packages/ui
       '@tanstack/react-query':
-        specifier: ^5.62.0
+        specifier: 'catalog:'
         version: 5.90.20(react@18.3.1)
       lucide-react:
-        specifier: ^1.8.0
+        specifier: 'catalog:'
         version: 1.8.0(react@18.3.1)
       react:
-        specifier: ^18.3.1
+        specifier: 'catalog:'
         version: 18.3.1
       react-dom:
-        specifier: ^18.3.1
+        specifier: 'catalog:'
         version: 18.3.1(react@18.3.1)
       react-router-dom:
-        specifier: ^7.13.0
+        specifier: 'catalog:'
         version: 7.13.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     devDependencies:
       '@module-federation/dts-plugin':
-        specifier: ^0.11.0
+        specifier: 'catalog:'
         version: 0.11.4(typescript@5.9.3)
       '@module-federation/vite':
-        specifier: ^1.11.0
+        specifier: 'catalog:'
         version: 1.11.0(rollup@4.57.1)(typescript@5.9.3)(vite@5.4.21(@types/node@24.19.2))
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
       '@types/node':
-        specifier: ^24.0.0
+        specifier: 'catalog:'
         version: 24.19.2
       '@types/react':
-        specifier: ^18.3.18
+        specifier: 'catalog:'
         version: 18.3.27
       '@types/react-dom':
-        specifier: ^18.3.5
+        specifier: 'catalog:'
         version: 18.3.7(@types/react@18.3.27)
       '@vitejs/plugin-react':
-        specifier: ^4.3.4
+        specifier: 'catalog:'
         version: 4.7.0(vite@5.4.21(@types/node@24.19.2))
       autoprefixer:
-        specifier: ^10.4.20
+        specifier: 'catalog:'
         version: 10.4.23(postcss@8.5.6)
       postcss:
-        specifier: ^8.4.49
+        specifier: 'catalog:'
         version: 8.5.6
       tailwindcss:
-        specifier: ^3.4.17
+        specifier: 'catalog:'
         version: 3.4.19(yaml@2.8.2)
       typescript:
-        specifier: ^5.7.3
+        specifier: 'catalog:'
         version: 5.9.3
       vite:
-        specifier: ^5.4.14
+        specifier: 'catalog:'
         version: 5.4.21(@types/node@24.19.2)
 
   apps/user-mfe:
@@ -231,53 +282,53 @@ importers:
         specifier: workspace:*
         version: link:../../packages/ui
       '@tanstack/react-query':
-        specifier: ^5.62.0
+        specifier: 'catalog:'
         version: 5.90.20(react@18.3.1)
       react:
-        specifier: ^18.3.1
+        specifier: 'catalog:'
         version: 18.3.1
       react-dom:
-        specifier: ^18.3.1
+        specifier: 'catalog:'
         version: 18.3.1(react@18.3.1)
       react-router-dom:
-        specifier: ^7.13.0
+        specifier: 'catalog:'
         version: 7.13.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     devDependencies:
       '@module-federation/dts-plugin':
-        specifier: ^0.11.0
+        specifier: 'catalog:'
         version: 0.11.4(typescript@5.9.3)
       '@module-federation/vite':
-        specifier: ^1.11.0
+        specifier: 'catalog:'
         version: 1.11.0(rollup@4.57.1)(typescript@5.9.3)(vite@5.4.21(@types/node@24.19.2))
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
       '@types/node':
-        specifier: ^24.0.0
+        specifier: 'catalog:'
         version: 24.19.2
       '@types/react':
-        specifier: ^18.3.18
+        specifier: 'catalog:'
         version: 18.3.27
       '@types/react-dom':
-        specifier: ^18.3.5
+        specifier: 'catalog:'
         version: 18.3.7(@types/react@18.3.27)
       '@vitejs/plugin-react':
-        specifier: ^4.3.4
+        specifier: 'catalog:'
         version: 4.7.0(vite@5.4.21(@types/node@24.19.2))
       autoprefixer:
-        specifier: ^10.4.20
+        specifier: 'catalog:'
         version: 10.4.23(postcss@8.5.6)
       postcss:
-        specifier: ^8.4.49
+        specifier: 'catalog:'
         version: 8.5.6
       tailwindcss:
-        specifier: ^3.4.17
+        specifier: 'catalog:'
         version: 3.4.19(yaml@2.8.2)
       typescript:
-        specifier: ^5.7.3
+        specifier: 'catalog:'
         version: 5.9.3
       vite:
-        specifier: ^5.4.14
+        specifier: 'catalog:'
         version: 5.4.21(@types/node@24.19.2)
 
   functions:
@@ -301,21 +352,21 @@ importers:
       '@repo/events':
         specifier: workspace:*
         version: link:../events
-      '@tanstack/react-query':
-        specifier: ^5.62.0
-        version: 5.90.20(react@18.3.1)
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.90.20(react@18.3.1)
       '@types/react':
-        specifier: ^18.3.18
+        specifier: 'catalog:'
         version: 18.3.27
+      react:
+        specifier: 'catalog:'
+        version: 18.3.1
       typescript:
-        specifier: ^5.7.3
+        specifier: 'catalog:'
         version: 5.9.3
 
   packages/events:
@@ -324,7 +375,7 @@ importers:
         specifier: workspace:*
         version: link:../typescript-config
       typescript:
-        specifier: ^5.7.3
+        specifier: 'catalog:'
         version: 5.9.3
 
   packages/routes:
@@ -333,7 +384,7 @@ importers:
         specifier: workspace:*
         version: link:../typescript-config
       typescript:
-        specifier: ^5.7.3
+        specifier: 'catalog:'
         version: 5.9.3
 
   packages/typescript-config: {}
@@ -353,14 +404,11 @@ importers:
         specifier: ^1.1.1
         version: 1.2.4(@types/react@18.3.27)(react@18.3.1)
       '@repo/api':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../api
       '@repo/routes':
         specifier: workspace:*
         version: link:../routes
-      '@tanstack/react-query':
-        specifier: ^5.62.14
-        version: 5.90.20(react@18.3.1)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -368,17 +416,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       lucide-react:
-        specifier: ^1.8.0
+        specifier: 'catalog:'
         version: 1.8.0(react@18.3.1)
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-      react-router-dom:
-        specifier: ^6.0.0
-        version: 6.30.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tailwind-merge:
         specifier: ^2.6.0
         version: 2.6.0
@@ -386,23 +425,35 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.90.20(react@18.3.1)
       '@types/react':
-        specifier: ^18.3.18
+        specifier: 'catalog:'
         version: 18.3.27
       '@types/react-dom':
-        specifier: ^18.3.5
+        specifier: 'catalog:'
         version: 18.3.7(@types/react@18.3.27)
       autoprefixer:
-        specifier: ^10.4.20
+        specifier: 'catalog:'
         version: 10.4.23(postcss@8.5.6)
       postcss:
-        specifier: ^8.4.49
+        specifier: 'catalog:'
         version: 8.5.6
+      react:
+        specifier: 'catalog:'
+        version: 18.3.1
+      react-dom:
+        specifier: 'catalog:'
+        version: 18.3.1(react@18.3.1)
+      react-router-dom:
+        specifier: 'catalog:'
+        version: 7.13.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tailwindcss:
-        specifier: ^3.4.17
+        specifier: 'catalog:'
         version: 3.4.19(yaml@2.8.2)
       typescript:
-        specifier: ^5.7.3
+        specifier: 'catalog:'
         version: 5.9.3
 
 packages:
@@ -1199,10 +1250,6 @@ packages:
   '@radix-ui/rect@1.1.1':
     resolution: {integrity: sha512-HPwpGIzkl28mWyZqG52jiqDJ12waP11Pa1lGoiyUkIEuMLBP0oeK/C89esbXrxsky5we7dfd8U58nm0SgAWpVw==}
 
-  '@remix-run/router@1.23.2':
-    resolution: {integrity: sha512-Ic6m2U/rMjTkhERIa/0ZtXJP17QUi2CbWE7cqx4J58M8aA3QTfW+2UlQ4psvTX9IO1RfNVhK3pcpdjej7L+t2w==}
-    engines: {node: '>=14.0.0'}
-
   '@rolldown/pluginutils@1.0.0-beta.27':
     resolution: {integrity: sha512-+d0F4MKMCbeVUJwG96uQ4SgAznZNSq93I3V+9NHA4OpvqG8mRCpGdKmK8l/dl02h2CCDHwW2FqilnTyDcAnqjA==}
 
@@ -1672,6 +1719,7 @@ packages:
   cron-parser@4.9.0:
     resolution: {integrity: sha512-p0SaNjrHOnQeR8/VnfGbmg9te2kfyYSQ7Sc/j/6DtPL3JQvKxmjO9TSjNFpujqV3vEYYBvNNvXSxzyksBWAx1Q==}
     engines: {node: '>=12.0.0'}
+    deprecated: v4 is no longer maintained, upgrade to v5
 
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
@@ -2607,25 +2655,12 @@ packages:
       '@types/react':
         optional: true
 
-  react-router-dom@6.30.3:
-    resolution: {integrity: sha512-pxPcv1AczD4vso7G4Z3TKcvlxK7g7TNt3/FNGMhfqyntocvYKj+GCatfigGDjbLozC4baguJ0ReCigoDJXb0ag==}
-    engines: {node: '>=14.0.0'}
-    peerDependencies:
-      react: '>=16.8'
-      react-dom: '>=16.8'
-
   react-router-dom@7.13.0:
     resolution: {integrity: sha512-5CO/l5Yahi2SKC6rGZ+HDEjpjkGaG/ncEP7eWFTvFxbHP8yeeI0PxTDjimtpXYlR3b3i9/WIL4VJttPrESIf2g==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
       react: '>=18'
       react-dom: '>=18'
-
-  react-router@6.30.3:
-    resolution: {integrity: sha512-XRnlbKMTmktBkjCLE8/XcZFlnHvr2Ltdr1eJX4idL55/9BbORzyZEaIkBFDhFGCEWBBItsVrDxwx3gnisMitdw==}
-    engines: {node: '>=14.0.0'}
-    peerDependencies:
-      react: '>=16.8'
 
   react-router@7.13.0:
     resolution: {integrity: sha512-PZgus8ETambRT17BUm/LL8lX3Of+oiLaPuVTRH3l1eLvSPpKO3AvhAEb5N7ihAFZQrYDqkvvWfFh9p0z9VsjLw==}
@@ -3921,8 +3956,6 @@ snapshots:
       '@types/react': 18.3.27
 
   '@radix-ui/rect@1.1.1': {}
-
-  '@remix-run/router@1.23.2': {}
 
   '@rolldown/pluginutils@1.0.0-beta.27': {}
 
@@ -5414,23 +5447,11 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.27
 
-  react-router-dom@6.30.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
-    dependencies:
-      '@remix-run/router': 1.23.2
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-      react-router: 6.30.3(react@18.3.1)
-
   react-router-dom@7.13.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       react-router: 7.13.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-
-  react-router@6.30.3(react@18.3.1):
-    dependencies:
-      '@remix-run/router': 1.23.2
-      react: 18.3.1
 
   react-router@7.13.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
