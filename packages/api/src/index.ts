@@ -1,5 +1,6 @@
 export { ApiError, apiGet, API_CONFIG, buildQueryString, getImageUrl } from './core';
 export type { BackdropSize, ImageSize, ProfileSize, RequestOptions } from './core';
+export { BACKDROP_SIZE_FEATURED, BACKDROP_SIZE_HERO, POSTER_SIZE_CARD } from './core';
 
 export {
   getMovieDetails,
