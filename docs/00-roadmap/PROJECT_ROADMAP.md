@@ -148,7 +148,7 @@
 > Деталі: [RUNBOOK](../07-operations/RUNBOOK.md) · [MONITORING](../07-operations/MONITORING.md)
 
 - [ ] **Моніторинг / uptime** — ⬜ не налаштовано. → [MONITORING.md](../07-operations/MONITORING.md)
-- [ ] **Error tracking (Sentry тощо)** — ⬜ немає (лише `console.error` у dev). → [MONITORING.md](../07-operations/MONITORING.md#error-tracking)
+- [ ] **Error tracking** — ⬜ немає (лише `console.error` у dev). → [MONITORING.md](../07-operations/MONITORING.md#error-tracking)
 - [ ] **Логування / аналітика** — ⬜ немає. → [MONITORING.md](../07-operations/MONITORING.md#логування)
 - [ ] **Алерти / SLO** — ⬜ ⚠️ потребує моєї участі (визначити цілі). → [MONITORING.md](../07-operations/MONITORING.md#алерти-та-slo)
 - [ ] **Runbook інцидентів** — ⬜ структуру створено, зміст TODO. → [RUNBOOK.md](../07-operations/RUNBOOK.md)
@@ -168,7 +168,7 @@
 6. **✅ (Виконано 2026-07-12) Написати PRD і визначити скоуп** — природу, цілі, персони, метрики, NFR і межі проєкту (Definition of Done) зафіксовано у grilling-сесії. → *Етап 1*
 7. **Додати skeleton/loading-стани на Home** — прибрати «стрибки» контенту під час завантаження. → *Етап 2*
 8. **Налаштувати staging / PR-preview канали Firebase** — безпечніше тестувати перед production. → *Етап 6*
-9. **Підключити error tracking (Sentry)** — бачити реальні збої в проді. → *Етап 7*
+9. **Підключити error tracking** — бачити реальні збої в проді. → *Етап 7*
 10. **⚠️ Формалізувати макети/дизайн-токени** — узгодити джерело істини для дизайну. → *Етап 2*
 
 **Нові кроки з формалізації watchlist-скоупу (2026-07-12):**

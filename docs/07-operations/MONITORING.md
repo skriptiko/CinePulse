@@ -13,7 +13,7 @@
 
 ## Error tracking
 
-⬜ **Немає.** Рекомендація: **Sentry** (або аналог).
+⬜ **Немає.** Рекомендація: підключити сервіс error tracking.
 - Підключити SDK у `host` (і, за потреби, в кожен MFE).
 - Інтегрувати з `ErrorBoundary` (`packages/ui`) — репортити перехоплені помилки shell/module рівнів.
 - Обгорнути `apiGet` / `handleResponse` (`@repo/api`) — репортити `ApiError` (окремо 5xx і network).
@@ -30,11 +30,11 @@
 
 ⬜ ⚠️ **Потребує моєї участі** — SLO/цілі ще не визначені. TODO:
 - [ ] Визначити SLO (напр.: доступність хостингу, частка 5xx від `tmdbProxy`, p95-латентність проксі).
-- [ ] Налаштувати алерти (Google Cloud Monitoring / Sentry alerts) на перевищення порогів помилок і латентності.
+- [ ] Налаштувати алерти (Google Cloud Monitoring / алерти error-tracking сервісу) на перевищення порогів помилок і латентності.
 - [ ] Канал сповіщень (email / месенджер) — узгодити з [RUNBOOK → Контакти](./RUNBOOK.md#контакти--ескалація).
 
 ## Чеклист впровадження
-- [ ] Підключити Sentry (host + MFE), інтегрувати з ErrorBoundary та `apiGet`.
+- [ ] Підключити error-tracking сервіс (host + MFE), інтегрувати з ErrorBoundary та `apiGet`.
 - [ ] Структуровані логи у `tmdbProxy`.
 - [ ] Дашборд ключових метрик (Hosting + Function).
 - [ ] Визначити SLO та пороги.
