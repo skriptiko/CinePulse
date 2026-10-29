@@ -92,12 +92,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # apps/design — локальний sandbox, у прод не деплоїться
-      - name: Build
-        run: pnpm turbo build --filter='!@repo/design'
-
-      - name: Merge dist folders
-        run: node scripts/merge-dist.js
+      # Same command as locally: builds everything except the apps/design sandbox, then merges dist/.
+      - name: Build and merge dist
+        run: pnpm build:deploy
 
       # Functions first: the hosting rewrite /api/tmdb/** points at tmdbProxy.
       - name: Authenticate to Google Cloud

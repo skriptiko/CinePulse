@@ -12,7 +12,7 @@
     "sync-types": "turbo sync-types",
     "prepare": "husky",
     "merge-dist": "node scripts/merge-dist.js",
-    "build:deploy": "pnpm build && pnpm merge-dist",
+    "build:deploy": "turbo build --filter=!@repo/design && pnpm merge-dist",
     "deploy": "pnpm build:deploy && firebase deploy --only hosting:production",
     "size": "size-limit",
     "test": "vitest run",
