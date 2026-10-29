@@ -2,16 +2,25 @@ import { Info, Play, Plus } from 'lucide-react';
 import { ImagePlaceholder } from './image-placeholder';
 import { Button } from './ui/button';
 
-export type HeroProps = {
+/** What the `Hero` renders; build it with `toHeroData`. */
+export type HeroData = {
+  id: number;
   title: string;
-  description: string;
-  rating?: string;
-  year?: string;
-  duration?: string;
+  description: string | null;
+  /** Backdrop; `null` → placeholder. */
   imageUrl: string | null;
+  year: string | null;
+  /** Formatted rating; `null` hides the badge (`'0.0'` is shown). */
+  rating: string | null;
 };
 
-export function Hero({ title, description, rating, year, duration, imageUrl }: HeroProps) {
+export type HeroProps = {
+  movie: HeroData;
+};
+
+export function Hero({ movie }: HeroProps) {
+  const { title, description, imageUrl, year, rating } = movie;
+
   return (
     <section className="relative min-h-[70vh] sm:min-h-[80vh] lg:min-h-[85vh] flex items-end">
       {/* Background Image */}
@@ -31,18 +40,12 @@ export function Hero({ title, description, rating, year, duration, imageUrl }: H
         <div className="max-w-2xl">
           {/* Metadata */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-4 text-xs sm:text-sm">
-            {rating && (
+            {rating !== null && (
               <span className="px-2 py-1 rounded bg-foreground text-background font-medium">
                 {rating}
               </span>
             )}
-            {year && <span className="text-muted-foreground">{year}</span>}
-            {duration && (
-              <>
-                <span className="text-muted-foreground">•</span>
-                <span className="text-muted-foreground">{duration}</span>
-              </>
-            )}
+            {year !== null && <span className="text-muted-foreground">{year}</span>}
           </div>
 
           {/* Title */}
@@ -51,9 +54,11 @@ export function Hero({ title, description, rating, year, duration, imageUrl }: H
           </h1>
 
           {/* Description */}
-          <p className="text-muted-foreground text-sm sm:text-base md:text-lg leading-relaxed mb-6 sm:mb-8 max-w-lg">
-            {description}
-          </p>
+          {description !== null && (
+            <p className="text-muted-foreground text-sm sm:text-base md:text-lg leading-relaxed mb-6 sm:mb-8 max-w-lg">
+              {description}
+            </p>
+          )}
 
           {/* Actions */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
