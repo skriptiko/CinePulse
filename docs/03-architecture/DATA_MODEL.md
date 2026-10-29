@@ -13,15 +13,17 @@
 Списковi відповіді TMDB загорнуті в дженерик (`packages/api/src/types/common.ts`):
 
 ```ts
-interface PaginatedResponse<T> {
+type PaginatedResponse<T> = {
   page: number;
   results: T[];
   total_pages: number;
   total_results: number;
-}
+};
+
+type PageParams = { page?: number }; // request params of every list, no index signature
 ```
 
-Пагінація в хуках рахується як `page < total_pages ? page + 1 : undefined`.
+The next page comes from the shared `getNextPageParam` (`core/pagination.ts`): `page + 1` while `page < min(total_pages, 500)`, otherwise `undefined`. `ProductionCompany` is one type in `types/common.ts`, used by both movie and TV details.
 
 ## Домен: Фільми
 
@@ -83,7 +85,7 @@ type MediaType = 'movie' | 'tv' | 'person' | 'all';
 type TimeWindow = 'day' | 'week';
 
 type TrendingItem  = TrendingMovie | TrendingTV | TrendingPerson; // Movie/TV/Person & { media_type }
-type MultiSearchResult = SearchMovie | SearchTV | SearchPerson;
+type MultiSearchResult = SearchMovie | SearchTV | SearchPerson; // SearchMovie = TrendingMovie, etc.
 ```
 
 Дискримінантне поле `media_type` дозволяє звужувати тип у рантаймі (напр. `Home.tsx` фільтрує `media_type === 'movie'`).
@@ -146,17 +148,13 @@ interface WatchlistItem {
 
 Типізований словник подій event bus (`packages/events/src/types.ts`):
 
-| Подія | Payload |
+| Event | Payload |
 |-------|---------|
-| `user:login` | `UserProfile` |
-| `user:logout` | `undefined` |
-| `user:update` | `Partial<UserProfile>` |
-| `navigation:change` | `NavigationPayload { path, params? }` |
 | `notification:show` | `NotificationPayload { type, message, duration? }` |
-| `mfe:ready` | `{ name: string }` |
-| `mfe:error` | `{ name: string; error: Error }` |
+| `mfe:error` | `MfeErrorPayload { name; error: SerializedError }` |
+| `error:report` | `ErrorReportPayload { error: unknown; source: 'boundary' \| 'query' \| 'mutation' \| 'window' }` |
 
-`NotificationPayload.type` ∈ `'success' | 'error' | 'warning' | 'info'`. Наразі реально емітиться `notification:show` (з клієнта API); решта подій — частина контракту для майбутньої інтеграції.
+`NotificationPayload.type` ∈ `'success' | 'error' | 'warning' | 'info'`. Event names are typed as ``EventKey = `${EventDomain}:${string}` ``, so a key outside the `domain:action` format fails `tsc`. `mfe:error` carries plain data (`serializeError(error)` → `{ name, message }`); `error:report` keeps the original error because the host listener filters reports by `ApiError` kind. Nothing emits or listens yet: `error:report` and the `notification:show` toast are wired in item 5.10 and `mfe:error` in item 5.9 of the refactoring plan. The former `user:*`, `navigation:change` and `mfe:ready` events had no emitters or listeners and were removed; they come back with Firebase Auth.
 
 ## Робота із зображеннями
 

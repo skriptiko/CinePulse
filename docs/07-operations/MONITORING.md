@@ -9,14 +9,14 @@
 - **Firebase Hosting/Functions вбудовані метрики** — доступні у Firebase Console (трафік хостингу; для функції `tmdbProxy` — кількість викликів, помилки, латентність, холодні старти). Пасивно збираються, але **активного спостереження/алертів немає**.
 - **Логи функції** — `console.error('TMDB proxy error', ...)` у `tmdbProxy` потрапляють у Cloud Logging (Firebase Console → Functions → Logs).
 - **Клієнт** — лише `console.error` у dev-режимі (`App.tsx` при збої завантаження remote-роутів); у production клієнтські помилки **ніде не збираються**.
-- **Користувацькі нотифікації про помилки** — event `notification:show` емітиться з `apiGet` на 5xx/network (UX-рівень, не моніторинг).
+- **User-facing error notifications** — none at the moment: `apiGet` no longer emits `notification:show`; the toast returns through `QueryCache.onError` (refactoring plan, item 5.10).
 
 ## Error tracking
 
 ⬜ **Немає.** Рекомендація: підключити сервіс error tracking.
 - Підключити SDK у `host` (і, за потреби, в кожен MFE).
 - Інтегрувати з `ErrorBoundary` (`packages/ui`) — репортити перехоплені помилки shell/module рівнів.
-- Обгорнути `apiGet` / `handleResponse` (`@repo/api`) — репортити `ApiError` (окремо 5xx і network).
+- Listen to the `error:report` event in the host and report `ApiError` by `kind` (`server`, `network` separately), skipping 404 and aborts.
 - Репортити збій завантаження remoteEntry (подія `mfe:error` вже є в `EventMap`).
 
 ## Логування
