@@ -1,6 +1,6 @@
-export { useMovieGenres, useTVGenres } from './useGenres';
-export { useMovieDetails, useMovies, useMoviesOrSearch } from './useMovies';
-export { usePersonDetails } from './usePerson';
-export { useSearchMovies, useSearchMulti, useSearchPerson, useSearchTV } from './useSearch';
-export { useTrending } from './useTrending';
-export { useTVDetails, useTVShows } from './useTV';
+export { useMovieGenres, useTVGenres } from './use-genres';
+export { useMovieDetails, useMovies, useMoviesOrSearch } from './use-movies';
+export { usePersonDetails } from './use-person';
+export { useSearchMovies, useSearchMulti, useSearchPerson, useSearchTV } from './use-search';
+export { useTrending } from './use-trending';
+export { useTVDetails, useTVShows } from './use-tv';

@@ -1,4 +1,4 @@
-import { AppRoutes } from '@/AppRoutes';
+import { AppRoutes } from '@/app-routes';
 import { AppLayout, ErrorBoundary } from '@repo/ui';
 import { useEffect, useState } from 'react';
 import type { RouteObject } from 'react-router-dom';
