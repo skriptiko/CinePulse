@@ -2,6 +2,7 @@ import { resolve } from 'node:path';
 import { federation } from '@module-federation/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig, loadEnv } from 'vite';
+import { createMfShared } from '../../scripts/mf-shared';
 
 const REMOTE_URL_KEYS = ['PAGES_MFE_URL', 'USER_MFE_URL'] as const;
 
@@ -42,19 +43,7 @@ export default defineConfig(({ command, mode }) => {
             shareScope: 'default',
           },
         },
-        shared: {
-          react: {
-            requiredVersion: '^18.3.1',
-          },
-          'react-dom': {
-            requiredVersion: '^18.3.1',
-          },
-          'react-router-dom': {},
-          '@repo/events': {},
-          '@repo/routes': {},
-          '@repo/api': {},
-          '@tanstack/react-query': {},
-        },
+        shared: createMfShared(),
       }),
     ],
     resolve: {
