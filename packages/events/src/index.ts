@@ -1,9 +1,14 @@
 export type {
+  ErrorReportPayload,
+  ErrorReportSource,
+  EventDomain,
+  EventKey,
   EventMap,
   EventName,
   EventPayload,
-  NavigationPayload,
+  MfeErrorPayload,
   NotificationPayload,
+  SerializedError,
   UserProfile,
 } from './types';
 
@@ -12,6 +17,8 @@ export {
   createTypedListener,
   eventBus,
 } from './event-bus';
+
+export { serializeError } from './serialize-error';
 
 export type {
   GlobalActions,
