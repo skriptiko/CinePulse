@@ -26,10 +26,23 @@ pnpm lint                             # biome check src/ у кожному па�
 pnpm check                            # biome check --write по всьому репо
 pnpm --filter @repo/api typecheck     # перевірка одного пакета
 pnpm build:deploy                     # build + scripts/merge-dist.js → кореневий dist/
+pnpm test                             # vitest run по всіх проєктах (кореневий vitest.config.ts)
+pnpm exec vitest run --project ui     # один проєкт; pnpm test:coverage — звіт у coverage/
 pnpm size                             # бюджет JS host (.size-limit.json); спершу turbo build --filter=@repo/host
 ```
 
-Тестів і тестового фреймворку немає (див. `docs/05-testing/TEST_STRATEGY.md` — це план, а не наявний процес). Перевірка змін = `pnpm typecheck` + `pnpm lint`.
+Перевірка змін = `pnpm typecheck` + `pnpm lint` + `pnpm test`. Стек тестів — ADR-0006, план — `docs/05-testing/TEST_STRATEGY.md`:
+- Vitest 3.2 (не 4+, бо Vite 5), Testing Library, MSW 3, jsdom, axe-core.
+- Тести лежать у `__tests__/<name>.test.ts(x)` поруч із кодом. Проєкт стає частиною прогону, коли має власний `vitest.config.ts`.
+- jsdom-проєкти задають `environment: scripts/vitest-jsdom-environment.ts` (jsdom із Node-глобалями fetch); зі звичайним `jsdom` MSW падає на `AbortSignal`.
+- Хелпери — у `@repo/test-utils`:
+  - `renderWithProviders` (QueryClient з `retry: false` + MemoryRouter, повертає `user`);
+  - MSW `server` і `handlers`;
+  - `buildMovie` / `buildPaginated`;
+  - `expectNoA11yViolations`.
+- `@repo/api` test-utils не використовує (був би цикл залежностей) і створює свій `setupServer`.
+- У MSW 3 опція називається `onUnhandledFrame: 'error'`: стару `onUnhandledRequest` MSW тихо ігнорує.
+- Мокаємо мережу, а не наші модулі (`vi.mock` для `@repo/api` заборонений).
 
 Husky pre-commit запускає `lint-staged` → `biome check --write --no-errors-on-unmatched` на `*.{js,ts,tsx,json}`; `commit-msg` перевіряє формат `CIN-<N>: …` (≤ 72 символи). Biome (не ESLint/Prettier): одинарні лапки, `;` завжди, 2 пробіли, ширина 100; error — `noUnusedImports`/`noUnusedVariables`, `noExplicitAny`, `noNonNullAssertion`, `noDefaultExport` (крім `*.config.*`), `useFilenamingConvention` (kebab-case), група `a11y`.
 

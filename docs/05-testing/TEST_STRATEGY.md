@@ -36,22 +36,28 @@ apps/pages-mfe/src/pages/movies/
 e2e/                             # later: <scenario>.spec.ts
 ```
 
-- Run everything with `pnpm test` from the root (one Vitest run over all projects). Add `--coverage` for a merged v8 report.
+- Run everything with `pnpm test` from the root (one Vitest run over all projects). `pnpm test:coverage` gives a merged v8 report in `coverage/`.
+- jsdom projects point `environment` at `scripts/vitest-jsdom-environment.ts` (jsdom plus Node's fetch globals, see ADR-0006).
+- `@repo/api` tests create their own MSW server: `@repo/test-utils` depends on `@repo/api`, so using it back would be a cycle.
 - Each project's `vitest.config.ts` only sets its environment and setup files.
 
 ## Rollout
 
-### Step 1 — infrastructure (PR-3b)
+### Step 1 — infrastructure (PR-3b) ✅
 
-- [ ] Add `vitest`, `@vitest/coverage-v8`, `jsdom`, `msw` and the Testing Library packages to the pnpm catalog.
-- [ ] Add the root `vitest.config.ts` with `test.projects`, a `vitest.config.ts` per project, and `"test": "vitest run"` at the root.
-- [ ] Create `@repo/test-utils`:
+- [x] Add `vitest`, `@vitest/coverage-v8`, `jsdom`, `msw` and the Testing Library packages to the pnpm catalog.
+- [x] Add the root `vitest.config.ts` with `test.projects`, a `vitest.config.ts` per project, and `"test": "vitest run"` at the root.
+- [x] Create `@repo/test-utils`:
   - `renderWithProviders`;
-  - the MSW `server` with `onUnhandledRequest: 'error'`, reset after each test;
+  - the MSW `server` with `onUnhandledFrame: 'error'`, reset after each test;
   - `buildMovie` / `buildPaginated`;
   - the axe helper.
-- [ ] Add `pnpm test --passWithNoTests` to the CI `quality` job.
-- [ ] Write the first unit tests: `buildQueryString`, `getImageUrl`.
+- [x] Add `pnpm test` to the CI `quality` job.
+- [x] Write the first tests:
+  - unit: `buildQueryString`, `getImageUrl`;
+  - `getMovies` over MSW;
+  - `CategoryPills` render, interaction and axe;
+  - the shared MSW server.
 
 Exit: `pnpm test` is green locally and in CI, with at least one test in `@repo/api` and one render test in `@repo/ui`.
 

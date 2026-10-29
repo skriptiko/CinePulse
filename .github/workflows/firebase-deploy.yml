@@ -37,6 +37,9 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Test
+        run: pnpm test
+
   # Bundle budget (.size-limit.json). Separate from `quality` and not a required check:
   # an over-budget build is a signal to review, not a merge blocker.
   size:

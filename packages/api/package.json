@@ -29,7 +29,10 @@
     "@repo/typescript-config": "workspace:*",
     "@tanstack/react-query": "catalog:",
     "@types/react": "catalog:",
+    "jsdom": "catalog:",
+    "msw": "catalog:",
     "react": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }
