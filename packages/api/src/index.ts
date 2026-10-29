@@ -1,5 +1,22 @@
-export { ApiError, apiGet, API_CONFIG, buildQueryString, getImageUrl } from './core';
-export type { BackdropSize, ImageSize, ProfileSize, RequestOptions } from './core';
+export {
+  ApiError,
+  apiGet,
+  API_CONFIG,
+  buildQueryString,
+  getImageUrl,
+  isAbortError,
+  isApiError,
+  isNotFound,
+  toHttpError,
+} from './core';
+export type {
+  ApiErrorKind,
+  ApiErrorOptions,
+  BackdropSize,
+  ImageSize,
+  ProfileSize,
+  RequestOptions,
+} from './core';
 
 export {
   getMovieDetails,

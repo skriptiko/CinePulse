@@ -36,6 +36,6 @@ describe('getMovies', () => {
     const error = await getMovies('popular').catch((caught: unknown) => caught);
 
     expect(error).toBeInstanceOf(ApiError);
-    expect(error).toMatchObject({ status: 404, isNetworkError: false });
+    expect(error).toMatchObject({ kind: 'not_found', status: 404 });
   });
 });
