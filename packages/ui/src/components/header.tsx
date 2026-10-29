@@ -2,7 +2,7 @@ import { Bell, Menu, Moon, Search, Sun, User, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '../lib/utils';
-import { Button } from './button';
+import { Button } from './ui/button';
 
 const navItems = [
   { label: 'Home', href: '/' },

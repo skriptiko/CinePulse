@@ -2,7 +2,7 @@ import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { CircleIcon } from 'lucide-react';
 import type { ComponentProps, ReactNode } from 'react';
 
-import { cn } from '../lib/utils';
+import { cn } from '../../lib/utils';
 
 export type DropdownMenuProps = {
   children: ReactNode;

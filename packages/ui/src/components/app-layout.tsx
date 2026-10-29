@@ -2,9 +2,9 @@ import type { ReactNode } from 'react';
 import { Footer } from './footer';
 import { Header } from './header';
 
-export interface AppLayoutProps {
+export type AppLayoutProps = {
   children: ReactNode;
-}
+};
 
 export function AppLayout({ children }: AppLayoutProps) {
   return (

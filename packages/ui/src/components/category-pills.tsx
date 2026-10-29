@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { cn } from '../lib/utils';
 
-interface CategoryPillsProps {
+export type CategoryPillsProps = {
   categories: string[];
   /** Selected category; makes the component controlled. */
   value?: string;
@@ -9,7 +9,7 @@ interface CategoryPillsProps {
   defaultValue?: string;
   onValueChange?: (category: string) => void;
   className?: string;
-}
+};
 
 export function CategoryPills({
   categories,

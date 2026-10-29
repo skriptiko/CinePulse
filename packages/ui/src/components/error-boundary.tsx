@@ -1,20 +1,20 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { Button } from './button';
+import { Button } from './ui/button';
 
-interface ErrorBoundaryProps {
+export type ErrorBoundaryProps = {
   children: ReactNode;
   fallback?: ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
   onRetry?: () => void;
   level?: 'shell' | 'module';
-}
+};
 
-interface ErrorBoundaryState {
+type ErrorBoundaryState = {
   hasError: boolean;
   error: Error | null;
-}
+};
 
-class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -75,6 +75,3 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     return this.props.children;
   }
 }
-
-export { ErrorBoundary };
-export type { ErrorBoundaryProps };

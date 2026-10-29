@@ -1,9 +1,9 @@
 import { Film } from 'lucide-react';
 import { cn } from '../lib/utils';
 
-interface ImagePlaceholderProps {
+export type ImagePlaceholderProps = {
   className?: string;
-}
+};
 
 /** Neutral block shown when TMDB has no image for an item. */
 export function ImagePlaceholder({ className }: ImagePlaceholderProps) {
