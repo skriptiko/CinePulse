@@ -1,21 +1,12 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { cn } from '../lib/utils';
-import { MovieCard } from './movie-card';
+import { MovieCard, type MovieCardData } from './movie-card';
 import { Button } from './ui/button';
-
-type Movie = {
-  id: string | number;
-  title: string;
-  imageUrl: string | null;
-  year?: string;
-  rating?: string;
-  duration?: string;
-};
 
 export type ContentRowProps = {
   title: string;
-  movies: Movie[];
+  movies: MovieCardData[];
   className?: string;
 };
 
@@ -97,11 +88,7 @@ export function ContentRow({ title, movies, className }: ContentRowProps) {
           {movies.map((movie) => (
             <MovieCard
               key={movie.id}
-              title={movie.title}
-              imageUrl={movie.imageUrl}
-              year={movie.year}
-              rating={movie.rating}
-              duration={movie.duration}
+              movie={movie}
               className="flex-shrink-0 w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px]"
             />
           ))}

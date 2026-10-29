@@ -21,7 +21,7 @@
 - **Proxy / `tmdbProxy`** — Firebase Cloud Function (`functions/src/index.ts`), що проксує запити до TMDB, додаючи секретний токен на бекенді (клієнт токен не бачить). У dev роль проксі виконує Vite-proxy на `/api/tmdb`.
 - **React Query (TanStack Query)** — бібліотека кешування серверного стану. Використовується разом із Suspense.
 - **Suspense query** — хук `useSuspenseQuery` / `useSuspenseInfiniteQuery`: під час завантаження «підвішує» компонент до найближчого `<Suspense>`, спрощуючи стани завантаження.
-- **mapper (`mapTmdbToMovieCard`)** — функція з `@repo/ui`, що перетворює «сиру» TMDB-сутність на пропси UI-компонента `MovieCard`.
+- **UI-модель / mapper** — UI-модель (`MovieCardData`, `HeroData`, `FeaturedItemData`) — плоский тип, який доменний компонент `@repo/ui` приймає одним prop; mapper (`toMovieCardData`, `toTvCardData`, `toTrendingCardData`, `toHeroData`, `toFeaturedItemData` у `lib/mappers/`) перетворює на неї «сиру» TMDB-сутність. Форматування — `lib/format.ts`.
 
 ## Сутності TMDB (типи в `@repo/api`)
 
@@ -30,7 +30,7 @@
 - **Person / PersonDetails** — персона (актор, режисер тощо).
 - **Genre** — жанр; списки жанрів окремо для фільмів і TV.
 - **Trending** — трендові елементи за вікном часу (`day` / `week`), можуть змішувати типи (movie/tv/person).
-- **Backdrop / Poster / Profile** — типи зображень TMDB різних розмірів (`w500`, `original` тощо); базовий URL — `image.tmdb.org/t/p`.
+- **Backdrop / Poster / Profile** — типи зображень TMDB різних розмірів (`w342`, `w780`, `w1280`, `original` тощо; розміри під контекст — константи `POSTER_SIZE_CARD`, `BACKDROP_SIZE_FEATURED`, `BACKDROP_SIZE_HERO` у `@repo/api`); базовий URL — `image.tmdb.org/t/p`.
 - **PaginatedResponse** — сторінкова відповідь TMDB (`page`, `total_pages`, `results`).
 
 ## Крос-MFE комунікація (`@repo/events`)

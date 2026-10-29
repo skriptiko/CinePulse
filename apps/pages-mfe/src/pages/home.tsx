@@ -1,7 +1,17 @@
-import { getImageUrl, useMovieGenres, useMovies, useTrending } from '@repo/api';
-import type { TrendingItem, TrendingMovie } from '@repo/api';
-import { CategoryPills, ContentRow, FeaturedGrid, Hero, mapTmdbToMovieCard } from '@repo/ui';
-import { useMemo } from 'react';
+import { useMovieGenres, useMovies, useTrending } from '@repo/api';
+import type { TrendingItem, TrendingMovie, TrendingTV } from '@repo/api';
+import {
+  CategoryPills,
+  ContentRow,
+  FeaturedGrid,
+  Hero,
+  toFeaturedItemData,
+  toHeroData,
+  toMovieCardData,
+  toTrendingCardData,
+} from '@repo/ui';
+
+const FEATURED_COUNT = 5;
 
 export function Home() {
   const { data: genresData } = useMovieGenres();
@@ -10,121 +20,61 @@ export function Home() {
   const { data: topRatedData } = useMovies('top_rated');
   const { data: upcomingData } = useMovies('upcoming');
 
-  const categories = useMemo(() => {
-    const list = genresData?.genres.map((g) => g.name) || [];
-    return ['All', ...list];
-  }, [genresData]);
+  const genres = genresData.genres;
+  const categories = ['All', ...genres.map((genre) => genre.name)];
 
-  // Transform TMDB data for our components
-  const trendingMovies = useMemo(() => {
-    if (!trendingData?.pages[0]?.results) return [];
-    return trendingData.pages[0].results.filter(isTrendingMovie).map((m) => ({
-      ...mapTmdbToMovieCard(m),
-      id: m.id,
-    }));
-  }, [trendingData]);
+  const trendingResults = trendingData.pages[0]?.results ?? [];
+  const topRatedResults = topRatedData.pages[0]?.results ?? [];
 
-  const popularMovies = useMemo(() => {
-    if (!popularData?.pages[0]?.results) return [];
-    return popularData.pages[0].results.map((m) => ({
-      ...mapTmdbToMovieCard(m),
-      id: m.id,
-    }));
-  }, [popularData]);
-
-  const topRatedMovies = useMemo(() => {
-    if (!topRatedData?.pages[0]?.results) return [];
-    return topRatedData.pages[0].results.map((m) => ({
-      ...mapTmdbToMovieCard(m),
-      id: m.id,
-    }));
-  }, [topRatedData]);
-
-  const upcomingMovies = useMemo(() => {
-    if (!upcomingData?.pages[0]?.results) return [];
-    return upcomingData.pages[0].results.map((m) => ({
-      ...mapTmdbToMovieCard(m),
-      id: m.id,
-    }));
-  }, [upcomingData]);
-
-  const featuredItems = useMemo(() => {
-    if (!topRatedData?.pages[0]?.results) return [];
-    return topRatedData.pages[0].results.slice(0, 5).map((m) => {
-      const genreNames =
-        m.genre_ids
-          ?.map((id) => genresData?.genres.find((g) => g.id === id)?.name)
-          .filter(Boolean) || [];
-
-      return {
-        id: m.id,
-        title: m.title,
-        imageUrl: getImageUrl(m.backdrop_path, 'original'),
-        rating: m.vote_average,
-        genre: genreNames[0],
-        year: m.release_date?.split('-')[0],
-      };
-    });
-  }, [topRatedData, genresData]);
-
-  const heroMovie = useMemo(() => {
-    const movies = trendingData?.pages[0]?.results.filter(isTrendingMovie);
-    if (!movies?.[0]) return null;
-    const m = movies[0];
-    return {
-      title: m.title,
-      description: m.overview,
-      rating: m.vote_average != null ? m.vote_average.toFixed(1) : undefined,
-      year: m.release_date?.split('-')[0],
-      imageUrl: getImageUrl(m.backdrop_path, 'original'),
-    };
-  }, [trendingData]);
+  const heroMovie = trendingResults.find(isTrendingMovie);
+  const trendingMovies = trendingResults.filter(isTrendingCard).map(toTrendingCardData);
+  const featuredItems = topRatedResults
+    .slice(0, FEATURED_COUNT)
+    .map((movie) => toFeaturedItemData(movie, genres));
+  const upcomingMovies = (upcomingData.pages[0]?.results ?? []).map(toMovieCardData);
+  const topRatedMovies = topRatedResults.map(toMovieCardData);
+  const popularMovies = (popularData.pages[0]?.results ?? []).map(toMovieCardData);
 
   return (
-    <>
-      <main>
-        {/* Hero Section */}
-        {heroMovie && (
-          <Hero
-            title={heroMovie.title}
-            description={heroMovie.description}
-            rating={heroMovie.rating}
-            year={heroMovie.year}
-            imageUrl={heroMovie.imageUrl}
+    <main>
+      {/* Hero Section */}
+      {heroMovie !== undefined && <Hero movie={toHeroData(heroMovie)} />}
+
+      {/* Content Sections */}
+      <div className="relative z-10 -mt-16 space-y-12 pb-16">
+        {/* Categories */}
+        <CategoryPills categories={categories} />
+
+        {/* Trending Now */}
+        {trendingMovies.length > 0 && <ContentRow title="Trending Now" movies={trendingMovies} />}
+
+        {/* Featured Grid */}
+        {featuredItems.length > 0 && (
+          <FeaturedGrid
+            title="Editor's Picks"
+            items={featuredItems}
+            className="max-w-[1800px] mx-auto"
           />
         )}
 
-        {/* Content Sections */}
-        <div className="relative z-10 -mt-16 space-y-12 pb-16">
-          {/* Categories */}
-          <CategoryPills categories={categories} />
+        {/* New Releases */}
+        {upcomingMovies.length > 0 && <ContentRow title="New Releases" movies={upcomingMovies} />}
 
-          {/* Trending Now */}
-          {trendingMovies.length > 0 && <ContentRow title="Trending Now" movies={trendingMovies} />}
+        {/* Top Rated */}
+        {topRatedMovies.length > 0 && <ContentRow title="Top Rated" movies={topRatedMovies} />}
 
-          {/* Featured Grid */}
-          {featuredItems.length > 0 && (
-            <FeaturedGrid
-              title="Editor's Picks"
-              items={featuredItems}
-              className="max-w-[1800px] mx-auto"
-            />
-          )}
-
-          {/* New Releases */}
-          {upcomingMovies.length > 0 && <ContentRow title="New Releases" movies={upcomingMovies} />}
-
-          {/* Top Rated */}
-          {topRatedMovies.length > 0 && <ContentRow title="Top Rated" movies={topRatedMovies} />}
-
-          {/* Popular */}
-          {popularMovies.length > 0 && <ContentRow title="Popular" movies={popularMovies} />}
-        </div>
-      </main>
-    </>
+        {/* Popular */}
+        {popularMovies.length > 0 && <ContentRow title="Popular" movies={popularMovies} />}
+      </div>
+    </main>
   );
 }
 
 function isTrendingMovie(item: TrendingItem): item is TrendingMovie {
   return item.media_type === 'movie';
+}
+
+/** People can trend too, but only movies and shows render as cards. */
+function isTrendingCard(item: TrendingItem): item is TrendingMovie | TrendingTV {
+  return item.media_type !== 'person';
 }

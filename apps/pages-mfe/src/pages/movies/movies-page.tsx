@@ -11,7 +11,7 @@ import {
   MovieCard,
   buttonVariants,
   cn,
-  mapTmdbToMovieCard,
+  toMovieCardData,
 } from '@repo/ui';
 import { ChevronDown, Grid3X3, LayoutGrid, Search, SlidersHorizontal } from 'lucide-react';
 import { useDeferredValue, useMemo, useState } from 'react';
@@ -203,18 +203,9 @@ export function Movies() {
                     : 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8'
                 }`}
               >
-                {filteredMovies.map((movie) => {
-                  const card = mapTmdbToMovieCard(movie);
-                  return (
-                    <MovieCard
-                      key={movie.id}
-                      title={card.title}
-                      imageUrl={card.imageUrl}
-                      year={card.year}
-                      rating={card.rating}
-                    />
-                  );
-                })}
+                {filteredMovies.map((movie) => (
+                  <MovieCard key={movie.id} movie={toMovieCardData(movie)} />
+                ))}
               </div>
 
               {hasNextPage && (

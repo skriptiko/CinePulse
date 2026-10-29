@@ -2,18 +2,21 @@ import { Play, Star } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { ImagePlaceholder } from './image-placeholder';
 
-type FeaturedItem = {
-  id: string | number;
+/** One tile of a `FeaturedGrid`; build it with `toFeaturedItemData`. */
+export type FeaturedItemData = {
+  id: number;
   title: string;
+  /** Backdrop; `null` → placeholder. */
   imageUrl: string | null;
-  rating: number;
-  genre?: string;
-  year?: string;
+  year: string | null;
+  /** Formatted rating; `null` hides it (`'0.0'` is shown). */
+  rating: string | null;
+  genre: string | null;
 };
 
 export type FeaturedGridProps = {
   title: string;
-  items: FeaturedItem[];
+  items: FeaturedItemData[];
   className?: string;
 };
 
@@ -56,19 +59,21 @@ export function FeaturedGrid({ title, items, className }: FeaturedGridProps) {
               {/* Content */}
               <div className="absolute bottom-0 left-0 right-0 p-4">
                 <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <Star className="w-3 h-3 fill-yellow-500 text-yellow-500" />
-                    <span className="text-foreground font-medium">{item.rating.toFixed(1)}</span>
-                  </div>
-                  {item.genre && (
+                  {item.rating !== null && (
+                    <div className="flex items-center gap-1">
+                      <Star className="w-3 h-3 fill-yellow-500 text-yellow-500" />
+                      <span className="text-foreground font-medium">{item.rating}</span>
+                    </div>
+                  )}
+                  {item.genre !== null && (
                     <>
-                      <span>•</span>
+                      {item.rating !== null && <span>•</span>}
                       <span>{item.genre}</span>
                     </>
                   )}
-                  {item.year && (
+                  {item.year !== null && (
                     <>
-                      <span>•</span>
+                      {(item.rating !== null || item.genre !== null) && <span>•</span>}
                       <span>{item.year}</span>
                     </>
                   )}
