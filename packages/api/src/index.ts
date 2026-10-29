@@ -40,8 +40,8 @@ export {
   useTVShows,
 } from './hooks';
 
-export { ApiProvider } from './provider/ApiProvider';
-export type { ApiProviderProps } from './provider/ApiProvider';
+export { ApiProvider } from './provider/api-provider';
+export type { ApiProviderProps } from './provider/api-provider';
 
 export { queryKeys } from './queries/keys';
 

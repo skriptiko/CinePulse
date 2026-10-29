@@ -1,4 +1,4 @@
-function Profile() {
+export function Profile() {
   return (
     <div>
       <h1 className="mb-4 text-2xl font-bold">User Profile</h1>
@@ -6,5 +6,3 @@ function Profile() {
     </div>
   );
 }
-
-export default Profile;
