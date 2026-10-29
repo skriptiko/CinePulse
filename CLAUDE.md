@@ -25,7 +25,7 @@ pnpm typecheck                        # turbo typecheck (tsc --noEmit у кож�
 pnpm lint                             # biome check src/ у кожному пакеті + заборона JSX-spread
 pnpm check                            # biome check --write по всьому репо
 pnpm --filter @repo/api typecheck     # перевірка одного пакета
-pnpm build:deploy                     # build + scripts/merge-dist.js → кореневий dist/
+pnpm build:deploy                     # як у CI: build без apps/design + scripts/merge-dist.js → кореневий dist/
 pnpm test                             # vitest run по всіх проєктах (кореневий vitest.config.ts)
 pnpm exec vitest run --project ui     # один проєкт; pnpm test:coverage — звіт у coverage/
 pnpm size                             # бюджет JS host (.size-limit.json); спершу turbo build --filter=@repo/host
@@ -70,7 +70,7 @@ Husky pre-commit запускає `lint-staged` → `biome check --write --no-er
 
 ### Деплой
 
-PR і push у `main` → GitHub Actions job `quality` (`pnpm lint` + `pnpm typecheck`, install з `--frozen-lockfile` — lockfile має бути актуальним). Лише push у `main` далі: `pnpm build` → `scripts/merge-dist.js` (host у корінь `dist/`, remotes у `dist/pages-mfe/` та `dist/user-mfe/`) → Firebase Hosting (проєкт `cinepulse-eec15`). Rewrites у `firebase.json`: `/api/tmdb/**` → `tmdbProxy`, SPA-fallback для кожного MFE. Додаючи новий MFE, онови `merge-dist.js`, `firebase.json` і `.env.production` host.
+PR і push у `main` → GitHub Actions job `quality` (`pnpm lint` + `pnpm typecheck`, install з `--frozen-lockfile` — lockfile має бути актуальним). Лише push у `main` далі: `pnpm build:deploy` (build без `apps/design` → `scripts/merge-dist.js`) (host у корінь `dist/`, remotes у `dist/pages-mfe/` та `dist/user-mfe/`) → Firebase Hosting (проєкт `cinepulse-eec15`). Rewrites у `firebase.json`: `/api/tmdb/**` → `tmdbProxy`, SPA-fallback для кожного MFE. Додаючи новий MFE, онови `merge-dist.js`, `firebase.json` і `.env.production` host.
 
 `docs/08-design-files/` — окремий Next.js-прототип дизайну (референс для UI), не частина workspace.
 
