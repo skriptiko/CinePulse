@@ -1,4 +1,4 @@
-🔗 Частина роадмапи: [Етап 4 — Розробка](../00-roadmap/PROJECT_ROADMAP.md#етап-4-розробка)
+🔗 Роадмап і задачі — у [Notion](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb)
 
 # SETUP — Локальний запуск
 

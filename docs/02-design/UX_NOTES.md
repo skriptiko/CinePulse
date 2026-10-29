@@ -1,4 +1,4 @@
-🔗 Частина роадмапи: [Етап 2 — Дизайн та UX](../00-roadmap/PROJECT_ROADMAP.md#етап-2-дизайн-та-ux)
+🔗 Роадмап і задачі — у [Notion](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb)
 
 # UX Notes
 

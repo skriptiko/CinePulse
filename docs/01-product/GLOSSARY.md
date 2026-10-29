@@ -1,4 +1,4 @@
-🔗 Частина роадмапи: [Етап 1 — Аналіз вимог](../00-roadmap/PROJECT_ROADMAP.md#етап-1-аналіз-вимог)
+🔗 Роадмап і задачі — у [Notion](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb)
 
 # Глосарій
 

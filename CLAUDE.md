@@ -4,7 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Огляд
 
-CinePulse — каталог фільмів/серіалів на даних TMDB, побудований як micro-frontend застосунок: Turborepo + pnpm (9.15.4, Node >= 20), Vite 5, React 18, `@module-federation/vite`, React Router 7, TanStack Query 5, Tailwind 3 + shadcn/Radix. Документація проєкту — українською, у `docs/` (старт — `docs/00-roadmap/PROJECT_ROADMAP.md`; конвенції — `docs/04-development/CONVENTIONS.md`).
+CinePulse — каталог фільмів/серіалів на даних TMDB, побудований як micro-frontend застосунок: Turborepo + pnpm (9.15.4, Node >= 20), Vite 5, React 18, `@module-federation/vite`, React Router 7, TanStack Query 5, Tailwind 3 + shadcn/Radix. Документація проєкту — українською, у `docs/` (конвенції — `docs/04-development/CONVENTIONS.md`).
+
+## Управління проєктом — Notion
+
+Весь менеджмент проєкту відбувається в Notion (хаб «CinePulse», https://app.notion.com/p/40880c5f7ed58170bca1efda4e894ce9): роадмап, епіки (Now/Next/Later), задачі, журнал сесій, ресурси. У репо роадмапу й трекера немає — `docs/` містить лише технічну документацію.
+
+- Перед роботою — знайди або створи задачу в базі «Задачі» (Notion MCP), переведи в *In Progress*.
+- Коміт: `CIN-<номер>: …`, де номер = ID задачі в Notion.
+- Після роботи — оновити статус задачі й додати запис у «Журнал сесій»; нове архітектурне рішення — ADR.
 
 ## Команди
 
