@@ -41,7 +41,7 @@
 | `/user-mfe/**` | `/user-mfe/index.html` |
 | `**` | `/index.html` (SPA-fallback) |
 
-**Headers:** `**/*.js` → `Access-Control-Allow-Origin: *` (потрібно для завантаження remoteEntry між MFE).
+**Headers:** host і remotes віддаються з одного origin, тому CORS-заголовків немає. Для всіх відповідей — заголовки безпеки: `Content-Security-Policy-Report-Only` (до переходу на enforce), `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`. HSTS Firebase Hosting додає сам.
 
 ## Змінні оточення
 
