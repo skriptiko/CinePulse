@@ -19,7 +19,5 @@ export function mapTmdbToMovieCard(movie: Movie | SearchMovie | TrendingMovie | 
     year,
     // 0 is a real rating; only a missing value hides the badge.
     rating: movie.vote_average != null ? movie.vote_average.toFixed(1) : undefined,
-    // Note: duration is not directly available in list responses,
-    // it requires movie details call. For lists we can skip it or show rating.
   };
 }
