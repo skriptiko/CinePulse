@@ -56,7 +56,7 @@ Husky pre-commit запускає `lint-staged` → `biome check --apply` на `
 
 ### Деплой
 
-Push у `main` → GitHub Actions: `pnpm build` → `scripts/merge-dist.js` (host у корінь `dist/`, remotes у `dist/pages-mfe/` та `dist/user-mfe/`) → Firebase Hosting (проєкт `cinepulse-eec15`). Rewrites у `firebase.json`: `/api/tmdb/**` → `tmdbProxy`, SPA-fallback для кожного MFE. Додаючи новий MFE, онови `merge-dist.js`, `firebase.json` і `.env.production` host.
+PR і push у `main` → GitHub Actions job `quality` (`pnpm lint` + `pnpm typecheck`, install з `--frozen-lockfile` — lockfile має бути актуальним). Лише push у `main` далі: `pnpm build` → `scripts/merge-dist.js` (host у корінь `dist/`, remotes у `dist/pages-mfe/` та `dist/user-mfe/`) → Firebase Hosting (проєкт `cinepulse-eec15`). Rewrites у `firebase.json`: `/api/tmdb/**` → `tmdbProxy`, SPA-fallback для кожного MFE. Додаючи новий MFE, онови `merge-dist.js`, `firebase.json` і `.env.production` host.
 
 `docs/08-design-files/` — окремий Next.js-прототип дизайну (референс для UI), не частина workspace.
 

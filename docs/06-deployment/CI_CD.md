@@ -2,22 +2,26 @@
 
 # CI/CD
 
-Автоматичний деплой на Firebase Hosting (+ Cloud Functions) через GitHub Actions. Статус етапу: **🟡 частково** — деплой працює, але немає quality gates і документованого rollback.
+Автоматичний деплой на Firebase Hosting (+ Cloud Functions) через GitHub Actions. Статус етапу: **🟡 частково** — деплой і quality gates (lint + typecheck) працюють, немає тестів і документованого rollback.
 
 ## GitHub Actions
 
 Пайплайн: [`.github/workflows/firebase-deploy.yml`](../../.github/workflows/firebase-deploy.yml).
 
-- **Тригер:** `push` у гілку `main`.
+- **Тригери:** `push` у гілку `main` і будь-який `pull_request`.
 - **Runner:** `ubuntu-latest`, Node.js `20`.
-- **Кроки:**
+- **Job `quality`** (і на push, і на PR):
   1. `actions/checkout@v4`.
   2. `pnpm/action-setup@v4` — pnpm `9.15.4`.
   3. `actions/setup-node@v4` — Node `20`, кеш `pnpm`.
-  4. `pnpm install --frozen-lockfile`.
-  5. `pnpm build` — Turbo збирає всі застосунки й пакети.
-  6. `node scripts/merge-dist.js` — об'єднання `dist/` (див. нижче).
-  7. `FirebaseExtended/action-hosting-deploy@v0` — деплой на `projectId: cinepulse-eec15`, `target: production`, `channelId: live`.
+  4. `pnpm install --frozen-lockfile` — падає, якщо `pnpm-lock.yaml` не синхронізований з `package.json`.
+  5. `pnpm lint`.
+  6. `pnpm typecheck`.
+- **Job `build-and-deploy`** (`needs: quality`, лише на `push`):
+  1. Ті самі checkout / pnpm / Node / install.
+  2. `pnpm build` — Turbo збирає всі застосунки й пакети.
+  3. `node scripts/merge-dist.js` — об'єднання `dist/` (див. нижче).
+  4. `FirebaseExtended/action-hosting-deploy@v0` — деплой на `projectId: cinepulse-eec15`, `target: production`, `channelId: live`.
 
 **Секрети GitHub:**
 
@@ -54,18 +58,11 @@ Rewrites у `firebase.json` спрямовують `/pages-mfe/**` і `/user-mfe
 
 ## Quality gates
 
-⬜ **Наразі відсутні** — пайплайн не запускає lint / typecheck / test перед деплоєм.
+🟡 **Lint + typecheck** — job `quality`; деплой залежить від нього (`needs`), тож падіння зупиняє деплой. На PR перевірки видно у вкладці Checks.
 
-**Рекомендований блок кроків** (додати перед деплоєм або окремим workflow на `pull_request`):
-```yaml
-- name: Lint
-  run: pnpm lint
-- name: Typecheck
-  run: pnpm typecheck
-- name: Test
-  run: pnpm test        # після впровадження тестів (див. TEST_STRATEGY)
-```
-Деплой на `main` має бути **заблокований** до проходження цих кроків (branch protection + required checks). Див. [TEST_STRATEGY → CI-інтеграція](../05-testing/TEST_STRATEGY.md#ci-інтеграція).
+⬜ **Тести** — `pnpm test` додається в job `quality` після впровадження тестів.
+
+⬜ **Branch protection** — щоб PR не можна було змерджити з червоним `quality`, увімкни required check у налаштуваннях репо (GitHub → Settings → Branches → `main`). Див. [TEST_STRATEGY → CI-інтеграція](../05-testing/TEST_STRATEGY.md#ci-інтеграція).
 
 ## Rollback
 
