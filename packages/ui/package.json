@@ -38,16 +38,19 @@
     "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {
+    "@repo/test-utils": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@tanstack/react-query": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "autoprefixer": "catalog:",
+    "jsdom": "catalog:",
     "postcss": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-router-dom": "catalog:",
     "tailwindcss": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }
