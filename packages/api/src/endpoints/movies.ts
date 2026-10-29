@@ -1,4 +1,4 @@
-import { apiGet } from '../core';
+import { type EndpointOptions, apiGet } from '../core';
 import type { Movie, MovieDetails, PaginatedResponse } from '../types';
 
 export type MovieCategory = 'popular' | 'top_rated' | 'upcoming' | 'now_playing';
@@ -10,11 +10,15 @@ export type MovieListParams = {
 
 export async function getMovies(
   category: MovieCategory,
-  params: MovieListParams = {}
+  params: MovieListParams = {},
+  { signal }: EndpointOptions = {}
 ): Promise<PaginatedResponse<Movie>> {
-  return apiGet<PaginatedResponse<Movie>>(`/movie/${category}`, { params });
+  return apiGet<PaginatedResponse<Movie>>(`/movie/${category}`, { params, signal });
 }
 
-export async function getMovieDetails(id: number): Promise<MovieDetails> {
-  return apiGet<MovieDetails>(`/movie/${id}`);
+export async function getMovieDetails(
+  id: number,
+  { signal }: EndpointOptions = {}
+): Promise<MovieDetails> {
+  return apiGet<MovieDetails>(`/movie/${id}`, { signal });
 }

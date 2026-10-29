@@ -13,6 +13,7 @@ export type {
   ApiErrorKind,
   ApiErrorOptions,
   BackdropSize,
+  EndpointOptions,
   ImageSize,
   ProfileSize,
   RequestOptions,

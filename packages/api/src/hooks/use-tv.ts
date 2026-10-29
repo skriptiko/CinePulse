@@ -1,4 +1,5 @@
 import { useSuspenseInfiniteQuery, useSuspenseQuery } from '@tanstack/react-query';
+import { getNextPageParam } from '../core';
 import { getTVDetails, getTVShows } from '../endpoints';
 import type { TVCategory } from '../endpoints';
 import { queryKeys } from '../queries/keys';
@@ -6,16 +7,15 @@ import { queryKeys } from '../queries/keys';
 export function useTVShows(category: TVCategory) {
   return useSuspenseInfiniteQuery({
     queryKey: queryKeys.tv.list(category),
-    queryFn: ({ pageParam }) => getTVShows(category, { page: pageParam }),
+    queryFn: ({ pageParam, signal }) => getTVShows(category, { page: pageParam }, { signal }),
     initialPageParam: 1,
-    getNextPageParam: (lastPage) =>
-      lastPage.page < lastPage.total_pages ? lastPage.page + 1 : undefined,
+    getNextPageParam,
   });
 }
 
 export function useTVDetails(id: number) {
   return useSuspenseQuery({
     queryKey: queryKeys.tv.detail(id),
-    queryFn: () => getTVDetails(id),
+    queryFn: ({ signal }) => getTVDetails(id, { signal }),
   });
 }

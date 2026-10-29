@@ -9,6 +9,9 @@ export type RequestOptions = {
   signal?: AbortSignal;
 };
 
+/** What every endpoint accepts besides its own params: the `signal` from `queryFn`. */
+export type EndpointOptions = Pick<RequestOptions, 'signal'>;
+
 /**
  * GET through the TMDB proxy. Rejects with `ApiError` for any failure, except an abort,
  * which is rethrown as is. The transport never shows UI and never emits events.
