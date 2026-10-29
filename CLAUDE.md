@@ -63,5 +63,6 @@ PR і push у `main` → GitHub Actions job `quality` (`pnpm lint` + `pnpm typec
 ## Конвенції
 
 - Коміти: `CIN-<номер>: <короткий опис у наказовому способі>`.
+- Оновлення залежностей — Renovate (`renovate.json`): групові PR у `develop` щопонеділка, без automerge; major — лише після approve на Dependency Dashboard і з окремим тікетом. Node і pnpm Renovate не чіпає.
 - Усі файли й папки — kebab-case (`home.tsx`, `use-movies.ts`, `app-routes.tsx`), експорт — PascalCase/camelCase. Лише named exports (default — тільки в `*.config.*`). Сторінка з локальними хуками/компонентами — папка `pages/<name>/` з `<name>-page.tsx`.
 - Suspense-хуки `@repo/api` не підтримують `enabled` — не обирай хук умовою (`cond ? useA() : useB()` порушує rules of hooks). Перемикай `queryKey`/`queryFn` в одному запиті (як `useMoviesOrSearch`) або винось варіанти в окремі компоненти.
