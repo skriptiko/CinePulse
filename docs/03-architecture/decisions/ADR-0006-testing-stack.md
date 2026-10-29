@@ -32,15 +32,18 @@ Constraints:
 ### Layout and running
 
 - **One root run.** A root `vitest.config.ts` with `test.projects` covers `packages/*` and `apps/*`. `pnpm test` (`vitest run`) runs everything, and coverage is collected and merged in that single run. We do not add a Turbo `test` task: per-package caching is not worth a second way of running tests at this size.
-- Each project has its own small `vitest.config.ts` (environment, setup files). Pure-logic packages (`@repo/routes`, `@repo/events`) use the `node` environment; React packages and apps use `jsdom`.
+- Each project has its own small `vitest.config.ts` (environment, setup files). Pure-logic packages (`@repo/routes`, `@repo/events`) use the `node` environment. React packages, apps and anything that calls `fetch` with a relative URL use jsdom through `scripts/vitest-jsdom-environment.ts`.
+  - That environment is plain jsdom, except that Node's fetch-stack globals are kept (`fetch`, `Request`, `Response`, `Headers`, `AbortController`, `AbortSignal`, streams, `Blob`…).
+  - Without this, Node's `fetch` (undici) rejects jsdom's `AbortSignal`, and every MSW-backed request fails. It is the same approach as `jest-fixed-jsdom`.
 - Tests live in `__tests__/` next to the code, named `<name>.test.ts(x)` (kebab-case). E2E specs go in the root `e2e/` folder as `<scenario>.spec.ts`.
-- Shared infrastructure goes in **`@repo/test-utils`** (a devDependency of the projects that use it):
+- Shared infrastructure goes in **`@repo/test-utils`** (a devDependency of the projects that use it). `@repo/api` is the one exception: `@repo/test-utils` depends on it for DTO types, so `@repo/api` cannot use it back without a dependency cycle, which Turbo rejects. Its few transport tests create their own `setupServer()` from `msw/node`.
   - `renderWithProviders`: a fresh `QueryClient` per test with `retry: false`, a router, `AsyncBoundary`, and a `userEvent.setup({ advanceTimers })` instance;
-  - MSW `server` with handlers grouped by domain, using `onUnhandledRequest: 'error'`;
+  - MSW `server` with handlers grouped by domain;
   - fixture factories (`buildMovie`, `buildPaginated`) typed with the TMDB DTO types;
   - the axe helper.
 - Versions of `vitest`, `@vitest/coverage-v8`, `msw`, `jsdom` and the Testing Library packages live in the pnpm catalog.
-- CI: `pnpm test` becomes a step of the `quality` job. It starts with `--passWithNoTests` until the first tests land.
+- CI: `pnpm test` is a step of the `quality` job. Coverage runs locally with `pnpm test:coverage`, and only produces a report.
+- MSW 3 renamed `onUnhandledRequest` to `onUnhandledFrame`; the server uses `onUnhandledFrame: 'error'`.
 
 ## Consequences
 
@@ -54,6 +57,8 @@ Constraints:
 
 - Vitest is pinned to 3.2 until the Vite upgrade. Renovate will propose majors; they wait for approval on the Dependency Dashboard.
 - jsdom is slower than happy-dom. That is acceptable at our size; revisit if the suite gets noticeably slow.
+- We maintain one small custom environment file. Remove it once jsdom and undici agree on `AbortSignal`.
+- `pnpm install` warns about two optional peers: `@vitest/mocker` wants `msw@^2`, which only matters for browser mode, and `msw@3` wants `vite@>=6`, which only matters for its Vite plugin. Neither is used here.
 - A single root run gives up Turbo caching for tests.
 - Playwright and its emulator setup are deferred, so the cross-MFE paths stay manually verified until then.
 
