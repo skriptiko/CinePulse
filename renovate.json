@@ -1,0 +1,67 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":semanticCommitsDisabled"],
+  "baseBranchPatterns": ["develop"],
+  "timezone": "Europe/Kyiv",
+  "schedule": ["before 6am on monday"],
+  "prConcurrentLimit": 5,
+  "rangeStrategy": "bump",
+  "labels": ["dependencies"],
+  "dependencyDashboard": true,
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on the first day of the month"]
+  },
+  "packageRules": [
+    {
+      "description": "Majors need a CIN ticket and a migration guide read first, so they wait for approval on the Dependency Dashboard.",
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "groupName": "React",
+      "matchPackageNames": ["react", "react-dom", "@types/react", "@types/react-dom"]
+    },
+    {
+      "groupName": "TanStack",
+      "matchPackageNames": ["@tanstack/**"]
+    },
+    {
+      "groupName": "Radix UI",
+      "matchPackageNames": ["@radix-ui/**"]
+    },
+    {
+      "groupName": "Module Federation",
+      "matchPackageNames": ["@module-federation/**"]
+    },
+    {
+      "groupName": "Tooling",
+      "matchPackageNames": [
+        "@biomejs/biome",
+        "husky",
+        "lint-staged",
+        "turbo",
+        "typescript",
+        "vite",
+        "@vitejs/plugin-react",
+        "tailwindcss",
+        "postcss",
+        "autoprefixer",
+        "@types/node"
+      ]
+    },
+    {
+      "groupName": "Firebase",
+      "matchPackageNames": ["firebase-admin", "firebase-functions"]
+    },
+    {
+      "groupName": "GitHub Actions",
+      "matchManagers": ["github-actions"]
+    },
+    {
+      "description": "Node and pnpm move with the runtime/standards (engines, .nvmrc, CI, Cloud Functions), not on Renovate's schedule.",
+      "matchDepNames": ["node", "pnpm"],
+      "enabled": false
+    }
+  ]
+}
