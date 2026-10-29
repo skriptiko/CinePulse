@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - develop
   pull_request:
 
 env:
@@ -17,10 +18,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Version comes from packageManager in package.json.
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -39,8 +39,12 @@ jobs:
 
   build-and-deploy:
     needs: quality
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    # Never run two production deploys at once; a newer push waits for the current one.
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
 
     steps:
       - name: Checkout
@@ -48,8 +52,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
