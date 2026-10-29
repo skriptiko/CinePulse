@@ -2,20 +2,20 @@ import { Play, Star } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { ImagePlaceholder } from './image-placeholder';
 
-interface FeaturedItem {
+type FeaturedItem = {
   id: string | number;
   title: string;
   imageUrl: string | null;
   rating: number;
   genre?: string;
   year?: string;
-}
+};
 
-interface FeaturedGridProps {
+export type FeaturedGridProps = {
   title: string;
   items: FeaturedItem[];
   className?: string;
-}
+};
 
 export function FeaturedGrid({ title, items, className }: FeaturedGridProps) {
   return (

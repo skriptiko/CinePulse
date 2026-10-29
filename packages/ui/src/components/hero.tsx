@@ -1,15 +1,15 @@
 import { Info, Play, Plus } from 'lucide-react';
-import { Button } from './button';
 import { ImagePlaceholder } from './image-placeholder';
+import { Button } from './ui/button';
 
-interface HeroProps {
+export type HeroProps = {
   title: string;
   description: string;
   rating?: string;
   year?: string;
   duration?: string;
   imageUrl: string | null;
-}
+};
 
 export function Hero({ title, description, rating, year, duration, imageUrl }: HeroProps) {
   return (

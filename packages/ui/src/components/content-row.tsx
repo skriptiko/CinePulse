@@ -1,23 +1,23 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { cn } from '../lib/utils';
-import { Button } from './button';
 import { MovieCard } from './movie-card';
+import { Button } from './ui/button';
 
-interface Movie {
+type Movie = {
   id: string | number;
   title: string;
   imageUrl: string | null;
   year?: string;
   rating?: string;
   duration?: string;
-}
+};
 
-interface ContentRowProps {
+export type ContentRowProps = {
   title: string;
   movies: Movie[];
   className?: string;
-}
+};
 
 export function ContentRow({ title, movies, className }: ContentRowProps) {
   const scrollRef = useRef<HTMLDivElement>(null);

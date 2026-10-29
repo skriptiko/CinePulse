@@ -24,9 +24,9 @@ const footerLinks = {
   ],
 };
 
-interface FooterProps {
+export type FooterProps = {
   className?: string;
-}
+};
 
 export function Footer({ className }: FooterProps) {
   return (

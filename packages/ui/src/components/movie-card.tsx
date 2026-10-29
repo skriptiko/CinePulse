@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { cn } from '../lib/utils';
 import { ImagePlaceholder } from './image-placeholder';
 
-interface MovieCardProps {
+export type MovieCardProps = {
   title: string;
   imageUrl: string | null;
   year?: string;
@@ -11,7 +11,7 @@ interface MovieCardProps {
   duration?: string;
   isInList?: boolean;
   className?: string;
-}
+};
 
 export function MovieCard({
   title,
