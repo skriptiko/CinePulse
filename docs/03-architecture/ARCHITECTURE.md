@@ -39,7 +39,7 @@ USER_MFE_URL=https://staging.example.com/user-mfe/remoteEntry.js
 
 **Shared-залежності** (єдиний екземпляр на весь застосунок, `shareScope: 'default'`):
 
-- `react`, `react-dom` (requiredVersion `^18.3.1`)
+- `react`, `react-dom` — React 19 ([ADR-0007](./decisions/ADR-0007-react-19.md)); для всіх shared `singleton`, а `requiredVersion` береться з pnpm catalog через `scripts/mf-shared.ts` (`strictVersion` для сторонніх)
 - `react-router-dom` — спільний роутер, один `BrowserRouter` у host
 - `@tanstack/react-query` — спільний `QueryClient`
 - `@repo/events` — спільна event bus і global store
