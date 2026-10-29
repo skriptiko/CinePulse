@@ -3,7 +3,7 @@ import { AppLayout, ErrorBoundary } from '@repo/ui';
 import { useEffect, useState } from 'react';
 import type { RouteObject } from 'react-router-dom';
 
-function App() {
+export function App() {
   const [remoteRoutes, setRemoteRoutes] = useState<RouteObject[] | null>(null);
 
   useEffect(() => {
@@ -41,5 +41,3 @@ function App() {
     </AppLayout>
   );
 }
-
-export default App;

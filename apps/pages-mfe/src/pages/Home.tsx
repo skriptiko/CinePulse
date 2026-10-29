@@ -2,7 +2,7 @@ import { getImageUrl, useMovieGenres, useMovies, useTrending } from '@repo/api';
 import { CategoryPills, ContentRow, FeaturedGrid, Hero, mapTmdbToMovieCard } from '@repo/ui';
 import { useMemo } from 'react';
 
-function Home() {
+export function Home() {
   const { data: genresData } = useMovieGenres();
   const { data: trendingData } = useTrending('movie', 'day');
   const { data: popularData } = useMovies('popular');
@@ -127,5 +127,3 @@ function Home() {
     </>
   );
 }
-
-export default Home;

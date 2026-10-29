@@ -16,7 +16,7 @@ import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 const sortOptions = ['Popular', 'Newest', 'Rating'];
 const SEARCH_DEBOUNCE_MS = 300;
 
-function Movies() {
+export function Movies() {
   const [activeCategory, setActiveCategory] = useState<number | 'All'>('All');
   const [searchInput, setSearchInput] = useState('');
   const [sortBy, setSortBy] = useState('Popular');
@@ -254,5 +254,3 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
 
   return debounced;
 }
-
-export default Movies;
