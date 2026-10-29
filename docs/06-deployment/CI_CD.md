@@ -19,8 +19,7 @@
   6. `pnpm typecheck`.
 - **Job `build-and-deploy`** (`needs: quality`, лише на `push`):
   1. Ті самі checkout / pnpm / Node / install.
-  2. `pnpm turbo build --filter='!@repo/design'` — Turbo збирає всі застосунки й пакети, крім sandbox `apps/design` (у прод не йде).
-  3. `node scripts/merge-dist.js` — об'єднання `dist/` (див. нижче).
+  2. `pnpm build:deploy` — Turbo збирає всі застосунки й пакети, крім sandbox `apps/design` (у прод не йде), і `scripts/merge-dist.js` об'єднує `dist/` (див. нижче). Локально — та сама команда.
   4. `FirebaseExtended/action-hosting-deploy@v0` — деплой на `projectId: cinepulse-eec15`, `target: production`, `channelId: live`.
 
 **Секрети GitHub:**
@@ -53,7 +52,7 @@ Firebase Function `tmdbProxy` ([`functions/src/index.ts`](../../functions/src/in
 Rewrites у `firebase.json` спрямовують `/pages-mfe/**` і `/user-mfe/**` на відповідні `index.html`, решту — на SPA-fallback `/index.html`.
 
 **Локальні скрипти деплою** (`package.json`):
-- `pnpm build:deploy` = `pnpm build && pnpm merge-dist`.
+- `pnpm build:deploy` = `turbo build --filter=!@repo/design && pnpm merge-dist` (те саме, що в CI).
 - `pnpm deploy` = `pnpm build:deploy && firebase deploy --only hosting:production`.
 
 ## Quality gates
