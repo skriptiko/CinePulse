@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Огляд
 
-CinePulse — каталог фільмів/серіалів на даних TMDB, побудований як micro-frontend застосунок: Turborepo + pnpm (9.15.4, Node >= 24), Vite 5, React 18, `@module-federation/vite`, React Router 7, TanStack Query 5, Tailwind 3 + shadcn/Radix. Документація проєкту — українською, у `docs/` (конвенції — `docs/04-development/CONVENTIONS.md`).
+CinePulse — каталог фільмів/серіалів на даних TMDB, побудований як micro-frontend застосунок: Turborepo + pnpm (9.15.4, Node >= 24), Vite 5, React 19 (ADR-0007: `ref` як проп, без `forwardRef`), `@module-federation/vite`, React Router 7, TanStack Query 5, Tailwind 3 + shadcn/Radix. Документація проєкту — українською, у `docs/` (конвенції — `docs/04-development/CONVENTIONS.md`).
 
 ## Управління проєктом — Notion
 
