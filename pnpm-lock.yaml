@@ -289,9 +289,6 @@ importers:
         specifier: ^6.1.2
         version: 6.6.0(firebase-admin@12.7.0)
     devDependencies:
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../packages/typescript-config
       '@types/node':
         specifier: ^20.17.0
         version: 20.19.30

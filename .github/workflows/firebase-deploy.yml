@@ -67,6 +67,15 @@ jobs:
       - name: Merge dist folders
         run: node scripts/merge-dist.js
 
+      # Functions first: the hosting rewrite /api/tmdb/** points at tmdbProxy.
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Deploy Functions
+        run: pnpm dlx firebase-tools@15.18.0 deploy --only functions --project cinepulse-eec15 --non-interactive --force
+
       - name: Deploy to Production
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:

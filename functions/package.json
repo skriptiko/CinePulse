@@ -13,14 +13,13 @@
     "deploy": "firebase deploy --only functions"
   },
   "engines": {
-    "node": "20"
+    "node": "24"
   },
   "dependencies": {
     "firebase-admin": "^12.7.0",
     "firebase-functions": "^6.1.2"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
     "@types/node": "^20.17.0",
     "typescript": "^5.7.3"
   }

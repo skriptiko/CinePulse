@@ -9,6 +9,8 @@ export const tmdbProxy = onRequest(
   {
     secrets: [TMDB_API_READ_TOKEN],
     cors: true,
+    // Caps billable instances on the Blaze plan.
+    maxInstances: 2,
   },
   async (req, res) => {
     const token = TMDB_API_READ_TOKEN.value();
