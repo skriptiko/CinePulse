@@ -1,5 +1,3 @@
-'use client';
-
 import { Bell, Menu, Moon, Search, Sun, User, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';

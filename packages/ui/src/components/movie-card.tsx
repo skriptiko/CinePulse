@@ -1,5 +1,3 @@
-'use client';
-
 import { Check, Play, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '../lib/utils';
@@ -33,8 +31,6 @@ export function MovieCard({
         'hover:scale-105 hover:z-10',
         className
       )}
-      onMouseEnter={() => {}}
-      onMouseLeave={() => {}}
     >
       {/* Poster Image */}
       <div className="aspect-[2/3] relative">
