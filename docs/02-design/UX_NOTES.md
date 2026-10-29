@@ -15,7 +15,7 @@
 - `Skeleton`
 
 **Доменні компоненти (кіно):**
-- `MovieCard` — картка фільму (пропси мапляться через `mapTmdbToMovieCard`)
+- `MovieCard` — картка фільму (UI-модель `MovieCardData` з `toMovieCardData` / `toTvCardData`)
 - `Hero` — головний банер
 - `ContentRow` — горизонтальний ряд карток
 - `FeaturedGrid` — сітка добірок («Editor's Picks»)
@@ -26,7 +26,7 @@
 - `ErrorBoundary` — межа обробки помилок (shell/module)
 - `Providers` — обгортка з `QueryClientProvider` (React Query)
 
-Утиліти: `cn` (склейка класів), `mapTmdbToMovieCard` (mapper TMDB → пропси картки).
+Утиліти: `cn` (склейка класів), мапери `to…Data` у `lib/mappers/` (TMDB → UI-моделі).
 
 ## Тема та токени
 
