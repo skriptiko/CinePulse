@@ -26,6 +26,7 @@ pnpm lint                             # biome check src/ у кожному па�
 pnpm check                            # biome check --write по всьому репо
 pnpm --filter @repo/api typecheck     # перевірка одного пакета
 pnpm build:deploy                     # build + scripts/merge-dist.js → кореневий dist/
+pnpm size                             # бюджет JS host (.size-limit.json); спершу turbo build --filter=@repo/host
 ```
 
 Тестів і тестового фреймворку немає (див. `docs/05-testing/TEST_STRATEGY.md` — це план, а не наявний процес). Перевірка змін = `pnpm typecheck` + `pnpm lint`.
