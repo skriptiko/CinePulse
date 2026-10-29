@@ -81,15 +81,6 @@ HOME '/', MOVIES '/movies', USER '/user', USER_PROFILE '/user/profile', USER_SET
 
 ## Відомий техборг
 
-- **Умовний виклик хука в `Movies.tsx`** (`apps/pages-mfe/src/pages/Movies.tsx`):
+- ✅ **Виправлено (2026-10-29, CIN-5): умовний виклик хука в `Movies.tsx`.** Раніше там було `searchQuery ? useSearchMovies(searchQuery) : useMovies('popular')` — порушення React rules of hooks. Тепер — безумовний `useMoviesOrSearch(searchQuery)` з `@repo/api`.
 
-  ```ts
-  const { data, fetchNextPage, ... } =
-    searchQuery ? useSearchMovies(searchQuery) : useMovies('popular');
-  ```
-
-  Це **порушує React rules of hooks**: кількість/порядок викликів хуків змінюється між рендерами (коли `searchQuery` стає порожнім/непорожнім), що може призвести до помилки рантайму або неконсистентного стану.
-
-  **Напрямок фіксу:** викликати обидва хуки безумовно і керувати активністю через `enabled` (наприклад, `useSearchMovies(searchQuery, { enabled: !!searchQuery })` та `useMovies('popular', { enabled: !searchQuery })`), а потім обирати потрібний результат. Це вимагає, щоб хуки підтримували опцію `enabled` (наразі вони на `useSuspenseInfiniteQuery` — можливо, знадобиться перехід на звичайний infinite query для умовного варіанта).
-
-  Зафіксовано як пункт #1 у [Наступних кроках роадмапи](../00-roadmap/PROJECT_ROADMAP.md#наступні-кроки).
+  **Патерн на майбутнє:** suspense-хуки (`useSuspenseQuery`/`useSuspenseInfiniteQuery`) не підтримують `enabled`, тому не обирай хук умовою. Або перемикай `queryKey`/`queryFn` всередині одного запиту (як у `useMoviesOrSearch`), або винось варіанти в окремі компоненти, кожен зі своїм безумовним хуком.

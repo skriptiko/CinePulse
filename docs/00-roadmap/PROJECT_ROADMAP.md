@@ -40,7 +40,7 @@
 | Сторінка | Роут | Файл | Готовність | Що є / чого бракує |
 |----------|------|------|:---:|--------------------|
 | **Home** | `/` | `apps/pages-mfe/src/pages/Home.tsx` | ✅ ~95% | Hero, CategoryPills, ряди Trending/New Releases/Top Rated/Popular, FeaturedGrid («Editor's Picks»). Реальні дані TMDB через `useTrending`/`useMovies`/`useMovieGenres`. **Бракує:** станів завантаження (skeleton) та порожніх станів; фільтр CategoryPills на Home ще не змінює контент. |
-| **Movies** | `/movies` | `apps/pages-mfe/src/pages/Movies.tsx` | ✅ ~90% | Пошук, фільтр за жанром (локально), сортування (Popular/Newest/Rating, локально), перемикач grid/compact, «Load More» (infinite query), empty-state. **Техборг:** умовний виклик хука `searchQuery ? useSearchMovies() : useMovies()` — порушення React rules of hooks (див. [Наступні кроки](#наступні-кроки)). Фільтрація/сортування — лише в межах завантажених сторінок, не серверні. |
+| **Movies** | `/movies` | `apps/pages-mfe/src/pages/Movies.tsx` | ✅ ~90% | Пошук, фільтр за жанром (локально), сортування (Popular/Newest/Rating, локально), перемикач grid/compact, «Load More» (infinite query), empty-state. Дані — через `useMoviesOrSearch(searchQuery)` (один безумовний виклик; техборг з умовним хуком виправлено 2026-10-29, CIN-5). Фільтрація/сортування — лише в межах завантажених сторінок, не серверні. |
 | **Movie Detail** | `/movies/:id` | — | ⬜ | Роуту/сторінки немає. API готове: `useMovieDetails(id)` + тип `MovieDetails`. Найпріоритетніша нова сторінка. |
 | **TV Shows (список)** | `/tv` | — | ⬜ | Немає. API готове: `useTVShows`, `useTVGenres`. |
 | **TV Detail** | `/tv/:id` | — | ⬜ | Немає. API готове: `useTVDetails(id)`. |
@@ -113,7 +113,7 @@
 
 - [x] **Host-оболонка** — ✅ завантаження remote-роутів, layout, error boundary. → [Каталог сторінок](#спільна-оболонка-appshost-порт-5000)
 - [x] **Home (публічний каталог)** — ✅ повноцінна, реальні дані. → [Каталог сторінок](#публічний-каталог-appspages-mfe-remote-порт-5001)
-- [x] **Movies (каталог з фільтрами)** — ✅ робоча; є техборг (умовний хук). → [CONVENTIONS.md](../04-development/CONVENTIONS.md#відомий-техборг)
+- [x] **Movies (каталог з фільтрами)** — ✅ робоча; техборг з умовним хуком виправлено (CIN-5). → [CONVENTIONS.md](../04-development/CONVENTIONS.md#відомий-техборг)
 - [ ] **Profile / Settings** — 🟡 заглушки, потребують реалізації. → [Каталог сторінок](#особистий-кабінет-appsuser-mfe-remote-порт-5002)
 - [ ] **Movie Detail / TV / Search / Person / Auth** — ⬜ не почато (API частково готове). → [Каталог сторінок](#каталог-сторінок-і-план-розробки)
 - [x] **UI-kit / дизайн-система** — ✅ `@repo/ui` (19 компонентів + mappers). → [UX_NOTES.md](../02-design/UX_NOTES.md)
@@ -160,8 +160,8 @@
 
 Пріоритезований список — найкритичніше першим:
 
-1. **[Техборг] Виправити умовний виклик хука в `Movies.tsx`** — `searchQuery ? useSearchMovies() : useMovies()` порушує React rules of hooks і може спричинити краш при зміні пошуку. Розділити на стабільний виклик обох хуків з `enabled`-прапорцем. → *Етап 4*
-2. **Додати quality gates у CI** — lint + typecheck (потім test) як обов'язкові кроки перед деплоєм. Дешево, високий ефект. → *Етап 6*
+1. **✅ (Виконано 2026-10-29, CIN-5) [Техборг] Виправити умовний виклик хука в `Movies.tsx`** — замінено на безумовний `useMoviesOrSearch(searchQuery)` з `@repo/api` (suspense-запити не підтримують `enabled`, тож пошук/список перемикаються через `queryKey`/`queryFn` одного запиту). → *Етап 4*
+2. **Додати quality gates у CI** — lint + typecheck (потім test) як обов'язкові кроки перед деплоєм. Дешево, високий ефект. Блокер знято: `pnpm typecheck` тепер проходить на чистому checkout (CIN-5). → *Етап 6*
 3. **Реалізувати сторінку Movie Detail (`/movies/:id`)** — API вже готове (`useMovieDetails`); це найочевидніша прогалина UX. → *Етап 4*
 4. **Підключити тестовий фреймворк (Vitest + Testing Library)** — почати з `@repo/api` (мапери, client) і ключових компонентів. → *Етап 5*
 5. **Реалізувати Profile та Settings** — підключити `globalStore` (user, theme) до UI; винести з заглушок. → *Етап 4*
@@ -202,6 +202,12 @@
 - **NFR:** Lighthouse Perf ≥90, LCP <2.5s, WCAG 2.1 AA, evergreen-браузери, mobile-first.
 - **Оновлено:** PRD.md (повний перепис), Каталог сторінок (Auth/Watchlist як підтверджений скоуп), Етап 1 (усі пункти ✅, 10%→85%), GLOSSARY (нові терміни), ARCHITECTURE/DATA_MODEL (позначено наслідки Firebase Auth+Firestore).
 - **Наслідок:** цільовий скоуп суттєво розширено — додано новий блок робіт (auth+watchlist+Firestore) на Етапи 3–4.
+
+### 2026-10-29 — Аудит готовності + виправлення typecheck і техборгу Movies (CIN-5)
+- Аудит: від 2026-07-12 змін у коді не було; оцінки етапів підтверджено (загальна готовність ~30%, без змін).
+- **Виявлено й виправлено:** `pnpm typecheck` падав на чистому checkout (TS6305) — `references` у `tsconfig.json` застосунків змушували TS шукати `packages/*/dist/*.d.ts`, які з'являються лише після `build`. `references` прибрано з host, pages-mfe, user-mfe (пакети й так споживаються з `src`).
+- **Виправлено техборг #1:** умовний виклик хука в `Movies.tsx` замінено на `useMoviesOrSearch` (`packages/api/src/hooks/useMovies.ts`).
+- Перевірено: `pnpm typecheck`, `pnpm lint` (2 старі попередження `noExplicitAny` у pages-mfe), `pnpm build` — успішно.
 
 <!-- Наступні сесії додавай сюди новим записом: ### YYYY-MM-DD — [опис що змінилось у статусах] -->
 

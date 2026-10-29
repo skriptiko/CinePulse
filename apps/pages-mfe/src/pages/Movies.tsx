@@ -1,4 +1,4 @@
-import { useMovieGenres, useMovies, useSearchMovies } from '@repo/api';
+import { useMovieGenres, useMoviesOrSearch } from '@repo/api';
 import {
   Button,
   CategoryPills,
@@ -23,13 +23,12 @@ function Movies() {
 
   const { data: genresData } = useMovieGenres();
 
-  // Decide which query to use: search or discover
   const {
     data: moviesData,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = searchQuery ? useSearchMovies(searchQuery) : useMovies('popular');
+  } = useMoviesOrSearch(searchQuery);
 
   const categories = useMemo(() => {
     const list = genresData?.genres.map((g) => ({ id: g.id, name: g.name })) || [];

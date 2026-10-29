@@ -28,6 +28,7 @@ export {
   useMovieDetails,
   useMovieGenres,
   useMovies,
+  useMoviesOrSearch,
   usePersonDetails,
   useSearchMovies,
   useSearchMulti,
