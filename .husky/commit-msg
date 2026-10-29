@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+# Enforces the commit header format from the engineering standards (§16.2).
+
+header=$(head -n 1 "$1")
+
+case "$header" in
+  'Merge '* | 'Revert "'* | 'fixup! '* | 'squash! '* | 'amend! '*) exit 0 ;;
+esac
+
+if ! printf '%s' "$header" | grep -Eq '^CIN-[0-9]+: [^ ].*[^.]$'; then
+  echo "commit-msg: header must look like 'CIN-<N>: <imperative summary>' without a trailing dot." >&2
+  echo "  got: $header" >&2
+  exit 1
+fi
+
+if [ "${#header}" -gt 72 ]; then
+  echo "commit-msg: header is ${#header} characters, the limit is 72." >&2
+  exit 1
+fi

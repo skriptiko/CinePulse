@@ -1,0 +1,35 @@
+name: PR title
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions: {}
+
+jobs:
+  pr-title:
+    # Renovate titles follow its own convention.
+    if: github.actor != 'renovate[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check title format
+        # Values go through env, never interpolated into the script (injection-safe).
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+          BASE: ${{ github.base_ref }}
+          HEAD: ${{ github.head_ref }}
+        run: |
+          # Release PR develop -> main has no task of its own (§16.3).
+          if [ "$BASE" = "main" ] && [ "$HEAD" = "develop" ]; then
+            pattern='^Release( |:)'
+            expected='Release: <summary>'
+          else
+            pattern='^CIN-[0-9]+: [^ ].*[^.]$'
+            expected='CIN-<N>: <imperative summary>'
+          fi
+
+          if ! printf '%s' "$TITLE" | grep -Eq "$pattern"; then
+            echo "::error::PR title must look like '$expected' (no trailing dot). Got: $TITLE"
+            exit 1
+          fi
