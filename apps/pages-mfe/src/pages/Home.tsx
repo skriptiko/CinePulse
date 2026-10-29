@@ -60,10 +60,10 @@ function Home() {
       return {
         id: m.id,
         title: m.title,
-        imageUrl: getImageUrl(m.backdrop_path, 'original') || '',
+        imageUrl: getImageUrl(m.backdrop_path, 'original'),
         rating: m.vote_average,
-        genre: genreNames[0] || 'Movie',
-        year: m.release_date?.split('-')[0] || '',
+        genre: genreNames[0],
+        year: m.release_date?.split('-')[0],
       };
     });
   }, [topRatedData, genresData]);
@@ -77,10 +77,9 @@ function Home() {
     return {
       title: m.title,
       description: m.overview,
-      rating: m.vote_average ? m.vote_average.toFixed(1) : 'N/A',
-      year: m.release_date?.split('-')[0] || '',
-      duration: 'Action', // Trending movie list doesn't have runtime
-      imageUrl: getImageUrl(m.backdrop_path, 'original') || '',
+      rating: m.vote_average != null ? m.vote_average.toFixed(1) : undefined,
+      year: m.release_date?.split('-')[0],
+      imageUrl: getImageUrl(m.backdrop_path, 'original'),
     };
   }, [trendingData]);
 
@@ -94,7 +93,6 @@ function Home() {
             description={heroMovie.description}
             rating={heroMovie.rating}
             year={heroMovie.year}
-            duration={heroMovie.duration}
             imageUrl={heroMovie.imageUrl}
           />
         )}

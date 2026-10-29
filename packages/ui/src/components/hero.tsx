@@ -1,13 +1,14 @@
 import { Info, Play, Plus } from 'lucide-react';
 import { Button } from './button';
+import { ImagePlaceholder } from './image-placeholder';
 
 interface HeroProps {
   title: string;
   description: string;
-  rating: string;
-  year: string;
-  duration: string;
-  imageUrl: string;
+  rating?: string;
+  year?: string;
+  duration?: string;
+  imageUrl: string | null;
 }
 
 export function Hero({ title, description, rating, year, duration, imageUrl }: HeroProps) {
@@ -15,11 +16,11 @@ export function Hero({ title, description, rating, year, duration, imageUrl }: H
     <section className="relative min-h-[70vh] sm:min-h-[80vh] lg:min-h-[85vh] flex items-end">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <img
-          src={imageUrl || '/placeholder.svg'}
-          alt={title}
-          className="w-full h-full object-cover"
-        />
+        {imageUrl ? (
+          <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
+        ) : (
+          <ImagePlaceholder />
+        )}
         {/* Gradient Overlays */}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/40 to-transparent" />
@@ -30,12 +31,18 @@ export function Hero({ title, description, rating, year, duration, imageUrl }: H
         <div className="max-w-2xl">
           {/* Metadata */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-4 text-xs sm:text-sm">
-            <span className="px-2 py-1 rounded bg-foreground text-background font-medium">
-              {rating}
-            </span>
-            <span className="text-muted-foreground">{year}</span>
-            <span className="text-muted-foreground">•</span>
-            <span className="text-muted-foreground">{duration}</span>
+            {rating && (
+              <span className="px-2 py-1 rounded bg-foreground text-background font-medium">
+                {rating}
+              </span>
+            )}
+            {year && <span className="text-muted-foreground">{year}</span>}
+            {duration && (
+              <>
+                <span className="text-muted-foreground">•</span>
+                <span className="text-muted-foreground">{duration}</span>
+              </>
+            )}
           </div>
 
           {/* Title */}

@@ -5,22 +5,29 @@ import { cn } from '../lib/utils';
 
 interface CategoryPillsProps {
   categories: string[];
-  defaultCategory?: string;
-  onChange?: (category: string) => void;
+  /** Selected category; makes the component controlled. */
+  value?: string;
+  /** Initial selection when uncontrolled. Defaults to the first category. */
+  defaultValue?: string;
+  onValueChange?: (category: string) => void;
   className?: string;
 }
 
 export function CategoryPills({
   categories,
-  defaultCategory,
-  onChange,
+  value,
+  defaultValue,
+  onValueChange,
   className,
 }: CategoryPillsProps) {
-  const [selected, setSelected] = useState(defaultCategory || categories[0]);
+  const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue ?? categories[0]);
+  const selected = value ?? uncontrolledValue;
 
   const handleSelect = (category: string) => {
-    setSelected(category);
-    onChange?.(category);
+    if (value === undefined) {
+      setUncontrolledValue(category);
+    }
+    onValueChange?.(category);
   };
 
   return (
@@ -29,6 +36,7 @@ export function CategoryPills({
         <button
           key={category}
           type="button"
+          aria-pressed={selected === category}
           onClick={() => handleSelect(category)}
           className={cn(
             'px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200',

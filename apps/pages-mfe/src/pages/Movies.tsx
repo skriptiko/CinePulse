@@ -11,15 +11,22 @@ import {
   mapTmdbToMovieCard,
 } from '@repo/ui';
 import { ChevronDown, Grid3X3, LayoutGrid, Search, SlidersHorizontal } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 
 const sortOptions = ['Popular', 'Newest', 'Rating'];
+const SEARCH_DEBOUNCE_MS = 300;
 
 function Movies() {
   const [activeCategory, setActiveCategory] = useState<number | 'All'>('All');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const [sortBy, setSortBy] = useState('Popular');
   const [viewMode, setViewMode] = useState<'grid' | 'compact'>('grid');
+
+  // Debounce keystrokes, then defer the query so React keeps the current results
+  // on screen instead of showing the Suspense fallback while the new page loads.
+  const debouncedQuery = useDebouncedValue(searchInput, SEARCH_DEBOUNCE_MS);
+  const searchQuery = useDeferredValue(debouncedQuery);
+  const isSearchPending = searchQuery !== searchInput;
 
   const { data: genresData } = useMovieGenres();
 
@@ -99,8 +106,8 @@ function Movies() {
                   <Input
                     type="text"
                     placeholder="Search movies..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
                     className="pl-10 h-10 bg-secondary border-0 rounded-lg"
                   />
                 </div>
@@ -160,8 +167,8 @@ function Movies() {
               {/* Category Pills */}
               <CategoryPills
                 categories={categoryNames}
-                defaultCategory={activeCategoryName}
-                onChange={handleCategoryChange}
+                value={activeCategoryName}
+                onValueChange={handleCategoryChange}
                 className="px-0 -mx-4 sm:mx-0 sm:px-0"
               />
             </div>
@@ -178,7 +185,10 @@ function Movies() {
         </div>
 
         {/* Movies Grid */}
-        <div className="px-4 sm:px-6 lg:px-12 pb-16">
+        <div
+          className={`px-4 sm:px-6 lg:px-12 pb-16 transition-opacity ${isSearchPending ? 'opacity-60' : ''}`}
+          aria-busy={isSearchPending}
+        >
           {filteredMovies.length > 0 ? (
             <>
               <div
@@ -220,7 +230,7 @@ function Movies() {
                 variant="secondary"
                 className="mt-4 rounded-lg"
                 onClick={() => {
-                  setSearchQuery('');
+                  setSearchInput('');
                   setActiveCategory('All');
                 }}
               >
@@ -232,6 +242,17 @@ function Movies() {
       </main>
     </>
   );
+}
+
+function useDebouncedValue<T>(value: T, delayMs: number): T {
+  const [debounced, setDebounced] = useState(value);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => setDebounced(value), delayMs);
+    return () => clearTimeout(timeoutId);
+  }, [value, delayMs]);
+
+  return debounced;
 }
 
 export default Movies;

@@ -1,13 +1,14 @@
 import { Play, Star } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { ImagePlaceholder } from './image-placeholder';
 
 interface FeaturedItem {
   id: string | number;
   title: string;
-  imageUrl: string;
+  imageUrl: string | null;
   rating: number;
-  genre: string;
-  year: string;
+  genre?: string;
+  year?: string;
 }
 
 interface FeaturedGridProps {
@@ -32,11 +33,15 @@ export function FeaturedGrid({ title, items, className }: FeaturedGridProps) {
           >
             {/* Image */}
             <div className={cn('relative', index === 0 ? 'aspect-[16/10]' : 'aspect-video')}>
-              <img
-                src={item.imageUrl || '/placeholder.svg'}
-                alt={item.title}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
+              {item.imageUrl ? (
+                <img
+                  src={item.imageUrl}
+                  alt={item.title}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              ) : (
+                <ImagePlaceholder />
+              )}
 
               {/* Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
@@ -55,10 +60,18 @@ export function FeaturedGrid({ title, items, className }: FeaturedGridProps) {
                     <Star className="w-3 h-3 fill-yellow-500 text-yellow-500" />
                     <span className="text-foreground font-medium">{item.rating.toFixed(1)}</span>
                   </div>
-                  <span>•</span>
-                  <span>{item.genre}</span>
-                  <span>•</span>
-                  <span>{item.year}</span>
+                  {item.genre && (
+                    <>
+                      <span>•</span>
+                      <span>{item.genre}</span>
+                    </>
+                  )}
+                  {item.year && (
+                    <>
+                      <span>•</span>
+                      <span>{item.year}</span>
+                    </>
+                  )}
                 </div>
                 <h3
                   className={cn(

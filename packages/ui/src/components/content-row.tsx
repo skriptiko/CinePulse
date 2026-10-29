@@ -7,7 +7,7 @@ import { MovieCard } from './movie-card';
 interface Movie {
   id: string | number;
   title: string;
-  imageUrl: string;
+  imageUrl: string | null;
   year?: string;
   rating?: string;
   duration?: string;

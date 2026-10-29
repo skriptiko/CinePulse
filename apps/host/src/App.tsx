@@ -8,35 +8,37 @@ function App() {
 
   useEffect(() => {
     async function loadRemoteRoutes() {
-      try {
-        const [pagesModule, userModule] = await Promise.all([
-          import('pagesMfe/routes'),
-          import('userMfe/routes'),
-        ]);
+      // allSettled: one unavailable remote must not drop the other's routes.
+      const results = await Promise.allSettled([
+        import('pagesMfe/routes'),
+        import('userMfe/routes'),
+      ]);
 
-        setRemoteRoutes([...pagesModule.routes, ...userModule.routes]);
-      } catch (error) {
-        // Log to console only in development
+      const routes = results.flatMap((result) => {
+        if (result.status === 'fulfilled') return result.value.routes;
         if (process.env.NODE_ENV === 'development') {
-          console.error('Failed to load remote routes:', error);
+          console.error('Failed to load remote routes:', result.reason);
         }
-        setRemoteRoutes([]);
-      }
+        return [];
+      });
+
+      setRemoteRoutes(routes);
     }
 
     loadRemoteRoutes();
   }, []);
 
   return (
-    <ErrorBoundary level="shell">
-      <AppLayout>
+    // Temporary: the boundary sits inside AppLayout so a page error keeps header and footer.
+    <AppLayout>
+      <ErrorBoundary level="shell">
         {remoteRoutes === null ? (
           <div className="p-4">Loading...</div>
         ) : (
           <AppRoutes routes={remoteRoutes} />
         )}
-      </AppLayout>
-    </ErrorBoundary>
+      </ErrorBoundary>
+    </AppLayout>
   );
 }
 

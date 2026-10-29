@@ -3,10 +3,11 @@
 import { Check, Play, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '../lib/utils';
+import { ImagePlaceholder } from './image-placeholder';
 
 interface MovieCardProps {
   title: string;
-  imageUrl: string;
+  imageUrl: string | null;
   year?: string;
   rating?: string;
   duration?: string;
@@ -37,11 +38,15 @@ export function MovieCard({
     >
       {/* Poster Image */}
       <div className="aspect-[2/3] relative">
-        <img
-          src={imageUrl || '/placeholder.svg'}
-          alt={title}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-        />
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={title}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          />
+        ) : (
+          <ImagePlaceholder />
+        )}
 
         {/* Hover Overlay */}
         <div
