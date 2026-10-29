@@ -1,8 +1,16 @@
-import type { HTMLAttributes } from 'react';
 import { cn } from '../lib/utils';
 
-function Skeleton({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('animate-pulse rounded-md bg-muted', className)} {...props} />;
-}
+export type SkeletonProps = {
+  className?: string;
+};
 
-export { Skeleton };
+/** Decorative loading placeholder; the surrounding region announces the loading state. */
+export function Skeleton({ className }: SkeletonProps) {
+  return (
+    <div
+      aria-hidden="true"
+      data-slot="skeleton"
+      className={cn('animate-pulse motion-reduce:animate-none rounded-md bg-muted', className)}
+    />
+  );
+}

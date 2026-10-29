@@ -4,10 +4,13 @@ import {
   CategoryPills,
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuTrigger,
   Input,
   MovieCard,
+  buttonVariants,
+  cn,
   mapTmdbToMovieCard,
 } from '@repo/ui';
 import { ChevronDown, Grid3X3, LayoutGrid, Search, SlidersHorizontal } from 'lucide-react';
@@ -107,6 +110,7 @@ export function Movies() {
                     placeholder="Search movies..."
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
+                    aria-label="Search movies"
                     className="pl-10 h-10 bg-secondary border-0 rounded-lg"
                   />
                 </div>
@@ -115,23 +119,25 @@ export function Movies() {
                 <div className="flex items-center gap-2">
                   {/* Sort Dropdown */}
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="secondary" className="rounded-lg gap-2 h-10">
-                        <SlidersHorizontal className="w-4 h-4" />
-                        <span className="hidden sm:inline">{sortBy}</span>
-                        <ChevronDown className="w-4 h-4" />
-                      </Button>
+                    <DropdownMenuTrigger
+                      aria-label={`Sort by: ${sortBy}`}
+                      className={cn(
+                        buttonVariants({ variant: 'secondary' }),
+                        'rounded-lg gap-2 h-10'
+                      )}
+                    >
+                      <SlidersHorizontal className="w-4 h-4" />
+                      <span className="hidden sm:inline">{sortBy}</span>
+                      <ChevronDown className="w-4 h-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-40">
-                      {sortOptions.map((option) => (
-                        <DropdownMenuItem
-                          key={option}
-                          onClick={() => setSortBy(option)}
-                          className={sortBy === option ? 'bg-accent' : ''}
-                        >
-                          {option}
-                        </DropdownMenuItem>
-                      ))}
+                      <DropdownMenuRadioGroup value={sortBy} onValueChange={setSortBy}>
+                        {sortOptions.map((option) => (
+                          <DropdownMenuRadioItem key={option} value={option}>
+                            {option}
+                          </DropdownMenuRadioItem>
+                        ))}
+                      </DropdownMenuRadioGroup>
                     </DropdownMenuContent>
                   </DropdownMenu>
 
@@ -198,8 +204,16 @@ export function Movies() {
                 }`}
               >
                 {filteredMovies.map((movie) => {
-                  const props = mapTmdbToMovieCard(movie);
-                  return <MovieCard key={movie.id} {...props} />;
+                  const card = mapTmdbToMovieCard(movie);
+                  return (
+                    <MovieCard
+                      key={movie.id}
+                      title={card.title}
+                      imageUrl={card.imageUrl}
+                      year={card.year}
+                      rating={card.rating}
+                    />
+                  );
                 })}
               </div>
 
