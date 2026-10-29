@@ -24,7 +24,6 @@ export default defineConfig({
   build: {
     modulePreload: false,
     target: 'chrome89',
-    minify: false,
     cssCodeSplit: false,
   },
   server: {
