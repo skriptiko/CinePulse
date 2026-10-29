@@ -3,8 +3,23 @@ import { federation } from '@module-federation/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig, loadEnv } from 'vite';
 
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, resolve(__dirname, '../..'), '');
+const REMOTE_URL_KEYS = ['PAGES_MFE_URL', 'USER_MFE_URL'] as const;
+
+export default defineConfig(({ command, mode }) => {
+  // Root .env holds shared secrets (TMDB token); app-level .env.[mode] holds remote URLs.
+  const env = {
+    ...loadEnv(mode, resolve(__dirname, '../..'), ''),
+    ...loadEnv(mode, __dirname, ''),
+  };
+
+  if (command === 'build') {
+    const missing = REMOTE_URL_KEYS.filter((key) => !env[key]);
+    if (missing.length > 0) {
+      throw new Error(
+        `Missing ${missing.join(', ')} for "${mode}" build. Set them in apps/host/.env.${mode}.`
+      );
+    }
+  }
 
   return {
     plugins: [
