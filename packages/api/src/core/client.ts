@@ -3,14 +3,16 @@ import { API_CONFIG } from './config';
 import { buildQueryString } from './utils';
 
 export class ApiError extends Error {
-  constructor(
-    message: string,
-    public status: number,
-    public statusText: string,
-    public isNetworkError = false
-  ) {
+  override readonly name = 'ApiError';
+  readonly status: number;
+  readonly statusText: string;
+  readonly isNetworkError: boolean;
+
+  constructor(message: string, status: number, statusText: string, isNetworkError = false) {
     super(message);
-    this.name = 'ApiError';
+    this.status = status;
+    this.statusText = statusText;
+    this.isNetworkError = isNetworkError;
   }
 }
 
