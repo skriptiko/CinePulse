@@ -42,6 +42,7 @@ USER_MFE_URL=https://staging.example.com/user-mfe/remoteEntry.js
 - `react`, `react-dom` — React 19 ([ADR-0007](./decisions/ADR-0007-react-19.md)); для всіх shared `singleton`, а `requiredVersion` береться з pnpm catalog через `scripts/mf-shared.ts` (`strictVersion` для сторонніх)
 - `react-router-dom` — спільний роутер, один `BrowserRouter` у host
 - `@tanstack/react-query` — спільний `QueryClient`
+- `zustand` — runtime of the global store ([ADR-0008](./decisions/ADR-0008-zustand-global-store.md))
 - `@repo/events` — спільна event bus і global store
 - `@repo/routes` — спільні константи шляхів
 - `@repo/api` — спільний шар доступу до даних
@@ -103,11 +104,11 @@ React Query caches data with `staleTime` 5 minutes and `refetchOnWindowFocus: fa
 MFE не мають прямих імпортів один з одного. Комунікація — через `@repo/events`:
 
 - **Event bus** (`packages/events/src/event-bus.ts`) — типізований emitter/listener поверх `window.__CINEPULSE_EVENT_BUS__` (singleton на `window`). Event types are fixed in `EventMap` (`notification:show`, `mfe:error`, `error:report`).
-- **Global store** (`packages/events/src/store.ts`) — `window.__CINEPULSE_STORE__` singleton зі станом `{ user, isAuthenticated, theme }` і діями (`setUser`, `updateUser`, `setTheme`, `reset`).
+- **Global store** (`packages/events/src/store.ts`) — a Zustand store, singleton on `window.__CINEPULSE_STORE__`, with `{ theme }` and `setTheme`. React components subscribe with `useGlobalStore(selector)` ([ADR-0008](./decisions/ADR-0008-zustand-global-store.md)).
 
 Singleton саме на `window` гарантує єдиний екземпляр навіть якщо федерація завантажить пакет двічі. The API transport does not emit events; error toasts and reports go through `QueryCache.onError` (see Error handling below).
 
-Деталі моделі — [DATA_MODEL.md](./DATA_MODEL.md), деталі рішення — [ADR-0004](./decisions/ADR-0004-typed-event-bus.md).
+Деталі моделі — [DATA_MODEL.md](./DATA_MODEL.md), деталі рішення — [ADR-0004](./decisions/ADR-0004-typed-event-bus.md) та [ADR-0008](./decisions/ADR-0008-zustand-global-store.md).
 
 ## Обробка помилок
 
@@ -151,7 +152,7 @@ Also:
 
 > Формалізація скоупу (див. [PRD](../01-product/PRD.md)) додає **watchlist + авторизацію**. Це вимагає нових бекенд-складових, яких у поточній архітектурі немає (досі — лише stateless `tmdbProxy`). **До опрацювання на Етапах 3–4:**
 
-- **Firebase Auth** — автентифікація (email+пароль із реєстрацією). Підключити реальний провайдер до `globalStore` (`user`, `isAuthenticated`) та подій `user:login`/`user:logout`. Гейт доступу до `user-mfe` (watchlist лише для авторизованих).
+- **Firebase Auth** — автентифікація (email+пароль із реєстрацією). Підключити реальний провайдер до `globalStore` (add the user state back then; it was removed in ADR-0008 because it had no source) та подій `user:login`/`user:logout`. Гейт доступу до `user-mfe` (watchlist лише для авторизованих).
 - **Firestore** — персистентне сховище watchlist (дерево папок ≤6 рівнів, membership тайтлів many-to-many, статус переглянуто/заплановано) + security rules (ізоляція даних за користувачем). Це **перша власна БД** у проєкті — оновити [DATA_MODEL](./DATA_MODEL.md).
 - **Наслідок для потоку даних:** поряд із «read-only TMDB через проксі» з'являється «read/write користувацьких даних через Firestore SDK» — потрібно розмежувати ці два шляхи в `user-mfe`.
 - **Потенційний ADR:** вибір Firestore vs. альтернатив і форма зберігання дерева папок — кандидат на новий ADR.

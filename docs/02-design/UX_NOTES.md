@@ -35,7 +35,7 @@
 - текст: `text-foreground`, `text-muted-foreground`
 - межі: `border-border`
 
-Це дає узгодженість і теоретичну можливість світлої теми (у `globalStore` є `theme: 'light' | 'dark' | 'system'` та `setTheme`, але перемикач у UI ще не реалізований).
+Це дає узгодженість і теоретичну можливість світлої теми (у `globalStore` є `theme: 'light' | 'dark' | 'system'` та `setTheme`, React reads it with `useGlobalStore`; перемикач у UI ще не реалізований).
 
 ## Ізоляція стилів
 

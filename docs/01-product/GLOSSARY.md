@@ -36,7 +36,7 @@
 ## Крос-MFE комунікація (`@repo/events`)
 
 - **Event bus** — типізована шина подій (singleton на `window.__CINEPULSE_EVENT_BUS__`) для спілкування між MFE без прямих залежностей. API: `createTypedEmitter` / `createTypedListener`. Events are described in `EventMap` (`notification:show`, `mfe:error`, `error:report`).
-- **Global store** — глобальний стан (`window.__CINEPULSE_STORE__`): `user`, `isAuthenticated`, `theme` + екшени (`setUser`, `setTheme`, `reset`).
+- **Global store** — глобальний стан (`window.__CINEPULSE_STORE__`), a Zustand store: `theme` + `setTheme`; React reads it with `useGlobalStore(selector)`.
 - **Error boundary** — React-межа обробки помилок. Два рівні: **shell-level** (критичний збій, перезавантаження застосунку) і **module-level** (окремий MFE може повторити спробу без перезавантаження всього).
 
 ## Спільні пакети
