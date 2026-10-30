@@ -17,6 +17,7 @@ describe('Header', () => {
 
     await user.click(screen.getByRole('button', { name: 'Menu' }));
     const [, mobileNav] = screen.getAllByRole('navigation');
+    if (!mobileNav) throw new Error('Mobile navigation is not rendered');
     await user.click(within(mobileNav).getByRole('link', { name: 'Series' }));
 
     expect(screen.getAllByRole('navigation')).toHaveLength(1);
