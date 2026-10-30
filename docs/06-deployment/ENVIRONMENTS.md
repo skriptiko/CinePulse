@@ -43,6 +43,8 @@ Three Vite servers (Module Federation), started together via `pnpm dev` (Turbo):
 
 **Headers:** the host and remotes are served from the same origin, so there are no CORS headers. All responses get security headers: `Content-Security-Policy-Report-Only` (until the switch to enforce), `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`. Firebase Hosting adds HSTS itself.
 
+**Cache:** Hosting headers override those set by a function, so `Cache-Control` must not be set on `/api/**`, or `tmdbProxy`'s value is lost and the CDN stops caching TMDB responses. That is why the `no-cache` rule for SPA routes is a regex rather than `**`: it matches every path except `/api/*`, spelled out without lookahead because Hosting uses RE2. Later rules win: `**/assets/**` is `immutable`, `remoteEntry.js` and `index.html` are `no-cache`.
+
 ## Environment variables
 
 | Variable | Local dev | Production |
