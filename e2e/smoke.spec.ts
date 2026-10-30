@@ -79,3 +79,15 @@ test('an unknown URL shows NotFound', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Page not found' })).toBeVisible();
   await expect(page).toHaveTitle('Page not found · CinePulse');
 });
+
+test('the chosen theme applies before the app loads', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Dark theme' }).click();
+  await expect(page.locator('html')).not.toHaveClass(/dark/);
+
+  // Without the app bundle only the blocking theme script can set the class.
+  await page.route('**/assets/**', (route) => route.abort());
+  await page.reload();
+
+  await expect(page.locator('html')).not.toHaveClass(/dark/);
+});

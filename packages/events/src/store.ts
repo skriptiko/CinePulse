@@ -23,6 +23,27 @@ const defaultState: GlobalState = {
   theme: 'dark',
 };
 
+/** Also read by `apps/host/public/theme-init.js`, which applies the theme before the first paint. */
+export const THEME_STORAGE_KEY = 'cinepulse-theme';
+
+// Storage throws when the browser blocks it: the theme then lasts until the page closes.
+function readStoredTheme(): Theme | null {
+  try {
+    const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+    return THEMES.find((theme) => theme === stored) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function storeTheme(theme: Theme): void {
+  try {
+    window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+  } catch {
+    // See `readStoredTheme`.
+  }
+}
+
 declare global {
   interface Window {
     __CINEPULSE_STORE__?: GlobalStoreApi;
@@ -33,7 +54,9 @@ declare global {
 export function createGlobalStore(): GlobalStoreApi {
   return createStore<GlobalStore>()((set) => ({
     ...defaultState,
+    theme: readStoredTheme() ?? defaultState.theme,
     setTheme: (theme) => {
+      storeTheme(theme);
       set({ theme });
     },
   }));
