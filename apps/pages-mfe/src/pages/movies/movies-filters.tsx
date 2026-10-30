@@ -7,12 +7,14 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
   Input,
+  ToggleGroup,
+  ToggleGroupItem,
   buttonVariants,
   cn,
 } from '@repo/ui';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { ChevronDown, Grid3X3, LayoutGrid, Search, SlidersHorizontal } from 'lucide-react';
-import { useMemo } from 'react';
+import { type FormEvent, useId, useMemo } from 'react';
 import { SORT_LABELS, SORT_OPTIONS, type SortOption, isSortOption } from './use-movie-filters';
 
 export type ViewMode = 'grid' | 'compact';
@@ -44,6 +46,7 @@ export function MoviesFilters({
   onViewModeChange,
 }: MoviesFiltersProps) {
   const { data: genresData } = useSuspenseQuery(genreQueries.movie());
+  const searchId = useId();
 
   const genreNames = useMemo(
     () => [ALL_GENRES, ...genresData.genres.map((genre) => genre.name)],
@@ -61,23 +64,31 @@ export function MoviesFilters({
     if (isSortOption(value)) onSortChange(value);
   };
 
+  // Results follow the input as the user types, so Enter has nothing left to submit.
+  const handleSearchSubmit = (event: FormEvent) => event.preventDefault();
+
   return (
     <div className="sticky top-16 sm:top-20 z-30 bg-background/80 backdrop-blur-xl border-b border-border">
       <div className="px-4 sm:px-6 lg:px-12 py-4">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Search movies..."
-                value={searchInput}
-                onChange={(event) => onSearchChange(event.target.value)}
-                maxLength={SEARCH_QUERY_MAX_LENGTH}
-                aria-label="Search movies"
-                className="pl-10 h-10 bg-secondary border-0 rounded-lg"
-              />
-            </div>
+            <search className="relative flex-1 max-w-md">
+              <form onSubmit={handleSearchSubmit}>
+                <label htmlFor={searchId} className="sr-only">
+                  Search movies
+                </label>
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id={searchId}
+                  type="search"
+                  placeholder="Search movies..."
+                  value={searchInput}
+                  onChange={(event) => onSearchChange(event.target.value)}
+                  maxLength={SEARCH_QUERY_MAX_LENGTH}
+                  className="pl-10 h-10 bg-secondary border-0 rounded-lg"
+                />
+              </form>
+            </search>
 
             <div className="flex items-center gap-2">
               <DropdownMenu>
@@ -91,7 +102,11 @@ export function MoviesFilters({
                   <ChevronDown className="w-4 h-4" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-40">
-                  <DropdownMenuRadioGroup value={sort} onValueChange={handleSortChange}>
+                  <DropdownMenuRadioGroup
+                    aria-label="Sort by"
+                    value={sort}
+                    onValueChange={handleSortChange}
+                  >
                     {SORT_OPTIONS.map((option) => (
                       <DropdownMenuRadioItem key={option} value={option}>
                         {SORT_LABELS[option]}
@@ -110,6 +125,7 @@ export function MoviesFilters({
             value={activeGenreName}
             onValueChange={handleGenreChange}
             disabled={isSearching}
+            label="Filter by genre"
             className="px-0 -mx-4 sm:mx-0 sm:px-0"
           />
 
@@ -135,25 +151,18 @@ const VIEW_MODES = [
 ] as const;
 
 function ViewModeToggle({ viewMode, onViewModeChange }: ViewModeToggleProps) {
+  const handleValueChange = (value: string) => {
+    const next = VIEW_MODES.find(({ mode }) => mode === value);
+    if (next) onViewModeChange(next.mode);
+  };
+
   return (
-    <div className="flex items-center rounded-lg bg-secondary p-1">
+    <ToggleGroup aria-label="Card size" value={viewMode} onValueChange={handleValueChange}>
       {VIEW_MODES.map(({ mode, label, Icon }) => (
-        <button
-          key={mode}
-          type="button"
-          aria-label={label}
-          aria-pressed={viewMode === mode}
-          onClick={() => onViewModeChange(mode)}
-          className={cn(
-            'p-2 rounded-md transition-colors',
-            viewMode === mode
-              ? 'bg-background text-foreground'
-              : 'text-muted-foreground hover:text-foreground'
-          )}
-        >
+        <ToggleGroupItem key={mode} value={mode} aria-label={label}>
           <Icon className="w-4 h-4" aria-hidden="true" />
-        </button>
+        </ToggleGroupItem>
       ))}
-    </div>
+    </ToggleGroup>
   );
 }

@@ -1,7 +1,9 @@
-import { Button } from '@repo/ui';
+import { Button, usePageMeta } from '@repo/ui';
 
 /** Stands in for the routes of a remote that failed to load; the rest of the app keeps working. */
 export function RemoteUnavailable() {
+  usePageMeta('Section unavailable');
+
   return (
     <section
       role="alert"

@@ -1,5 +1,5 @@
 import { type Movie, genreQueries, useMoviesOrSearch } from '@repo/api';
-import { cn } from '@repo/ui';
+import { cn, usePageMeta } from '@repo/ui';
 import { usePrefetchQuery } from '@tanstack/react-query';
 import { useDeferredValue, useMemo, useState } from 'react';
 import { MoviesEmptyState } from './movies-empty-state';
@@ -16,6 +16,8 @@ import {
 const countFormat = new Intl.NumberFormat('en-US');
 
 export function Movies() {
+  usePageMeta('Movies');
+
   // Starts the genre request next to the movies one, before `MoviesFilters` suspends on it.
   usePrefetchQuery(genreQueries.movie());
 
@@ -49,7 +51,7 @@ export function Movies() {
   };
 
   return (
-    <main className="pt-20 sm:pt-24">
+    <div className="pt-20 sm:pt-24">
       <MoviesHeader />
 
       <MoviesFilters
@@ -96,7 +98,7 @@ export function Movies() {
           />
         )}
       </div>
-    </main>
+    </div>
   );
 }
 

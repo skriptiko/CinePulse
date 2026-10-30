@@ -1,9 +1,12 @@
 import { ROUTE_PATHS } from '@repo/routes';
 import { Link } from 'react-router-dom';
+import { usePageMeta } from '../hooks/use-page-meta';
 import { cn } from '../lib/utils';
 import { buttonVariants } from './ui/button';
 
 export function NotFound() {
+  usePageMeta('Page not found');
+
   return (
     <section className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4 pt-24 text-center">
       <p className="text-6xl font-bold text-muted-foreground">404</p>

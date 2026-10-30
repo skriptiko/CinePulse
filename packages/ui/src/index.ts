@@ -18,6 +18,9 @@ export type {
   DropdownMenuRadioItemProps,
 } from './components/ui/dropdown-menu';
 
+export { ToggleGroup, ToggleGroupItem } from './components/ui/toggle-group';
+export type { ToggleGroupProps, ToggleGroupItemProps } from './components/ui/toggle-group';
+
 export { MovieCard } from './components/movie-card';
 export type { MovieCardData, MovieCardProps } from './components/movie-card';
 export { CategoryLinks, CategoryPills } from './components/category-pills';
@@ -63,5 +66,7 @@ export type { AppLayoutProps } from './components/app-layout';
 export { toFeaturedItemData } from './lib/mappers/featured-item';
 export { toHeroData } from './lib/mappers/hero';
 export { toMovieCardData, toTrendingCardData, toTvCardData } from './lib/mappers/movie-card';
+
+export { usePageMeta } from './hooks/use-page-meta';
 
 export { cn } from './lib/utils';

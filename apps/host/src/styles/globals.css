@@ -55,6 +55,10 @@
   * {
     @apply border-border;
   }
+  /* Keeps anchored targets, such as the skip link's, clear of the fixed header. */
+  html {
+    scroll-padding-top: 6rem;
+  }
   html.dark {
     color-scheme: dark;
   }

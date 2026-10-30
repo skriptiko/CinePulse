@@ -38,6 +38,16 @@ describe('Home', () => {
 
   afterEach(() => vi.restoreAllMocks());
 
+  it('uses the app name as the document title', async () => {
+    document.title = 'Previous page';
+    mockHome();
+    renderWithProviders(<Home />);
+
+    await screen.findByRole('heading', { level: 1 });
+
+    expect(document.title).toBe('CinePulse');
+  });
+
   it('renders every section from its own request', async () => {
     mockHome();
     renderWithProviders(<Home />);

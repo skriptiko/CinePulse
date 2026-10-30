@@ -1,4 +1,5 @@
-import { Info, Play, Plus } from 'lucide-react';
+import { Info, Play } from 'lucide-react';
+import { useId } from 'react';
 import { cn } from '../lib/utils';
 import { ImagePlaceholder } from './image-placeholder';
 import { Button } from './ui/button';
@@ -24,9 +25,11 @@ export type HeroProps = {
 
 export function Hero({ movie, className }: HeroProps) {
   const { title, description, imageUrl, imageSrcSet, year, rating } = movie;
+  const titleId = useId();
 
   return (
     <section
+      aria-labelledby={titleId}
       className={cn(
         'relative min-h-[70svh] sm:min-h-[80svh] lg:min-h-[85svh] flex items-end',
         className
@@ -41,7 +44,7 @@ export function Hero({ movie, className }: HeroProps) {
             src={imageUrl}
             srcSet={imageSrcSet ?? undefined}
             sizes="100vw"
-            alt={title}
+            alt=""
             fetchPriority="high"
             decoding="async"
             className="size-full object-cover"
@@ -68,7 +71,10 @@ export function Hero({ movie, className }: HeroProps) {
           </div>
 
           {/* Title */}
-          <h2 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-3 sm:mb-4 text-balance">
+          <h2
+            id={titleId}
+            className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-3 sm:mb-4 text-balance"
+          >
             {title}
           </h2>
 
@@ -79,7 +85,7 @@ export function Hero({ movie, className }: HeroProps) {
             </p>
           )}
 
-          {/* Actions */}
+          {/* Actions: "My List" comes back with a watchlist, as on `MovieCard`. */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <Button
               size="lg"
@@ -87,14 +93,6 @@ export function Hero({ movie, className }: HeroProps) {
             >
               <Play className="fill-current" />
               Play
-            </Button>
-            <Button
-              variant="secondary"
-              size="lg"
-              className="rounded-lg gap-2 px-4 sm:px-6 h-10 sm:h-12 text-sm sm:text-base font-medium glass"
-            >
-              <Plus />
-              My List
             </Button>
             <Button variant="ghost" size="icon" className="rounded-lg size-10 sm:size-12 glass">
               <Info />

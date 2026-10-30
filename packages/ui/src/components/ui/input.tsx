@@ -4,12 +4,13 @@ import { cn } from '../../lib/utils';
 
 export type InputProps = Pick<
   ComponentProps<'input'>,
-  'aria-label' | 'maxLength' | 'onChange' | 'placeholder' | 'ref' | 'type' | 'value'
+  'aria-label' | 'id' | 'maxLength' | 'onChange' | 'placeholder' | 'ref' | 'type' | 'value'
 > & {
   className?: string;
 };
 
 export function Input({
+  id,
   type = 'text',
   value,
   onChange,
@@ -22,6 +23,7 @@ export function Input({
   return (
     <input
       ref={ref}
+      id={id}
       type={type}
       value={value}
       onChange={onChange}

@@ -78,6 +78,51 @@ function currentSearch(): URLSearchParams {
 }
 
 describe('Movies page', () => {
+  it('labels the page and its controls', async () => {
+    mockTmdb();
+    const { user } = renderMovies();
+
+    await screen.findByText('Discover p1 a');
+
+    expect(document.title).toBe('Movies · CinePulse');
+    expect(screen.queryByRole('main')).not.toBeInTheDocument();
+    // Testing Library does not map the <search> element to its role yet.
+    expect(
+      screen.getByRole('searchbox', { name: 'Search movies' }).closest('search')
+    ).not.toBeNull();
+    expect(screen.getByRole('group', { name: 'Filter by genre' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /^Sort by/ }));
+    expect(await screen.findByRole('group', { name: 'Sort by' })).toBeInTheDocument();
+  });
+
+  it('switches the card size with a radio group', async () => {
+    mockTmdb();
+    const { user } = renderMovies();
+
+    await screen.findByText('Discover p1 a');
+    const group = screen.getByRole('radiogroup', { name: 'Card size' });
+    const compact = within(group).getByRole('radio', { name: 'Compact cards' });
+    const large = within(group).getByRole('radio', { name: 'Large cards' });
+    expect(large).toBeChecked();
+
+    await user.click(compact);
+    expect(compact).toBeChecked();
+
+    // Clicking the active item must not leave the group empty.
+    await user.click(compact);
+    expect(compact).toBeChecked();
+  });
+
+  it('stays on the page when the search form is submitted', async () => {
+    mockTmdb();
+    const { user } = renderMovies();
+
+    await user.type(await screen.findByRole('searchbox', { name: 'Search movies' }), 'dune{Enter}');
+
+    expect(screen.getByRole('searchbox', { name: 'Search movies' })).toHaveValue('dune');
+  });
+
   it('lists popular movies of every genre by default', async () => {
     mockTmdb();
     const requests = recordRequests('/discover/movie');
@@ -156,7 +201,7 @@ describe('Movies page', () => {
     const searches = recordRequests('/search/movie');
     const { user } = renderMovies('/movies?genre=28');
 
-    await user.type(await screen.findByRole('textbox', { name: 'Search movies' }), 'dune');
+    await user.type(await screen.findByRole('searchbox', { name: 'Search movies' }), 'dune');
 
     expect(await screen.findByText('Found: dune')).toBeInTheDocument();
     expect(searches).toHaveLength(1);
@@ -182,7 +227,7 @@ describe('Movies page', () => {
 
     expect(await screen.findByText('Discover p1 a')).toBeInTheDocument();
     expect(currentSearch().has('q')).toBe(false);
-    expect(screen.getByRole('textbox', { name: 'Search movies' })).toHaveValue('');
+    expect(screen.getByRole('searchbox', { name: 'Search movies' })).toHaveValue('');
   });
 
   it('loads the next page, then ends the list', async () => {

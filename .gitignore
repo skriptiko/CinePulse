@@ -45,3 +45,6 @@ coverage
 # CinePulse Design
 cine-pulse-ui-design
 /.claude/
+
+# Firebase deploy cache
+.firebase/
