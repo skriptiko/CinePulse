@@ -30,7 +30,7 @@ Utilities: `cn` (class merging), the `to…Data` mappers in `lib/mappers/` (TMDB
 
 ## Theme and tokens
 
-The theme is **dark-first**, built on Tailwind CSS variables (`packages/ui/src/styles/globals.css`). Components use semantic tokens rather than raw colors:
+The theme is **dark-first**, built on Tailwind CSS variables (`packages/ui/src/theme.css`). Components use semantic tokens rather than raw colors:
 - surfaces: `bg-background`, `bg-secondary`, `bg-accent`
 - text: `text-foreground`, `text-muted-foreground`
 - borders: `border-border`
@@ -39,7 +39,7 @@ The theme lives in the shared store (`@repo/events`, `theme`: `light | dark | sy
 
 ## Style isolation
 
-Each MFE uses **Tailwind scoping with unique ID prefixes** so that one MFE's styles do not conflict with another's when loaded into the shared shell. Each application has its own `styles/globals.css` and root element (`#root`, `#mfe-pages-root`, etc.).
+In the integration the host builds one stylesheet for every remote, so MFE styles cannot conflict; see [ADR-0009](../03-architecture/decisions/ADR-0009-tailwind-4-style-isolation.md). Each application has its own `styles/globals.css`, used for standalone development in the remotes.
 
 ## Mockups
 

@@ -53,12 +53,12 @@ export function Hero({ movie, className }: HeroProps) {
           <ImagePlaceholder />
         )}
         {/* Gradient Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/40 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-background via-background/60 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-r from-background/80 via-background/40 to-transparent" />
       </div>
 
       {/* Content */}
-      <div className="relative z-10 max-w-[1800px] mx-auto px-4 sm:px-6 md:px-8 pb-12 sm:pb-16 md:pb-24 pt-24 sm:pt-32 w-full">
+      <div className="relative z-10 max-w-page mx-auto px-4 sm:px-6 md:px-8 pb-12 sm:pb-16 md:pb-24 pt-24 sm:pt-32 w-full">
         <div className="max-w-2xl">
           {/* Metadata */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-4 text-xs sm:text-sm">

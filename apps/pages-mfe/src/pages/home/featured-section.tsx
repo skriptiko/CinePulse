@@ -23,6 +23,6 @@ function EditorsPicks() {
 
   if (featuredItems.length === 0) return null;
   return (
-    <FeaturedGrid title="Editor's Picks" items={featuredItems} className="max-w-[1800px] mx-auto" />
+    <FeaturedGrid title="Editor's Picks" items={featuredItems} className="max-w-page mx-auto" />
   );
 }
