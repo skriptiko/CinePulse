@@ -2,6 +2,7 @@ import { API_CONFIG, type BackdropSize, type ImageSize, type ProfileSize } from 
 
 export type QueryParams = Record<string, string | number | boolean | undefined>;
 
+/** Full TMDB image URL, or `null` without a path, so components show a placeholder. */
 export function getImageUrl(
   path: string | null | undefined,
   size: ImageSize | BackdropSize | ProfileSize
