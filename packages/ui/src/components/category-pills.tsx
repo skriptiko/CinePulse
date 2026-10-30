@@ -1,5 +1,6 @@
 import { cva } from 'class-variance-authority';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 
 const pillVariants = cva(
@@ -59,5 +60,34 @@ export function CategoryPills({
         </button>
       ))}
     </div>
+  );
+}
+
+export type CategoryLink = {
+  label: string;
+  href: string;
+};
+
+export type CategoryLinksProps = {
+  links: CategoryLink[];
+  /** Accessible name of the link list, e.g. "Browse by genre". */
+  label: string;
+  className?: string;
+};
+
+/** Pills that navigate (e.g. Home → Movies filtered by genre) instead of selecting in place. */
+export function CategoryLinks({ links, label, className }: CategoryLinksProps) {
+  return (
+    <nav aria-label={label}>
+      <ul className={cn('flex gap-2 overflow-x-auto scrollbar-hide px-4 md:px-8 pb-2', className)}>
+        {links.map((link) => (
+          <li key={link.href}>
+            <Link to={link.href} className={cn(pillVariants({ selected: false }), 'inline-block')}>
+              {link.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
   );
 }

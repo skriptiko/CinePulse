@@ -19,7 +19,7 @@
 - `Hero` — головний банер
 - `ContentRow` — горизонтальний ряд карток
 - `FeaturedGrid` — сітка добірок («Editor's Picks»)
-- `CategoryPills` — «пігулки» категорій/жанрів
+- `CategoryPills` — selectable genre pills (Movies); `CategoryLinks` — the same pills as links (Home: each genre opens `/movies?genre=<id>`)
 
 **Каркас застосунку:**
 - `Header`, `Footer`, `AppLayout` — оболонка сторінки
