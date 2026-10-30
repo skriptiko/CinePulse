@@ -18,18 +18,18 @@ export function MoviesEmptyState({
 }: MoviesEmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4">
-        <Search className="w-8 h-8 text-muted-foreground" aria-hidden="true" />
+      <div className="bg-secondary mb-4 flex h-16 w-16 items-center justify-center rounded-full">
+        <Search className="text-muted-foreground h-8 w-8" aria-hidden="true" />
       </div>
-      <h2 className="text-lg font-medium mb-2">
+      <h2 className="mb-2 text-lg font-medium">
         {query ? `No movies found for “${query}”` : 'No movies found'}
       </h2>
-      <p className="text-muted-foreground text-sm max-w-md">
+      <p className="text-muted-foreground max-w-md text-sm">
         {query
           ? 'Check the spelling or try a different title.'
           : 'Try a different genre or reset the filters.'}
       </p>
-      <div className="flex gap-2 mt-4">
+      <div className="mt-4 flex gap-2">
         {query && (
           <Button variant="secondary" className="rounded-lg" onClick={onClearSearch}>
             Clear search

@@ -8,7 +8,7 @@ import {
   waitFor,
   within,
 } from '@repo/test-utils';
-import { http, HttpResponse } from 'msw';
+import { HttpResponse, http } from 'msw';
 import { Suspense } from 'react';
 import { useLocation } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
@@ -37,7 +37,10 @@ function mockTmdb({
   discover = (params) => discoverPage(params),
   search = (params) =>
     HttpResponse.json(buildPaginated([buildMovie({ title: `Found: ${params.get('query')}` })])),
-}: { discover?: PageResponder; search?: PageResponder } = {}) {
+}: {
+  discover?: PageResponder;
+  search?: PageResponder;
+} = {}) {
   server.use(
     http.get(`${TMDB}/genre/movie/list`, () => HttpResponse.json({ genres: GENRES })),
     http.get(`${TMDB}/discover/movie`, ({ request }) =>

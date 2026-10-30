@@ -6,7 +6,7 @@ import {
   server,
   within,
 } from '@repo/test-utils';
-import { http, HttpResponse } from 'msw';
+import { HttpResponse, http } from 'msw';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Home } from '../home-page';
 

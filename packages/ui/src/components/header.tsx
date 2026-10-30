@@ -26,7 +26,7 @@ const TOOLBAR_BUTTON_CLASS = 'rounded-lg text-muted-foreground hover:text-foregr
 /** Scroll offset after which the header gets its glass background. */
 const SCROLLED_THRESHOLD_PX = 20;
 
-const navLinkVariants = cva('px-4 text-sm transition-colors rounded-lg', {
+const navLinkVariants = cva('rounded-lg px-4 text-sm transition-colors', {
   variants: {
     layout: {
       desktop: 'py-2',
@@ -57,7 +57,7 @@ export function Header({ className }: HeaderProps) {
   return (
     <header
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-[padding,background-color] duration-300',
+        'fixed top-0 right-0 left-0 z-50 transition-[padding,background-color] duration-300',
         isScrolled ? 'glass py-3' : 'bg-transparent py-5',
         className
       )}
@@ -66,7 +66,7 @@ export function Header({ className }: HeaderProps) {
         <div className="flex items-center justify-between gap-8">
           <div className="flex items-center gap-8">
             <Logo labelClassName="text-xl hidden sm:block" />
-            <nav aria-label="Main" className="hidden lg:flex items-center gap-1">
+            <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">
               <NavLinks layout="desktop" />
             </nav>
           </div>
@@ -97,11 +97,11 @@ export function Header({ className }: HeaderProps) {
               aria-label="Profile"
               className={cn(
                 buttonVariants({ variant: 'ghost', size: 'icon' }),
-                'rounded-lg overflow-hidden'
+                'overflow-hidden rounded-lg'
               )}
             >
-              <span className="size-8 rounded-lg bg-linear-to-br from-accent to-accent/60 flex items-center justify-center">
-                <User className="size-4 text-accent-foreground" />
+              <span className="from-accent to-accent/60 flex size-8 items-center justify-center rounded-lg bg-linear-to-br">
+                <User className="text-accent-foreground size-4" />
               </span>
             </Link>
             <Button
@@ -122,7 +122,7 @@ export function Header({ className }: HeaderProps) {
           <nav
             id={MOBILE_NAV_ID}
             aria-label="Main"
-            className="lg:hidden pt-4 pb-2 border-t border-border mt-4"
+            className="border-border mt-4 border-t pt-4 pb-2 lg:hidden"
           >
             <div className="flex flex-col gap-1">
               <NavLinks layout="mobile" onNavigate={handleMobileMenuClose} />

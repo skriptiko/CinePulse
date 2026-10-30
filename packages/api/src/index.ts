@@ -1,3 +1,4 @@
+export type { ApiErrorKind, BackdropSize, ImageSize, ProfileSize } from './core';
 export {
   API_CONFIG,
   ApiError,
@@ -12,29 +13,25 @@ export {
   SEARCH_QUERY_MAX_LENGTH,
   TMDB_MAX_PAGES,
 } from './core';
-export type { ApiErrorKind, BackdropSize, ImageSize, ProfileSize } from './core';
 
 export type { DiscoverSortBy, MovieCategory, TVCategory } from './endpoints';
-
+export { useMoviesOrSearch } from './hooks';
+export type { ApiProviderProps } from './provider/api-provider';
+export { ApiProvider } from './provider/api-provider';
+export type { DiscoverMovieFilters } from './queries';
 export {
   DEFAULT_DISCOVER_FILTERS,
   genreQueries,
   movieQueries,
   personQueries,
-  searchQueries,
   STALE_TIME_DEFAULT_MS,
   STALE_TIME_REFERENCE,
+  searchQueries,
   trendingQueries,
   tvQueries,
 } from './queries';
-export type { DiscoverMovieFilters } from './queries';
-
-export { useMoviesOrSearch } from './hooks';
-
-export { createQueryClient, MAX_RETRIES, shouldRetry } from './query-client';
 export type { ApiQueryMeta } from './query-client';
-export { ApiProvider } from './provider/api-provider';
-export type { ApiProviderProps } from './provider/api-provider';
+export { createQueryClient, MAX_RETRIES, shouldRetry } from './query-client';
 
 export type {
   Collection,

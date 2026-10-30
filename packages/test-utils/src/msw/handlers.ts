@@ -1,4 +1,4 @@
-import { http, HttpResponse } from 'msw';
+import { HttpResponse, http } from 'msw';
 import { buildMovie, buildPaginated } from '../factories/movie';
 
 // `*` matches any origin, so handlers work in both jsdom and node environments.

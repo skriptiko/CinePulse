@@ -16,10 +16,10 @@ export function AppLayout({ children }: AppLayoutProps) {
   useFocusOnNavigation(mainRef);
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    <div className="bg-background text-foreground flex min-h-screen flex-col">
       <a
         href={`#${MAIN_ID}`}
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-lg focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium"
+        className="focus:bg-background sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[60] focus:rounded-lg focus:px-4 focus:py-2 focus:text-sm focus:font-medium"
       >
         Skip to content
       </a>

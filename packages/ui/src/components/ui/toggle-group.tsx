@@ -31,7 +31,7 @@ export function ToggleGroup({
       onValueChange={handleValueChange}
       aria-label={ariaLabel}
       data-slot="toggle-group"
-      className={cn('flex items-center rounded-lg bg-secondary p-1', className)}
+      className={cn('bg-secondary flex items-center rounded-lg p-1', className)}
     >
       {children}
     </ToggleGroupPrimitive.Root>
@@ -57,7 +57,7 @@ export function ToggleGroupItem({
       aria-label={ariaLabel}
       data-slot="toggle-group-item"
       className={cn(
-        'p-2 rounded-md transition-colors text-muted-foreground hover:text-foreground',
+        'text-muted-foreground hover:text-foreground rounded-md p-2 transition-colors',
         'data-[state=on]:bg-background data-[state=on]:text-foreground',
         className
       )}

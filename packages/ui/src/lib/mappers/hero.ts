@@ -1,5 +1,5 @@
-import { BACKDROP_SIZE_FEATURED, BACKDROP_SIZE_HERO, getImageUrl } from '@repo/api';
 import type { Movie } from '@repo/api';
+import { BACKDROP_SIZE_FEATURED, BACKDROP_SIZE_HERO, getImageUrl } from '@repo/api';
 import type { HeroData } from '../../components/hero';
 import { formatRating, formatYear } from '../format';
 

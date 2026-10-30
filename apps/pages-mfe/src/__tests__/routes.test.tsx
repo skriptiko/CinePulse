@@ -1,6 +1,6 @@
 import { ROUTE_PATHS } from '@repo/routes';
 import { renderWithProviders, screen, server } from '@repo/test-utils';
-import { http, HttpResponse } from 'msw';
+import { HttpResponse, http } from 'msw';
 import { useRoutes } from 'react-router-dom';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { routes } from '../routes';

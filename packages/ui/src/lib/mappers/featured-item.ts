@@ -1,5 +1,5 @@
-import { BACKDROP_SIZE_FEATURED, getImageUrl } from '@repo/api';
 import type { Genre, Movie } from '@repo/api';
+import { BACKDROP_SIZE_FEATURED, getImageUrl } from '@repo/api';
 import type { FeaturedItemData } from '../../components/featured-grid';
 import { formatRating, formatYear } from '../format';
 

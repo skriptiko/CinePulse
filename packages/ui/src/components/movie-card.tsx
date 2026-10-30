@@ -26,13 +26,13 @@ export function MovieCard({ movie, className }: MovieCardProps) {
   return (
     <div
       className={cn(
-        'group relative rounded-lg overflow-hidden transition-transform duration-300',
-        'motion-safe:hover:scale-105 hover:z-10',
+        'group relative overflow-hidden rounded-lg transition-transform duration-300',
+        'hover:z-10 motion-safe:hover:scale-105',
         className
       )}
     >
       {/* Poster Image */}
-      <div className="aspect-[2/3] relative">
+      <div className="relative aspect-[2/3]">
         {imageUrl ? (
           <img
             src={imageUrl}
@@ -48,8 +48,8 @@ export function MovieCard({ movie, className }: MovieCardProps) {
         {/* Hover Overlay */}
         <div
           className={cn(
-            'absolute inset-0 bg-linear-to-t from-background via-background/60 to-transparent',
-            'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100',
+            'from-background via-background/60 absolute inset-0 bg-linear-to-t to-transparent',
+            'opacity-0 group-focus-within:opacity-100 group-hover:opacity-100',
             'transition-opacity duration-300'
           )}
         />
@@ -58,32 +58,32 @@ export function MovieCard({ movie, className }: MovieCardProps) {
         <div
           className={cn(
             'absolute inset-0 flex items-center justify-center',
-            'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100',
+            'opacity-0 group-focus-within:opacity-100 group-hover:opacity-100',
             'transition-opacity duration-300'
           )}
         >
           <button
             type="button"
             aria-label={`Play ${title}`}
-            className="size-14 rounded-full bg-foreground/90 hover:bg-foreground flex items-center justify-center transition-[transform,background-color] motion-safe:hover:scale-110"
+            className="bg-foreground/90 hover:bg-foreground flex size-14 items-center justify-center rounded-full transition-[transform,background-color] motion-safe:hover:scale-110"
           >
-            <Play aria-hidden="true" className="size-6 text-background fill-current ml-1" />
+            <Play aria-hidden="true" className="text-background ml-1 size-6 fill-current" />
           </button>
         </div>
 
         {/* Bottom Content */}
         <div
           className={cn(
-            'absolute bottom-0 left-0 right-0 p-3',
-            'translate-y-full group-hover:translate-y-0 group-focus-within:translate-y-0',
+            'absolute right-0 bottom-0 left-0 p-3',
+            'translate-y-full group-focus-within:translate-y-0 group-hover:translate-y-0',
             'transition-transform duration-300 motion-reduce:transition-none'
           )}
         >
-          <h3 className="text-sm font-medium text-foreground truncate mb-1">{title}</h3>
+          <h3 className="text-foreground mb-1 truncate text-sm font-medium">{title}</h3>
           {(year !== null || rating !== null) && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <div className="text-muted-foreground flex items-center gap-2 text-xs">
               {rating !== null && (
-                <span className="px-1.5 py-0.5 rounded bg-foreground/10 text-foreground text-xs font-medium">
+                <span className="bg-foreground/10 text-foreground rounded px-1.5 py-0.5 text-xs font-medium">
                   {rating}
                 </span>
               )}

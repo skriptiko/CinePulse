@@ -31,7 +31,7 @@ export function Hero({ movie, className }: HeroProps) {
     <section
       aria-labelledby={titleId}
       className={cn(
-        'relative min-h-[70svh] sm:min-h-[80svh] lg:min-h-[85svh] flex items-end',
+        'relative flex min-h-[70svh] items-end sm:min-h-[80svh] lg:min-h-[85svh]',
         className
       )}
     >
@@ -53,17 +53,17 @@ export function Hero({ movie, className }: HeroProps) {
           <ImagePlaceholder />
         )}
         {/* Gradient Overlays */}
-        <div className="absolute inset-0 bg-linear-to-t from-background via-background/60 to-transparent" />
-        <div className="absolute inset-0 bg-linear-to-r from-background/80 via-background/40 to-transparent" />
+        <div className="from-background via-background/60 absolute inset-0 bg-linear-to-t to-transparent" />
+        <div className="from-background/80 via-background/40 absolute inset-0 bg-linear-to-r to-transparent" />
       </div>
 
       {/* Content */}
-      <div className="relative z-10 max-w-page mx-auto px-4 sm:px-6 md:px-8 pb-12 sm:pb-16 md:pb-24 pt-24 sm:pt-32 w-full">
+      <div className="max-w-page relative z-10 mx-auto w-full px-4 pt-24 pb-12 sm:px-6 sm:pt-32 sm:pb-16 md:px-8 md:pb-24">
         <div className="max-w-2xl">
           {/* Metadata */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-4 text-xs sm:text-sm">
+          <div className="mb-3 flex flex-wrap items-center gap-2 text-xs sm:mb-4 sm:gap-3 sm:text-sm">
             {rating !== null && (
-              <span className="px-2 py-1 rounded bg-foreground text-background font-medium">
+              <span className="bg-foreground text-background rounded px-2 py-1 font-medium">
                 {rating}
               </span>
             )}
@@ -73,14 +73,14 @@ export function Hero({ movie, className }: HeroProps) {
           {/* Title */}
           <h2
             id={titleId}
-            className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-3 sm:mb-4 text-balance"
+            className="mb-3 text-3xl font-bold tracking-tight text-balance sm:mb-4 sm:text-4xl md:text-6xl lg:text-7xl"
           >
             {title}
           </h2>
 
           {/* Description */}
           {description !== null && (
-            <p className="text-muted-foreground text-sm sm:text-base md:text-lg leading-relaxed mb-6 sm:mb-8 max-w-lg">
+            <p className="text-muted-foreground mb-6 max-w-lg text-sm leading-relaxed sm:mb-8 sm:text-base md:text-lg">
               {description}
             </p>
           )}
@@ -89,12 +89,12 @@ export function Hero({ movie, className }: HeroProps) {
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <Button
               size="lg"
-              className="rounded-lg gap-2 px-5 sm:px-8 h-10 sm:h-12 text-sm sm:text-base font-medium"
+              className="h-10 gap-2 rounded-lg px-5 text-sm font-medium sm:h-12 sm:px-8 sm:text-base"
             >
               <Play className="fill-current" />
               Play
             </Button>
-            <Button variant="ghost" size="icon" className="rounded-lg size-10 sm:size-12 glass">
+            <Button variant="ghost" size="icon" className="glass size-10 rounded-lg sm:size-12">
               <Info />
               <span className="sr-only">More Info</span>
             </Button>

@@ -2,6 +2,6 @@
 @import "@repo/ui/theme.css";
 
 /* The host builds the CSS for the remotes too: they ship none through federation (ADR-0009). */
-@source '../../../../packages/ui/src';
-@source '../../../pages-mfe/src';
-@source '../../../user-mfe/src';
+@source "../../../../packages/ui/src";
+@source "../../../pages-mfe/src";
+@source "../../../user-mfe/src";

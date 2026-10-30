@@ -22,7 +22,7 @@ export type FeaturedGridProps = {
   className?: string;
 };
 
-const tileVariants = cva('group relative rounded-lg overflow-hidden', {
+const tileVariants = cva('group relative overflow-hidden rounded-lg', {
   variants: { featured: { true: 'sm:col-span-2 sm:row-span-2', false: '' } },
 });
 
@@ -30,7 +30,7 @@ const tileImageVariants = cva('relative', {
   variants: { featured: { true: 'aspect-[16/10]', false: 'aspect-video' } },
 });
 
-const tileTitleVariants = cva('font-semibold text-foreground', {
+const tileTitleVariants = cva('text-foreground font-semibold', {
   variants: { featured: { true: 'text-xl md:text-2xl', false: 'text-base' } },
 });
 
@@ -39,11 +39,11 @@ export function FeaturedGrid({ title, items, className }: FeaturedGridProps) {
 
   return (
     <section aria-labelledby={titleId} className={cn('px-4 md:px-8', className)}>
-      <h2 id={titleId} className="text-xl md:text-2xl font-semibold tracking-tight mb-6">
+      <h2 id={titleId} className="mb-6 text-xl font-semibold tracking-tight md:text-2xl">
         {title}
       </h2>
 
-      <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
         {items.map((item, index) => (
           <FeaturedTile key={item.id} item={item} featured={index === 0} />
         ))}
@@ -77,16 +77,16 @@ function FeaturedTile({ item, featured }: FeaturedTileProps) {
           <ImagePlaceholder />
         )}
 
-        <div className="absolute inset-0 bg-linear-to-t from-background via-background/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+        <div className="from-background via-background/40 absolute inset-0 bg-linear-to-t to-transparent opacity-80 transition-opacity group-hover:opacity-90" />
 
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-          <div className="size-14 rounded-full bg-foreground/90 hover:bg-foreground flex items-center justify-center transition-[transform,background-color] motion-safe:hover:scale-110">
-            <Play aria-hidden="true" className="size-6 text-background fill-current ml-1" />
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
+          <div className="bg-foreground/90 hover:bg-foreground flex size-14 items-center justify-center rounded-full transition-[transform,background-color] motion-safe:hover:scale-110">
+            <Play aria-hidden="true" className="text-background ml-1 size-6 fill-current" />
           </div>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4">
-          <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
+        <div className="absolute right-0 bottom-0 left-0 p-4">
+          <div className="text-muted-foreground mb-2 flex items-center gap-2 text-xs">
             {rating !== null && (
               <div className="flex items-center gap-1">
                 <Star aria-hidden="true" className="size-3 fill-yellow-500 text-yellow-500" />
@@ -104,7 +104,7 @@ function FeaturedTile({ item, featured }: FeaturedTileProps) {
         </div>
 
         {featured && (
-          <div className="absolute top-4 left-4 px-3 py-1 rounded-full glass text-xs font-medium">
+          <div className="glass absolute top-4 left-4 rounded-full px-3 py-1 text-xs font-medium">
             Top Rated
           </div>
         )}

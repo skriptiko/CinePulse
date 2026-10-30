@@ -2,7 +2,7 @@
 // The store is a `window` singleton and the hook renders React, so this file needs a DOM.
 import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { THEMES, createGlobalStore, getGlobalStore, globalStore, useGlobalStore } from '../store';
+import { createGlobalStore, getGlobalStore, globalStore, THEMES, useGlobalStore } from '../store';
 
 afterEach(() => {
   cleanup();

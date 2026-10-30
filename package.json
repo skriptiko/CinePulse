@@ -7,7 +7,7 @@
     "lint": "turbo lint && pnpm lint:jsx-spread",
     "lint:jsx-spread": "node scripts/check-jsx-spread.js",
     "format": "biome format --write .",
-    "check": "biome check --write --ignore=\"**/.__mf__temp/**\" .",
+    "check": "biome check --write .",
     "typecheck": "turbo typecheck",
     "sync-types": "turbo sync-types",
     "prepare": "husky",
@@ -20,7 +20,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
+    "@biomejs/biome": "^2.6.4",
     "@size-limit/file": "^11.2.0",
     "@vitest/coverage-v8": "catalog:",
     "husky": "^9.1.7",
@@ -36,6 +36,8 @@
     "node": ">=24"
   },
   "lint-staged": {
-    "*.{js,ts,tsx,json}": ["biome check --write --no-errors-on-unmatched"]
+    "*.{js,ts,tsx,json}": [
+      "biome check --write --no-errors-on-unmatched"
+    ]
   }
 }

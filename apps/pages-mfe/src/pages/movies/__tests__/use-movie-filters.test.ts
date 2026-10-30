@@ -1,6 +1,6 @@
 import { SEARCH_QUERY_MAX_LENGTH } from '@repo/api';
 import { describe, expect, it } from 'vitest';
-import { SORT_OPTIONS, parseMovieFilters, toDiscoverSortBy } from '../use-movie-filters';
+import { parseMovieFilters, SORT_OPTIONS, toDiscoverSortBy } from '../use-movie-filters';
 
 function parse(search: string) {
   return parseMovieFilters(new URLSearchParams(search));

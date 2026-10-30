@@ -20,21 +20,21 @@ export function ContentRow({ title, movies, className }: ContentRowProps) {
       {/* "See all" comes back with a page to link to. */}
       <h2
         id={titleId}
-        className="mb-4 px-4 md:px-8 text-xl md:text-2xl font-semibold tracking-tight"
+        className="mb-4 px-4 text-xl font-semibold tracking-tight md:px-8 md:text-2xl"
       >
         {title}
       </h2>
 
-      <div className="relative group/carousel">
+      <div className="group/carousel relative">
         <CarouselArrow direction="left" hidden={!canScrollLeft} onScroll={scroll} />
         <CarouselArrow direction="right" hidden={!canScrollRight} onScroll={scroll} />
 
         <ul
           ref={ref}
-          className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide px-4 md:px-8 pb-4"
+          className="scrollbar-hide flex gap-3 overflow-x-auto px-4 pb-4 md:gap-4 md:px-8"
         >
           {movies.map((movie) => (
-            <li key={movie.id} className="shrink-0 w-36 sm:w-40 md:w-44 lg:w-48">
+            <li key={movie.id} className="w-36 shrink-0 sm:w-40 md:w-44 lg:w-48">
               <MovieCard movie={movie} />
             </li>
           ))}
@@ -64,7 +64,7 @@ function CarouselArrow({ direction, hidden, onScroll }: CarouselArrowProps) {
       aria-hidden={true}
       onClick={handleClick}
       className={cn(
-        'absolute top-1/2 -translate-y-1/2 z-20 size-10 rounded-full glass',
+        'glass absolute top-1/2 z-20 size-10 -translate-y-1/2 rounded-full',
         'opacity-0 group-hover/carousel:opacity-100',
         'transition-opacity duration-300',
         direction === 'left' ? 'left-2' : 'right-2',
