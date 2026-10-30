@@ -9,6 +9,7 @@ export const SKELETON_DELAY_MS = 300;
 // Static placeholders never reorder, so fixed string keys are enough.
 const ROW_CARD_KEYS = createKeys('row-card', 6);
 const GRID_CARD_KEYS = createKeys('grid-card', 12);
+const FEATURED_TILE_KEYS = createKeys('featured-tile', 4);
 
 export function PageSkeleton() {
   return (
@@ -20,13 +21,31 @@ export function PageSkeleton() {
   );
 }
 
-export function HomeSkeleton() {
+export function HeroSkeleton() {
   return (
     <SkeletonFrame>
       <Skeleton className="min-h-[70svh] w-full rounded-none sm:min-h-[80svh] lg:min-h-[85svh]" />
-      <div className="space-y-12 px-4 py-12 sm:px-6 lg:px-12">
-        <CardRowSkeleton />
-        <CardRowSkeleton />
+    </SkeletonFrame>
+  );
+}
+
+export function ContentRowSkeleton() {
+  return (
+    <SkeletonFrame className="px-4 sm:px-6 lg:px-12">
+      <CardRowSkeleton />
+    </SkeletonFrame>
+  );
+}
+
+export function FeaturedGridSkeleton() {
+  return (
+    <SkeletonFrame className="px-4 md:px-8">
+      <Skeleton className="mb-6 h-6 w-40" />
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        <Skeleton className="col-span-2 row-span-2 aspect-video rounded-lg md:aspect-auto" />
+        {FEATURED_TILE_KEYS.map((key) => (
+          <Skeleton key={key} className="aspect-video rounded-lg" />
+        ))}
       </div>
     </SkeletonFrame>
   );

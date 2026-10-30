@@ -44,11 +44,14 @@ export { ShellBoundary } from './components/shell-boundary';
 export type { ShellBoundaryProps } from './components/shell-boundary';
 export { NotFound } from './components/not-found';
 export {
-  HomeSkeleton,
+  ContentRowSkeleton,
+  FeaturedGridSkeleton,
+  HeroSkeleton,
   MovieGridSkeleton,
   PageSkeleton,
   SKELETON_DELAY_MS,
 } from './components/page-skeletons';
+export { SectionErrorFallback } from './components/section-error-fallback';
 
 export { AppLayout } from './components/app-layout';
 export type { AppLayoutProps } from './components/app-layout';

@@ -4,6 +4,7 @@ import { renderWithProviders, screen } from '@repo/test-utils';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AsyncBoundary } from '../async-boundary';
+import { SectionErrorFallback } from '../section-error-fallback';
 
 const onErrorReport = createTypedListener('error:report');
 
@@ -65,5 +66,27 @@ describe('AsyncBoundary', () => {
 
     expect(await screen.findByRole('heading', { name: 'Page not found' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument();
+  });
+});
+
+describe('SectionErrorFallback', () => {
+  beforeEach(() => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => vi.restoreAllMocks());
+
+  it('keeps the failure inside its section', async () => {
+    renderWithProviders(
+      <>
+        <h2>Popular</h2>
+        <AsyncBoundary fallback={<p>Loading row</p>} errorFallback={SectionErrorFallback}>
+          <Movie queryFn={() => Promise.reject(new ApiError('server', 'HTTP 500'))} />
+        </AsyncBoundary>
+      </>
+    );
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('This section could not be loaded.');
+    expect(screen.getByRole('heading', { name: 'Popular' })).toBeInTheDocument();
   });
 });

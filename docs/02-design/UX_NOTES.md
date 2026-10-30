@@ -24,7 +24,7 @@
 **Каркас застосунку:**
 - `Header`, `Footer`, `AppLayout` — оболонка сторінки
 - `PageBoundary` / `AsyncBoundary` (page and section loading + errors), `ShellBoundary` (host), `PageErrorFallback`, `NotFound`
-- `HomeSkeleton`, `MovieGridSkeleton`, `PageSkeleton` — page skeletons, shown after 300 ms
+- `PageSkeleton`, `MovieGridSkeleton` (pages) and `HeroSkeleton`, `ContentRowSkeleton`, `FeaturedGridSkeleton` (Home sections) — shown after 300 ms; `SectionErrorFallback` — inline error of one section
 
 Утиліти: `cn` (склейка класів), мапери `to…Data` у `lib/mappers/` (TMDB → UI-моделі).
 
@@ -49,12 +49,14 @@
 ## Стани UI
 
 🟡 Частково уніфіковано:
-- **Loading:** every page suspends into a skeleton shaped like it (`HomeSkeleton`, `MovieGridSkeleton`, `PageSkeleton`). The layout is reserved at once and the skeleton appears after 300 ms, so fast loads do not flicker.
+- **Loading:** every page or Home section suspends into a skeleton shaped like it. The layout is reserved at once and the skeleton appears after 300 ms, so fast loads do not flicker.
 - **Empty:** реалізовано в **Movies** («No movies found» + кнопка «Clear filters»). На інших сторінках порожніх станів немає.
 - **Error:** without data, the page boundary shows a plain message with **Try again** (404 → `NotFound`); the host's `ShellBoundary` catches the rest and keeps the header; a failed background refetch keeps the data and shows one toast (bottom right).
 - **Offline:** one global banner at the bottom, "You are offline. Showing saved results."
 
-TODO: section-level boundaries on Home (item 6.1) and inline states for "Load more" (item 6.2).
+- **Home sections** load and fail independently: each has its own skeleton (`HeroSkeleton`, `ContentRowSkeleton`, `FeaturedGridSkeleton`) and an inline `SectionErrorFallback` with **Try again**; one failed row never blanks the page. All requests start together (`usePrefetchQuery` in the page).
+
+TODO: inline states for "Load more" (item 6.2).
 
 ## Accessibility
 

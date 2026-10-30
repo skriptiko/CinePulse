@@ -113,7 +113,7 @@ Singleton саме на `window` гарантує єдиний екземпля�
 
 Boundaries are built on `react-error-boundary` (a strict MF singleton) and live in `@repo/ui`:
 
-1. **Page** — every route element of a remote is wrapped in `PageBoundary` (`AsyncBoundary` = `QueryErrorResetBoundary` + `ErrorBoundary` + `Suspense`). Navigation resets it (`resetKeys` and the `Suspense` key are the `pathname`). The fallback is a page skeleton (`HomeSkeleton`, `MovieGridSkeleton`, `PageSkeleton`), shown after 300 ms. Errors go to `PageErrorFallback`: a 404 (`kind: 'not_found'`) renders `NotFound`, anything else a plain-language message with **Try again**, which also resets the failed queries so they refetch.
+1. **Page** — every route element of a remote is wrapped in `PageBoundary` (`AsyncBoundary` = `QueryErrorResetBoundary` + `ErrorBoundary` + `Suspense`). Navigation resets it (`resetKeys` and the `Suspense` key are the `pathname`). The fallback is a page skeleton (`MovieGridSkeleton`, `PageSkeleton`), shown after 300 ms. Home does not suspend as a whole: each section has its own `AsyncBoundary`, skeleton and `SectionErrorFallback`, and the page prefetches every row so they load in parallel. Errors go to `PageErrorFallback`: a 404 (`kind: 'not_found'`) renders `NotFound`, anything else a plain-language message with **Try again**, which also resets the failed queries so they refetch.
 2. **Shell** — `ShellBoundary` in `apps/host/src/app.tsx`, inside `AppLayout`, so the header survives any error. It offers **Reload** and resets on navigation.
 
 Also:
