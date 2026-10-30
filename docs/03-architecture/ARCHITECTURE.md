@@ -118,7 +118,8 @@ Boundaries are built on `react-error-boundary` (a strict MF singleton) and live 
 
 Also:
 - **Unknown URL** — the host appends a catch-all `*` route rendering `NotFound` after the remotes' routes.
-- **Remote route loading** — `app.tsx` loads each remote with `Promise.allSettled`; an unavailable remote drops only its routes, so they fall to `NotFound` (a "section unavailable" placeholder comes with refactoring plan item 5.9).
+- **Remote route loading** — `loadRemoteRoutes(REMOTES)` (`apps/host/src/remotes/`) loads each remote independently. A failed remote gets `RemoteUnavailable` ("This section is unavailable" + Try again, which reloads) on the paths listed for it in `REMOTES`, and `mfe:error` is emitted with a serialized error; the other remotes keep working.
+- **Stale chunks after a deploy** — `vite:preloadError` triggers one `location.reload()`; the reload time in `sessionStorage` blocks another reload for 60 s, so a really missing chunk cannot loop.
 - **API errors** — `ApiError` with `kind` (`network`, `not_found`, `server`, `client`, `validation`), `status` and `cause`; an abort is rethrown unchanged. See [API_SPEC.md](./API_SPEC.md#errors).
 - **Reporting** — every boundary emits `error:report` (`source: 'boundary'`); the host listener arrives with item 5.10.
 

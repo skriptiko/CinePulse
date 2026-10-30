@@ -2,30 +2,23 @@ import { AppRoutes } from '@/app-routes';
 import { AppLayout, PageSkeleton, ShellBoundary } from '@repo/ui';
 import { useEffect, useState } from 'react';
 import type { RouteObject } from 'react-router-dom';
+import { loadRemoteRoutes } from './remotes/load-remote-routes';
+import { REMOTES } from './remotes/remotes';
 
 export function App() {
   const [remoteRoutes, setRemoteRoutes] = useState<RouteObject[] | null>(null);
 
   useEffect(() => {
-    async function loadRemoteRoutes() {
-      // allSettled: one unavailable remote must not drop the other's routes.
-      const results = await Promise.allSettled([
-        import('pagesMfe/routes'),
-        import('userMfe/routes'),
-      ]);
+    // StrictMode runs the effect twice; only the last run may set state.
+    let ignore = false;
 
-      const routes = results.flatMap((result) => {
-        if (result.status === 'fulfilled') return result.value.routes;
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Failed to load remote routes:', result.reason);
-        }
-        return [];
-      });
+    void loadRemoteRoutes(REMOTES).then((routes) => {
+      if (!ignore) setRemoteRoutes(routes);
+    });
 
-      setRemoteRoutes(routes);
-    }
-
-    loadRemoteRoutes();
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   return (
