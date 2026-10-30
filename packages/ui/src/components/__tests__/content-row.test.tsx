@@ -18,6 +18,19 @@ describe('ContentRow', () => {
     ).toEqual(['Dune', 'Arrival']);
   });
 
+  it('offers no action without a destination', () => {
+    renderWithProviders(<ContentRow title="Trending Now" movies={MOVIES} />);
+
+    expect(screen.queryByRole('button', { name: 'See all' })).not.toBeInTheDocument();
+  });
+
+  it('keeps the carousel arrows out of the Tab order and the accessibility tree', () => {
+    const { container } = renderWithProviders(<ContentRow title="Trending Now" movies={MOVIES} />);
+
+    const arrows = container.querySelectorAll('button[tabindex="-1"][aria-hidden="true"]');
+    expect(arrows).toHaveLength(2);
+  });
+
   it('is a region named by its heading, with the cards in a list', () => {
     renderWithProviders(<ContentRow title="Trending Now" movies={MOVIES} />);
 

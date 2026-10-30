@@ -22,6 +22,18 @@ describe('MovieCard', () => {
     expect(screen.getByRole('button', { name: 'Play Dune' })).toBeInTheDocument();
   });
 
+  it('reveals the overlay for keyboard users too', () => {
+    const { container } = renderWithProviders(<MovieCard movie={MOVIE} />);
+
+    expect(container.querySelector('.group-focus-within\\:opacity-100')).not.toBeNull();
+  });
+
+  it('does not look clickable without an action of its own', () => {
+    const { container } = renderWithProviders(<MovieCard movie={MOVIE} />);
+
+    expect(container.firstElementChild).not.toHaveClass('cursor-pointer');
+  });
+
   it('shows a placeholder instead of an image when there is none', () => {
     const { container } = renderWithProviders(<MovieCard movie={{ ...MOVIE, imageUrl: null }} />);
 

@@ -36,11 +36,13 @@ export type ButtonProps = Pick<
   ComponentProps<'button'>,
   | 'aria-controls'
   | 'aria-expanded'
+  | 'aria-hidden'
   | 'aria-label'
   | 'aria-pressed'
   | 'disabled'
   | 'onClick'
   | 'ref'
+  | 'tabIndex'
   | 'type'
 > &
   VariantProps<typeof buttonVariants> & {
@@ -56,8 +58,10 @@ export function Button({
   ref,
   'aria-controls': ariaControls,
   'aria-expanded': ariaExpanded,
+  'aria-hidden': ariaHidden,
   'aria-label': ariaLabel,
   'aria-pressed': ariaPressed,
+  tabIndex,
   variant,
   size,
   className,
@@ -68,8 +72,10 @@ export function Button({
       type={type}
       disabled={disabled}
       onClick={onClick}
+      tabIndex={tabIndex}
       aria-controls={ariaControls}
       aria-expanded={ariaExpanded}
+      aria-hidden={ariaHidden}
       aria-label={ariaLabel}
       aria-pressed={ariaPressed}
       data-slot="button"

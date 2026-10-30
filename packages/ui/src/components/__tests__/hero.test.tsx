@@ -25,6 +25,12 @@ describe('Hero', () => {
     expect(screen.getByText('2021')).toBeInTheDocument();
   });
 
+  it('does not offer a list that cannot save anything', () => {
+    renderWithProviders(<Hero movie={MOVIE} />);
+
+    expect(screen.queryByRole('button', { name: 'My List' })).not.toBeInTheDocument();
+  });
+
   it('falls back to a placeholder and hides empty fields', () => {
     renderWithProviders(
       <Hero

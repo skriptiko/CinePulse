@@ -26,7 +26,7 @@ export function MovieCard({ movie, className }: MovieCardProps) {
   return (
     <div
       className={cn(
-        'group relative rounded-lg overflow-hidden cursor-pointer transition-transform duration-300',
+        'group relative rounded-lg overflow-hidden transition-transform duration-300',
         'motion-safe:hover:scale-105 hover:z-10',
         className
       )}
@@ -49,7 +49,8 @@ export function MovieCard({ movie, className }: MovieCardProps) {
         <div
           className={cn(
             'absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent',
-            'opacity-0 group-hover:opacity-100 transition-opacity duration-300'
+            'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100',
+            'transition-opacity duration-300'
           )}
         />
 
@@ -57,7 +58,8 @@ export function MovieCard({ movie, className }: MovieCardProps) {
         <div
           className={cn(
             'absolute inset-0 flex items-center justify-center',
-            'opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-300'
+            'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100',
+            'transition-opacity duration-300'
           )}
         >
           <button

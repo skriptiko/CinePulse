@@ -28,6 +28,12 @@ describe('FeaturedGrid', () => {
     expect(container.querySelector('img')).toHaveAttribute('alt', '');
   });
 
+  it('does not look clickable without an action of its own', () => {
+    renderWithProviders(<FeaturedGrid title="Picks" items={ITEMS} />);
+
+    expect(screen.getAllByRole('listitem')[0]).not.toHaveClass('cursor-pointer');
+  });
+
   it('has no axe violations', async () => {
     const { container } = renderWithProviders(<FeaturedGrid title="Picks" items={ITEMS} />);
 

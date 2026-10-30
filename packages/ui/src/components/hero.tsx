@@ -1,4 +1,4 @@
-import { Info, Play, Plus } from 'lucide-react';
+import { Info, Play } from 'lucide-react';
 import { useId } from 'react';
 import { cn } from '../lib/utils';
 import { ImagePlaceholder } from './image-placeholder';
@@ -85,7 +85,7 @@ export function Hero({ movie, className }: HeroProps) {
             </p>
           )}
 
-          {/* Actions */}
+          {/* Actions: "My List" comes back with a watchlist, as on `MovieCard`. */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <Button
               size="lg"
@@ -93,14 +93,6 @@ export function Hero({ movie, className }: HeroProps) {
             >
               <Play className="fill-current" />
               Play
-            </Button>
-            <Button
-              variant="secondary"
-              size="lg"
-              className="rounded-lg gap-2 px-4 sm:px-6 h-10 sm:h-12 text-sm sm:text-base font-medium glass"
-            >
-              <Plus />
-              My List
             </Button>
             <Button variant="ghost" size="icon" className="rounded-lg size-10 sm:size-12 glass">
               <Info />

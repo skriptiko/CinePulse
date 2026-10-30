@@ -22,7 +22,7 @@ export type FeaturedGridProps = {
   className?: string;
 };
 
-const tileVariants = cva('group relative rounded-lg overflow-hidden cursor-pointer', {
+const tileVariants = cva('group relative rounded-lg overflow-hidden', {
   variants: { featured: { true: 'sm:col-span-2 sm:row-span-2', false: '' } },
 });
 
@@ -81,7 +81,7 @@ function FeaturedTile({ item, featured }: FeaturedTileProps) {
 
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
           <div className="size-14 rounded-full bg-foreground/90 hover:bg-foreground flex items-center justify-center transition-[transform,background-color] motion-safe:hover:scale-110">
-            <Play className="size-6 text-background fill-current ml-1" />
+            <Play aria-hidden="true" className="size-6 text-background fill-current ml-1" />
           </div>
         </div>
 
@@ -89,13 +89,13 @@ function FeaturedTile({ item, featured }: FeaturedTileProps) {
           <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
             {rating !== null && (
               <div className="flex items-center gap-1">
-                <Star className="size-3 fill-yellow-500 text-yellow-500" />
+                <Star aria-hidden="true" className="size-3 fill-yellow-500 text-yellow-500" />
                 <span className="text-foreground font-medium">{rating}</span>
               </div>
             )}
             {details.map((detail, detailIndex) => (
               <Fragment key={detail}>
-                {(rating !== null || detailIndex > 0) && <span>•</span>}
+                {(rating !== null || detailIndex > 0) && <span aria-hidden="true">•</span>}
                 <span>{detail}</span>
               </Fragment>
             ))}
