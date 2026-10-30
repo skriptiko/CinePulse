@@ -3,10 +3,10 @@ import { defineSecret } from 'firebase-functions/params';
 import { onRequest } from 'firebase-functions/v2/https';
 import {
   CACHE_CONTROL_NO_STORE,
-  type ProxyError,
-  UPSTREAM_UNAVAILABLE,
   mapUpstreamError,
+  type ProxyError,
   resolveProxyRequest,
+  UPSTREAM_UNAVAILABLE,
 } from './proxy-rules.js';
 
 const TMDB_API_READ_TOKEN = defineSecret('TMDB_API_READ_TOKEN');

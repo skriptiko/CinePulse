@@ -1,4 +1,4 @@
-import { type EndpointOptions, apiGet } from '../core';
+import { apiGet, type EndpointOptions } from '../core';
 import type { GenresResponse } from '../types';
 
 export async function getMovieGenres({ signal }: EndpointOptions = {}): Promise<GenresResponse> {

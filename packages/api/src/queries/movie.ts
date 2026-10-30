@@ -2,10 +2,10 @@ import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 import { getNextPageParam } from '../core';
 import {
   type DiscoverSortBy,
-  type MovieCategory,
   discoverMovies,
   getMovieDetails,
   getMovies,
+  type MovieCategory,
 } from '../endpoints';
 
 export type DiscoverMovieFilters = {

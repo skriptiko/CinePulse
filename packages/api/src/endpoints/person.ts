@@ -1,4 +1,4 @@
-import { type EndpointOptions, apiGet } from '../core';
+import { apiGet, type EndpointOptions } from '../core';
 import type { PersonDetails } from '../types';
 
 export async function getPersonDetails(

@@ -1,11 +1,11 @@
 import { createTypedListener } from '@repo/events';
 import { type QueryClient, QueryObserver, type QueryObserverResult } from '@tanstack/react-query';
-import { http, HttpResponse } from 'msw';
+import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { ApiError, isApiError } from '../../core';
 import { movieQueries } from '../../queries';
-import { MAX_RETRIES, createQueryClient, shouldRetry } from '../create-query-client';
+import { createQueryClient, MAX_RETRIES, shouldRetry } from '../create-query-client';
 
 // @repo/api cannot use @repo/test-utils (that package depends on @repo/api), so it owns its server.
 const server = setupServer();

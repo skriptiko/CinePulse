@@ -1,4 +1,4 @@
-import { type Movie, genreQueries, useMoviesOrSearch } from '@repo/api';
+import { genreQueries, type Movie, useMoviesOrSearch } from '@repo/api';
 import { cn, usePageMeta } from '@repo/ui';
 import { usePrefetchQuery } from '@tanstack/react-query';
 import { useDeferredValue, useMemo, useState } from 'react';
@@ -66,15 +66,15 @@ export function Movies() {
         onViewModeChange={setViewMode}
       />
 
-      <div className="px-4 sm:px-6 lg:px-12 py-4">
-        <output className="block text-sm text-muted-foreground">
+      <div className="px-4 py-4 sm:px-6 lg:px-12">
+        <output className="text-muted-foreground block text-sm">
           {countFormat.format(totalResults)} {totalResults === 1 ? 'movie' : 'movies'} found
         </output>
       </div>
 
       <div
         className={cn(
-          'px-4 sm:px-6 lg:px-12 pb-16 transition-opacity',
+          'px-4 pb-16 transition-opacity sm:px-6 lg:px-12',
           isShowingStale && 'opacity-60'
         )}
         aria-busy={isShowingStale}

@@ -1,4 +1,4 @@
-import { type EndpointOptions, apiGet } from '../core';
+import { apiGet, type EndpointOptions } from '../core';
 import type { MediaType, PageParams, PaginatedResponse, TimeWindow, TrendingItem } from '../types';
 
 export async function getTrending(

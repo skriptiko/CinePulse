@@ -1,5 +1,5 @@
-import { POSTER_SIZE_CARD, getImageUrl } from '@repo/api';
-import type { Movie, TV, TrendingMovie, TrendingTV } from '@repo/api';
+import type { Movie, TrendingMovie, TrendingTV, TV } from '@repo/api';
+import { getImageUrl, POSTER_SIZE_CARD } from '@repo/api';
 import type { MovieCardData } from '../../components/movie-card';
 import { formatRating, formatYear } from '../format';
 

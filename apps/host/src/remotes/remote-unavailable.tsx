@@ -10,7 +10,7 @@ export function RemoteUnavailable() {
       className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4 pt-24 text-center"
     >
       <h1 className="text-2xl font-semibold sm:text-3xl">This section is unavailable</h1>
-      <p className="max-w-md text-muted-foreground">
+      <p className="text-muted-foreground max-w-md">
         It could not be loaded. The rest of CinePulse still works.
       </p>
       <Button onClick={handleRetry}>Try again</Button>

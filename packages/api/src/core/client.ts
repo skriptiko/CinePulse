@@ -1,6 +1,6 @@
 import { API_CONFIG } from './config';
 import { ApiError, isAbortError, toHttpError } from './errors';
-import { type QueryParams, buildQueryString } from './utils';
+import { buildQueryString, type QueryParams } from './utils';
 
 export type RequestOptions = {
   params?: QueryParams;
