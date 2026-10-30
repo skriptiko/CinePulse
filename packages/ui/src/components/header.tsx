@@ -1,157 +1,170 @@
-'use client';
-
-import { Bell, Menu, Moon, Search, Sun, User, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { DEFAULT_DISCOVER_FILTERS, genreQueries, movieQueries } from '@repo/api';
+import { useGlobalStore } from '@repo/events';
+import { ROUTE_PATHS } from '@repo/routes';
+import { useQueryClient } from '@tanstack/react-query';
+import { cva } from 'class-variance-authority';
+import { Menu, Moon, Search, Sun, User, X } from 'lucide-react';
+import { useState } from 'react';
+import { Link, NavLink } from 'react-router-dom';
+import { type IntentHandlers, useIntentPrefetch } from '../hooks/use-intent-prefetch';
+import { useIsScrolled } from '../hooks/use-is-scrolled';
+import { useResolvedTheme } from '../hooks/use-resolved-theme';
 import { cn } from '../lib/utils';
-import { Button } from './button';
+import { Logo } from './logo';
+import { Button, buttonVariants } from './ui/button';
 
-const navItems = [
-  { label: 'Home', href: '/' },
-  { label: 'Movies', href: '/movies' },
-  { label: 'Series', href: '/series' },
-  { label: 'New & Popular', href: '/new' },
-  { label: 'My List', href: '/my-list' },
-];
+// Only routes that exist: Series, New & Popular and My List come back with their pages.
+const NAV_ITEMS = [
+  { label: 'Home', href: ROUTE_PATHS.HOME },
+  { label: 'Movies', href: ROUTE_PATHS.MOVIES },
+] as const;
 
-export function Header() {
-  const location = useLocation();
-  const pathname = location.pathname;
-  const [isScrolled, setIsScrolled] = useState(false);
+const MOBILE_NAV_ID = 'mobile-nav';
+
+const TOOLBAR_BUTTON_CLASS = 'rounded-lg text-muted-foreground hover:text-foreground';
+
+/** Scroll offset after which the header gets its glass background. */
+const SCROLLED_THRESHOLD_PX = 20;
+
+const navLinkVariants = cva('px-4 text-sm transition-colors rounded-lg', {
+  variants: {
+    layout: {
+      desktop: 'py-2',
+      mobile: 'py-3',
+    },
+    active: {
+      true: 'text-foreground bg-secondary font-medium',
+      false: 'text-muted-foreground hover:text-foreground hover:bg-secondary',
+    },
+  },
+});
+
+export type HeaderProps = {
+  className?: string;
+};
+
+export function Header({ className }: HeaderProps) {
+  const isScrolled = useIsScrolled(SCROLLED_THRESHOLD_PX);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isDark, setIsDark] = useState(true);
+  const isDark = useResolvedTheme() === 'dark';
+  const setTheme = useGlobalStore((state) => state.setTheme);
 
-  useEffect(() => {
-    // Set dark mode as default
-    document.documentElement.classList.add('dark');
+  const handleThemeToggle = () => setTheme(isDark ? 'light' : 'dark');
 
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const toggleTheme = () => {
-    setIsDark(!isDark);
-    document.documentElement.classList.toggle('dark');
-  };
+  const handleMobileMenuToggle = () => setIsMobileMenuOpen((isOpen) => !isOpen);
+  const handleMobileMenuClose = () => setIsMobileMenuOpen(false);
 
   return (
     <header
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-        isScrolled ? 'glass py-3' : 'bg-transparent py-5'
+        'fixed top-0 left-0 right-0 z-50 transition-[padding,background-color] duration-300',
+        isScrolled ? 'glass py-3' : 'bg-transparent py-5',
+        className
       )}
     >
       <div className="max-w-[1800px] mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between gap-8">
-          {/* Logo */}
           <div className="flex items-center gap-8">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center">
-                <span className="text-background font-bold text-sm">CP</span>
-              </div>
-              <span className="text-xl font-semibold tracking-tight hidden sm:block">
-                CinePulse
-              </span>
-            </Link>
-
-            {/* Desktop Navigation */}
+            <Logo labelClassName="text-xl hidden sm:block" />
             <nav className="hidden lg:flex items-center gap-1">
-              {navItems.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.label}
-                    to={item.href}
-                    className={cn(
-                      'px-4 py-2 text-sm transition-colors rounded-lg',
-                      isActive
-                        ? 'text-foreground bg-secondary font-medium'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                    )}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
+              <NavLinks layout="desktop" />
             </nav>
           </div>
 
-          {/* Right Section */}
           <div className="flex items-center gap-2">
+            <Link
+              to={ROUTE_PATHS.MOVIES}
+              aria-label="Search movies"
+              className={cn(
+                buttonVariants({ variant: 'ghost', size: 'icon' }),
+                TOOLBAR_BUTTON_CLASS
+              )}
+            >
+              <Search />
+            </Link>
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-lg text-muted-foreground hover:text-foreground"
+              aria-label="Dark theme"
+              aria-pressed={isDark}
+              onClick={handleThemeToggle}
+              className={TOOLBAR_BUTTON_CLASS}
             >
-              <Search className="w-5 h-5" />
-              <span className="sr-only">Search</span>
+              {isDark ? <Sun /> : <Moon />}
             </Button>
+            <Link
+              to={ROUTE_PATHS.USER_PROFILE}
+              aria-label="Profile"
+              className={cn(
+                buttonVariants({ variant: 'ghost', size: 'icon' }),
+                'rounded-lg overflow-hidden'
+              )}
+            >
+              <span className="size-8 rounded-lg bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center">
+                <User className="size-4 text-accent-foreground" />
+              </span>
+            </Link>
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-lg text-muted-foreground hover:text-foreground hidden sm:flex"
+              aria-label="Menu"
+              aria-expanded={isMobileMenuOpen}
+              aria-controls={MOBILE_NAV_ID}
+              onClick={handleMobileMenuToggle}
+              className={cn(TOOLBAR_BUTTON_CLASS, 'lg:hidden')}
             >
-              <Bell className="w-5 h-5" />
-              <span className="sr-only">Notifications</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-lg text-muted-foreground hover:text-foreground"
-              onClick={toggleTheme}
-            >
-              {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-              <span className="sr-only">Toggle theme</span>
-            </Button>
-            <Button variant="ghost" size="icon" className="rounded-lg overflow-hidden">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center">
-                <User className="w-4 h-4 text-accent-foreground" />
-              </div>
-              <span className="sr-only">Profile</span>
-            </Button>
-
-            {/* Mobile Menu Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden rounded-lg text-muted-foreground hover:text-foreground"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              <span className="sr-only">Menu</span>
+              {isMobileMenuOpen ? <X /> : <Menu />}
             </Button>
           </div>
         </div>
 
-        {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <nav className="lg:hidden pt-4 pb-2 border-t border-border mt-4">
+          <nav id={MOBILE_NAV_ID} className="lg:hidden pt-4 pb-2 border-t border-border mt-4">
             <div className="flex flex-col gap-1">
-              {navItems.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.label}
-                    to={item.href}
-                    className={cn(
-                      'px-4 py-3 text-sm transition-colors rounded-lg',
-                      isActive
-                        ? 'text-foreground bg-secondary font-medium'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                    )}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
+              <NavLinks layout="mobile" onNavigate={handleMobileMenuClose} />
             </div>
           </nav>
         )}
       </div>
     </header>
   );
+}
+
+type NavLinksProps = {
+  layout: 'desktop' | 'mobile';
+  onNavigate?: () => void;
+};
+
+/** `NavLink` sets `aria-current="page"` on the active item; `end` keeps Home from matching all. */
+function NavLinks({ layout, onNavigate }: NavLinksProps) {
+  const moviesIntent = useMoviesPrefetch();
+
+  return NAV_ITEMS.map((item) => {
+    const intent = item.href === ROUTE_PATHS.MOVIES ? moviesIntent : undefined;
+    return (
+      <NavLink
+        key={item.label}
+        to={item.href}
+        end
+        onClick={onNavigate}
+        onMouseEnter={intent?.onMouseEnter}
+        onMouseLeave={intent?.onMouseLeave}
+        onFocus={intent?.onFocus}
+        onBlur={intent?.onBlur}
+        className={({ isActive }) => navLinkVariants({ layout, active: isActive })}
+      >
+        {item.label}
+      </NavLink>
+    );
+  });
+}
+
+/** Warms the cache for the default Movies view (and its genres) on hover or focus intent. */
+function useMoviesPrefetch(): IntentHandlers {
+  const queryClient = useQueryClient();
+
+  return useIntentPrefetch(() => {
+    void queryClient.prefetchInfiniteQuery(movieQueries.discover(DEFAULT_DISCOVER_FILTERS));
+    void queryClient.prefetchQuery(genreQueries.movie());
+  });
 }

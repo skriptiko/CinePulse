@@ -1,6 +1,9 @@
-import { apiGet } from '../core';
+import { type EndpointOptions, apiGet } from '../core';
 import type { PersonDetails } from '../types';
 
-export async function getPersonDetails(id: number): Promise<PersonDetails> {
-  return apiGet<PersonDetails>(`/person/${id}`);
+export async function getPersonDetails(
+  id: number,
+  { signal }: EndpointOptions = {}
+): Promise<PersonDetails> {
+  return apiGet<PersonDetails>(`/person/${id}`, { signal });
 }

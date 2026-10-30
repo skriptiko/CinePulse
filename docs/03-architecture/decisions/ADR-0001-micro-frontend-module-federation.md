@@ -1,36 +1,36 @@
-🔗 Частина роадмапи: [Етап 3 — Архітектура](../../00-roadmap/PROJECT_ROADMAP.md#етап-3-архітектура)
+🔗 Roadmap and tasks live in [Notion](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb)
 
-# ADR-0001: Micro-frontend через Module Federation
+# ADR-0001: Micro-frontends with Module Federation
 
-## Статус
+## Status
 
 Accepted
 
-## Контекст
+## Context
 
-CinePulse логічно ділиться на дві незалежні площини: публічний каталог (Home, Movies, у майбутньому TV/Search/Detail) і особистий кабінет (Profile, Settings, авторизація). Ці площини мають різні цикли розробки та потенційно різні команди-власники. Потрібна архітектура, що дозволяє розробляти й деплоїти їх незалежно, але подавати користувачу як єдиний застосунок.
+CinePulse splits logically into two independent areas: the public catalog (Home, Movies, later TV/Search/Detail) and the user account (Profile, Settings, authentication). These areas have different development cycles and potentially different owning teams. We need an architecture that lets us develop and deploy them independently while presenting them to the user as one app.
 
-Розглянуті варіанти: (1) єдиний моноліт-SPA; (2) micro-frontend через Module Federation; (3) окремі застосунки за роутами без федерації (iframe/redirect).
+Options considered: (1) a single monolithic SPA; (2) micro-frontends with Module Federation; (3) separate apps per route without federation (iframe/redirect).
 
-## Рішення
+## Decision
 
-Обрано **micro-frontend на `@module-federation/vite`**:
+We chose **micro-frontends on `@module-federation/vite`**:
 
-- `apps/host` (порт 5000) — shell, що не містить сторінок, а динамічно завантажує remote-роути.
-- `apps/pages-mfe` (5001) і `apps/user-mfe` (5002) — remote-модулі, кожен `exposes: { './routes': './src/routes.tsx' }`.
-- Одиниця композиції — **масив роутів** (`RouteObject[]`), а не окремі компоненти: host робить `import('pagesMfe/routes')` / `import('userMfe/routes')` і зливає їх у спільний роутер.
-- Спільні залежності (`shareScope: 'default'`): `react`, `react-dom`, `react-router-dom`, `@tanstack/react-query`, `@repo/events`, `@repo/routes`, `@repo/api`.
-- Гібридна розробка: адреси remote перевизначаються через `PAGES_MFE_URL` / `USER_MFE_URL`.
+- `apps/host` (port 5000) — a shell with no pages of its own that dynamically loads remote routes.
+- `apps/pages-mfe` (5001) and `apps/user-mfe` (5002) — remote modules, each with `exposes: { './routes': './src/routes.tsx' }`.
+- The unit of composition is an **array of routes** (`RouteObject[]`), not individual components: the host calls `import('pagesMfe/routes')` / `import('userMfe/routes')` and merges them into a shared router.
+- Shared dependencies (`shareScope: 'default'`): `react`, `react-dom`, `react-router-dom`, `@tanstack/react-query`, `@repo/events`, `@repo/routes`, `@repo/api`.
+- Hybrid development: remote URLs are overridden via `PAGES_MFE_URL` / `USER_MFE_URL`.
 
-## Наслідки
+## Consequences
 
-**Плюси:**
-- Незалежна розробка та деплой кожного MFE.
-- Чіткі межі відповідальності; мінімальний контракт (лише експорт роутів).
-- Можливість локально працювати проти staging-remote (гібридний режим).
+**Pros:**
+- Independent development and deployment of each MFE.
+- Clear boundaries of responsibility; a minimal contract (only the routes export).
+- Local work against a staging remote is possible (hybrid mode).
 
-**Мінуси / компроміси:**
-- Спільні `react`/`react-router-dom` жорстко зв'язують версії між MFE — оновлення треба координувати.
-- Складніша збірка (`target: chrome89`, `minify: false`, `cssCodeSplit: false`, `modulePreload: false`) і потреба в `merge-dist` для Firebase.
-- Додаткова інфраструктура типів remote (`sync-types`, `@mf-types/`).
-- Помилки завантаження remote потрібно окремо деградувати (реалізовано в `App.tsx` + shell-level ErrorBoundary).
+**Cons / trade-offs:**
+- Shared `react`/`react-router-dom` tightly couple versions across MFEs, so upgrades must be coordinated.
+- A more complex build (`target: chrome89`, `minify: false`, `cssCodeSplit: false`, `modulePreload: false`) and the need for `merge-dist` for Firebase.
+- Extra infrastructure for remote types (`sync-types`, `@mf-types/`).
+- Remote loading failures need their own graceful degradation (implemented in `App.tsx` + a shell-level ErrorBoundary).

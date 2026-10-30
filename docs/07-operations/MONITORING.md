@@ -1,42 +1,44 @@
-🔗 Частина роадмапи: [Етап 7 — Операції](../00-roadmap/PROJECT_ROADMAP.md#етап-7-операції)
+🔗 Roadmap and tasks are in [Notion](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb)
 
-# Моніторинг та спостережуваність
+# Monitoring and observability
 
-> **Статус: заглушка ⬜.** Активного моніторингу, error tracking та алертів **не налаштовано**. Цей документ — план і чеклист впровадження.
+> **Status: stub ⬜.** Active monitoring, error tracking and alerts are **not set up**. This document is a plan and an implementation checklist.
 
-## Що є зараз
+## What exists now
 
-- **Firebase Hosting/Functions вбудовані метрики** — доступні у Firebase Console (трафік хостингу; для функції `tmdbProxy` — кількість викликів, помилки, латентність, холодні старти). Пасивно збираються, але **активного спостереження/алертів немає**.
-- **Логи функції** — `console.error('TMDB proxy error', ...)` у `tmdbProxy` потрапляють у Cloud Logging (Firebase Console → Functions → Logs).
-- **Клієнт** — лише `console.error` у dev-режимі (`App.tsx` при збої завантаження remote-роутів); у production клієнтські помилки **ніде не збираються**.
-- **Користувацькі нотифікації про помилки** — event `notification:show` емітиться з `apiGet` на 5xx/network (UX-рівень, не моніторинг).
+- **Firebase Hosting/Functions built-in metrics** — available in the Firebase Console (hosting traffic; for the `tmdbProxy` function: invocations, errors, latency, cold starts). Collected passively, but there is **no active observation/alerting**.
+- **Function logs** — `tmdbProxy` logs through `logger` from `firebase-functions` (structured entries with severity): `error` for a missing token or a failed/timed-out upstream request, `warn` for a non-404 TMDB error status; fields are the TMDB path and status only (no token, no search query). Cloud Logging (Firebase Console → Functions → Logs).
+- **Budget alert** — a GCP budget alert is configured on the project (cost guard for the Blaze plan, together with `maxInstances: 2` and CDN caching of proxy responses).
+- **Client** — only `console.error` in dev mode (`App.tsx` when loading remote routes fails); in production client errors are **not collected anywhere**.
+- **User-facing error notifications** — a toast when a background refetch or a mutation fails (`QueryCache` / `MutationCache.onError` → `notification:show` → sonner in the host).
+- **Error reports** — every boundary, failed query/mutation and uncaught window error emits `error:report`; the host listener (`apps/host/src/error-channel/error-reporting.ts`) filters expected failures and logs the rest in development. Sending reports anywhere in production needs a vendor decision.
 
 ## Error tracking
 
-⬜ **Немає.** Рекомендація: **Sentry** (або аналог).
-- Підключити SDK у `host` (і, за потреби, в кожен MFE).
-- Інтегрувати з `ErrorBoundary` (`packages/ui`) — репортити перехоплені помилки shell/module рівнів.
-- Обгорнути `apiGet` / `handleResponse` (`@repo/api`) — репортити `ApiError` (окремо 5xx і network).
-- Репортити збій завантаження remoteEntry (подія `mfe:error` вже є в `EventMap`).
+⬜ **None.** Recommendation: connect an error tracking service.
+- Add the SDK to `host` (and, if needed, to each MFE).
+- Integrate with `ErrorBoundary` (`packages/ui`) — report errors caught at the shell/module levels.
+- Listen to the `error:report` event in the host and report `ApiError` by `kind` (`server`, `network` separately), skipping 404 and aborts.
+- Report remoteEntry loading failures (the `mfe:error` event already exists in `EventMap`).
 
-## Логування
+## Logging
 
-⬜ Структурованого логування немає.
-- **Функції:** замінити `console.error` на структуровані логи (Cloud Logging severity/labels); додати кореляційні поля (шлях TMDB, статус).
-- **Клієнт:** централізувати через error-tracking SDK замість `console`.
-- Визначити рівні (error/warn/info) і що саме логувати (без PII та без TMDB-токена).
+⬜ There is no structured logging.
+- **Functions:** ✅ structured logs via `firebase-functions` `logger` with the TMDB path and status (CIN-52).
+- **Client:** centralize through the error-tracking SDK instead of `console`.
+- Define levels (error/warn/info) and what exactly to log (no PII and no TMDB token).
 
-## Алерти та SLO
+## Alerts and SLOs
 
-⬜ ⚠️ **Потребує моєї участі** — SLO/цілі ще не визначені. TODO:
-- [ ] Визначити SLO (напр.: доступність хостингу, частка 5xx від `tmdbProxy`, p95-латентність проксі).
-- [ ] Налаштувати алерти (Google Cloud Monitoring / Sentry alerts) на перевищення порогів помилок і латентності.
-- [ ] Канал сповіщень (email / месенджер) — узгодити з [RUNBOOK → Контакти](./RUNBOOK.md#контакти--ескалація).
+⬜ ⚠️ **Needs my input** — SLOs/targets are not defined yet. TODO:
+- [ ] Define SLOs (e.g. hosting availability, share of 5xx from `tmdbProxy`, p95 proxy latency).
+- [ ] Set up alerts (Google Cloud Monitoring / error-tracking service alerts) on error and latency thresholds being exceeded.
+- [ ] Notification channel (email / messenger) — align with [RUNBOOK → Contacts](./RUNBOOK.md#contacts--escalation).
 
-## Чеклист впровадження
-- [ ] Підключити Sentry (host + MFE), інтегрувати з ErrorBoundary та `apiGet`.
-- [ ] Структуровані логи у `tmdbProxy`.
-- [ ] Дашборд ключових метрик (Hosting + Function).
-- [ ] Визначити SLO та пороги.
-- [ ] Налаштувати алерти й канал сповіщень.
-- [ ] (Опційно) Web-vitals / продуктова аналітика на клієнті.
+## Implementation checklist
+- [ ] Connect an error-tracking service (host + MFE), integrate with ErrorBoundary and `apiGet`.
+- [x] Structured logs in `tmdbProxy`.
+- [ ] Dashboard of key metrics (Hosting + Function).
+- [ ] Define SLOs and thresholds.
+- [ ] Set up alerts and a notification channel.
+- [ ] (Optional) Web vitals / product analytics on the client.

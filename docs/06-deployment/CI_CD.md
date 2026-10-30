@@ -1,81 +1,80 @@
-🔗 Частина роадмапи: [Етап 6 — Деплой та CI/CD](../00-roadmap/PROJECT_ROADMAP.md#етап-6-деплой-та-cicd)
+🔗 Roadmap and tasks are in [Notion](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb)
 
 # CI/CD
 
-Автоматичний деплой на Firebase Hosting (+ Cloud Functions) через GitHub Actions. Статус етапу: **🟡 частково** — деплой працює, але немає quality gates і документованого rollback.
+Automatic deployment to Firebase Hosting (+ Cloud Functions) via GitHub Actions. Stage status: **🟡 partial** — deployment and quality gates (lint + typecheck + test) work; there is no documented rollback.
 
 ## GitHub Actions
 
-Пайплайн: [`.github/workflows/firebase-deploy.yml`](../../.github/workflows/firebase-deploy.yml).
+Pipeline: [`.github/workflows/firebase-deploy.yml`](../../.github/workflows/firebase-deploy.yml).
 
-- **Тригер:** `push` у гілку `main`.
-- **Runner:** `ubuntu-latest`, Node.js `20`.
-- **Кроки:**
-  1. `actions/checkout@v4`.
-  2. `pnpm/action-setup@v4` — pnpm `9.15.4`.
-  3. `actions/setup-node@v4` — Node `20`, кеш `pnpm`.
-  4. `pnpm install --frozen-lockfile`.
-  5. `pnpm build` — Turbo збирає всі застосунки й пакети.
-  6. `node scripts/merge-dist.js` — об'єднання `dist/` (див. нижче).
-  7. `FirebaseExtended/action-hosting-deploy@v0` — деплой на `projectId: cinepulse-eec15`, `target: production`, `channelId: live`.
+- **Triggers:** `push` to `main` and `develop`, any `pull_request`.
+- **Runner:** `ubuntu-latest`, Node.js `24`, pnpm from `packageManager` in `package.json`.
+- **Job `quality`** (on every trigger):
+  1. checkout, pnpm, Node (`pnpm` cache).
+  2. `pnpm install --frozen-lockfile` — fails if `pnpm-lock.yaml` is out of sync with `package.json`.
+  3. `pnpm lint` (Biome + JSX-spread ban).
+  4. `pnpm typecheck`.
+  5. `pnpm test`.
+- **Job `size`** (on every trigger, not required for merge): `pnpm turbo build --filter=@repo/host` → `pnpm size` (budget in `.size-limit.json`).
+- **Job `build-and-deploy`** (`needs: quality`, push to `main` only, no concurrent deploys):
+  1. The same checkout / pnpm / Node / install.
+  2. `pnpm build:deploy` — Turbo builds all apps and packages except the `apps/design` sandbox (it does not go to production), and `scripts/merge-dist.js` merges `dist/` (see below). Locally it is the same command.
+  3. Functions deploy (`firebase deploy --only functions`) — first, because the `/api/tmdb/**` rewrite points to `tmdbProxy`.
+  4. `FirebaseExtended/action-hosting-deploy@v0` — deploys to `projectId: cinepulse-eec15`, `target: production`, `channelId: live`.
 
-**Секрети GitHub:**
+**GitHub secrets:**
 
-| Секрет | Призначення |
+| Secret | Purpose |
 |--------|-------------|
-| `FIREBASE_SERVICE_ACCOUNT` | Service account для деплою на Firebase |
-| `GITHUB_TOKEN` | Стандартний токен Actions (`repoToken`) |
+| `FIREBASE_SERVICE_ACCOUNT` | Service account for deploying to Firebase |
+| `GITHUB_TOKEN` | Standard Actions token (`repoToken`) |
 
-> ⚠️ Workflow деплоїть лише **hosting**. Деплой Cloud Functions наразі виконується вручну (див. [RUNBOOK](../07-operations/RUNBOOK.md#процедура-деплою-вручну)) або спрацьовує через `firebase deploy` локально.
+> ⚠️ The workflow deploys only **hosting**. Cloud Functions are currently deployed manually (see [RUNBOOK](../07-operations/RUNBOOK.md#manual-deploy-procedure)) or via a local `firebase deploy`.
 
-## Функції (Functions)
+## Functions
 
-Firebase Function `tmdbProxy` ([`functions/src/index.ts`](../../functions/src/index.ts)) — проксі до TMDB.
+Firebase Function `tmdbProxy` ([`functions/src/index.ts`](../../functions/src/index.ts)) — a proxy to TMDB.
 
-- Джерело: `functions` (з `firebase.json`), codebase `default`.
-- **Predeploy hook:** `pnpm --filter @repo/functions build` — функції збираються перед деплоєм.
-- Секрет `TMDB_API_READ_TOKEN` — через `defineSecret` (Firebase Secret Manager), не в коді.
-- Rewrite `/api/tmdb/**` → функція `tmdbProxy` (з `firebase.json`).
+- Source: `functions` (from `firebase.json`), codebase `default`.
+- **Predeploy hook:** `pnpm --filter @repo/functions build` — the functions are built before deployment.
+- The `TMDB_API_READ_TOKEN` secret comes via `defineSecret` (Firebase Secret Manager), not from code.
+- Rewrite `/api/tmdb/**` → the `tmdbProxy` function (from `firebase.json`).
+- Read-only allowlisted proxy (GET/HEAD, fixed paths and query params, neutral `502`/`503` for upstream errors, CDN `Cache-Control` on 2xx); full rules in [ADR-0003](../03-architecture/decisions/ADR-0003-tmdb-proxy.md).
+- Build: `tsc -p tsconfig.build.json` (tests in `src/**/__tests__` stay out of `dist/`); the rules are unit-tested by the `functions` Vitest project in `pnpm test`.
 
-## Збірка і merge
+## Build and merge
 
-Кожен застосунок (`host`, `pages-mfe`, `user-mfe`) збирається у власний `dist/`. Оскільки Firebase Hosting віддає єдину теку `dist` (з `firebase.json`), скрипт [`scripts/merge-dist.js`](../../scripts/merge-dist.js) об'єднує їх:
+Each app (`host`, `pages-mfe`, `user-mfe`) is built into its own `dist/`. Since Firebase Hosting serves a single `dist` folder (from `firebase.json`), the [`scripts/merge-dist.js`](../../scripts/merge-dist.js) script merges them:
 
-- очищає/створює кореневий `/dist`;
-- `apps/host/dist` → корінь `/dist` (shell-застосунок);
+- clears/creates the root `/dist`;
+- `apps/host/dist` → the root of `/dist` (the shell app);
 - `apps/pages-mfe/dist` → `/dist/pages-mfe`;
 - `apps/user-mfe/dist` → `/dist/user-mfe`.
 
-Rewrites у `firebase.json` спрямовують `/pages-mfe/**` і `/user-mfe/**` на відповідні `index.html`, решту — на SPA-fallback `/index.html`.
+Rewrites in `firebase.json` route `/pages-mfe/**` and `/user-mfe/**` to their respective `index.html`, and everything else to the SPA fallback `/index.html`.
 
-**Локальні скрипти деплою** (`package.json`):
-- `pnpm build:deploy` = `pnpm build && pnpm merge-dist`.
+**Local deploy scripts** (`package.json`):
+- `pnpm build:deploy` = `turbo build --filter=!@repo/design && pnpm merge-dist` (same as in CI).
 - `pnpm deploy` = `pnpm build:deploy && firebase deploy --only hosting:production`.
 
 ## Quality gates
 
-⬜ **Наразі відсутні** — пайплайн не запускає lint / typecheck / test перед деплоєм.
+🟡 **Lint + typecheck** — job `quality`; deployment depends on it (`needs`), so a failure stops the deploy. On a PR the checks are visible in the Checks tab.
 
-**Рекомендований блок кроків** (додати перед деплоєм або окремим workflow на `pull_request`):
-```yaml
-- name: Lint
-  run: pnpm lint
-- name: Typecheck
-  run: pnpm typecheck
-- name: Test
-  run: pnpm test        # після впровадження тестів (див. TEST_STRATEGY)
-```
-Деплой на `main` має бути **заблокований** до проходження цих кроків (branch protection + required checks). Див. [TEST_STRATEGY → CI-інтеграція](../05-testing/TEST_STRATEGY.md#ci-інтеграція).
+⬜ **Tests** — `pnpm test` is added to job `quality` once tests are introduced.
+
+⬜ **Branch protection** — to make sure a PR cannot be merged with a red `quality`, enable a required check in the repo settings (GitHub → Settings → Branches → `main`). See [TEST_STRATEGY → CI](../05-testing/TEST_STRATEGY.md#ci).
 
 ## Rollback
 
-⬜ **Не задокументовано.** Рекомендований підхід через Firebase Hosting (кожен деплой = окремий реліз):
+⬜ **Not documented.** Recommended approach via Firebase Hosting (each deploy = a separate release):
 
-- **Через консоль:** Firebase Console → Hosting → історія релізів → обрати попередній справний → «Rollback».
-- **Через CLI (орієнтовно):**
+- **Via the console:** Firebase Console → Hosting → release history → pick the previous healthy one → "Rollback".
+- **Via the CLI (approximate):**
   ```bash
   firebase hosting:clone cinepulse-eec15:live:<PREV_VERSION> cinepulse-eec15:live
   ```
-- **Через Git:** `revert` проблемного коміту в `main` → пайплайн задеплоїть попередній стан.
+- **Via Git:** `revert` the problematic commit in `main` → the pipeline deploys the previous state.
 
-**TODO:** зафіксувати перевірену процедуру rollback і додати її в [RUNBOOK](../07-operations/RUNBOOK.md).
+**TODO:** record a verified rollback procedure and add it to the [RUNBOOK](../07-operations/RUNBOOK.md).

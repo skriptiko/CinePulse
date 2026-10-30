@@ -4,22 +4,23 @@ on:
   push:
     branches:
       - main
+      - develop
+  pull_request:
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: '24'
 
 jobs:
-  build-and-deploy:
+  quality:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Version comes from packageManager in package.json.
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -30,11 +31,79 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build
-        run: pnpm build
+      - name: Lint
+        run: pnpm lint
 
-      - name: Merge dist folders
-        run: node scripts/merge-dist.js
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+  # Bundle budget (.size-limit.json). Separate from `quality` and not a required check:
+  # an over-budget build is a signal to review, not a merge blocker.
+  size:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build host
+        run: pnpm turbo build --filter=@repo/host
+
+      - name: Check bundle size
+        run: pnpm size
+
+  build-and-deploy:
+    needs: quality
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    # Never run two production deploys at once; a newer push waits for the current one.
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Same command as locally: builds everything except the apps/design sandbox, then merges dist/.
+      - name: Build and merge dist
+        run: pnpm build:deploy
+
+      # Functions first: the hosting rewrite /api/tmdb/** points at tmdbProxy.
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Deploy Functions
+        run: pnpm dlx firebase-tools@15.18.0 deploy --only functions --project cinepulse-eec15 --non-interactive --force
 
       - name: Deploy to Production
         uses: FirebaseExtended/action-hosting-deploy@v0

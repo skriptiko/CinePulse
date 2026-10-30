@@ -1,32 +1,41 @@
+import { ROUTE_PATHS } from '@repo/routes';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
+import { Logo } from './logo';
 
-const footerLinks = {
-  company: [
-    { label: 'About Us', href: '/about' },
-    { label: 'Careers', href: '/careers' },
-    { label: 'Press', href: '/press' },
-  ],
-  support: [
-    { label: 'Help Center', href: '/help' },
-    { label: 'Contact Us', href: '/contact' },
-    { label: 'FAQ', href: '/faq' },
-  ],
-  legal: [
-    { label: 'Terms of Service', href: '/terms' },
-    { label: 'Privacy Policy', href: '/privacy' },
-    { label: 'Cookie Settings', href: '/cookies' },
-  ],
-  social: [
-    { label: 'Twitter', href: 'https://twitter.com' },
-    { label: 'Instagram', href: 'https://instagram.com' },
-    { label: 'Facebook', href: 'https://facebook.com' },
-  ],
+type FooterLink = {
+  label: string;
+  href: string;
 };
 
-interface FooterProps {
+type FooterColumnData = {
+  title: string;
+  links: FooterLink[];
+};
+
+// Only pages that exist: company, support, legal and social links come back with real pages.
+const FOOTER_COLUMNS: FooterColumnData[] = [
+  {
+    title: 'Browse',
+    links: [
+      { label: 'Home', href: ROUTE_PATHS.HOME },
+      { label: 'Movies', href: ROUTE_PATHS.MOVIES },
+    ],
+  },
+  {
+    title: 'Account',
+    links: [
+      { label: 'Profile', href: ROUTE_PATHS.USER_PROFILE },
+      { label: 'Settings', href: ROUTE_PATHS.USER_SETTINGS },
+    ],
+  },
+];
+
+const FOOTER_LINK_CLASS = 'text-sm text-muted-foreground hover:text-foreground transition-colors';
+
+export type FooterProps = {
   className?: string;
-}
+};
 
 export function Footer({ className }: FooterProps) {
   return (
@@ -35,83 +44,15 @@ export function Footer({ className }: FooterProps) {
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
           {/* Brand */}
           <div className="col-span-2 md:col-span-4 lg:col-span-1 mb-4 lg:mb-0">
-            <Link to="/" className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-foreground flex items-center justify-center">
-                <span className="text-background font-bold text-sm">CP</span>
-              </div>
-              <span className="text-lg font-semibold tracking-tight">CinePulse</span>
-            </Link>
+            <Logo className="mb-4" labelClassName="text-lg" />
             <p className="text-sm text-muted-foreground max-w-xs">
               Your premium destination for movies and series. Stream anytime, anywhere.
             </p>
           </div>
 
-          {/* Links */}
-          <div>
-            <h4 className="font-medium text-sm mb-4">Company</h4>
-            <ul className="space-y-3">
-              {footerLinks.company.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    to={link.href}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-medium text-sm mb-4">Support</h4>
-            <ul className="space-y-3">
-              {footerLinks.support.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    to={link.href}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-medium text-sm mb-4">Legal</h4>
-            <ul className="space-y-3">
-              {footerLinks.legal.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    to={link.href}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-medium text-sm mb-4">Social</h4>
-            <ul className="space-y-3">
-              {footerLinks.social.map((link) => (
-                <li key={link.label}>
-                  <a
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {FOOTER_COLUMNS.map((column) => (
+            <FooterColumn key={column.title} column={column} />
+          ))}
         </div>
 
         {/* Bottom */}
@@ -123,5 +64,26 @@ export function Footer({ className }: FooterProps) {
         </div>
       </div>
     </footer>
+  );
+}
+
+type FooterColumnProps = {
+  column: FooterColumnData;
+};
+
+function FooterColumn({ column }: FooterColumnProps) {
+  return (
+    <div>
+      <h2 className="font-medium text-sm mb-4">{column.title}</h2>
+      <ul className="space-y-3">
+        {column.links.map((link) => (
+          <li key={link.label}>
+            <Link to={link.href} className={FOOTER_LINK_CLASS}>
+              {link.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

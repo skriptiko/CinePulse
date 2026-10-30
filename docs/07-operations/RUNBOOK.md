@@ -1,77 +1,83 @@
-🔗 Частина роадмапи: [Етап 7 — Операції](../00-roadmap/PROJECT_ROADMAP.md#етап-7-операції)
+🔗 Roadmap and tasks are in [Notion](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb)
 
 # Runbook
 
-> **Статус: заглушка ⬜.** Більшість операційних процедур ще не відпрацьовано й не задокументовано. Заповнені лише пункти, підтверджені кодом/конфігом (деплой, секрети). Решта — TODO.
+> **Status: stub ⬜.** Most operational procedures have not been worked out or documented yet. Only items confirmed by code/config (deployment, secrets) are filled in. The rest is TODO.
 
-## Типові інциденти
+## Common incidents
 
-> Для кожного інциденту заповнити: **симптоми → діагностика → дії → верифікація → післядія**. Зараз — каркас.
+> For each incident, fill in: **symptoms → diagnosis → actions → verification → follow-up**. For now this is a skeleton.
 
-### TMDB proxy повертає 5xx
-- **Симптоми:** сторінки без контенту; у клієнті сплив `notification:show` («Server error»).
-- **Діагностика:** TODO — логи функції `tmdbProxy` (Firebase Console → Functions → Logs); перевірити валідність `TMDB_API_READ_TOKEN`; статус TMDB API.
-- **Дії:** TODO.
+### TMDB proxy returns 5xx
+- **Symptoms:** pages without content; fallback with Retry on pages (`ApiError` of kind `server`).
+- **Diagnosis:** `tmdbProxy` function logs (Firebase Console → Functions → Logs). The proxy answers with neutral statuses, so the logs tell the cause:
+  - `502` + `upstream error` warning with `status: 401` → the token is invalid or revoked; set a new secret and redeploy the functions.
+  - `502` + `upstream error` with 5xx, or `upstream request failed` (`TimeoutError`/`TypeError`) → TMDB is down or slow; check the TMDB status page.
+  - `503` → TMDB rate limit (`429`); it clears by itself, CDN caching keeps repeats off TMDB.
+  - `500 Proxy misconfigured` + `TMDB_API_READ_TOKEN is not configured` → the secret is missing for the deployed function.
+  - `404`/`400` for a real client request → the endpoint or param is missing from the allowlist in `functions/src/proxy-rules.ts`.
+- **Actions:** TODO.
 
-### Remote MFE (remoteEntry) недоступний
-- **Симптоми:** порожня зона контенту; спрацював module-level ErrorBoundary; у dev — `console.error('Failed to load remote routes')`.
-- **Діагностика:** TODO — доступність `/pages-mfe/**` та `/user-mfe/**`; коректність rewrites; CORS-заголовок на `*.js`.
-- **Дії:** TODO.
+### Remote MFE (remoteEntry) unavailable
+- **Symptoms:** the remote's URLs show "This section is unavailable", other sections work; an `mfe:error` event; in dev, `console.error('Failed to load remote "<name>"')`.
+- **Diagnosis:** TODO — reachability of `/pages-mfe/**` and `/user-mfe/**`; correctness of rewrites; CORS header on `*.js`.
+- **Actions:** TODO.
 
-### Деплой впав
-- **Симптоми:** червоний GitHub Actions run.
-- **Діагностика:** TODO — крок, на якому впало (install / build / merge-dist / deploy); валідність `FIREBASE_SERVICE_ACCOUNT`.
-- **Дії:** TODO; за потреби — [rollback](../06-deployment/CI_CD.md#rollback).
+### Deployment failed
+- **Symptoms:** a red GitHub Actions run.
+- **Diagnosis:** TODO — the step that failed (install / build / merge-dist / deploy); validity of `FIREBASE_SERVICE_ACCOUNT`.
+- **Actions:** TODO; if needed, [rollback](../06-deployment/CI_CD.md#rollback).
 
-### Білий екран у production
-- **Діагностика:** TODO — консоль браузера, завантаження remoteEntry, shell-level ErrorBoundary.
-- **Дії:** TODO.
+### White screen in production
+- **Diagnosis:** TODO — browser console, `remoteEntry.js` loading, whether `ShellBoundary` shows "Something went wrong".
+- **Actions:** TODO.
 
-## Процедура деплою вручну
+## Manual deploy procedure
 
-**Hosting (з локальної машини):**
+**Hosting (from a local machine):**
 ```bash
-# збірка + merge dist + деплой лише hosting (production)
+# build + merge dist + deploy hosting only (production)
 pnpm deploy
-# еквівалент: pnpm build:deploy && firebase deploy --only hosting:production
+# equivalent: pnpm build:deploy && firebase deploy --only hosting:production
 ```
 
-**Functions (вручну):**
+**Functions (manually):**
 ```bash
-# predeploy збере функції автоматично (firebase.json)
+# predeploy builds the functions automatically (firebase.json)
 firebase deploy --only functions
 ```
 
-**Повний деплой:**
+**Full deploy:**
 ```bash
 pnpm build:deploy && firebase deploy
 ```
 
-> Потрібні: автентифікація Firebase CLI (`firebase login`) і доступ до проєкту `cinepulse-eec15`.
+> Required: Firebase CLI authentication (`firebase login`) and access to the `cinepulse-eec15` project.
 
-## Секрети
+## Secrets
 
-✅ Реальна конфігурація:
+✅ Actual configuration:
 
 - **`TMDB_API_READ_TOKEN`** — TMDB Read Access Token.
-  - **Локально:** кореневий `.env` (використовує Vite proxy). Не комітиться.
-  - **Production:** Firebase Secret Manager, оголошений через `defineSecret('TMDB_API_READ_TOKEN')` у `functions/src/index.ts`.
-  - **Встановити/оновити секрет:**
+  - **Locally:** root `.env` (used by the Vite proxy). Not committed.
+  - **Functions emulator:** `functions/.secret.local` (copy `functions/.secret.local.example` and put the token in it). Ignored by git (`*.local`) and by the functions deploy.
+  - **Production:** Firebase Secret Manager, declared via `defineSecret('TMDB_API_READ_TOKEN')` in `functions/src/index.ts`.
+  - **Set/update the secret:**
     ```bash
     firebase functions:secrets:set TMDB_API_READ_TOKEN
     ```
-  - Після зміни секрету — передеплоїти функції.
-- **`FIREBASE_SERVICE_ACCOUNT`, `GITHUB_TOKEN`** — секрети GitHub Actions (деплой). Керуються в налаштуваннях репозиторію.
+  - After changing the secret, redeploy the functions.
+- **`FIREBASE_SERVICE_ACCOUNT`, `GITHUB_TOKEN`** — GitHub Actions secrets (deployment). Managed in the repository settings.
 
-## Контакти / ескалація
+## Contacts / escalation
 
-⚠️ **Потребує моєї участі.** TODO:
-- [ ] Власник проєкту / on-call.
-- [ ] Доступи (Firebase Console, GitHub, TMDB-акаунт).
-- [ ] Канал сповіщень про інциденти.
+⚠️ **Needs my input.** TODO:
+- [ ] Project owner / on-call.
+- [ ] Access (Firebase Console, GitHub, TMDB account).
+- [ ] Incident notification channel.
 
-## TODO операційної готовності
-- [ ] Заповнити кроки діагностики/дій для кожного інциденту.
-- [ ] Відпрацювати й зафіксувати процедуру rollback.
-- [ ] Додати посилання на дашборди (див. [MONITORING](./MONITORING.md)).
-- [ ] Визначити контакти та ескалацію.
+## Operational readiness TODO
+- [ ] Fill in diagnosis/action steps for each incident.
+- [ ] Work out and record the rollback procedure.
+- [ ] Add links to dashboards (see [MONITORING](./MONITORING.md)).
+- [ ] Define contacts and escalation.

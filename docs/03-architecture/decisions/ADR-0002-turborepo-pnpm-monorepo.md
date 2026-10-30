@@ -1,32 +1,32 @@
-🔗 Частина роадмапи: [Етап 3 — Архітектура](../../00-roadmap/PROJECT_ROADMAP.md#етап-3-архітектура)
+🔗 Roadmap and tasks live in [Notion](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb)
 
-# ADR-0002: Turborepo + pnpm workspaces як монорепо
+# ADR-0002: Turborepo + pnpm workspaces monorepo
 
-## Статус
+## Status
 
 Accepted
 
-## Контекст
+## Context
 
-Проєкт складається з трьох застосунків (host, pages-mfe, user-mfe), кількох спільних пакетів (`@repo/api`, `@repo/ui`, `@repo/events`, `@repo/routes`, `@repo/typescript-config`) і Firebase Functions. Ці частини щільно пов'язані (спільні типи, UI, шар даних) і мають версіонуватись разом. Публікувати спільні пакети в зовнішній реєстр недоцільно.
+The project consists of three apps (host, pages-mfe, user-mfe), several shared packages (`@repo/api`, `@repo/ui`, `@repo/events`, `@repo/routes`, `@repo/typescript-config`) and Firebase Functions. These parts are tightly coupled (shared types, UI, data layer) and must be versioned together. Publishing the shared packages to an external registry is not worth it.
 
-## Рішення
+## Decision
 
-Обрано **монорепо на pnpm workspaces + Turborepo**:
+We chose a **monorepo on pnpm workspaces + Turborepo**:
 
-- Межі workspace — `pnpm-workspace.yaml`: `apps/*`, `packages/*`, `functions`.
-- Спільні пакети підключаються як `@repo/*` без публікації (workspace-протокол).
-- Оркестрація задач — `turbo.json`: `build` (граф `dependsOn: ["^build"]`, кеш у `dist/**`), `dev` (persistent, без кешу), `lint`, `typecheck`, `sync-types` (після `build`, генерує типи remote у host).
-- Менеджер пакетів зафіксований: `pnpm@9.15.4`, Node `>=20`.
+- Workspace boundaries are in `pnpm-workspace.yaml`: `apps/*`, `packages/*`, `functions`.
+- Shared packages are consumed as `@repo/*` without publishing (workspace protocol).
+- Task orchestration is in `turbo.json`: `build` (`dependsOn: ["^build"]` graph, cached in `dist/**`), `dev` (persistent, no cache), `lint`, `typecheck`, `sync-types` (after `build`, generates remote types in the host).
+- The package manager is pinned: `pnpm@9.15.4`, Node `>=20`.
 
-## Наслідки
+## Consequences
 
-**Плюси:**
-- Атомарні зміни через застосунки й пакети в одному коміті/PR.
-- Кешування та інкрементальні збірки Turbo пришвидшують CI та локальну роботу.
-- Єдина точка конфігурації TypeScript (`@repo/typescript-config`) і лінтингу (Biome).
+**Pros:**
+- Atomic changes across apps and packages in one commit/PR.
+- Turbo caching and incremental builds speed up CI and local work.
+- A single point of configuration for TypeScript (`@repo/typescript-config`) and linting (Biome).
 
-**Мінуси / компроміси:**
-- Потрібна дисципліна залежностей між пакетами, щоб уникати циклів.
-- Turbo-кеш вимагає коректно оголошених `outputs`/`dependsOn`, інакше можливі stale-артефакти.
-- Один великий репозиторій — складніше розмежувати права доступу між командами (порівняно з polyrepo).
+**Cons / trade-offs:**
+- Requires discipline in dependencies between packages to avoid cycles.
+- The Turbo cache needs correctly declared `outputs`/`dependsOn`, otherwise stale artifacts are possible.
+- One large repository makes it harder to separate access rights between teams (compared to a polyrepo).

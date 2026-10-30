@@ -1,26 +1,34 @@
-import { apiGet } from '../core';
-import type { Movie, MultiSearchResult, PaginatedResponse, Person, TV } from '../types';
+import { type EndpointOptions, apiGet } from '../core';
+import type { Movie, MultiSearchResult, PageParams, PaginatedResponse, Person, TV } from '../types';
 
-export type SearchParams = {
+export type SearchParams = PageParams & {
   query: string;
-  page?: number;
-  [key: string]: string | number | boolean | undefined;
 };
 
 export async function searchMulti(
-  params: SearchParams
+  params: SearchParams,
+  { signal }: EndpointOptions = {}
 ): Promise<PaginatedResponse<MultiSearchResult>> {
-  return apiGet<PaginatedResponse<MultiSearchResult>>('/search/multi', { params });
+  return apiGet<PaginatedResponse<MultiSearchResult>>('/search/multi', { params, signal });
 }
 
-export async function searchMovies(params: SearchParams): Promise<PaginatedResponse<Movie>> {
-  return apiGet<PaginatedResponse<Movie>>('/search/movie', { params });
+export async function searchMovies(
+  params: SearchParams,
+  { signal }: EndpointOptions = {}
+): Promise<PaginatedResponse<Movie>> {
+  return apiGet<PaginatedResponse<Movie>>('/search/movie', { params, signal });
 }
 
-export async function searchTV(params: SearchParams): Promise<PaginatedResponse<TV>> {
-  return apiGet<PaginatedResponse<TV>>('/search/tv', { params });
+export async function searchTV(
+  params: SearchParams,
+  { signal }: EndpointOptions = {}
+): Promise<PaginatedResponse<TV>> {
+  return apiGet<PaginatedResponse<TV>>('/search/tv', { params, signal });
 }
 
-export async function searchPerson(params: SearchParams): Promise<PaginatedResponse<Person>> {
-  return apiGet<PaginatedResponse<Person>>('/search/person', { params });
+export async function searchPerson(
+  params: SearchParams,
+  { signal }: EndpointOptions = {}
+): Promise<PaginatedResponse<Person>> {
+  return apiGet<PaginatedResponse<Person>>('/search/person', { params, signal });
 }

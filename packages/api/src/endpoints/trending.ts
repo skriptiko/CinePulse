@@ -1,17 +1,14 @@
-import { apiGet } from '../core';
-import type { MediaType, PaginatedResponse, TimeWindow, TrendingItem } from '../types';
-
-export type TrendingParams = {
-  page?: number;
-  [key: string]: string | number | boolean | undefined;
-};
+import { type EndpointOptions, apiGet } from '../core';
+import type { MediaType, PageParams, PaginatedResponse, TimeWindow, TrendingItem } from '../types';
 
 export async function getTrending(
   mediaType: MediaType,
   timeWindow: TimeWindow,
-  params: TrendingParams = {}
+  params: PageParams = {},
+  { signal }: EndpointOptions = {}
 ): Promise<PaginatedResponse<TrendingItem>> {
   return apiGet<PaginatedResponse<TrendingItem>>(`/trending/${mediaType}/${timeWindow}`, {
     params,
+    signal,
   });
 }

@@ -1,9 +1,8 @@
-import type { Movie } from './movie';
-import type { Person } from './person';
-import type { TV } from './tv';
+import type { TrendingMovie, TrendingPerson, TrendingTV } from './trending';
 
-export type SearchMovie = Movie & { media_type: 'movie' };
-export type SearchTV = TV & { media_type: 'tv' };
-export type SearchPerson = Person & { media_type: 'person' };
+// Search and trending results carry the same `media_type` tag, so they share one shape.
+export type SearchMovie = TrendingMovie;
+export type SearchTV = TrendingTV;
+export type SearchPerson = TrendingPerson;
 
 export type MultiSearchResult = SearchMovie | SearchTV | SearchPerson;

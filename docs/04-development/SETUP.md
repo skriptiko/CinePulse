@@ -1,95 +1,96 @@
-🔗 Частина роадмапи: [Етап 4 — Розробка](../00-roadmap/PROJECT_ROADMAP.md#етап-4-розробка)
+🔗 Roadmap and tasks are in [Notion](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb)
 
-# SETUP — Локальний запуск
+# SETUP — Running locally
 
-## Передумови
+## Prerequisites
 
 - **Node.js** >= 20
-- **pnpm** >= 9.15.4 (проєкт закріплено на `pnpm@9.15.4` через `packageManager`)
-- Токен доступу до TMDB API (read access token)
+- **pnpm** >= 9.15.4 (the project is pinned to `pnpm@9.15.4` via `packageManager`)
+- A TMDB API access token (read access token)
 
-## Встановлення
+## Installation
 
 ```bash
 pnpm install
 ```
 
-`prepare`-скрипт автоматично налаштує Husky (git hooks).
+The `prepare` script sets up Husky (git hooks) automatically.
 
-## Змінні оточення
+## Environment variables
 
-Створи файл `.env` у **корені** репозиторію:
+Create a `.env` file in the **root** of the repository:
 
 ```bash
-TMDB_API_READ_TOKEN=<твій TMDB read access token>
+TMDB_API_READ_TOKEN=<your TMDB read access token>
 ```
 
-- Токен береться тут: https://www.themoviedb.org/settings/api (API Read Access Token).
-- `.env` **не комітиться**. Токен використовується як у dev (Vite-proxy додає `Authorization` до запитів на `/api/tmdb`), так і в проді (Firebase Function `tmdbProxy` через `defineSecret`).
+- Get the token here: https://www.themoviedb.org/settings/api (API Read Access Token).
+- `.env` is **not committed**. The token is used both in dev (the Vite proxy adds `Authorization` to requests to `/api/tmdb`) and in production (the Firebase Function `tmdbProxy` via `defineSecret`).
+- For the Functions emulator (`pnpm --filter @repo/functions serve`) the secret is read from `functions/.secret.local`: copy `functions/.secret.local.example` and put the token in it (not committed).
 
-## Запуск у режимі розробки
+## Running in development mode
 
-Усі застосунки одразу (через Turborepo):
+All apps at once (via Turborepo):
 
 ```bash
 pnpm dev
 ```
 
-Або окремо:
+Or individually:
 
 ```bash
-pnpm --filter @repo/host dev       # Host (оболонка)   — порт 5000
-pnpm --filter @repo/pages-mfe dev  # Публічний каталог — порт 5001
-pnpm --filter @repo/user-mfe dev   # Особистий кабінет — порт 5002
+pnpm --filter @repo/host dev       # Host (shell)      — port 5000
+pnpm --filter @repo/pages-mfe dev  # Public catalog    — port 5001
+pnpm --filter @repo/user-mfe dev   # User account      — port 5002
 ```
 
-Точка входу застосунку — **http://localhost:5000** (host).
+The app entry point is **http://localhost:5000** (host).
 
-### Порти
+### Ports
 
-| Застосунок | Пакет | Порт |
+| App | Package | Port |
 |-----------|-------|:----:|
-| Host (оболонка) | `@repo/host` | 5000 |
+| Host (shell) | `@repo/host` | 5000 |
 | Pages MFE | `@repo/pages-mfe` | 5001 |
 | User MFE | `@repo/user-mfe` | 5002 |
 
-Порти фіксовані (`strictPort: true`) — якщо порт зайнятий, застосунок не стартує (не переходить на інший порт).
+Ports are fixed (`strictPort: true`): if a port is taken, the app does not start (it does not fall back to another port).
 
-### Порядок запуску MFE
+### MFE startup order
 
-Host у рантаймі завантажує `remoteEntry.js` кожного remote-модуля. Тому **remotes (5001, 5002) мають бути доступні**, коли host намагається їх завантажити. `pnpm dev` піднімає все паралельно; якщо запускаєш вручну — стартуй remotes до/разом із host. Якщо remote недоступний, host логуватиме помилку завантаження роутів і покаже порожній набір роутів.
+At runtime the host loads the `remoteEntry.js` of each remote module. So **the remotes (5001, 5002) must be reachable** when the host tries to load them. `pnpm dev` starts everything in parallel; if you start them manually, start the remotes before or together with the host. If a remote is unreachable, the host logs a route loading error and shows an empty set of routes.
 
-### Гібридний режим (remote зі staging)
+### Hybrid mode (remote from staging)
 
-Можна підмінити адресу remote-модуля через env (напр., щоб місцевий host працював зі staging-версією MFE):
+You can override a remote module's URL via env (e.g. so a local host works with the staging version of an MFE):
 
 ```bash
 PAGES_MFE_URL=https://staging.example.com/pages-mfe/remoteEntry.js pnpm --filter @repo/host dev
 USER_MFE_URL=https://staging.example.com/user-mfe/remoteEntry.js pnpm --filter @repo/host dev
 ```
 
-## Збірка
+## Build
 
 ```bash
-pnpm build          # збірка всіх пакетів і застосунків (turbo)
-pnpm build:deploy   # build + merge dist усіх MFE у єдину теку для Firebase
+pnpm build          # build all packages and apps (turbo)
+pnpm build:deploy   # build + merge the dist of all MFEs into a single folder for Firebase
 ```
 
-## Корисні скрипти
+## Useful scripts
 
-| Команда | Призначення |
+| Command | Purpose |
 |---------|-------------|
-| `pnpm lint` | Лінтинг через Biome (turbo) |
-| `pnpm format` | Форматування через Biome |
-| `pnpm check` | Biome check з автозастосуванням виправлень |
-| `pnpm typecheck` | Перевірка типів TypeScript |
-| `pnpm sync-types` | Синхронізація типів remote-модулів у host |
-| `pnpm build:deploy` | Збірка + об'єднання `dist/` MFE |
-| `pnpm deploy` | Збірка, merge та деплой на Firebase Hosting (production) |
+| `pnpm lint` | Linting via Biome (turbo) |
+| `pnpm format` | Formatting via Biome |
+| `pnpm check` | Biome check with fixes applied automatically |
+| `pnpm typecheck` | TypeScript type checking |
+| `pnpm sync-types` | Sync remote module types into the host |
+| `pnpm build:deploy` | Build + merge the MFE `dist/` folders |
+| `pnpm deploy` | Build, merge and deploy to Firebase Hosting (production) |
 
-## Типи remote-модулів
+## Remote module types
 
-Host отримує типи remotes у `apps/host/src/@types/remotes/` та `apps/host/@mf-types/`. Після зміни експонованого API remote-модуля онови типи:
+The host gets the remote types in `apps/host/src/@types/remotes/` and `apps/host/@mf-types/`. After changing a remote module's exposed API, update the types:
 
 ```bash
 pnpm sync-types
@@ -97,8 +98,8 @@ pnpm sync-types
 
 ## Troubleshooting
 
-- **Host не бачить сторінки / «Failed to load remote routes»** — переконайся, що `pages-mfe` (5001) і `user-mfe` (5002) запущені й `remoteEntry.js` доступний. У dev-консолі host логує помилку завантаження.
-- **Порт зайнятий** — через `strictPort: true` застосунок впаде; звільни порт (5000/5001/5002) або зупини попередній процес.
-- **Порожні дані / 401 від TMDB** — перевір `TMDB_API_READ_TOKEN` у `.env` (кореневий), що це саме Read Access Token, а не API Key v3.
-- **Розсинхрон типів remotes** — виконай `pnpm sync-types` (потребує попередньої збірки remote-модулів).
-- **CORS / стилі конфліктують** — переконайся, що кожен MFE стартував на своєму порту зі своїм скоуп-префіксом стилів.
+- **Host does not see pages / "Failed to load remote routes"** — make sure `pages-mfe` (5001) and `user-mfe` (5002) are running and `remoteEntry.js` is reachable. The host logs the loading error in the dev console.
+- **Port is taken** — because of `strictPort: true` the app will crash; free the port (5000/5001/5002) or stop the previous process.
+- **Empty data / 401 from TMDB** — check `TMDB_API_READ_TOKEN` in the (root) `.env` and that it is the Read Access Token, not the API Key v3.
+- **Remote types out of sync** — run `pnpm sync-types` (requires the remote modules to be built first).
+- **CORS / conflicting styles** — make sure each MFE started on its own port with its own style scope prefix.

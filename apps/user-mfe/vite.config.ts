@@ -2,6 +2,7 @@ import { resolve } from 'node:path';
 import { federation } from '@module-federation/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
+import { createMfShared } from '../../scripts/mf-shared';
 
 export default defineConfig({
   plugins: [
@@ -12,19 +13,7 @@ export default defineConfig({
       exposes: {
         './routes': './src/routes.tsx',
       },
-      shared: {
-        react: {
-          requiredVersion: '^18.3.1',
-        },
-        'react-dom': {
-          requiredVersion: '^18.3.1',
-        },
-        'react-router-dom': {},
-        '@repo/events': {},
-        '@repo/routes': {},
-        '@repo/api': {},
-        '@tanstack/react-query': {},
-      },
+      shared: createMfShared(),
     }),
   ],
   resolve: {
@@ -35,7 +24,6 @@ export default defineConfig({
   build: {
     modulePreload: false,
     target: 'chrome89',
-    minify: false,
     cssCodeSplit: false,
   },
   server: {

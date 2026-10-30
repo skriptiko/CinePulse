@@ -1,47 +1,49 @@
-'use client';
-
-import { Check, Play, Plus } from 'lucide-react';
-import { useState } from 'react';
+import { Play } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { ImagePlaceholder } from './image-placeholder';
 
-interface MovieCardProps {
+/** What a `MovieCard` renders; build it with `toMovieCardData` / `toTvCardData`. */
+export type MovieCardData = {
+  id: number;
   title: string;
-  imageUrl: string;
-  year?: string;
-  rating?: string;
-  duration?: string;
-  isInList?: boolean;
-  className?: string;
-}
+  /** `null` → placeholder. */
+  imageUrl: string | null;
+  year: string | null;
+  /** Formatted rating; `null` hides the badge (`'0.0'` is shown). */
+  rating: string | null;
+};
 
-export function MovieCard({
-  title,
-  imageUrl,
-  year,
-  rating,
-  duration,
-  isInList = false,
-  className,
-}: MovieCardProps) {
-  const [inList, setInList] = useState(isInList);
+export type MovieCardProps = {
+  movie: MovieCardData;
+  className?: string;
+};
+
+// The "add to list" toggle is hidden until a watchlist exists: a local-only toggle
+// would pretend to save something.
+export function MovieCard({ movie, className }: MovieCardProps) {
+  const { title, imageUrl, year, rating } = movie;
 
   return (
     <div
       className={cn(
-        'group relative rounded-lg overflow-hidden cursor-pointer transition-all duration-300',
-        'hover:scale-105 hover:z-10',
+        'group relative rounded-lg overflow-hidden cursor-pointer transition-transform duration-300',
+        'motion-safe:hover:scale-105 hover:z-10',
         className
       )}
-      onMouseEnter={() => {}}
-      onMouseLeave={() => {}}
     >
       {/* Poster Image */}
       <div className="aspect-[2/3] relative">
-        <img
-          src={imageUrl || '/placeholder.svg'}
-          alt={title}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-        />
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={title}
+            loading="lazy"
+            decoding="async"
+            className="size-full object-cover transition-transform duration-500 motion-safe:group-hover:scale-110"
+          />
+        ) : (
+          <ImagePlaceholder />
+        )}
 
         {/* Hover Overlay */}
         <div
@@ -55,14 +57,15 @@ export function MovieCard({
         <div
           className={cn(
             'absolute inset-0 flex items-center justify-center',
-            'opacity-0 group-hover:opacity-100 transition-all duration-300'
+            'opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-300'
           )}
         >
           <button
             type="button"
-            className="w-14 h-14 rounded-full bg-foreground/90 hover:bg-foreground flex items-center justify-center transition-all hover:scale-110"
+            aria-label={`Play ${title}`}
+            className="size-14 rounded-full bg-foreground/90 hover:bg-foreground flex items-center justify-center transition-[transform,background-color] motion-safe:hover:scale-110"
           >
-            <Play className="w-6 h-6 text-background fill-current ml-1" />
+            <Play aria-hidden="true" className="size-6 text-background fill-current ml-1" />
           </button>
         </div>
 
@@ -70,45 +73,22 @@ export function MovieCard({
         <div
           className={cn(
             'absolute bottom-0 left-0 right-0 p-3',
-            'translate-y-full group-hover:translate-y-0 transition-transform duration-300'
+            'translate-y-full group-hover:translate-y-0 group-focus-within:translate-y-0',
+            'transition-transform duration-300 motion-reduce:transition-none'
           )}
         >
           <h3 className="text-sm font-medium text-foreground truncate mb-1">{title}</h3>
-          {(year || rating || duration) && (
+          {(year !== null || rating !== null) && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              {rating && (
-                <span className="px-1.5 py-0.5 rounded bg-foreground/10 text-foreground text-[10px] font-medium">
+              {rating !== null && (
+                <span className="px-1.5 py-0.5 rounded bg-foreground/10 text-foreground text-xs font-medium">
                   {rating}
                 </span>
               )}
-              {year && <span>{year}</span>}
-              {duration && (
-                <>
-                  <span>•</span>
-                  <span>{duration}</span>
-                </>
-              )}
+              {year !== null && <span>{year}</span>}
             </div>
           )}
         </div>
-
-        {/* Add to List Button */}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            setInList(!inList);
-          }}
-          className={cn(
-            'absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center',
-            'opacity-0 group-hover:opacity-100 transition-all duration-300',
-            inList
-              ? 'bg-accent text-accent-foreground'
-              : 'bg-background/60 text-foreground hover:bg-background/80'
-          )}
-        >
-          {inList ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-        </button>
       </div>
     </div>
   );
