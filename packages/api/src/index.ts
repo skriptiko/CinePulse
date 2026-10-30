@@ -30,6 +30,7 @@ export {
   searchQueries,
   trendingQueries,
   tvQueries,
+  watchlistKey,
 } from './queries';
 export type { ApiQueryMeta } from './query-client';
 export { createQueryClient, MAX_RETRIES, shouldRetry } from './query-client';

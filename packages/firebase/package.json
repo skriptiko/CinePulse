@@ -28,6 +28,7 @@
     "firebase": "catalog:"
   },
   "peerDependencies": {
+    "@tanstack/react-query": "catalog:",
     "react": "catalog:",
     "zustand": "catalog:"
   },
