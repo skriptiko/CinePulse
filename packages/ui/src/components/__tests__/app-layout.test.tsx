@@ -20,6 +20,12 @@ describe('AppLayout', () => {
     expect(screen.getByRole('main')).toHaveAttribute('tabindex', '-1');
   });
 
+  it('keeps the footer below the fold while a page loads', () => {
+    renderLayout();
+
+    expect(screen.getByRole('main')).toHaveClass('min-h-svh');
+  });
+
   it('starts the Tab order with a skip link to main', async () => {
     const { user } = renderLayout();
 
