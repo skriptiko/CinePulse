@@ -75,13 +75,13 @@ packages:
 
 ## Потік даних
 
-Дані односпрямовані: UI-компонент → хук React Query → `apiGet` → проксі → TMDB.
+Data flows one way: UI component → query factory (`queryOptions`) → endpoint → `apiGet` → proxy → TMDB.
 
 ```
 Компонент (Home/Movies)
-   │  useMovies / useTrending / useSearchMovies / useMovieGenres
+   │  useSuspenseQuery(movieQueries.row(…)) / useMoviesOrSearch
    ▼
-React Query (Suspense)             packages/api/src/hooks/*
+React Query (Suspense)             packages/api/src/queries/*
    │  queryFn → endpoints          packages/api/src/endpoints/*
    ▼
 apiGet(endpoint, { params })       packages/api/src/core/client.ts
@@ -96,7 +96,7 @@ TMDB API  https://api.themoviedb.org/3
 
 Клієнт завжди звертається до відносного шляху `/api/tmdb/...` (`API_CONFIG.PROXY_BASE_URL`). У продакшні Firebase Hosting переписує `/api/tmdb/**` на функцію `tmdbProxy`; у dev той самий шлях перехоплює Vite-proxy. Токен додається виключно на боці проксі (див. [ADR-0003](./decisions/ADR-0003-tmdb-proxy.md)).
 
-Дані для запитів кешуються React Query із `staleTime` 5 хвилин, `retry: 1`, `refetchOnWindowFocus: false` (`packages/ui/src/components/providers.tsx`). Списки використовують infinite-query (`useSuspenseInfiniteQuery`) with the shared `getNextPageParam` (capped at TMDB's 500 pages).
+React Query caches data with `staleTime` 5 minutes and `refetchOnWindowFocus: false`; only network, 5xx and 429 errors are retried, at most twice (`createQueryClient` in `packages/api/src/query-client/`). Списки використовують infinite-query (`useSuspenseInfiniteQuery`) with the shared `getNextPageParam` (capped at TMDB's 500 pages).
 
 ## Крос-MFE комунікація
 

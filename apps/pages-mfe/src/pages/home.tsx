@@ -1,4 +1,4 @@
-import { useMovieGenres, useMovies, useTrending } from '@repo/api';
+import { genreQueries, movieQueries, trendingQueries } from '@repo/api';
 import type { TrendingItem, TrendingMovie, TrendingTV } from '@repo/api';
 import {
   CategoryPills,
@@ -10,30 +10,37 @@ import {
   toMovieCardData,
   toTrendingCardData,
 } from '@repo/ui';
+import { useSuspenseQueries } from '@tanstack/react-query';
 
 const FEATURED_COUNT = 5;
 
 export function Home() {
-  const { data: genresData } = useMovieGenres();
-  const { data: trendingData } = useTrending('movie', 'day');
-  const { data: popularData } = useMovies('popular');
-  const { data: topRatedData } = useMovies('top_rated');
-  const { data: upcomingData } = useMovies('upcoming');
+  // One call starts every request at once; consecutive suspense hooks would run one by one.
+  const [genresQuery, trendingQuery, popularQuery, topRatedQuery, upcomingQuery] =
+    useSuspenseQueries({
+      queries: [
+        genreQueries.movie(),
+        trendingQueries.row('movie', 'day'),
+        movieQueries.row('popular'),
+        movieQueries.row('top_rated'),
+        movieQueries.row('upcoming'),
+      ],
+    });
 
-  const genres = genresData.genres;
+  const genres = genresQuery.data.genres;
   const categories = ['All', ...genres.map((genre) => genre.name)];
 
-  const trendingResults = trendingData.pages[0]?.results ?? [];
-  const topRatedResults = topRatedData.pages[0]?.results ?? [];
+  const trendingResults = trendingQuery.data.results;
+  const topRatedResults = topRatedQuery.data.results;
 
   const heroMovie = trendingResults.find(isTrendingMovie);
   const trendingMovies = trendingResults.filter(isTrendingCard).map(toTrendingCardData);
   const featuredItems = topRatedResults
     .slice(0, FEATURED_COUNT)
     .map((movie) => toFeaturedItemData(movie, genres));
-  const upcomingMovies = (upcomingData.pages[0]?.results ?? []).map(toMovieCardData);
+  const upcomingMovies = upcomingQuery.data.results.map(toMovieCardData);
   const topRatedMovies = topRatedResults.map(toMovieCardData);
-  const popularMovies = (popularData.pages[0]?.results ?? []).map(toMovieCardData);
+  const popularMovies = popularQuery.data.results.map(toMovieCardData);
 
   return (
     <main>

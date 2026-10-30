@@ -1,4 +1,5 @@
-import { AppLayout, Providers } from '@repo/ui';
+import { ApiProvider } from '@repo/api';
+import { AppLayout } from '@repo/ui';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, useRoutes } from 'react-router-dom';
@@ -20,12 +21,12 @@ if (!rootElement) {
 // Для standalone розробки - з усіма провайдерами та layout
 createRoot(rootElement).render(
   <StrictMode>
-    <Providers>
+    <ApiProvider>
       <BrowserRouter>
         <AppLayout>
           <App />
         </AppLayout>
       </BrowserRouter>
-    </Providers>
+    </ApiProvider>
   </StrictMode>
 );
