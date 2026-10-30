@@ -21,7 +21,7 @@ The next step (plan item 6.5) wires a theme switcher in the shared header to the
 - Rebuild the store with `createStore` from **Zustand 5** (`zustand` in the pnpm catalog).
 - Keep the `window` singleton: `getGlobalStore()` returns `window.__CINEPULSE_STORE__`, creating it on first call, like the event bus. `globalStore` is that instance as a `StoreApi` (`getState`, `setState`, `subscribe`).
 - React reads it through `useGlobalStore(selector)`, built on Zustand's `useStore`. The selector is required. It must return a stable value (a primitive or an existing reference); a selector that builds a new object or array must be wrapped in `useShallow`.
-- Keep only state with a real source: `theme` (default `'system'`) and `setTheme`. `THEMES = ['light', 'dark', 'system'] as const` is the source of the `Theme` type. `user`/`isAuthenticated`/`UserProfile` are removed and come back with Firebase Auth.
+- Keep only state with a real source: `theme` (default `'dark'`: the design is dark-first, and `'system'` is an opt-in choice for the future Settings page) and `setTheme`. `THEMES = ['light', 'dark', 'system'] as const` is the source of the `Theme` type. `user`/`isAuthenticated`/`UserProfile` are removed and come back with Firebase Auth.
 - `zustand` is a strict Module Federation singleton (`STRICT_SINGLETONS` in `scripts/mf-shared.ts`). It is a peer + dev dependency of `@repo/events` and a dependency of every app, so each app can resolve the shared module.
 - The store imports from the main `zustand` entry, not `zustand/vanilla`. Federation shares the `zustand` specifier; a subpath import would bundle a private copy.
 

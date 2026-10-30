@@ -1,8 +1,11 @@
+import { useGlobalStore } from '@repo/events';
 import { ROUTE_PATHS } from '@repo/routes';
 import { cva } from 'class-variance-authority';
 import { Menu, Moon, Search, Sun, User, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
+import { useIsScrolled } from '../hooks/use-is-scrolled';
+import { useResolvedTheme } from '../hooks/use-resolved-theme';
 import { cn } from '../lib/utils';
 import { Logo } from './logo';
 import { Button, buttonVariants } from './ui/button';
@@ -38,25 +41,12 @@ export type HeaderProps = {
 };
 
 export function Header({ className }: HeaderProps) {
-  const [isScrolled, setIsScrolled] = useState(false);
+  const isScrolled = useIsScrolled(SCROLLED_THRESHOLD_PX);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isDark, setIsDark] = useState(true);
+  const isDark = useResolvedTheme() === 'dark';
+  const setTheme = useGlobalStore((state) => state.setTheme);
 
-  useEffect(() => {
-    // Set dark mode as default
-    document.documentElement.classList.add('dark');
-
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > SCROLLED_THRESHOLD_PX);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const toggleTheme = () => {
-    setIsDark(!isDark);
-    document.documentElement.classList.toggle('dark');
-  };
+  const handleThemeToggle = () => setTheme(isDark ? 'light' : 'dark');
 
   const handleMobileMenuToggle = () => setIsMobileMenuOpen((isOpen) => !isOpen);
   const handleMobileMenuClose = () => setIsMobileMenuOpen(false);
@@ -92,8 +82,9 @@ export function Header({ className }: HeaderProps) {
             <Button
               variant="ghost"
               size="icon"
-              aria-label="Toggle theme"
-              onClick={toggleTheme}
+              aria-label="Dark theme"
+              aria-pressed={isDark}
+              onClick={handleThemeToggle}
               className={TOOLBAR_BUTTON_CLASS}
             >
               {isDark ? <Sun /> : <Moon />}
