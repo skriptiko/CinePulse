@@ -92,23 +92,26 @@ type MultiSearchResult = SearchMovie | SearchTV | SearchPerson; // SearchMovie =
 
 ## Клієнтський стан: Global Store
 
-Єдине джерело клієнтського стану поза React Query — global store (`packages/events/src/store.ts`), singleton на `window.__CINEPULSE_STORE__`.
+Єдине джерело клієнтського стану поза React Query — global store (`packages/events/src/store.ts`), singleton на `window.__CINEPULSE_STORE__`. It is a Zustand store ([ADR-0008](./decisions/ADR-0008-zustand-global-store.md)).
 
-### `GlobalState` / `UserProfile` (`packages/events/src/types.ts`)
+### `GlobalState` (`packages/events/src/store.ts`)
 
 ```ts
-interface UserProfile { id: string; name: string; email: string; avatar?: string; }
+const THEMES = ['light', 'dark', 'system'] as const;
+type Theme = (typeof THEMES)[number];
 
-interface GlobalState {
-  user: UserProfile | null;
-  isAuthenticated: boolean;
-  theme: 'light' | 'dark' | 'system';
-}
+type GlobalState = { theme: Theme }; // default: 'system'
+type GlobalActions = { setTheme: (theme: Theme) => void };
+type GlobalStore = GlobalState & GlobalActions;
 ```
 
-**Дії** (`GlobalActions`): `setUser`, `updateUser`, `setTheme`, `reset`.
+**API:**
 
-> **Статус:** типи стану визначені й реалізовані, але **ще не підключені до UI** — сторінки `Profile`/`Settings` наразі заглушки, авторизації немає (див. роадмап, Етап 4).
+- `globalStore` — the Zustand `StoreApi<GlobalStore>` (`getState`, `setState`, `subscribe`), for code outside React.
+- `useGlobalStore(selector)` — React hook; the component re-renders when the selected value changes. The selector must return a stable value; wrap a selector that builds an object or array in `useShallow`.
+- `getGlobalStore()` / `createGlobalStore()` — the shared instance and a fresh one (tests).
+
+> **Status:** only the theme is stored. User state (`user`, sign-in status) comes back with Firebase Auth, when it has a real source. The theme switcher in the header is plan item 6.5.
 
 ## ➕ Планована модель: Watchlist (Firestore)
 

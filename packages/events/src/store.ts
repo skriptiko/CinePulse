@@ -1,88 +1,60 @@
-import type { UserProfile } from './types';
+// The main `zustand` entry (not `zustand/vanilla`): Module Federation shares `zustand` as one
+// strict singleton, and a subpath import would bypass that share.
+import { type StoreApi, createStore, useStore } from 'zustand';
 
-export interface GlobalState {
-  user: UserProfile | null;
-  isAuthenticated: boolean;
-  theme: 'light' | 'dark' | 'system';
-}
+export const THEMES = ['light', 'dark', 'system'] as const;
 
-export interface GlobalActions {
-  setUser: (user: UserProfile | null) => void;
-  updateUser: (updates: Partial<UserProfile>) => void;
-  setTheme: (theme: GlobalState['theme']) => void;
-  reset: () => void;
-}
+export type Theme = (typeof THEMES)[number];
+
+export type GlobalState = {
+  theme: Theme;
+};
+
+export type GlobalActions = {
+  setTheme: (theme: Theme) => void;
+};
 
 export type GlobalStore = GlobalState & GlobalActions;
 
-const initialState: GlobalState = {
-  user: null,
-  isAuthenticated: false,
+export type GlobalStoreApi = StoreApi<GlobalStore>;
+
+const defaultState: GlobalState = {
   theme: 'system',
 };
 
 declare global {
   interface Window {
-    __CINEPULSE_STORE__?: GlobalStore;
+    __CINEPULSE_STORE__?: GlobalStoreApi;
   }
 }
 
-type SetState = (
-  partial:
-    | GlobalState
-    | Partial<GlobalState>
-    | ((state: GlobalState) => GlobalState | Partial<GlobalState>)
-) => void;
-type GetState = () => GlobalState;
-
-function createStoreImpl(set: SetState, get: GetState): GlobalStore {
-  return {
-    ...initialState,
-    setUser: (user) => {
-      set({ user, isAuthenticated: user !== null });
-    },
-    updateUser: (updates) => {
-      const currentUser = get().user;
-      if (currentUser) {
-        set({ user: { ...currentUser, ...updates } });
-      }
-    },
+/** A fresh, unshared store. App code uses `globalStore`; this is for tests and tooling. */
+export function createGlobalStore(): GlobalStoreApi {
+  return createStore<GlobalStore>()((set) => ({
+    ...defaultState,
     setTheme: (theme) => {
       set({ theme });
     },
-    reset: () => {
-      set(initialState);
-    },
-  };
+  }));
 }
 
-export function createGlobalStore(): GlobalStore {
-  let state: GlobalState = { ...initialState };
-  const listeners = new Set<() => void>();
-
-  const getState: GetState = () => state;
-
-  const setState: SetState = (partial) => {
-    const nextState = typeof partial === 'function' ? partial(state) : partial;
-    state = { ...state, ...nextState };
-    for (const listener of listeners) {
-      listener();
-    }
-  };
-
-  return createStoreImpl(setState, getState);
-}
-
-export function getGlobalStore(): GlobalStore {
+/** One store per page, shared by every MFE bundle through `window`. */
+export function getGlobalStore(): GlobalStoreApi {
   if (typeof window === 'undefined') {
     return createGlobalStore();
   }
 
-  if (!window.__CINEPULSE_STORE__) {
-    window.__CINEPULSE_STORE__ = createGlobalStore();
-  }
-
+  window.__CINEPULSE_STORE__ ??= createGlobalStore();
   return window.__CINEPULSE_STORE__;
 }
 
 export const globalStore = getGlobalStore();
+
+/**
+ * Subscribes a component to a slice of the global store; it re-renders when the slice changes
+ * (compared with `Object.is`). The selector must return a stable value: pick a primitive or an
+ * existing reference, or wrap a selector that builds a new object/array in `useShallow`.
+ */
+export function useGlobalStore<T>(selector: (state: GlobalStore) => T): T {
+  return useStore(globalStore, selector);
+}

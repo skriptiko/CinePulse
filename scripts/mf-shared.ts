@@ -8,6 +8,7 @@ const STRICT_SINGLETONS = [
   'react-router-dom',
   '@tanstack/react-query',
   'react-error-boundary',
+  'zustand',
 ];
 
 /** Workspace packages: always the same source, so singleton is enough. */

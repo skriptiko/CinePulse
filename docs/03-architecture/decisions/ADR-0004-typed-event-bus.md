@@ -4,7 +4,7 @@
 
 ## Статус
 
-Accepted
+Accepted. The global store part is superseded by [ADR-0008](./ADR-0008-zustand-global-store.md).
 
 ## Контекст
 
