@@ -40,6 +40,8 @@ Firebase Function `tmdbProxy` ([`functions/src/index.ts`](../../functions/src/in
 - **Predeploy hook:** `pnpm --filter @repo/functions build` — функції збираються перед деплоєм.
 - Секрет `TMDB_API_READ_TOKEN` — через `defineSecret` (Firebase Secret Manager), не в коді.
 - Rewrite `/api/tmdb/**` → функція `tmdbProxy` (з `firebase.json`).
+- Read-only allowlisted proxy (GET/HEAD, fixed paths and query params, neutral `502`/`503` for upstream errors, CDN `Cache-Control` on 2xx); full rules in [ADR-0003](../03-architecture/decisions/ADR-0003-tmdb-proxy.md).
+- Build: `tsc -p tsconfig.build.json` (tests in `src/**/__tests__` stay out of `dist/`); the rules are unit-tested by the `functions` Vitest project in `pnpm test`.
 
 ## Збірка і merge
 

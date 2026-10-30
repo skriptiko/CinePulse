@@ -31,7 +31,7 @@
 - **Firebase project:** `cinepulse-eec15` (з `.firebaserc`, default).
 - **Hosting target:** `production` → сайт `cinepulse-eec15` (домен виду `https://cinepulse-eec15.web.app`).
 - **Public dir:** `dist` (об'єднаний через `merge-dist.js`).
-- **TMDB у prod:** Cloud Function `tmdbProxy` з токеном із Secret Manager (`defineSecret('TMDB_API_READ_TOKEN')`) — токен **не** потрапляє в клієнтський бандл.
+- **TMDB у prod:** Cloud Function `tmdbProxy` з токеном із Secret Manager (`defineSecret('TMDB_API_READ_TOKEN')`) — токен **не** потрапляє в клієнтський бандл. The function only serves an allowlist of read-only TMDB paths and sets `Cache-Control` so Hosting's CDN caches successful responses (see [ADR-0003](../03-architecture/decisions/ADR-0003-tmdb-proxy.md)).
 
 **Rewrites (`firebase.json`):**
 | Патерн | Призначення |
