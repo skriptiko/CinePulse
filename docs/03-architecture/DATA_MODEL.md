@@ -6,7 +6,7 @@
 >
 > The **watchlist** is the exception: user data lives in **Firestore**, the first persistent store of the project. The model is below, in [Watchlist (Firestore)](#watchlist-firestore).
 
-All types are re-exported from `@repo/api` (`packages/api/src/index.ts`) and `@repo/events`.
+TMDB and client-state types are re-exported from `@repo/api` (`packages/api/src/index.ts`) and `@repo/events`. Watchlist types come from `@repo/firebase`, and `WatchlistFolder` from `@repo/firebase/watchlist-tree`.
 
 ## Pagination wrapper
 

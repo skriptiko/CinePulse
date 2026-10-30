@@ -91,8 +91,11 @@ Add Playwright (chromium) on the merged `dist/` served by `firebase emulators:st
 3. A delete names and removes a subfolder made in another tab.
 4. A failed write shows a toast and keeps the form.
 5. A delete still running does not pull the person back after they navigate away.
-6. A long unbroken name does not widen the page on a phone.
-7. Firestore runs from the host's singleton with the signed-in user. This is the only automated check for a second `firebase/app`.
+6. A double click on Delete still asks first.
+7. The selected folder stays in view in the short tree of a phone.
+8. A whole title row opens the title.
+9. A long unbroken name does not widen the page on a phone.
+10. Firestore runs from the host's singleton with the signed-in user. This is the only automated check for a second `firebase/app`.
 
 Titles are seeded through the emulator's REST API until CIN-26 adds a way to add them. `pnpm test:e2e` needs Java as well as `firebase-tools`.
 
