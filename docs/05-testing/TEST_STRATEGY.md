@@ -2,7 +2,7 @@
 
 # Test strategy
 
-> **Current state:** unit, component and integration tests run in job `quality`, Firestore rules in job `rules`, Playwright smoke and auth scenarios in job `e2e`. Tools and versions are fixed in [ADR-0006](../03-architecture/decisions/ADR-0006-testing-stack.md). The rules for writing tests (queries, mocking, states, timers, coverage) live in the engineering standards, §14 (Notion). Where this document and the standards disagree, the standards win.
+> **Current state:** unit, component and integration tests run in job `quality`, Firestore rules in job `rules`, Playwright smoke, auth and watchlist scenarios in job `e2e`. Tools and versions are fixed in [ADR-0006](../03-architecture/decisions/ADR-0006-testing-stack.md). The rules for writing tests (queries, mocking, states, timers, coverage) live in the engineering standards, §14 (Notion). Where this document and the standards disagree, the standards win.
 
 ## Pyramid
 
@@ -84,12 +84,24 @@ Add Playwright (chromium) on the merged `dist/` served by `firebase emulators:st
 4. With `remoteEntry.js` of one remote aborted, its section shows the "unavailable" placeholder and the other sections keep working.
 5. An unknown URL shows NotFound.
 
-e2e runs on PRs into `main` only.
+`e2e/watchlist.spec.ts` runs on the Firestore emulator with the real rules:
+
+1. Folders nest six levels deep, then rename and move.
+2. Deleting a folder keeps its titles and removes only that branch.
+3. A delete names and removes a subfolder made in another tab.
+4. A failed write shows a toast and keeps the form.
+5. A delete still running does not pull the person back after they navigate away.
+6. A long unbroken name does not widen the page on a phone.
+7. Firestore runs from the host's singleton with the signed-in user. This is the only automated check for a second `firebase/app`.
+
+Titles are seeded through the emulator's REST API until CIN-26 adds a way to add them. `pnpm test:e2e` needs Java as well as `firebase-tools`.
+
+e2e runs on PRs into `main` only, so run it locally before merging a change to the watchlist or to `@repo/firebase`.
 
 ## CI
 
 - `quality` job: `pnpm install --frozen-lockfile` → `pnpm lint` → `pnpm typecheck` → `pnpm test`.
-- ✅ e2e: a separate `e2e` job on PRs into `main`, after `build:deploy`. `FIREBASE_CLI` overrides the emulator command there, because CI has no global `firebase-tools`.
+- ✅ e2e: a separate `e2e` job on PRs into `main`, after `build:deploy`. `FIREBASE_CLI` overrides the emulator command there, because CI has no global `firebase-tools`; the job sets up Java 21 for the Firestore emulator.
 
 ## Coverage
 

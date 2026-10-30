@@ -2,7 +2,7 @@
 
 # Glossary
 
-Key project terms. Most are derived from the code (reliable); the watchlist/auth product terms come from the requirements (2026-07-12 session) and are not implemented in the code yet.
+Key project terms. Most are derived from the code (reliable); the watchlist/auth product terms come from the requirements (2026-07-12 session).
 
 ## Architecture terms
 
@@ -46,16 +46,18 @@ Key project terms. Most are derived from the code (reliable); the watchlist/auth
 - **`@repo/routes`** — path constants (`ROUTE_PATHS`) and the `RoutePath` type.
 - **`@repo/events`** — event bus and global store.
 - **`@repo/typescript-config`** — shared TS configs (`base.json`, `react-library.json`).
-- **ROUTE_PATHS** — the single source of truth for routing paths (`HOME`, `MOVIES`, `USER_PROFILE`, `USER_SETTINGS`).
+- **ROUTE_PATHS** — the single source of truth for routing paths (`HOME`, `MOVIES`, `USER_PROFILE`, `USER_SETTINGS`, `USER_WATCHLIST`).
 
 ## Product terms (watchlist, auth) — from the 2026-07-12 requirements
 
-> Not implemented in the code yet. Source: [PRD](./PRD.md).
+> Source: [PRD](./PRD.md).
 
 - **Watchlist** — a personal viewing tracker; the core of the personal account (`user-mfe`). Available only to a registered user; stored in Firestore.
 - **Folder** — a watchlist container that the user creates and names. Supports subfolders nested **up to 6 levels**; the number on each level is unlimited. Behaves like a tag: a title can sit in several folders.
 - **Title status** — a separate field on a watchlist title, independent of folders: **watched / planned**.
 - **Title** — the generic name for a catalog item that can be added to the watchlist: a movie (`Movie`) or a TV show (`TV`).
 - **Firebase Auth** — the authentication provider; in scope: Google sign-in only (ADR-0010).
-- **Firestore** — Firebase's document database for persistent watchlist storage (folders, membership, statuses). Not in the code yet — a planned architectural change (so far the project has had only the stateless `tmdbProxy`).
+- **Firestore** — Firebase's document database for persistent watchlist storage (folders, membership, statuses).
+- **Firestore Lite** — the REST-only entry point of the Firestore SDK (`firebase/firestore/lite`), with no `onSnapshot` and no offline persistence; the watchlist's client (ADR-0013).
+- **All titles** — the virtual first row of the folder tree: every title in the watchlist, including titles that are in no folder.
 - **Definition of Done (DoD)** — the project completion criterion used instead of MVP phasing: all documented pages + profile + a working watchlist ("IMDb-like" TMDB coverage, but not the whole API).

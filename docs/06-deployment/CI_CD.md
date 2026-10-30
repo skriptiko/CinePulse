@@ -18,7 +18,7 @@ Pipeline: [`.github/workflows/firebase-deploy.yml`](../../.github/workflows/fire
   5. `pnpm test`.
 - **Job `size`** (on every trigger, not required for merge): `pnpm turbo build --filter=@repo/host` → `pnpm size` (budget in `.size-limit.json`).
 - **Job `rules`** (on every trigger): sets up Java 21 and runs the Firestore rules tests on the emulator.
-- **Job `e2e`** (PRs into `main` only): `pnpm build:deploy`, then Playwright on the merged `dist/` with the Hosting and Auth emulators.
+- **Job `e2e`** (PRs into `main` only): `pnpm build:deploy`, then Playwright on the merged `dist/` with the Hosting, Auth and Firestore emulators. Sets up Java 21 for Firestore.
 - **Job `build-and-deploy`** (`needs: [quality, rules]`, push to `main` only, no concurrent deploys):
   1. The same checkout / pnpm / Node / install.
   2. `pnpm build:deploy` — Turbo builds all apps and packages except the `apps/design` sandbox (it does not go to production), and `scripts/merge-dist.js` merges `dist/` (see below). Locally it is the same command.

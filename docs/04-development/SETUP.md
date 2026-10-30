@@ -31,10 +31,10 @@ TMDB_API_READ_TOKEN=<your TMDB read access token>
 ## Running the Firebase emulators
 
 ```bash
-pnpm emulators   # build:deploy, then Hosting on http://127.0.0.1:5010 and Functions on 5011
+pnpm emulators   # build:deploy, then Hosting on http://127.0.0.1:5010, Functions on 5011, Firestore on 5012, Auth on 5013
 ```
 
-This serves the merged `dist/` with the rewrites and headers from `firebase.json`, so use it to check those before a deploy. Requires a global `firebase-tools`.
+This serves the merged `dist/` with the rewrites and headers from `firebase.json`, so use it to check those before a deploy. Requires a global `firebase-tools` and Java, which the Firestore emulator runs on.
 
 It runs on the `demo` alias (`demo-cinepulse`), which cannot reach real Firebase resources. Without `functions/.secret.local`, `/api/tmdb/*` answers `500` with `no-store`; the static pages still work. Avoid `--project cinepulse-eec15` here: without that file the emulator would read the production secret from Secret Manager.
 
