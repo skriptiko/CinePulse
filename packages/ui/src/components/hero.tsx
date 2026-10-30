@@ -10,6 +10,8 @@ export type HeroData = {
   description: string | null;
   /** Backdrop; `null` → placeholder. */
   imageUrl: string | null;
+  /** Smaller and larger backdrops for `srcSet`; `null` when there is no backdrop. */
+  imageSrcSet: string | null;
   year: string | null;
   /** Formatted rating; `null` hides the badge (`'0.0'` is shown). */
   rating: string | null;
@@ -21,7 +23,7 @@ export type HeroProps = {
 };
 
 export function Hero({ movie, className }: HeroProps) {
-  const { title, description, imageUrl, year, rating } = movie;
+  const { title, description, imageUrl, imageSrcSet, year, rating } = movie;
 
   return (
     <section
@@ -33,7 +35,17 @@ export function Hero({ movie, className }: HeroProps) {
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         {imageUrl ? (
-          <img src={imageUrl} alt={title} className="size-full object-cover" />
+          // The hero is the largest above-the-fold image: fetch it first, at the size the
+          // screen needs.
+          <img
+            src={imageUrl}
+            srcSet={imageSrcSet ?? undefined}
+            sizes="100vw"
+            alt={title}
+            fetchPriority="high"
+            decoding="async"
+            className="size-full object-cover"
+          />
         ) : (
           <ImagePlaceholder />
         )}

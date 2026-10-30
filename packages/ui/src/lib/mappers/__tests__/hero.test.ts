@@ -17,6 +17,8 @@ describe('toHeroData', () => {
       title: 'Dune',
       description: 'A desert planet.',
       imageUrl: 'https://image.tmdb.org/t/p/w1280/dune-bg.jpg',
+      imageSrcSet:
+        'https://image.tmdb.org/t/p/w780/dune-bg.jpg 780w, https://image.tmdb.org/t/p/w1280/dune-bg.jpg 1280w',
       year: '2021',
       rating: '7.8',
     });
@@ -26,6 +28,7 @@ describe('toHeroData', () => {
     const hero = toHeroData(buildMovie({ backdrop_path: null, overview: '', release_date: '' }));
 
     expect(hero.imageUrl).toBeNull();
+    expect(hero.imageSrcSet).toBeNull();
     expect(hero.description).toBeNull();
     expect(hero.year).toBeNull();
   });
