@@ -97,7 +97,7 @@ export function Hero({ movie, className }: HeroProps) {
             )}
           >
             <Info aria-hidden="true" />
-            More Info
+            More Info <span className="sr-only">about {title}</span>
           </Link>
         </div>
       </div>

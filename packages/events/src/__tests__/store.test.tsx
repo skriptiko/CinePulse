@@ -2,11 +2,54 @@
 // The store is a `window` singleton and the hook renders React, so this file needs a DOM.
 import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createGlobalStore, getGlobalStore, globalStore, THEMES, useGlobalStore } from '../store';
+import {
+  createGlobalStore,
+  getGlobalStore,
+  globalStore,
+  THEME_STORAGE_KEY,
+  THEMES,
+  useGlobalStore,
+} from '../store';
 
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
+  localStorage.clear();
   globalStore.setState({ theme: 'dark' });
+});
+
+describe('theme persistence', () => {
+  it('restores a saved theme', () => {
+    localStorage.setItem(THEME_STORAGE_KEY, 'light');
+
+    expect(createGlobalStore().getState().theme).toBe('light');
+  });
+
+  it('saves the chosen theme', () => {
+    createGlobalStore().getState().setTheme('system');
+
+    expect(localStorage.getItem(THEME_STORAGE_KEY)).toBe('system');
+  });
+
+  it('ignores a stored value that is not a theme', () => {
+    localStorage.setItem(THEME_STORAGE_KEY, 'neon');
+
+    expect(createGlobalStore().getState().theme).toBe('dark');
+  });
+
+  it('keeps working when storage is blocked', () => {
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new DOMException('denied', 'SecurityError');
+    });
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('denied', 'SecurityError');
+    });
+
+    const store = createGlobalStore();
+    store.getState().setTheme('light');
+
+    expect(store.getState().theme).toBe('light');
+  });
 });
 
 describe('globalStore', () => {

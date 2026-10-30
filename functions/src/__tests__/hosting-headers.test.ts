@@ -45,3 +45,15 @@ describe('firebase.json Cache-Control rules', () => {
     });
   });
 });
+
+describe('firebase.json security headers', () => {
+  const headers = rules.find((rule) => rule.source === '**')?.headers ?? [];
+
+  it('enforces the Content Security Policy', () => {
+    expect(headers.map((h) => h.key)).toContain('Content-Security-Policy');
+  });
+
+  it('does not keep a Report-Only copy that could drift from the enforced policy', () => {
+    expect(headers.map((h) => h.key)).not.toContain('Content-Security-Policy-Report-Only');
+  });
+});

@@ -29,7 +29,10 @@ describe('Hero', () => {
   it('links to the details page', () => {
     renderWithProviders(<Hero movie={MOVIE} />);
 
-    expect(screen.getByRole('link', { name: 'More Info' })).toHaveAttribute('href', '/movies/1');
+    expect(screen.getByRole('link', { name: 'More Info about Dune' })).toHaveAttribute(
+      'href',
+      '/movies/1'
+    );
   });
 
   it('does not offer a list that cannot save anything', () => {
