@@ -111,17 +111,16 @@ Singleton саме на `window` гарантує єдиний екземпля�
 
 ## Обробка помилок
 
-Застосована **двошарова стратегія Error Boundaries** (`@repo/ui`, `ErrorBoundary`):
+Boundaries are built on `react-error-boundary` (a strict MF singleton) and live in `@repo/ui`:
 
-1. **Shell-level** — у `apps/host/src/App.tsx` (`<ErrorBoundary level="shell">`) огортає весь застосунок. Перехоплює критичні збої композиції (напр. remote не завантажився) і пропонує перезавантажити застосунок.
-2. **Module-level** — призначений огортати окремий MFE, щоб його падіння не рушило решту й давало локальний retry без перезавантаження всього застосунку.
+1. **Page** — every route element of a remote is wrapped in `PageBoundary` (`AsyncBoundary` = `QueryErrorResetBoundary` + `ErrorBoundary` + `Suspense`). Navigation resets it (`resetKeys` and the `Suspense` key are the `pathname`). The fallback is a page skeleton (`HomeSkeleton`, `MovieGridSkeleton`, `PageSkeleton`), shown after 300 ms. Errors go to `PageErrorFallback`: a 404 (`kind: 'not_found'`) renders `NotFound`, anything else a plain-language message with **Try again**, which also resets the failed queries so they refetch.
+2. **Shell** — `ShellBoundary` in `apps/host/src/app.tsx`, inside `AppLayout`, so the header survives any error. It offers **Reload** and resets on navigation.
 
-Додатково:
-- **Помилки завантаження remote-роутів** — `App.tsx` ловить помилку `import('pagesMfe/routes')` і деградує до порожнього набору роутів (у dev логує в консоль).
-- **API errors** — `ApiError` with `kind` (`network`, `not_found`, `server`, `client`, `validation`), `status` and `cause`; an abort is rethrown unchanged. See [API_SPEC.md](./API_SPEC.md#обробка-помилок).
-- **Suspense** — усі дані-хуки суспенсні, тож стани завантаження обробляються через `<Suspense>` межі в роутах.
-
-**Відоме обмеження:** module-level boundary та уніфіковані loading/empty-стани реалізовані не всюди (напр. Home без skeleton) — див. роадмап, Етап 2.
+Also:
+- **Unknown URL** — the host appends a catch-all `*` route rendering `NotFound` after the remotes' routes.
+- **Remote route loading** — `app.tsx` loads each remote with `Promise.allSettled`; an unavailable remote drops only its routes, so they fall to `NotFound` (a "section unavailable" placeholder comes with refactoring plan item 5.9).
+- **API errors** — `ApiError` with `kind` (`network`, `not_found`, `server`, `client`, `validation`), `status` and `cause`; an abort is rethrown unchanged. See [API_SPEC.md](./API_SPEC.md#errors).
+- **Reporting** — every boundary emits `error:report` (`source: 'boundary'`); the host listener arrives with item 5.10.
 
 ## Збірка та деплой
 
@@ -165,7 +164,7 @@ Singleton саме на `window` гарантує єдиний екземпля�
                          ┌──────────────▼──────────────┐
                          │      apps/host (shell :5000) │
                          │  BrowserRouter + AppLayout   │
-                         │  ErrorBoundary (shell-level) │
+                         │  ShellBoundary (in layout)   │
                          └───────┬─────────────┬────────┘
               import('pagesMfe/routes)   import('userMfe/routes)
                          │                     │
