@@ -1,6 +1,7 @@
 import { globalStore } from '@repo/events';
 import {
   expectNoA11yViolations,
+  fireEvent,
   renderWithProviders,
   screen,
   server,
@@ -124,6 +125,18 @@ describe('WatchlistPage', () => {
     expect(screen.queryByText('Lost')).not.toBeInTheDocument();
   });
 
+  it('marks the chosen folder and leaves focus on its link', async () => {
+    const { user } = renderPage();
+    const link = await screen.findByRole('link', { name: 'Top, level 1' });
+
+    link.focus();
+    await user.keyboard('{Enter}');
+
+    await screen.findByRole('heading', { level: 2, name: 'Top' });
+    expect(link).toHaveAttribute('aria-current', 'page');
+    expect(link).toHaveFocus();
+  });
+
   it('shows the empty state for a folder without titles', async () => {
     renderPage('/user/watchlist?folder=other');
 
@@ -211,6 +224,40 @@ describe('WatchlistPage', () => {
     expect(await screen.findByRole('button', { name: 'Rename' })).toHaveFocus();
   });
 
+  it('locks the form until the write lands', async () => {
+    let finishWrite = () => {};
+    vi.mocked(setDoc).mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          finishWrite = resolve;
+        })
+    );
+    const { user } = renderPage();
+    await user.click(await screen.findByRole('button', { name: 'New folder' }));
+    await user.type(screen.getByLabelText('New folder'), 'Noir');
+
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(setDoc).toHaveBeenCalled());
+
+    expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+    finishWrite();
+    expect(await screen.findByRole('button', { name: 'New folder' })).toBeEnabled();
+  });
+
+  it('sends one write when a busy page delivers two clicks at once', async () => {
+    const { user } = renderPage();
+    await user.click(await screen.findByRole('button', { name: 'New folder' }));
+    await user.type(screen.getByLabelText('New folder'), 'Noir');
+    const save = screen.getByRole('button', { name: 'Save' });
+
+    fireEvent.click(save);
+    fireEvent.click(save);
+
+    await screen.findByRole('button', { name: 'New folder' });
+    expect(setDoc).toHaveBeenCalledOnce();
+  });
+
   it('keeps the form and its text when a write fails', async () => {
     vi.mocked(setDoc).mockRejectedValueOnce(
       Object.assign(new Error('denied'), { code: 'permission-denied' })
@@ -260,6 +307,8 @@ describe('WatchlistPage', () => {
     expect(batch.update.mock.calls.map(([ref, data]) => [ref.path, data])).toEqual([
       ['users/u/folders/child', { parentId: 'other', depth: 2 }],
     ]);
+    expect(await screen.findByRole('button', { name: 'Move' })).toHaveFocus();
+    expect(screen.queryByLabelText('Move Child to')).not.toBeInTheDocument();
   });
 
   it('names each move target by its path', async () => {
@@ -316,6 +365,25 @@ describe('WatchlistPage', () => {
     expect(batch.commit).not.toHaveBeenCalled();
   });
 
+  it('keeps the toolbar in place and locked under the delete question', async () => {
+    const { user } = renderPage('/user/watchlist?folder=top');
+    await user.click(await screen.findByRole('button', { name: 'Delete' }));
+
+    expect(screen.getByRole('button', { name: 'Delete' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Rename' })).toBeDisabled();
+  });
+
+  it('returns focus to Delete after every Cancel', async () => {
+    const { user } = renderPage('/user/watchlist?folder=top');
+
+    for (let round = 0; round < 2; round += 1) {
+      await user.click(await screen.findByRole('button', { name: 'Delete' }));
+      await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+      expect(screen.getByRole('button', { name: 'Delete' })).toHaveFocus();
+    }
+  });
+
   it('asks about the folders the server has now', async () => {
     const { user } = renderPage('/user/watchlist?folder=other');
     const button = await screen.findByRole('button', { name: 'Delete' });
@@ -337,7 +405,7 @@ describe('WatchlistPage', () => {
     const { user } = renderPage('/user/watchlist?folder=child');
     await user.click(await screen.findByRole('button', { name: 'Delete' }));
 
-    await user.click(screen.getByRole('button', { name: 'Delete' }));
+    await user.click(screen.getByRole('button', { name: 'Delete folder' }));
 
     const heading = await screen.findByRole('heading', { level: 2, name: 'Top' });
     await waitFor(() => expect(heading).toHaveFocus());
@@ -357,7 +425,7 @@ describe('WatchlistPage', () => {
     );
     const { user } = renderPage('/user/watchlist?folder=child');
     await user.click(await screen.findByRole('button', { name: 'Delete' }));
-    await user.click(screen.getByRole('button', { name: 'Delete' }));
+    await user.click(screen.getByRole('button', { name: 'Delete folder' }));
     await waitFor(() => expect(batch.commit).toHaveBeenCalled());
 
     await user.click(screen.getByRole('link', { name: 'Other, level 1' }));

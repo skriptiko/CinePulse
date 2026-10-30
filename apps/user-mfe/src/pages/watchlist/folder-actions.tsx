@@ -24,7 +24,7 @@ export type FolderActionsProps = {
   onDeleted: (parentId: string | null) => void;
 };
 
-/** One toolbar for the selected folder. An open form takes its place. */
+/** One toolbar for the selected folder. A form takes its place; the delete question goes below. */
 export function FolderActions({ uid, folders, selected, onDeleted }: FolderActionsProps) {
   const [action, setAction] = useState<FolderAction | null>(null);
   const [returnFocusTo, setReturnFocusTo] = useState<FolderAction | null>(null);
@@ -32,6 +32,7 @@ export function FolderActions({ uid, folders, selected, onDeleted }: FolderActio
 
   function open(name: FolderAction): void {
     setAction(name);
+    setReturnFocusTo(null);
     // Both act on the server's tree, and nothing else refreshes a long-open tab.
     if (name === 'move' || name === 'delete') {
       void queryClient.invalidateQueries({ queryKey: watchlistQueries.folders(uid).queryKey });
@@ -68,17 +69,6 @@ export function FolderActions({ uid, folders, selected, onDeleted }: FolderActio
   if (action === 'move' && selected) {
     return <MoveForm uid={uid} folders={folders} folder={selected} onClose={close} />;
   }
-  if (action === 'delete' && selected) {
-    return (
-      <DeleteForm
-        uid={uid}
-        folders={folders}
-        folder={selected}
-        onClose={close}
-        onDeleted={() => onDeleted(selected.parentId)}
-      />
-    );
-  }
 
   function renderButton(name: FolderAction, label: string, disabled = false) {
     return (
@@ -86,7 +76,7 @@ export function FolderActions({ uid, folders, selected, onDeleted }: FolderActio
         ref={returnFocusTo === name ? focusOnMount : undefined}
         size="sm"
         variant="outline"
-        disabled={disabled}
+        disabled={disabled || action === 'delete'}
         className="touch-target"
         onClick={() => open(name)}
       >
@@ -96,22 +86,34 @@ export function FolderActions({ uid, folders, selected, onDeleted }: FolderActio
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
-      {renderButton('create', 'New folder')}
-      {selected && (
-        <>
-          {renderButton('createChild', 'New subfolder', !canAddSubfolder(selected))}
-          {renderButton('rename', 'Rename')}
-          {renderButton('move', 'Move')}
-          {renderButton('delete', 'Delete')}
-          {!canAddSubfolder(selected) && (
-            <p className="text-muted-foreground w-full text-sm">
-              Folders go {MAX_FOLDER_DEPTH} levels deep, so this one cannot hold subfolders.
-            </p>
-          )}
-        </>
+    <>
+      <div className="flex flex-wrap gap-2">
+        {renderButton('create', 'New folder')}
+        {selected && (
+          <>
+            {renderButton('createChild', 'New subfolder', !canAddSubfolder(selected))}
+            {renderButton('rename', 'Rename')}
+            {renderButton('move', 'Move')}
+            {renderButton('delete', 'Delete')}
+            {!canAddSubfolder(selected) && (
+              <p className="text-muted-foreground w-full text-sm">
+                Folders go {MAX_FOLDER_DEPTH} levels deep, so this one cannot hold subfolders.
+              </p>
+            )}
+          </>
+        )}
+      </div>
+      {/* Below the toolbar, not in its place: a double tap must not reach the confirming button. */}
+      {action === 'delete' && selected && (
+        <DeleteForm
+          uid={uid}
+          folders={folders}
+          folder={selected}
+          onClose={close}
+          onDeleted={() => onDeleted(selected.parentId)}
+        />
       )}
-    </div>
+    </>
   );
 }
 
@@ -294,7 +296,7 @@ function DeleteForm({ uid, folders, folder, onClose, onDeleted }: DeleteFormProp
           className="touch-target"
           onClick={() => remove.submit(undefined)}
         >
-          Delete
+          Delete folder
         </Button>
         <Button
           ref={focusOnMount}

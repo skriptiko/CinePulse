@@ -120,7 +120,7 @@ test('deleting a folder keeps its titles and removes only that branch', async ({
   await selectFolder(page, 'Parent', 1);
   await page.getByRole('button', { name: 'Delete' }).click();
   await expect(page.getByText('Delete Parent and 1 subfolder?')).toBeVisible();
-  await page.getByRole('button', { name: 'Delete' }).click();
+  await page.getByRole('button', { name: 'Delete folder' }).click();
 
   await expect(folderLink(page, 'Parent', 1)).toHaveCount(0);
   await expect(folderLink(page, 'Child', 2)).toHaveCount(0);
@@ -149,7 +149,7 @@ test('a delete names and removes a subfolder made in another tab', async ({ page
   await expect(folderLink(page, 'Late child', 2)).toHaveCount(0);
   await page.getByRole('button', { name: 'Delete' }).click();
   await expect(page.getByText('Delete Parent and 1 subfolder?')).toBeVisible();
-  await page.getByRole('button', { name: 'Delete' }).click();
+  await page.getByRole('button', { name: 'Delete folder' }).click();
   await expect(folderLink(page, 'Parent', 1)).toHaveCount(0);
 
   await page.reload();
@@ -181,13 +181,52 @@ test('a delete still running does not pull the person back', async ({ page }) =>
   });
   const commit = page.waitForResponse(/documents:commit/);
   await page.getByRole('button', { name: 'Delete' }).click();
-  await page.getByRole('button', { name: 'Delete' }).click();
+  await page.getByRole('button', { name: 'Delete folder' }).click();
   await page.getByRole('link', { name: 'Movies', exact: true }).first().click();
   await expect(page).toHaveURL(/\/movies$/);
 
   await commit;
   await expect(page).toHaveURL(/\/movies$/);
   await expect(page).toHaveTitle(/Movies/);
+});
+
+test('a double click on Delete still asks first', async ({ page }) => {
+  await openWatchlist(page);
+  await createFolder(page, 'New folder', 'Keep', 1);
+  await selectFolder(page, 'Keep', 1);
+
+  // At these widths the toolbar wraps so that Delete sits right over what comes below it.
+  for (const width of [430, 820]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.getByRole('button', { name: 'Delete', exact: true }).dblclick();
+    await expect(page.getByText('Delete Keep?')).toBeVisible();
+    await page.getByRole('button', { name: 'Cancel' }).click();
+    await expect(folderLink(page, 'Keep', 1)).toBeVisible();
+  }
+});
+
+test('the selected folder stays in view in the short tree of a phone', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 667 });
+  await openWatchlist(page);
+  for (let index = 0; index < 10; index += 1) {
+    await createFolder(page, 'New folder', `F${index}`, 1);
+  }
+  await selectFolder(page, 'F9', 1);
+
+  await page.reload();
+
+  await expect(page.getByRole('heading', { level: 2, name: 'F9' })).toBeVisible();
+  await expect(folderLink(page, 'F9', 1)).toBeInViewport();
+});
+
+test('a whole title row opens the title', async ({ page, request }) => {
+  await openWatchlist(page);
+  await seedTitle(request, await getUid(page), 1, 'Row', []);
+  await page.reload();
+
+  await page.getByRole('listitem').filter({ hasText: 'Planned' }).click();
+
+  await expect(page).toHaveURL(/\/movies\/1$/);
 });
 
 test('a long unbroken name does not widen the page on a phone', async ({ page }) => {

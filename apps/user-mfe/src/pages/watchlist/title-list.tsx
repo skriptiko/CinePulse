@@ -37,7 +37,7 @@ function TitleRow({ item }: TitleRowProps) {
   const { title, imageUrl, href, statusLabel } = toTitleRowData(item);
 
   return (
-    <li className="flex items-center gap-3">
+    <li className="relative flex items-center gap-3">
       <div className="aspect-[2/3] w-12 shrink-0 overflow-hidden rounded">
         {imageUrl ? (
           <img
@@ -53,7 +53,10 @@ function TitleRow({ item }: TitleRowProps) {
       </div>
       <div className="min-w-0">
         {href ? (
-          <Link to={href} className="block truncate font-medium hover:underline">
+          <Link
+            to={href}
+            className="block truncate font-medium after:absolute after:inset-0 hover:underline"
+          >
             {title}
           </Link>
         ) : (

@@ -16,6 +16,7 @@ export type FolderWriteOptions<T> = {
 export function useFolderWrite<T>({ write, invalidate, onDone }: FolderWriteOptions<T>) {
   const queryClient = useQueryClient();
   const submitRef = useRef<HTMLButtonElement>(null);
+  const isWritingRef = useRef(false);
   const { mutate, isPending, isError } = useMutation({
     mutationFn: async (value: T) => write(await loadWatchlistStore(), value),
     // Lite has no write queue: offline, a write fails at once instead of pausing with the form locked.
@@ -23,6 +24,7 @@ export function useFolderWrite<T>({ write, invalidate, onDone }: FolderWriteOpti
     // After a failure too: a rejected write usually means this tab's tree is out of date.
     // Not awaited: the form stays locked until this returns, and a refetch can retry for seconds.
     onSettled: () => {
+      isWritingRef.current = false;
       void queryClient.invalidateQueries({ queryKey: invalidate });
     },
   });
@@ -32,8 +34,13 @@ export function useFolderWrite<T>({ write, invalidate, onDone }: FolderWriteOpti
     if (isError && document.activeElement === document.body) submitRef.current?.focus();
   }, [isError]);
 
-  // A per-call callback, which React Query skips after unmount: someone who left mid-write stays.
-  const submit = (value: T) => mutate(value, { onSuccess: onDone });
+  const submit = (value: T): void => {
+    // `isPending` disables the button a tick late, and a busy page can deliver two clicks by then.
+    if (isWritingRef.current) return;
+    isWritingRef.current = true;
+    // A per-call callback, which React Query skips after unmount: someone who left mid-write stays.
+    mutate(value, { onSuccess: onDone });
+  };
 
   return { submit, isPending, submitRef };
 }

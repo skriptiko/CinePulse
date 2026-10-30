@@ -37,6 +37,7 @@ const FOLDERS: Row[] = [
 const ITEMS: Row[] = [
   { id: 'movie_1', folderIds: ['b', 'd'] },
   { id: 'movie_2', folderIds: ['d'] },
+  { id: 'movie_3', folderIds: ['b'] },
 ];
 
 function toSnapshot(rows: Row[]) {
@@ -90,6 +91,7 @@ describe('watchlist store', () => {
     ]);
     expect(batch.update.mock.calls.map(([ref, data]) => [ref.path, data])).toEqual([
       ['users/u/items/movie_1', { folderIds: { arrayRemove: ['a', 'b'] } }],
+      ['users/u/items/movie_3', { folderIds: { arrayRemove: ['a', 'b'] } }],
     ]);
     expect(batch.commit).toHaveBeenCalledOnce();
   });
@@ -121,6 +123,7 @@ describe('watchlist store', () => {
     ['unknown', 'network'],
     ['unavailable', 'network'],
     ['deadline-exceeded', 'network'],
+    ['resource-exhausted', 'server'],
     ['permission-denied', 'client'],
   ])('reports the Firestore code %s as a %s error', async (code, kind) => {
     vi.mocked(getDocs).mockRejectedValueOnce(Object.assign(new Error('failed'), { code }));

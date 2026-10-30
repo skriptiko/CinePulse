@@ -1,4 +1,4 @@
-import { ApiError, getErrorMessage, isApiError } from '@repo/api';
+import { ApiError, type ApiErrorKind, getErrorMessage, isApiError } from '@repo/api';
 
 /** Firestore Lite reports a failed `fetch` as `unknown`, the same code as an HTTP 500. */
 const NETWORK_FAILURE_CODES = [
@@ -7,6 +7,8 @@ const NETWORK_FAILURE_CODES = [
   'unavailable',
   'deadline-exceeded',
 ];
+/** Firestore's HTTP 429, which `shouldRetry` treats like a 5xx. */
+const RATE_LIMIT_CODE = 'resource-exhausted';
 const POPUP_BLOCKED_CODE = 'auth/popup-blocked';
 
 /** `FirebaseError` by shape: the SDK is loaded lazily, so its class is not at hand here. */
@@ -15,13 +17,17 @@ export function getFirebaseCode(error: unknown): string | null {
   return typeof error.code === 'string' ? error.code : null;
 }
 
+function getErrorKind(code: string | null): ApiErrorKind {
+  if (code === RATE_LIMIT_CODE) return 'server';
+  return NETWORK_FAILURE_CODES.includes(code ?? '') ? 'network' : 'client';
+}
+
 /** Boundaries, toasts and the error report only know `ApiError`. */
 export function toApiError(error: unknown): ApiError {
   if (isApiError(error)) return error;
 
   const code = getFirebaseCode(error);
-  const kind = NETWORK_FAILURE_CODES.includes(code ?? '') ? 'network' : 'client';
-  return new ApiError(kind, code ?? 'Firebase request failed', { cause: error });
+  return new ApiError(getErrorKind(code), code ?? 'Firebase request failed', { cause: error });
 }
 
 export function getSignInErrorMessage(error: unknown): string {

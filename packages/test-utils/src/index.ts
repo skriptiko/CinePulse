@@ -1,6 +1,6 @@
 /// <reference types="@testing-library/jest-dom/vitest" />
 
-export { render, screen, waitFor, within } from '@testing-library/react';
+export { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 export { expectNoA11yViolations } from './axe';
 export { buildMovie, buildPaginated } from './factories/movie';
 export { buildTv } from './factories/tv';
