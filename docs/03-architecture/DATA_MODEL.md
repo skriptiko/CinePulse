@@ -100,7 +100,7 @@ type MultiSearchResult = SearchMovie | SearchTV | SearchPerson; // SearchMovie =
 const THEMES = ['light', 'dark', 'system'] as const;
 type Theme = (typeof THEMES)[number];
 
-type GlobalState = { theme: Theme }; // default: 'system'
+type GlobalState = { theme: Theme }; // default: 'dark' (dark-first)
 type GlobalActions = { setTheme: (theme: Theme) => void };
 type GlobalStore = GlobalState & GlobalActions;
 ```

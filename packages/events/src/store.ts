@@ -18,8 +18,9 @@ export type GlobalStore = GlobalState & GlobalActions;
 
 export type GlobalStoreApi = StoreApi<GlobalStore>;
 
+// Dark-first design: `system` is opt-in (Settings), so light-OS users still start dark.
 const defaultState: GlobalState = {
-  theme: 'system',
+  theme: 'dark',
 };
 
 declare global {

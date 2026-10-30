@@ -6,7 +6,7 @@ import { THEMES, createGlobalStore, getGlobalStore, globalStore, useGlobalStore 
 
 afterEach(() => {
   cleanup();
-  globalStore.setState({ theme: 'system' });
+  globalStore.setState({ theme: 'dark' });
 });
 
 describe('globalStore', () => {
@@ -22,19 +22,19 @@ describe('globalStore', () => {
     expect(secondBundle.globalStore).toBe(globalStore);
   });
 
-  it('starts with the system theme', () => {
-    expect(createGlobalStore().getState().theme).toBe('system');
+  it('starts with the dark theme (dark-first)', () => {
+    expect(createGlobalStore().getState().theme).toBe('dark');
   });
 
   it('setTheme updates the state and notifies subscribers', () => {
     const listener = vi.fn();
     const unsubscribe = globalStore.subscribe(listener);
 
-    globalStore.getState().setTheme('dark');
+    globalStore.getState().setTheme('light');
 
-    expect(globalStore.getState().theme).toBe('dark');
+    expect(globalStore.getState().theme).toBe('light');
     expect(listener).toHaveBeenCalledTimes(1);
-    expect(listener.mock.calls[0]?.[0]).toMatchObject({ theme: 'dark' });
+    expect(listener.mock.calls[0]?.[0]).toMatchObject({ theme: 'light' });
     unsubscribe();
   });
 
@@ -51,7 +51,7 @@ function ThemeLabel() {
 describe('useGlobalStore', () => {
   it('re-renders the component when the selected slice changes', () => {
     render(<ThemeLabel />);
-    expect(screen.getByText('system')).toBeDefined();
+    expect(screen.getByText('dark')).toBeDefined();
 
     act(() => {
       globalStore.getState().setTheme('light');

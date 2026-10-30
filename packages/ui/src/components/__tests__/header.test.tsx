@@ -1,5 +1,7 @@
+import { globalStore } from '@repo/events';
 import { expectNoA11yViolations, renderWithProviders, screen, within } from '@repo/test-utils';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
+import { AppLayout } from '../app-layout';
 import { Header } from '../header';
 
 describe('Header', () => {
@@ -47,5 +49,22 @@ describe('Header', () => {
     const { container } = renderWithProviders(<Header />);
 
     await expectNoA11yViolations(container);
+  });
+});
+
+describe('Header theme toggle', () => {
+  afterEach(() => globalStore.setState({ theme: 'dark' }));
+
+  it('switches the shared theme and reflects it in aria-pressed', async () => {
+    const { user } = renderWithProviders(<AppLayout>content</AppLayout>);
+    const toggle = screen.getByRole('button', { name: 'Dark theme' });
+    expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    expect(document.documentElement).toHaveClass('dark');
+
+    await user.click(toggle);
+
+    expect(globalStore.getState().theme).toBe('light');
+    expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    expect(document.documentElement).not.toHaveClass('dark');
   });
 });

@@ -35,7 +35,7 @@
 - текст: `text-foreground`, `text-muted-foreground`
 - межі: `border-border`
 
-Це дає узгодженість і теоретичну можливість світлої теми (у `globalStore` є `theme: 'light' | 'dark' | 'system'` та `setTheme`, React reads it with `useGlobalStore`; перемикач у UI ще не реалізований).
+The theme lives in the shared store (`@repo/events`, `theme`: `light | dark | system`, default `dark`). The header toggle (`aria-pressed`) switches light/dark; `AppLayout` mirrors the resolved theme onto `<html class="dark">`, and `system` follows `prefers-color-scheme`. The choice is not persisted yet (Settings page, CIN-29).
 
 ## Ізоляція стилів
 
