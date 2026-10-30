@@ -6,6 +6,8 @@
 
 Accepted (2026-10-29)
 
+Amended 2026-10-30 (CIN-80): security updates moved the repo to Vite 7 and Vitest 4. The version constraint below no longer applies; the rest of the decision stands. Vitest 4 no longer skips `dist/` by default, so every project excludes it.
+
 ## Context
 
 The repo has no tests. Phases 4–6 of the refactoring plan rewrite the data layer (`ApiError`, retry policy, pagination) and the UI models (mappers, formatting), and that code should land with unit tests from the start. The engineering standards (§14) already set the rules for how tests are written. This ADR fixes the tools, versions and layout those rules rely on.
