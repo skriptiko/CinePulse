@@ -23,11 +23,13 @@
     "@tanstack/react-query": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "react-error-boundary": "catalog:",
     "react-router-dom": "catalog:"
   },
   "dependencies": {
     "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@repo/api": "workspace:*",
+    "@repo/events": "workspace:*",
     "@repo/routes": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -45,6 +47,7 @@
     "postcss": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "react-error-boundary": "catalog:",
     "react-router-dom": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
