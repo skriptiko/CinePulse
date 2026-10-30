@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { type ScrollDirection, useHorizontalScroll } from '../hooks/use-horizontal-scroll';
 import { cn } from '../lib/utils';
 import { MovieCard, type MovieCardData } from './movie-card';
 import { Button } from './ui/button';
@@ -11,32 +11,10 @@ export type ContentRowProps = {
 };
 
 export function ContentRow({ title, movies, className }: ContentRowProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
-
-  const checkScroll = () => {
-    if (scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
-    }
-  };
-
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const scrollAmount = scrollRef.current.clientWidth * 0.8;
-      scrollRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth',
-      });
-      setTimeout(checkScroll, 300);
-    }
-  };
+  const { ref, canScrollLeft, canScrollRight, scroll } = useHorizontalScroll<HTMLDivElement>();
 
   return (
     <section className={cn('relative', className)}>
-      {/* Header */}
       <div className="flex items-center justify-between mb-4 px-4 md:px-8">
         <h2 className="text-xl md:text-2xl font-semibold tracking-tight">{title}</h2>
         <button
@@ -47,53 +25,53 @@ export function ContentRow({ title, movies, className }: ContentRowProps) {
         </button>
       </div>
 
-      {/* Carousel Container */}
       <div className="relative group/carousel">
-        {/* Left Arrow */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className={cn(
-            'absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full glass',
-            'opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300',
-            !canScrollLeft && 'hidden'
-          )}
-          onClick={() => scroll('left')}
-        >
-          <ChevronLeft className="w-5 h-5" />
-          <span className="sr-only">Scroll left</span>
-        </Button>
+        <CarouselArrow direction="left" hidden={!canScrollLeft} onScroll={scroll} />
+        <CarouselArrow direction="right" hidden={!canScrollRight} onScroll={scroll} />
 
-        {/* Right Arrow */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className={cn(
-            'absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full glass',
-            'opacity-0 group-hover/carousel:opacity-100 transition-opacity duration-300',
-            !canScrollRight && 'hidden'
-          )}
-          onClick={() => scroll('right')}
-        >
-          <ChevronRight className="w-5 h-5" />
-          <span className="sr-only">Scroll right</span>
-        </Button>
-
-        {/* Scrollable Content */}
         <div
-          ref={scrollRef}
-          onScroll={checkScroll}
+          ref={ref}
           className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide px-4 md:px-8 pb-4"
         >
           {movies.map((movie) => (
             <MovieCard
               key={movie.id}
               movie={movie}
-              className="flex-shrink-0 w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px]"
+              className="shrink-0 w-36 sm:w-40 md:w-44 lg:w-48"
             />
           ))}
         </div>
       </div>
     </section>
+  );
+}
+
+type CarouselArrowProps = {
+  direction: ScrollDirection;
+  hidden: boolean;
+  onScroll: (direction: ScrollDirection) => void;
+};
+
+function CarouselArrow({ direction, hidden, onScroll }: CarouselArrowProps) {
+  const Icon = direction === 'left' ? ChevronLeft : ChevronRight;
+
+  const handleClick = () => onScroll(direction);
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={handleClick}
+      className={cn(
+        'absolute top-1/2 -translate-y-1/2 z-20 size-10 rounded-full glass',
+        'opacity-0 group-hover/carousel:opacity-100 focus-visible:opacity-100',
+        'transition-opacity duration-300',
+        direction === 'left' ? 'left-2' : 'right-2',
+        hidden && 'hidden'
+      )}
+    >
+      <Icon />
+      <span className="sr-only">{direction === 'left' ? 'Scroll left' : 'Scroll right'}</span>
+    </Button>
   );
 }

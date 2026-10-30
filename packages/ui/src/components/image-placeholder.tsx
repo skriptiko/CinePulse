@@ -10,9 +10,9 @@ export function ImagePlaceholder({ className }: ImagePlaceholderProps) {
   return (
     <div
       aria-hidden="true"
-      className={cn('flex h-full w-full items-center justify-center bg-muted', className)}
+      className={cn('flex size-full items-center justify-center bg-muted', className)}
     >
-      <Film className="h-8 w-8 text-muted-foreground" />
+      <Film className="size-8 text-muted-foreground" />
     </div>
   );
 }

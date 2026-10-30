@@ -1,5 +1,18 @@
+import { cva } from 'class-variance-authority';
 import { useState } from 'react';
 import { cn } from '../lib/utils';
+
+const pillVariants = cva(
+  'px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors duration-200',
+  {
+    variants: {
+      selected: {
+        true: 'bg-foreground text-background',
+        false: 'bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground',
+      },
+    },
+  }
+);
 
 export type CategoryPillsProps = {
   categories: string[];
@@ -36,12 +49,7 @@ export function CategoryPills({
           type="button"
           aria-pressed={selected === category}
           onClick={() => handleSelect(category)}
-          className={cn(
-            'px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200',
-            selected === category
-              ? 'bg-foreground text-background'
-              : 'bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground'
-          )}
+          className={pillVariants({ selected: selected === category })}
         >
           {category}
         </button>
