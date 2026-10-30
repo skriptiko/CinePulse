@@ -105,7 +105,7 @@ MFE не мають прямих імпортів один з одного. Ко
 - **Event bus** (`packages/events/src/event-bus.ts`) — типізований emitter/listener поверх `window.__CINEPULSE_EVENT_BUS__` (singleton на `window`). Event types are fixed in `EventMap` (`notification:show`, `mfe:error`, `error:report`).
 - **Global store** (`packages/events/src/store.ts`) — `window.__CINEPULSE_STORE__` singleton зі станом `{ user, isAuthenticated, theme }` і діями (`setUser`, `updateUser`, `setTheme`, `reset`).
 
-Singleton саме на `window` гарантує єдиний екземпляр навіть якщо федерація завантажить пакет двічі. The API transport does not emit events; error toasts and reports go through `QueryCache.onError` (refactoring plan, item 5.10).
+Singleton саме на `window` гарантує єдиний екземпляр навіть якщо федерація завантажить пакет двічі. The API transport does not emit events; error toasts and reports go through `QueryCache.onError` (see Error handling below).
 
 Деталі моделі — [DATA_MODEL.md](./DATA_MODEL.md), деталі рішення — [ADR-0004](./decisions/ADR-0004-typed-event-bus.md).
 
@@ -121,7 +121,10 @@ Also:
 - **Remote route loading** — `loadRemoteRoutes(REMOTES)` (`apps/host/src/remotes/`) loads each remote independently. A failed remote gets `RemoteUnavailable` ("This section is unavailable" + Try again, which reloads) on the paths listed for it in `REMOTES`, and `mfe:error` is emitted with a serialized error; the other remotes keep working.
 - **Stale chunks after a deploy** — `vite:preloadError` triggers one `location.reload()`; the reload time in `sessionStorage` blocks another reload for 60 s, so a really missing chunk cannot loop.
 - **API errors** — `ApiError` with `kind` (`network`, `not_found`, `server`, `client`, `validation`), `status` and `cause`; an abort is rethrown unchanged. See [API_SPEC.md](./API_SPEC.md#errors).
-- **Reporting** — every boundary emits `error:report` (`source: 'boundary'`); the host listener arrives with item 5.10.
+- **One channel per error** — `createQueryClient` (`@repo/api`) sets `QueryCache.onError`: every failed query emits `error:report` (`source: 'query'`); a toast (`notification:show`, text from `getErrorMessage`) is emitted only when the query already has data (a failed background refetch), never for a 404 and never when `meta.inlineErrors` is set. Without data the error goes to the page boundary instead. Failed mutations always toast.
+- **Toasts** — the host subscribes to `notification:show` and shows it with sonner; its `Toaster` is lazy-loaded, so sonner is not in the initial bundle. Remotes never import sonner.
+- **Reporting** — boundaries, `QueryCache`/`MutationCache` and the host's `window` `error` / `unhandledrejection` handlers emit `error:report`. The host's single listener drops expected failures (404, aborts, network errors while offline) and, with no vendor chosen, logs the rest in development only.
+- **Offline** — the host shows one global banner while `onlineManager` reports offline; data on screen stays.
 
 ## Збірка та деплой
 

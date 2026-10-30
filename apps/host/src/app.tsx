@@ -1,7 +1,14 @@
 import { AppRoutes } from '@/app-routes';
 import { AppLayout, PageSkeleton, ShellBoundary } from '@repo/ui';
-import { useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import type { RouteObject } from 'react-router-dom';
+import { OfflineBanner } from './error-channel/offline-banner';
+
+// Toasts only follow a failed background refetch, long after the first render, so sonner
+// stays out of the initial bundle.
+const Toaster = lazy(() =>
+  import('./error-channel/toaster').then((module) => ({ default: module.Toaster }))
+);
 import { loadRemoteRoutes } from './remotes/load-remote-routes';
 import { REMOTES } from './remotes/remotes';
 
@@ -27,6 +34,10 @@ export function App() {
       <ShellBoundary>
         {remoteRoutes === null ? <PageSkeleton /> : <AppRoutes routes={remoteRoutes} />}
       </ShellBoundary>
+      <OfflineBanner />
+      <Suspense fallback={null}>
+        <Toaster />
+      </Suspense>
     </AppLayout>
   );
 }

@@ -154,7 +154,7 @@ interface WatchlistItem {
 | `mfe:error` | `MfeErrorPayload { name; error: SerializedError }` |
 | `error:report` | `ErrorReportPayload { error: unknown; source: 'boundary' \| 'query' \| 'mutation' \| 'window' }` |
 
-`NotificationPayload.type` ∈ `'success' | 'error' | 'warning' | 'info'`. Event names are typed as ``EventKey = `${EventDomain}:${string}` ``, so a key outside the `domain:action` format fails `tsc`. `mfe:error` carries plain data (`serializeError(error)` → `{ name, message }`); `error:report` keeps the original error because the host listener filters reports by `ApiError` kind. Nothing emits or listens yet: `error:report` and the `notification:show` toast are wired in item 5.10 and `mfe:error` in item 5.9 of the refactoring plan. The former `user:*`, `navigation:change` and `mfe:ready` events had no emitters or listeners and were removed; they come back with Firebase Auth.
+`NotificationPayload.type` ∈ `'success' | 'error' | 'warning' | 'info'`. Event names are typed as ``EventKey = `${EventDomain}:${string}` ``, so a key outside the `domain:action` format fails `tsc`. `mfe:error` carries plain data (`serializeError(error)` → `{ name, message }`); `error:report` keeps the original error because the host listener filters reports by `ApiError` kind. `error:report` is emitted by boundaries, `QueryCache`/`MutationCache` and the host's window handlers, and has one listener in the host; `notification:show` is emitted by `QueryCache.onError` and shown as a toast by the host; `mfe:error` is emitted when a remote fails to load. The former `user:*`, `navigation:change` and `mfe:ready` events had no emitters or listeners and were removed; they come back with Firebase Auth.
 
 ## Робота із зображеннями
 

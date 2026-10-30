@@ -51,7 +51,8 @@
 🟡 Частково уніфіковано:
 - **Loading:** every page suspends into a skeleton shaped like it (`HomeSkeleton`, `MovieGridSkeleton`, `PageSkeleton`). The layout is reserved at once and the skeleton appears after 300 ms, so fast loads do not flicker.
 - **Empty:** реалізовано в **Movies** («No movies found» + кнопка «Clear filters»). На інших сторінках порожніх станів немає.
-- **Error:** without data, the page boundary shows a plain message with **Try again** (404 → `NotFound`); the host's `ShellBoundary` catches the rest and keeps the header; `@repo/api` itself shows nothing — toasts for background refetch errors come with `QueryCache.onError` (refactoring plan, item 5.10).
+- **Error:** without data, the page boundary shows a plain message with **Try again** (404 → `NotFound`); the host's `ShellBoundary` catches the rest and keeps the header; a failed background refetch keeps the data and shows one toast (bottom right).
+- **Offline:** one global banner at the bottom, "You are offline. Showing saved results."
 
 TODO: section-level boundaries on Home (item 6.1) and inline states for "Load more" (item 6.2).
 

@@ -32,7 +32,7 @@ The public API is `packages/api/src/index.ts`. It exports the factories, `useMov
 
 - **Abort** (`name === 'AbortError'`, or the request's `signal` is aborted) is rethrown unchanged, never wrapped, and never retried.
 - Guards: `isApiError` (checks `name`, so it works across MFE bundles), `isNotFound`, `isAbortError`.
-- The transport shows no UI and emits no events. The toast channel moves to `QueryCache.onError` (refactoring plan, item 5.10).
+- The transport shows no UI and emits no events. `createQueryClient` reports every failed query (`error:report`) and asks for a toast (`notification:show`) only over existing data, never for a 404 or a query with `meta.inlineErrors`. `meta.errorMessage` overrides the text; otherwise `getErrorMessage(error)` (`core/error-message.ts`) gives a plain message per `kind`.
 - `Register { defaultError: unknown }` (`query-client/register.ts`): `error` from a query is `unknown` and is narrowed with `isApiError`, because it can also be a programming error.
 
 ## QueryClient

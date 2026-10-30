@@ -5,6 +5,7 @@ export { apiGet } from './client';
 export type { EndpointOptions, RequestOptions } from './client';
 export { ApiError, isAbortError, isApiError, isNotFound, toHttpError } from './errors';
 export type { ApiErrorKind, ApiErrorOptions } from './errors';
+export { getErrorMessage } from './error-message';
 export { buildQueryString, getImageUrl } from './utils';
 export type { QueryParams } from './utils';
 export { getNextPageParam, TMDB_MAX_PAGES } from './pagination';

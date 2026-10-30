@@ -3,6 +3,7 @@ export {
   ApiError,
   BACKDROP_SIZE_FEATURED,
   BACKDROP_SIZE_HERO,
+  getErrorMessage,
   getImageUrl,
   isAbortError,
   isApiError,
@@ -28,6 +29,7 @@ export {
 export { useMoviesOrSearch } from './hooks';
 
 export { createQueryClient, MAX_RETRIES, shouldRetry } from './query-client';
+export type { ApiQueryMeta } from './query-client';
 export { ApiProvider } from './provider/api-provider';
 export type { ApiProviderProps } from './provider/api-provider';
 
