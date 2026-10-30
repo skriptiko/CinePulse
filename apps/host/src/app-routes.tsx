@@ -1,7 +1,9 @@
+import { NotFound } from '@repo/ui';
 import { type RouteObject, useRoutes } from 'react-router-dom';
 
-export function AppRoutes({ routes }: { routes: RouteObject[] }) {
-  const element = useRoutes(routes);
+const NOT_FOUND_ROUTE: RouteObject = { path: '*', element: <NotFound /> };
 
-  return element || <div className="p-4">Page not found</div>;
+export function AppRoutes({ routes }: { routes: RouteObject[] }) {
+  // The catch-all goes last, after every remote's routes.
+  return useRoutes([...routes, NOT_FOUND_ROUTE]);
 }

@@ -19,6 +19,7 @@
     "lucide-react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "react-error-boundary": "catalog:",
     "react-router-dom": "catalog:"
   },
   "devDependencies": {

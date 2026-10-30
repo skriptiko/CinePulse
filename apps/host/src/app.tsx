@@ -1,5 +1,5 @@
 import { AppRoutes } from '@/app-routes';
-import { AppLayout, ErrorBoundary } from '@repo/ui';
+import { AppLayout, PageSkeleton, ShellBoundary } from '@repo/ui';
 import { useEffect, useState } from 'react';
 import type { RouteObject } from 'react-router-dom';
 
@@ -29,15 +29,11 @@ export function App() {
   }, []);
 
   return (
-    // Temporary: the boundary sits inside AppLayout so a page error keeps header and footer.
+    // The shell boundary sits inside AppLayout, so the header survives any page error.
     <AppLayout>
-      <ErrorBoundary level="shell">
-        {remoteRoutes === null ? (
-          <div className="p-4">Loading...</div>
-        ) : (
-          <AppRoutes routes={remoteRoutes} />
-        )}
-      </ErrorBoundary>
+      <ShellBoundary>
+        {remoteRoutes === null ? <PageSkeleton /> : <AppRoutes routes={remoteRoutes} />}
+      </ShellBoundary>
     </AppLayout>
   );
 }

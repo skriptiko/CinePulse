@@ -69,7 +69,7 @@ From here on, new or changed logic in `packages/*` and new UI states land with t
 2. `ApiError` classification, `shouldRetry`, `getRetryDelay`, `getNextPageParam` (including the 500-page cap).
 3. `queryOptions` factories: key shapes.
 4. `@repo/events`: event bus (`on` / `off` / `once` / `emit`) and the store.
-5. Components: `MovieCard`, `Hero`, `ContentRow`, `CategoryPills`, the error boundaries (shell/module).
+5. Components: `MovieCard`, `Hero`, `ContentRow`, `CategoryPills`, `AsyncBoundary` (fallback, Try again refetch, 404 → `NotFound`), `NotFound`, page skeletons.
 6. Pages:
    - **Movies**: search ↔ list switching (regression for the conditional-hook bug), genre filter, sort, empty state, "Load more" (next-page error, end of list), state in the URL;
    - **Home**: rows render from MSW fixtures, and one failing row does not blank the page.

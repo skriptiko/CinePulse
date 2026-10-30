@@ -23,7 +23,8 @@
 
 **Каркас застосунку:**
 - `Header`, `Footer`, `AppLayout` — оболонка сторінки
-- `ErrorBoundary` — межа обробки помилок (shell/module)
+- `PageBoundary` / `AsyncBoundary` (page and section loading + errors), `ShellBoundary` (host), `PageErrorFallback`, `NotFound`
+- `HomeSkeleton`, `MovieGridSkeleton`, `PageSkeleton` — page skeletons, shown after 300 ms
 
 Утиліти: `cn` (склейка класів), мапери `to…Data` у `lib/mappers/` (TMDB → UI-моделі).
 
@@ -48,11 +49,11 @@
 ## Стани UI
 
 🟡 Частково уніфіковано:
-- **Loading:** компонент `Skeleton` існує, але застосований не всюди — зокрема на **Home skeleton немає** (контент «стрибає» під час завантаження). Сторінки використовують Suspense (`fallback={<div>Loading...</div>}`) — грубий стан.
+- **Loading:** every page suspends into a skeleton shaped like it (`HomeSkeleton`, `MovieGridSkeleton`, `PageSkeleton`). The layout is reserved at once and the skeleton appears after 300 ms, so fast loads do not flicker.
 - **Empty:** реалізовано в **Movies** («No movies found» + кнопка «Clear filters»). На інших сторінках порожніх станів немає.
-- **Error:** глобально через `ErrorBoundary` ; `@repo/api` itself shows nothing — toasts for background refetch errors come with `QueryCache.onError` (refactoring plan, item 5.10).
+- **Error:** without data, the page boundary shows a plain message with **Try again** (404 → `NotFound`); the host's `ShellBoundary` catches the rest and keeps the header; `@repo/api` itself shows nothing — toasts for background refetch errors come with `QueryCache.onError` (refactoring plan, item 5.10).
 
-TODO: єдиний патерн loading/empty/error для всіх сторінок; замінити `<div>Loading...</div>` на Skeleton-екрани.
+TODO: section-level boundaries on Home (item 6.1) and inline states for "Load more" (item 6.2).
 
 ## Accessibility
 

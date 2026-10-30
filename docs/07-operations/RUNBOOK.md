@@ -14,7 +14,7 @@
 - **Дії:** TODO.
 
 ### Remote MFE (remoteEntry) недоступний
-- **Симптоми:** порожня зона контенту; спрацював module-level ErrorBoundary; у dev — `console.error('Failed to load remote routes')`.
+- **Симптоми:** the remote's URLs show `NotFound`; у dev — `console.error('Failed to load remote routes')`.
 - **Діагностика:** TODO — доступність `/pages-mfe/**` та `/user-mfe/**`; коректність rewrites; CORS-заголовок на `*.js`.
 - **Дії:** TODO.
 
@@ -24,7 +24,7 @@
 - **Дії:** TODO; за потреби — [rollback](../06-deployment/CI_CD.md#rollback).
 
 ### Білий екран у production
-- **Діагностика:** TODO — консоль браузера, завантаження remoteEntry, shell-level ErrorBoundary.
+- **Діагностика:** TODO — browser console, `remoteEntry.js` loading, whether `ShellBoundary` shows "Something went wrong".
 - **Дії:** TODO.
 
 ## Процедура деплою вручну

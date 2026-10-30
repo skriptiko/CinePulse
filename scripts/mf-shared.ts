@@ -2,7 +2,13 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 /** Third-party singletons: one instance per page, and a version mismatch fails loudly. */
-const STRICT_SINGLETONS = ['react', 'react-dom', 'react-router-dom', '@tanstack/react-query'];
+const STRICT_SINGLETONS = [
+  'react',
+  'react-dom',
+  'react-router-dom',
+  '@tanstack/react-query',
+  'react-error-boundary',
+];
 
 /** Workspace packages: always the same source, so singleton is enough. */
 const WORKSPACE_SINGLETONS = ['@repo/events', '@repo/routes', '@repo/api'];

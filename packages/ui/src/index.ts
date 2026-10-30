@@ -35,8 +35,20 @@ export type { FooterProps } from './components/footer';
 export { Skeleton } from './components/ui/skeleton';
 export type { SkeletonProps } from './components/ui/skeleton';
 
-export { ErrorBoundary } from './components/error-boundary';
-export type { ErrorBoundaryProps } from './components/error-boundary';
+export { AsyncBoundary } from './components/async-boundary';
+export type { AsyncBoundaryProps } from './components/async-boundary';
+export { PageBoundary } from './components/page-boundary';
+export type { PageBoundaryProps } from './components/page-boundary';
+export { PageErrorFallback } from './components/page-error-fallback';
+export { ShellBoundary } from './components/shell-boundary';
+export type { ShellBoundaryProps } from './components/shell-boundary';
+export { NotFound } from './components/not-found';
+export {
+  HomeSkeleton,
+  MovieGridSkeleton,
+  PageSkeleton,
+  SKELETON_DELAY_MS,
+} from './components/page-skeletons';
 
 export { AppLayout } from './components/app-layout';
 export type { AppLayoutProps } from './components/app-layout';

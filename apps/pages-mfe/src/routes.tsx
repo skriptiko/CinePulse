@@ -1,5 +1,5 @@
 import { ROUTE_PATHS } from '@repo/routes';
-import { Suspense } from 'react';
+import { HomeSkeleton, MovieGridSkeleton, PageBoundary } from '@repo/ui';
 import type { RouteObject } from 'react-router-dom';
 import { Home } from './pages/home';
 import { Movies } from './pages/movies/movies-page';
@@ -8,17 +8,17 @@ export const routes: RouteObject[] = [
   {
     path: ROUTE_PATHS.HOME,
     element: (
-      <Suspense fallback={<div>Loading...</div>}>
+      <PageBoundary fallback={<HomeSkeleton />}>
         <Home />
-      </Suspense>
+      </PageBoundary>
     ),
   },
   {
     path: ROUTE_PATHS.MOVIES,
     element: (
-      <Suspense fallback={<div>Loading...</div>}>
+      <PageBoundary fallback={<MovieGridSkeleton />}>
         <Movies />
-      </Suspense>
+      </PageBoundary>
     ),
   },
 ];
