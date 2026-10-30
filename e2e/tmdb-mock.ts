@@ -42,6 +42,11 @@ function respond(route: Route, url: URL) {
     const label = genre === '28' ? 'Action' : 'Any';
     return route.fulfill({ json: paginated([`${label} movie ${page}`], page) });
   }
+  if (/^\/movie\/\d+$/.test(path)) {
+    return route.fulfill({
+      json: { ...movie(1, 'Detail movie'), genres: GENRES, runtime: 120, tagline: null },
+    });
+  }
   return route.fulfill({ json: paginated(['Row movie', 'Hero movie']) });
 }
 

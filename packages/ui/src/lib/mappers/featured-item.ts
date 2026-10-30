@@ -1,5 +1,6 @@
 import type { Genre, Movie } from '@repo/api';
 import { BACKDROP_SIZE_FEATURED, getImageUrl } from '@repo/api';
+import { buildPath } from '@repo/routes';
 import type { FeaturedItemData } from '../../components/featured-grid';
 import { formatRating, formatYear } from '../format';
 
@@ -16,5 +17,6 @@ export function toFeaturedItemData(movie: Movie, genres: Genre[]): FeaturedItemD
     year: formatYear(movie.release_date),
     rating: formatRating(movie.vote_average),
     genre: genre?.name ?? null,
+    href: buildPath.movie(movie.id),
   };
 }

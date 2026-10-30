@@ -1,5 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { formatDate, formatRating, formatYear } from '../format';
+import { formatDate, formatRating, formatRuntime, formatYear } from '../format';
+
+describe('formatRuntime', () => {
+  it('splits minutes into hours and minutes', () => {
+    expect(formatRuntime(135)).toBe('2h 15m');
+    expect(formatRuntime(120)).toBe('2h');
+    expect(formatRuntime(45)).toBe('45m');
+  });
+
+  it('hides an unknown runtime', () => {
+    expect(formatRuntime(null)).toBeNull();
+    expect(formatRuntime(0)).toBeNull();
+  });
+});
 
 describe('formatYear', () => {
   it('takes the year from a TMDB date', () => {

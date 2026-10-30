@@ -51,6 +51,20 @@ export function FeaturedGridSkeleton() {
   );
 }
 
+export function MovieDetailSkeleton() {
+  return (
+    <SkeletonFrame className="flex flex-col gap-6 px-4 pt-28 sm:flex-row sm:gap-8 sm:px-6 sm:pt-36 lg:px-12">
+      <Skeleton className="aspect-[2/3] w-40 shrink-0 rounded-lg md:w-64" />
+      <div className="w-full max-w-2xl">
+        <Skeleton className="mb-4 h-12 w-3/4" />
+        <Skeleton className="mb-6 h-4 w-1/2" />
+        <Skeleton className="mb-2 h-4 w-full" />
+        <Skeleton className="h-4 w-5/6" />
+      </div>
+    </SkeletonFrame>
+  );
+}
+
 export function MovieGridSkeleton() {
   return (
     <SkeletonFrame className="px-4 pt-28 sm:px-6 sm:pt-36 lg:px-12">

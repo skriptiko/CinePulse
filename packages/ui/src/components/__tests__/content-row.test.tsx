@@ -4,8 +4,8 @@ import { ContentRow } from '../content-row';
 import type { MovieCardData } from '../movie-card';
 
 const MOVIES: MovieCardData[] = [
-  { id: 1, title: 'Dune', imageUrl: null, year: '2021', rating: '7.8' },
-  { id: 2, title: 'Arrival', imageUrl: null, year: '2016', rating: '7.6' },
+  { id: 1, title: 'Dune', imageUrl: null, year: '2021', rating: '7.8', href: null },
+  { id: 2, title: 'Arrival', imageUrl: null, year: '2016', rating: '7.6', href: null },
 ];
 
 describe('ContentRow', () => {

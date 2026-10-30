@@ -1,5 +1,6 @@
 import type { Movie, TrendingMovie, TrendingTV, TV } from '@repo/api';
 import { getImageUrl, POSTER_SIZE_CARD } from '@repo/api';
+import { buildPath } from '@repo/routes';
 import type { MovieCardData } from '../../components/movie-card';
 import { formatRating, formatYear } from '../format';
 
@@ -10,6 +11,7 @@ export function toMovieCardData(movie: Movie): MovieCardData {
     imageUrl: getImageUrl(movie.poster_path, POSTER_SIZE_CARD),
     year: formatYear(movie.release_date),
     rating: formatRating(movie.vote_average),
+    href: buildPath.movie(movie.id),
   };
 }
 
@@ -20,6 +22,8 @@ export function toTvCardData(tv: TV): MovieCardData {
     imageUrl: getImageUrl(tv.poster_path, POSTER_SIZE_CARD),
     year: formatYear(tv.first_air_date),
     rating: formatRating(tv.vote_average),
+    // No TV details page yet (CIN-17).
+    href: null,
   };
 }
 

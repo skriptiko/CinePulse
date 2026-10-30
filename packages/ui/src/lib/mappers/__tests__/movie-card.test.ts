@@ -17,6 +17,7 @@ describe('toMovieCardData', () => {
       imageUrl: 'https://image.tmdb.org/t/p/w342/dune.jpg',
       year: '2021',
       rating: '7.8',
+      href: `/movies/${movie.id}`,
     });
   });
 
@@ -47,6 +48,7 @@ describe('toTvCardData', () => {
       imageUrl: 'https://image.tmdb.org/t/p/w342/sev.jpg',
       year: '2022',
       rating: '8.4',
+      href: null,
     });
   });
 
@@ -65,5 +67,11 @@ describe('toTrendingCardData', () => {
 
     expect(toTrendingCardData(movie)).toEqual(toMovieCardData(movie));
     expect(toTrendingCardData(tv)).toEqual(toTvCardData(tv));
+  });
+});
+
+describe('card links', () => {
+  it('links a movie to its details page', () => {
+    expect(toMovieCardData(buildMovie({ id: 7 })).href).toBe('/movies/7');
   });
 });

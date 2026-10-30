@@ -56,3 +56,12 @@ export function formatRating(rating: number | null | undefined): string | null {
   if (rating == null || !Number.isFinite(rating)) return null;
   return ratingFormatter.format(rating);
 }
+
+/** `135` → `2h 15m`; `null` when TMDB does not know the runtime (it may also send 0). */
+export function formatRuntime(minutes: number | null | undefined): string | null {
+  if (!minutes) return null;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  if (hours === 0) return `${rest}m`;
+  return rest === 0 ? `${hours}h` : `${hours}h ${rest}m`;
+}
