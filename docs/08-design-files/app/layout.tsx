@@ -20,7 +20,6 @@ export const viewport = {
 export const metadata: Metadata = {
   title: 'CinePulse | Premium Streaming Experience',
   description: 'Discover and stream your favorite movies and shows with CinePulse - the ultimate cinematic experience',
-  generator: 'v0.app',
   icons: {
     icon: [
       {
