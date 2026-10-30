@@ -11,6 +11,9 @@ const Profile = lazy(() =>
 const Settings = lazy(() =>
   import('./pages/settings').then((module) => ({ default: module.Settings }))
 );
+const Watchlist = lazy(() =>
+  import('./pages/watchlist/watchlist-page').then((module) => ({ default: module.WatchlistPage }))
+);
 
 export const routes: RouteObject[] = [
   {
@@ -37,6 +40,16 @@ export const routes: RouteObject[] = [
       <PageBoundary>
         <RequireAuth>
           <Settings />
+        </RequireAuth>
+      </PageBoundary>
+    ),
+  },
+  {
+    path: ROUTE_PATHS.USER_WATCHLIST,
+    element: (
+      <PageBoundary>
+        <RequireAuth>
+          <Watchlist />
         </RequireAuth>
       </PageBoundary>
     ),

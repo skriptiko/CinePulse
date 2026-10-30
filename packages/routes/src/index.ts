@@ -9,6 +9,7 @@ export const ROUTE_PATHS = {
   USER: '/user',
   USER_PROFILE: '/user/profile',
   USER_SETTINGS: '/user/settings',
+  USER_WATCHLIST: '/user/watchlist',
 } as const satisfies Record<string, `/${string}`>;
 
 export type RoutePath = (typeof ROUTE_PATHS)[keyof typeof ROUTE_PATHS];
