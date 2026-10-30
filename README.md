@@ -34,7 +34,7 @@ Detailed technical documentation — architecture, the page catalog with impleme
 
 ### Prerequisites
 
-- Node.js >= 20
+- Node.js >= 24
 - pnpm >= 9
 
 ### Installation

@@ -145,8 +145,8 @@ Pipeline details: [CI_CD.md](../06-deployment/CI_CD.md); environments: [ENVIRONM
 
 ## Known limitations
 
+- **`new Function` in the Module Federation runtime.** The bundle contains such branches, but the paths we use never reach them: the CSP is enforced without `'unsafe-eval'`, and the production pages load with a clean console (checked 2026-10-30). A runtime upgrade that reaches them would fail under the CSP, and `e2e/smoke.spec.ts` would catch it, because it runs under the same headers.
 - Shared dependencies tightly couple the `react`/`react-router-dom` versions across all MFEs, so upgrades must be coordinated.
-- The global store is not reactive for React out of the box (no subscription hook); for now it is mostly used as a state bus (see [ADR-0004](./decisions/ADR-0004-typed-event-bus.md)).
 - There is no separate staging environment; deploys go straight to production (Phase 6).
 
 ## ➕ Planned impact of the requirements (2026-07-12)
