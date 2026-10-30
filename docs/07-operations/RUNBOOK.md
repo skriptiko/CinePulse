@@ -14,7 +14,7 @@
 - **Дії:** TODO.
 
 ### Remote MFE (remoteEntry) недоступний
-- **Симптоми:** the remote's URLs show `NotFound`; у dev — `console.error('Failed to load remote routes')`.
+- **Симптоми:** the remote's URLs show "This section is unavailable", other sections work; an `mfe:error` event; in dev, `console.error('Failed to load remote "<name>"')`.
 - **Діагностика:** TODO — доступність `/pages-mfe/**` та `/user-mfe/**`; коректність rewrites; CORS-заголовок на `*.js`.
 - **Дії:** TODO.
 
