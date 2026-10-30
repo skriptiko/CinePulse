@@ -1,4 +1,4 @@
-import { genreQueries, useMoviesOrSearch } from '@repo/api';
+import { SEARCH_QUERY_MAX_LENGTH, genreQueries, useMoviesOrSearch } from '@repo/api';
 import {
   Button,
   CategoryPills,
@@ -111,6 +111,7 @@ export function Movies() {
                     placeholder="Search movies..."
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
+                    maxLength={SEARCH_QUERY_MAX_LENGTH}
                     aria-label="Search movies"
                     className="pl-10 h-10 bg-secondary border-0 rounded-lg"
                   />

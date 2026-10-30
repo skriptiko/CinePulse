@@ -6,7 +6,7 @@
 export const PROXY_PREFIX = '/api/tmdb';
 
 export const MAX_PAGE = 500;
-export const MAX_QUERY_LENGTH = 100;
+export const MAX_QUERY_LENGTH = 100; // keep equal to SEARCH_QUERY_MAX_LENGTH in @repo/api
 
 export const CACHE_CONTROL_DEFAULT = 'public, max-age=300, s-maxage=3600';
 /** Genre lists change rarely. */
