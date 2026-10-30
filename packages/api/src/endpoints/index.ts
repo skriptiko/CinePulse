@@ -1,6 +1,6 @@
-export { getMovieGenres, getTVGenres } from './genres';
-export { getMovieDetails, getMovies } from './movies';
-export type { MovieCategory } from './movies';
+export { getMovieGenres, getTVGenres } from './genre';
+export { getMovieDetails, getMovies } from './movie';
+export type { MovieCategory } from './movie';
 export { getPersonDetails } from './person';
 export { searchMovies, searchMulti, searchPerson, searchTV } from './search';
 export type { SearchParams } from './search';

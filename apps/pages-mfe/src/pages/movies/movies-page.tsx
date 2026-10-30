@@ -1,4 +1,4 @@
-import { useMovieGenres, useMoviesOrSearch } from '@repo/api';
+import { genreQueries, useMoviesOrSearch } from '@repo/api';
 import {
   Button,
   CategoryPills,
@@ -13,6 +13,7 @@ import {
   cn,
   toMovieCardData,
 } from '@repo/ui';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { ChevronDown, Grid3X3, LayoutGrid, Search, SlidersHorizontal } from 'lucide-react';
 import { useDeferredValue, useMemo, useState } from 'react';
 import { useDebouncedValue } from './use-debounced-value';
@@ -32,7 +33,7 @@ export function Movies() {
   const searchQuery = useDeferredValue(debouncedQuery);
   const isSearchPending = searchQuery !== searchInput;
 
-  const { data: genresData } = useMovieGenres();
+  const { data: genresData } = useSuspenseQuery(genreQueries.movie());
 
   const {
     data: moviesData,

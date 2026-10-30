@@ -2,7 +2,7 @@ import { http, HttpResponse, delay } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { ApiError } from '../../core';
-import { getMovies } from '../movies';
+import { getMovies } from '../movie';
 
 // @repo/api cannot use @repo/test-utils (that package depends on @repo/api), so it owns its server.
 const server = setupServer();

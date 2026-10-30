@@ -45,7 +45,4 @@ export { toFeaturedItemData } from './lib/mappers/featured-item';
 export { toHeroData } from './lib/mappers/hero';
 export { toMovieCardData, toTrendingCardData, toTvCardData } from './lib/mappers/movie-card';
 
-export { Providers } from './components/providers';
-export type { ProvidersProps } from './components/providers';
-
 export { cn } from './lib/utils';

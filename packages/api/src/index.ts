@@ -1,61 +1,35 @@
 export {
-  ApiError,
-  apiGet,
   API_CONFIG,
-  buildQueryString,
+  ApiError,
+  BACKDROP_SIZE_FEATURED,
+  BACKDROP_SIZE_HERO,
   getImageUrl,
   isAbortError,
   isApiError,
   isNotFound,
-  toHttpError,
+  POSTER_SIZE_CARD,
+  TMDB_MAX_PAGES,
 } from './core';
-export type {
-  ApiErrorKind,
-  ApiErrorOptions,
-  BackdropSize,
-  EndpointOptions,
-  ImageSize,
-  ProfileSize,
-  RequestOptions,
-} from './core';
-export { BACKDROP_SIZE_FEATURED, BACKDROP_SIZE_HERO, POSTER_SIZE_CARD } from './core';
+export type { ApiErrorKind, BackdropSize, ImageSize, ProfileSize } from './core';
+
+export type { MovieCategory, TVCategory } from './endpoints';
 
 export {
-  getMovieDetails,
-  getMovieGenres,
-  getMovies,
-  getPersonDetails,
-  getTrending,
-  getTVDetails,
-  getTVGenres,
-  getTVShows,
-  searchMovies,
-  searchMulti,
-  searchPerson,
-  searchTV,
-} from './endpoints';
-export type { MovieCategory, SearchParams, TVCategory } from './endpoints';
+  genreQueries,
+  movieQueries,
+  personQueries,
+  searchQueries,
+  STALE_TIME_DEFAULT_MS,
+  STALE_TIME_REFERENCE,
+  trendingQueries,
+  tvQueries,
+} from './queries';
 
-export {
-  useMovieDetails,
-  useMovieGenres,
-  useMovies,
-  useMoviesOrSearch,
-  usePersonDetails,
-  useSearchMovies,
-  useSearchMulti,
-  useSearchPerson,
-  useSearchTV,
-  useTrending,
-  useTVDetails,
-  useTVGenres,
-  useTVShows,
-} from './hooks';
+export { useMoviesOrSearch } from './hooks';
 
+export { createQueryClient, MAX_RETRIES, shouldRetry } from './query-client';
 export { ApiProvider } from './provider/api-provider';
 export type { ApiProviderProps } from './provider/api-provider';
-
-export { queryKeys } from './queries/keys';
 
 export type {
   Collection,
