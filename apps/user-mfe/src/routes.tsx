@@ -1,8 +1,14 @@
 import { ROUTE_PATHS } from '@repo/routes';
 import { PageBoundary } from '@repo/ui';
+import { lazy } from 'react';
 import type { RouteObject } from 'react-router-dom';
-import { Profile } from './pages/profile';
-import { Settings } from './pages/settings';
+
+const Profile = lazy(() =>
+  import('./pages/profile').then((module) => ({ default: module.Profile }))
+);
+const Settings = lazy(() =>
+  import('./pages/settings').then((module) => ({ default: module.Settings }))
+);
 
 export const routes: RouteObject[] = [
   {
