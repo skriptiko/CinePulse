@@ -24,7 +24,6 @@
 **Каркас застосунку:**
 - `Header`, `Footer`, `AppLayout` — оболонка сторінки
 - `ErrorBoundary` — межа обробки помилок (shell/module)
-- `Providers` — обгортка з `QueryClientProvider` (React Query)
 
 Утиліти: `cn` (склейка класів), мапери `to…Data` у `lib/mappers/` (TMDB → UI-моделі).
 

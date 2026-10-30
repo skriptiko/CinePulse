@@ -16,7 +16,7 @@ functions/  Firebase Cloud Functions (tmdbProxy)
 
 - Файли компонентів у `@repo/ui` — **kebab-case** (`movie-card.tsx`, `content-row.tsx`); експортований компонент — **PascalCase** (`MovieCard`).
 - Сторінки в застосунках — **PascalCase** (`Home.tsx`, `Movies.tsx`, `Profile.tsx`).
-- Хуки — `useXxx` (`useMovies`, `useSearchMovies`).
+- Hooks are `useXxx` (`useMoviesOrSearch`, `useDebouncedValue`); query factories are `<domain>Queries` (`movieQueries`).
 - Спільні константи — `SCREAMING_SNAKE` (`ROUTE_PATHS`, `API_CONFIG`).
 
 ## Лінтинг і форматування
@@ -61,13 +61,13 @@ HOME '/', MOVIES '/movies', USER '/user', USER_PROFILE '/user/profile', USER_SET
 
 Кожен MFE експонує масив `routes` (`RouteObject[]`) через Module Federation (`exposes: { './routes': './src/routes.tsx' }`); host збирає їх разом і рендерить через `useRoutes`.
 
-> ⬜ **Динамічних роутів (`:id`) поки немає.** Для майбутніх сторінок (Movie Detail `/movies/:id`, TV, Person) треба додати параметризовані шляхи в `ROUTE_PATHS` і патерн зчитування параметра. API-хуки під них уже існують (`useMovieDetails`, `useTVDetails`, `usePersonDetails`).
+> ⬜ **Динамічних роутів (`:id`) поки немає.** Для майбутніх сторінок (Movie Detail `/movies/:id`, TV, Person) треба додати параметризовані шляхи в `ROUTE_PATHS` і патерн зчитування параметра. The query factories for them already exist (`movieQueries.detail`, `tvQueries.detail`, `personQueries.detail`).
 
 ## Патерн MFE (Module Federation)
 
 - **Remote** експонує `./routes`; **host** імпортує їх динамічно (`import('pagesMfe/routes')`).
 - **Shared** залежності (єдиний екземпляр на весь застосунок): `react`, `react-dom`, `react-router-dom`, `@tanstack/react-query`, `@repo/events`, `@repo/routes`, `@repo/api`. Додаючи нову спільну залежність, реєструй її в `shared` у **всіх** `vite.config.ts` (host + remotes), інакше буде дубляж екземплярів.
-- Кожен MFE має власний `main.tsx` для **standalone-розробки** (з `Providers` + `AppLayout`); при інтеграції в host використовується лише експорт `routes`.
+- Кожен MFE має власний `main.tsx` для **standalone-розробки** (with `ApiProvider` + `AppLayout`); при інтеграції в host використовується лише експорт `routes`.
 
 ## Крос-MFE комунікація
 
