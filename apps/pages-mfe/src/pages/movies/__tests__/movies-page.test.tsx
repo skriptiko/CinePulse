@@ -101,7 +101,8 @@ describe('Movies page', () => {
     await user.click(await screen.findByRole('button', { name: 'Action' }));
 
     await waitFor(() => expect(requests.at(-1)?.get('with_genres')).toBe('28'));
-    expect(currentSearch().get('genre')).toBe('28');
+    // The URL commits with the transition, once the new results have loaded.
+    await waitFor(() => expect(currentSearch().get('genre')).toBe('28'));
     await waitFor(() =>
       expect(screen.getByRole('button', { name: 'Action' })).toHaveAttribute('aria-pressed', 'true')
     );
@@ -147,7 +148,7 @@ describe('Movies page', () => {
 
     await waitFor(() => expect(requests.at(-1)?.get('sort_by')).toBe('primary_release_date.desc'));
     expect(requests.at(-1)?.get('primary_release_date.lte')).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(currentSearch().get('sort')).toBe('newest');
+    await waitFor(() => expect(currentSearch().get('sort')).toBe('newest'));
   });
 
   it('switches to search, which disables genre and sort', async () => {
