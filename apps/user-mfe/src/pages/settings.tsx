@@ -1,4 +1,8 @@
+import { usePageMeta } from '@repo/ui';
+
 export function Settings() {
+  usePageMeta('Settings');
+
   return (
     <div>
       <h1 className="mb-4 text-2xl font-bold">User Settings</h1>

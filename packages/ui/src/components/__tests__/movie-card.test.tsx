@@ -12,10 +12,11 @@ const MOVIE: MovieCardData = {
 
 describe('MovieCard', () => {
   it('renders the model', () => {
-    renderWithProviders(<MovieCard movie={MOVIE} />);
+    const { container } = renderWithProviders(<MovieCard movie={MOVIE} />);
 
     expect(screen.getByRole('heading', { name: 'Dune' })).toBeInTheDocument();
-    expect(screen.getByRole('img', { name: 'Dune' })).toHaveAttribute('src', MOVIE.imageUrl);
+    expect(container.querySelector('img')).toHaveAttribute('src', MOVIE.imageUrl);
+    expect(container.querySelector('img')).toHaveAttribute('alt', '');
     expect(screen.getByText('7.8')).toBeInTheDocument();
     expect(screen.getByText('2021')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Play Dune' })).toBeInTheDocument();

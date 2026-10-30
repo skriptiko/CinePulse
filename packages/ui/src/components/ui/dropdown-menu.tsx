@@ -74,17 +74,20 @@ export type DropdownMenuRadioGroupProps = {
   children: ReactNode;
   value: string;
   onValueChange: (value: string) => void;
+  'aria-label'?: string;
 };
 
 export function DropdownMenuRadioGroup({
   children,
   value,
   onValueChange,
+  'aria-label': ariaLabel,
 }: DropdownMenuRadioGroupProps) {
   return (
     <DropdownMenuPrimitive.RadioGroup
       value={value}
       onValueChange={onValueChange}
+      aria-label={ariaLabel}
       data-slot="dropdown-menu-radio-group"
     >
       {children}

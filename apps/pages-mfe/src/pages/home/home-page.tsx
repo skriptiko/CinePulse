@@ -1,4 +1,5 @@
 import { genreQueries, movieQueries, trendingQueries } from '@repo/api';
+import { usePageMeta } from '@repo/ui';
 import { usePrefetchQuery } from '@tanstack/react-query';
 import { FeaturedSection } from './featured-section';
 import { GenresSection } from './genres-section';
@@ -12,6 +13,7 @@ import { TrendingSection } from './trending-section';
  * would load as a waterfall.
  */
 export function Home() {
+  usePageMeta();
   usePrefetchQuery(trendingQueries.row('movie', 'day'));
   usePrefetchQuery(genreQueries.movie());
   usePrefetchQuery(movieQueries.row('top_rated'));

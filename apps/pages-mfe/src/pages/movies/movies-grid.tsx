@@ -1,6 +1,7 @@
 import type { Movie } from '@repo/api';
 import { Button, MovieCard, cn, toMovieCardData } from '@repo/ui';
 import { Loader2 } from 'lucide-react';
+import { useId } from 'react';
 import type { ViewMode } from './movies-filters';
 
 export type MoviesGridProps = {
@@ -23,10 +24,14 @@ export function MoviesGrid({
   isFetchNextPageError,
   onLoadMore,
 }: MoviesGridProps) {
+  const headingId = useId();
+
   return (
-    <>
+    <section aria-labelledby={headingId}>
       {/* Cards title themselves with h3; this keeps the heading outline intact. */}
-      <h2 className="sr-only">Results</h2>
+      <h2 id={headingId} className="sr-only">
+        Results
+      </h2>
       <ul
         className={cn(
           'grid gap-3 sm:gap-4 lg:gap-6',
@@ -62,7 +67,7 @@ export function MoviesGrid({
           <p className="text-sm text-muted-foreground">That&apos;s all</p>
         )}
       </div>
-    </>
+    </section>
   );
 }
 

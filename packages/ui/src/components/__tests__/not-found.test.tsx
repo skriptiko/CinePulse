@@ -8,6 +8,7 @@ describe('NotFound', () => {
 
     expect(screen.getByRole('heading', { name: 'Page not found' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Go home' })).toHaveAttribute('href', '/');
+    expect(document.title).toBe('Page not found · CinePulse');
   });
 
   it('has no axe violations', async () => {

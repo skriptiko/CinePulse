@@ -1,4 +1,4 @@
-import { renderWithProviders, screen } from '@repo/test-utils';
+import { renderWithProviders, screen, within } from '@repo/test-utils';
 import { describe, expect, it } from 'vitest';
 import { ContentRow } from '../content-row';
 import type { MovieCardData } from '../movie-card';
@@ -16,5 +16,12 @@ describe('ContentRow', () => {
     expect(
       screen.getAllByRole('heading', { level: 3 }).map((heading) => heading.textContent)
     ).toEqual(['Dune', 'Arrival']);
+  });
+
+  it('is a region named by its heading, with the cards in a list', () => {
+    renderWithProviders(<ContentRow title="Trending Now" movies={MOVIES} />);
+
+    const region = screen.getByRole('region', { name: 'Trending Now' });
+    expect(within(region).getAllByRole('listitem')).toHaveLength(2);
   });
 });

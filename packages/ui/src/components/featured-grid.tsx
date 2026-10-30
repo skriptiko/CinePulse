@@ -1,6 +1,6 @@
 import { cva } from 'class-variance-authority';
 import { Play, Star } from 'lucide-react';
-import { Fragment } from 'react';
+import { Fragment, useId } from 'react';
 import { cn } from '../lib/utils';
 import { ImagePlaceholder } from './image-placeholder';
 
@@ -35,15 +35,19 @@ const tileTitleVariants = cva('font-semibold text-foreground', {
 });
 
 export function FeaturedGrid({ title, items, className }: FeaturedGridProps) {
-  return (
-    <section className={cn('px-4 md:px-8', className)}>
-      <h2 className="text-xl md:text-2xl font-semibold tracking-tight mb-6">{title}</h2>
+  const titleId = useId();
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+  return (
+    <section aria-labelledby={titleId} className={cn('px-4 md:px-8', className)}>
+      <h2 id={titleId} className="text-xl md:text-2xl font-semibold tracking-tight mb-6">
+        {title}
+      </h2>
+
+      <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
         {items.map((item, index) => (
           <FeaturedTile key={item.id} item={item} featured={index === 0} />
         ))}
-      </div>
+      </ul>
     </section>
   );
 }
@@ -59,12 +63,12 @@ function FeaturedTile({ item, featured }: FeaturedTileProps) {
   const details = [genre, year].filter((detail) => detail !== null);
 
   return (
-    <div className={tileVariants({ featured })}>
+    <li className={tileVariants({ featured })}>
       <div className={tileImageVariants({ featured })}>
         {imageUrl ? (
           <img
             src={imageUrl}
-            alt={title}
+            alt=""
             loading="lazy"
             decoding="async"
             className="size-full object-cover transition-transform duration-500 motion-safe:group-hover:scale-105"
@@ -105,6 +109,6 @@ function FeaturedTile({ item, featured }: FeaturedTileProps) {
           </div>
         )}
       </div>
-    </div>
+    </li>
   );
 }

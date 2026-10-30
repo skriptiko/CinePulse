@@ -66,7 +66,7 @@ export function Header({ className }: HeaderProps) {
         <div className="flex items-center justify-between gap-8">
           <div className="flex items-center gap-8">
             <Logo labelClassName="text-xl hidden sm:block" />
-            <nav className="hidden lg:flex items-center gap-1">
+            <nav aria-label="Main" className="hidden lg:flex items-center gap-1">
               <NavLinks layout="desktop" />
             </nav>
           </div>
@@ -119,7 +119,11 @@ export function Header({ className }: HeaderProps) {
         </div>
 
         {isMobileMenuOpen && (
-          <nav id={MOBILE_NAV_ID} className="lg:hidden pt-4 pb-2 border-t border-border mt-4">
+          <nav
+            id={MOBILE_NAV_ID}
+            aria-label="Main"
+            className="lg:hidden pt-4 pb-2 border-t border-border mt-4"
+          >
             <div className="flex flex-col gap-1">
               <NavLinks layout="mobile" onNavigate={handleMobileMenuClose} />
             </div>

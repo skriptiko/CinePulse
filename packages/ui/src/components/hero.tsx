@@ -1,4 +1,5 @@
 import { Info, Play, Plus } from 'lucide-react';
+import { useId } from 'react';
 import { cn } from '../lib/utils';
 import { ImagePlaceholder } from './image-placeholder';
 import { Button } from './ui/button';
@@ -24,9 +25,11 @@ export type HeroProps = {
 
 export function Hero({ movie, className }: HeroProps) {
   const { title, description, imageUrl, imageSrcSet, year, rating } = movie;
+  const titleId = useId();
 
   return (
     <section
+      aria-labelledby={titleId}
       className={cn(
         'relative min-h-[70svh] sm:min-h-[80svh] lg:min-h-[85svh] flex items-end',
         className
@@ -41,7 +44,7 @@ export function Hero({ movie, className }: HeroProps) {
             src={imageUrl}
             srcSet={imageSrcSet ?? undefined}
             sizes="100vw"
-            alt={title}
+            alt=""
             fetchPriority="high"
             decoding="async"
             className="size-full object-cover"
@@ -68,7 +71,10 @@ export function Hero({ movie, className }: HeroProps) {
           </div>
 
           {/* Title */}
-          <h2 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-3 sm:mb-4 text-balance">
+          <h2
+            id={titleId}
+            className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-3 sm:mb-4 text-balance"
+          >
             {title}
           </h2>
 

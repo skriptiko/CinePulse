@@ -24,6 +24,8 @@ export type CategoryPillsProps = {
   onValueChange?: (category: string) => void;
   /** Disables every pill, e.g. while the filter does not apply. */
   disabled?: boolean;
+  /** Accessible name of the group, e.g. "Filter by genre". */
+  label?: string;
   className?: string;
 };
 
@@ -33,6 +35,7 @@ export function CategoryPills({
   defaultValue,
   onValueChange,
   disabled,
+  label,
   className,
 }: CategoryPillsProps) {
   const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue ?? categories[0]);
@@ -46,7 +49,13 @@ export function CategoryPills({
   };
 
   return (
-    <div className={cn('flex gap-2 overflow-x-auto scrollbar-hide px-4 md:px-8 pb-2', className)}>
+    <fieldset
+      aria-label={label}
+      className={cn(
+        'flex min-w-0 gap-2 overflow-x-auto scrollbar-hide px-4 md:px-8 pb-2',
+        className
+      )}
+    >
       {categories.map((category) => (
         <button
           key={category}
@@ -59,7 +68,7 @@ export function CategoryPills({
           {category}
         </button>
       ))}
-    </div>
+    </fieldset>
   );
 }
 
