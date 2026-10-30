@@ -1,4 +1,5 @@
 import { type DiscoverSortBy, SEARCH_QUERY_MAX_LENGTH } from '@repo/api';
+import { ROUTE_PATHS } from '@repo/routes';
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
@@ -27,6 +28,12 @@ export function parseMovieFilters(params: URLSearchParams): MovieFilters {
     genreId: parseGenreId(params.get(FILTER_PARAMS.genre)),
     sort: parseSort(params.get(FILTER_PARAMS.sort)),
   };
+}
+
+/** Link to Movies filtered by one genre, e.g. from the Home genre pills. */
+export function moviesHrefForGenre(genreId: number): string {
+  const params = new URLSearchParams({ [FILTER_PARAMS.genre]: String(genreId) });
+  return `${ROUTE_PATHS.MOVIES}?${params}`;
 }
 
 export function normalizeQuery(value: string): string {

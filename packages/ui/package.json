@@ -44,6 +44,7 @@
     "@types/react-dom": "catalog:",
     "autoprefixer": "catalog:",
     "jsdom": "catalog:",
+    "msw": "catalog:",
     "postcss": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",

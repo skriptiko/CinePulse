@@ -20,8 +20,12 @@ export type {
 
 export { MovieCard } from './components/movie-card';
 export type { MovieCardData, MovieCardProps } from './components/movie-card';
-export { CategoryPills } from './components/category-pills';
-export type { CategoryPillsProps } from './components/category-pills';
+export { CategoryLinks, CategoryPills } from './components/category-pills';
+export type {
+  CategoryLink,
+  CategoryLinksProps,
+  CategoryPillsProps,
+} from './components/category-pills';
 export { Hero } from './components/hero';
 export type { HeroData, HeroProps } from './components/hero';
 export { ContentRow } from './components/content-row';
