@@ -1,13 +1,14 @@
-import { createTypedEmitter } from '@repo/events';
+import { createTypedEmitter, createTypedListener } from '@repo/events';
 import { MutationCache, type Query, QueryCache, QueryClient } from '@tanstack/react-query';
 import { getErrorMessage, isApiError, isNotFound } from '../core';
-import { STALE_TIME_DEFAULT_MS } from '../queries';
+import { STALE_TIME_DEFAULT_MS, watchlistKey } from '../queries';
 
 /** Retries after the first failure; three requests at most. */
 export const MAX_RETRIES = 2;
 
 const emitErrorReport = createTypedEmitter('error:report');
 const emitNotification = createTypedEmitter('notification:show');
+const onLogout = createTypedListener('user:logout');
 
 /**
  * The one `QueryClient` of the app. Only the host creates it (and each remote's standalone
@@ -25,6 +26,11 @@ export function createQueryClient(): QueryClient {
       },
     },
   });
+}
+
+/** Returns the unsubscribe function. The cache must not outlive the session (ADR-0010). */
+export function dropWatchlistOnLogout(queryClient: QueryClient): () => void {
+  return onLogout(({ uid }) => queryClient.removeQueries({ queryKey: watchlistKey(uid) }));
 }
 
 /**
