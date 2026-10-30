@@ -1,3 +1,4 @@
+import { createTypedListener } from '@repo/events';
 import { type QueryClient, QueryObserver, type QueryObserverResult } from '@tanstack/react-query';
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
@@ -86,6 +87,70 @@ describe('createQueryClient', () => {
 
     expect(requestCount).toBe(1);
     expect(isApiError(result.error) && result.error.kind).toBe('validation');
+  });
+});
+
+describe('createQueryClient error channel', () => {
+  const onNotification = createTypedListener('notification:show');
+  const onErrorReport = createTypedListener('error:report');
+  let queryClient: QueryClient;
+  let notifications: string[];
+  let reports: string[];
+  let unsubscribe: Array<() => void>;
+
+  beforeEach(() => {
+    queryClient = createQueryClient();
+    queryClient.setDefaultOptions({
+      queries: { ...queryClient.getDefaultOptions().queries, retryDelay: 0 },
+    });
+    notifications = [];
+    reports = [];
+    unsubscribe = [
+      onNotification(({ message }) => notifications.push(message)),
+      onErrorReport(({ source }) => reports.push(source)),
+    ];
+  });
+
+  afterEach(() => {
+    for (const stop of unsubscribe) stop();
+    queryClient.clear();
+  });
+
+  async function loadOnce(client: QueryClient): Promise<void> {
+    server.use(http.get('*/api/tmdb/movie/:id', () => HttpResponse.json({ id: 1 })));
+    await client.prefetchQuery(movieQueries.detail(1));
+  }
+
+  function failWith(status: number): void {
+    server.use(http.get('*/api/tmdb/movie/:id', () => new HttpResponse(null, { status })));
+  }
+
+  it('reports a first-load failure but leaves it to the boundary, without a toast', async () => {
+    failWith(500);
+
+    await settle(queryClient);
+
+    expect(reports).toEqual(['query']);
+    expect(notifications).toEqual([]);
+  });
+
+  it('shows one toast when a refetch fails over existing data', async () => {
+    await loadOnce(queryClient);
+    failWith(503);
+
+    await queryClient.refetchQueries({ queryKey: movieQueries.detail(1).queryKey });
+
+    expect(notifications).toEqual(['The movie service is having trouble. Please try again later.']);
+    expect(reports).toEqual(['query']);
+  });
+
+  it('never toasts a 404', async () => {
+    await loadOnce(queryClient);
+    failWith(404);
+
+    await queryClient.refetchQueries({ queryKey: movieQueries.detail(1).queryKey });
+
+    expect(notifications).toEqual([]);
   });
 });
 

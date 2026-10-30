@@ -1,9 +1,13 @@
-import { QueryClient } from '@tanstack/react-query';
-import { isApiError } from '../core';
+import { createTypedEmitter } from '@repo/events';
+import { MutationCache, type Query, QueryCache, QueryClient } from '@tanstack/react-query';
+import { getErrorMessage, isApiError, isNotFound } from '../core';
 import { STALE_TIME_DEFAULT_MS } from '../queries';
 
 /** Retries after the first failure; three requests at most. */
 export const MAX_RETRIES = 2;
+
+const emitErrorReport = createTypedEmitter('error:report');
+const emitNotification = createTypedEmitter('notification:show');
 
 /**
  * The one `QueryClient` of the app. Only the host creates it (and each remote's standalone
@@ -11,6 +15,8 @@ export const MAX_RETRIES = 2;
  */
 export function createQueryClient(): QueryClient {
   return new QueryClient({
+    queryCache: new QueryCache({ onError: handleQueryError }),
+    mutationCache: new MutationCache({ onError: handleMutationError }),
     defaultOptions: {
       queries: {
         staleTime: STALE_TIME_DEFAULT_MS,
@@ -42,4 +48,27 @@ export function shouldRetry(failureCount: number, error: unknown): boolean {
       return unhandled;
     }
   }
+}
+
+/**
+ * Runs once per failed query, after the last retry. Without data the error is thrown to the
+ * nearest boundary, so a toast would show it twice; it is shown only over existing data.
+ */
+function handleQueryError(error: unknown, query: Query<unknown, unknown, unknown>): void {
+  emitErrorReport({ error, source: 'query' });
+
+  const hasData = query.state.data !== undefined;
+  const isShownElsewhere = query.meta?.inlineErrors === true || isNotFound(error);
+  if (hasData && !isShownElsewhere) {
+    emitNotification({
+      type: 'error',
+      message: query.meta?.errorMessage ?? getErrorMessage(error),
+    });
+  }
+}
+
+/** Mutations have no boundary: every failure is a toast. */
+function handleMutationError(error: unknown): void {
+  emitErrorReport({ error, source: 'mutation' });
+  emitNotification({ type: 'error', message: getErrorMessage(error) });
 }

@@ -9,7 +9,8 @@
 - **Firebase Hosting/Functions вбудовані метрики** — доступні у Firebase Console (трафік хостингу; для функції `tmdbProxy` — кількість викликів, помилки, латентність, холодні старти). Пасивно збираються, але **активного спостереження/алертів немає**.
 - **Логи функції** — `console.error('TMDB proxy error', ...)` у `tmdbProxy` потрапляють у Cloud Logging (Firebase Console → Functions → Logs).
 - **Клієнт** — лише `console.error` у dev-режимі (`App.tsx` при збої завантаження remote-роутів); у production клієнтські помилки **ніде не збираються**.
-- **User-facing error notifications** — none at the moment: `apiGet` no longer emits `notification:show`; the toast returns through `QueryCache.onError` (refactoring plan, item 5.10).
+- **User-facing error notifications** — a toast when a background refetch or a mutation fails (`QueryCache` / `MutationCache.onError` → `notification:show` → sonner in the host).
+- **Error reports** — every boundary, failed query/mutation and uncaught window error emits `error:report`; the host listener (`apps/host/src/error-channel/error-reporting.ts`) filters expected failures and logs the rest in development. Sending reports anywhere in production needs a vendor decision.
 
 ## Error tracking
 
