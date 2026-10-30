@@ -1,11 +1,21 @@
 {
   "projects": {
-    "default": "cinepulse-eec15"
+    "default": "cinepulse-eec15",
+    "demo": "demo-cinepulse"
   },
   "targets": {
     "cinepulse-eec15": {
       "hosting": {
-        "production": ["cinepulse-eec15"]
+        "production": [
+          "cinepulse-eec15"
+        ]
+      }
+    },
+    "demo-cinepulse": {
+      "hosting": {
+        "production": [
+          "demo-cinepulse"
+        ]
       }
     }
   }
