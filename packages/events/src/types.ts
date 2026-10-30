@@ -1,10 +1,3 @@
-export type UserProfile = {
-  id: string;
-  name: string;
-  email: string;
-  avatar?: string;
-};
-
 /** Domains an event name may start with; a new domain is added here first. */
 export type EventDomain = 'notification' | 'mfe' | 'error';
 

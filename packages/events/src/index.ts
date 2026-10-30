@@ -9,7 +9,6 @@ export type {
   MfeErrorPayload,
   NotificationPayload,
   SerializedError,
-  UserProfile,
 } from './types';
 
 export {
@@ -24,10 +23,14 @@ export type {
   GlobalActions,
   GlobalState,
   GlobalStore,
+  GlobalStoreApi,
+  Theme,
 } from './store';
 
 export {
   createGlobalStore,
   getGlobalStore,
   globalStore,
+  THEMES,
+  useGlobalStore,
 } from './store';
