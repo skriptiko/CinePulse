@@ -1,3 +1,4 @@
+import { ROUTE_PATHS } from '@repo/routes';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { Logo } from './logo';
@@ -5,8 +6,6 @@ import { Logo } from './logo';
 type FooterLink = {
   label: string;
   href: string;
-  /** Opens in a new tab as a plain anchor instead of a router link. */
-  external?: boolean;
 };
 
 type FooterColumnData = {
@@ -14,37 +13,20 @@ type FooterColumnData = {
   links: FooterLink[];
 };
 
+// Only pages that exist: company, support, legal and social links come back with real pages.
 const FOOTER_COLUMNS: FooterColumnData[] = [
   {
-    title: 'Company',
+    title: 'Browse',
     links: [
-      { label: 'About Us', href: '/about' },
-      { label: 'Careers', href: '/careers' },
-      { label: 'Press', href: '/press' },
+      { label: 'Home', href: ROUTE_PATHS.HOME },
+      { label: 'Movies', href: ROUTE_PATHS.MOVIES },
     ],
   },
   {
-    title: 'Support',
+    title: 'Account',
     links: [
-      { label: 'Help Center', href: '/help' },
-      { label: 'Contact Us', href: '/contact' },
-      { label: 'FAQ', href: '/faq' },
-    ],
-  },
-  {
-    title: 'Legal',
-    links: [
-      { label: 'Terms of Service', href: '/terms' },
-      { label: 'Privacy Policy', href: '/privacy' },
-      { label: 'Cookie Settings', href: '/cookies' },
-    ],
-  },
-  {
-    title: 'Social',
-    links: [
-      { label: 'Twitter', href: 'https://twitter.com', external: true },
-      { label: 'Instagram', href: 'https://instagram.com', external: true },
-      { label: 'Facebook', href: 'https://facebook.com', external: true },
+      { label: 'Profile', href: ROUTE_PATHS.USER_PROFILE },
+      { label: 'Settings', href: ROUTE_PATHS.USER_SETTINGS },
     ],
   },
 ];
@@ -92,24 +74,13 @@ type FooterColumnProps = {
 function FooterColumn({ column }: FooterColumnProps) {
   return (
     <div>
-      <h4 className="font-medium text-sm mb-4">{column.title}</h4>
+      <h2 className="font-medium text-sm mb-4">{column.title}</h2>
       <ul className="space-y-3">
         {column.links.map((link) => (
           <li key={link.label}>
-            {link.external ? (
-              <a
-                href={link.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={FOOTER_LINK_CLASS}
-              >
-                {link.label}
-              </a>
-            ) : (
-              <Link to={link.href} className={FOOTER_LINK_CLASS}>
-                {link.label}
-              </Link>
-            )}
+            <Link to={link.href} className={FOOTER_LINK_CLASS}>
+              {link.label}
+            </Link>
           </li>
         ))}
       </ul>
