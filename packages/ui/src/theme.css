@@ -3,6 +3,8 @@
  * Dark-first: `.dark` on <html> holds the primary palette.
  */
 
+@import "@fontsource-variable/geist/wght.css";
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* Tailwind 4 limits `hover:` to pointer devices; card overlays must still open on tap. */
@@ -66,6 +68,8 @@
 }
 
 @theme inline {
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -95,6 +99,28 @@
   --radius-sm: calc(var(--radius) - 4px);
 
   --container-page: 1800px;
+}
+
+@utility fluid-display {
+  font-size: clamp(2rem, 5vw + 1rem, 4.5rem);
+  line-height: 1.1;
+}
+
+@utility fluid-heading {
+  font-size: clamp(1.5rem, 3vw + 0.5rem, 3rem);
+  line-height: 1.2;
+}
+
+@utility fluid-body {
+  font-size: clamp(0.875rem, 1vw + 0.25rem, 1.125rem);
+  line-height: 1.6;
+}
+
+@utility touch-target {
+  @media (pointer: coarse) {
+    min-width: 44px;
+    min-height: 44px;
+  }
 }
 
 @layer base {

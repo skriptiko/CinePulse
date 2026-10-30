@@ -6,6 +6,7 @@ packages:
 # Single source of versions shared across workspace packages (`"catalog:"` in package.json).
 # functions/ stays on plain ranges: Cloud Build installs it with npm, which has no catalog protocol.
 catalog:
+  "@fontsource-variable/geist": ^5.3.0
   react: ^19.3.1
   react-dom: ^19.3.1
   react-router-dom: ^7.13.0

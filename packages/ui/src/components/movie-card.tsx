@@ -25,7 +25,7 @@ export type MovieCardProps = {
 export function MovieCard({ movie, className }: MovieCardProps) {
   const { title, imageUrl, year, rating, href } = movie;
   const cardClassName = cn(
-    'group relative block overflow-hidden rounded-lg transition-transform duration-300',
+    'group @container relative block overflow-hidden rounded-lg transition-transform duration-300',
     'hover:z-10 motion-safe:hover:scale-105',
     'focus-visible:ring-ring outline-hidden focus-visible:ring-[3px]',
     className
@@ -62,9 +62,11 @@ export function MovieCard({ movie, className }: MovieCardProps) {
           'transition-transform duration-300 motion-reduce:transition-none'
         )}
       >
-        <h3 className="text-foreground mb-1 truncate text-sm font-medium">{title}</h3>
+        <h3 className="text-foreground mb-1 truncate text-sm font-medium @max-[160px]:text-xs @min-[301px]:text-base">
+          {title}
+        </h3>
         {(year !== null || rating !== null) && (
-          <div className="text-muted-foreground flex items-center gap-2 text-xs">
+          <div className="text-muted-foreground flex items-center gap-2 text-xs @max-[160px]:hidden">
             {rating !== null && (
               <span className="bg-foreground/10 text-foreground rounded px-1.5 py-0.5 text-xs font-medium">
                 {rating}
