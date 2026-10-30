@@ -16,7 +16,7 @@ functions/  Firebase Cloud Functions (tmdbProxy)
 
 - Файли компонентів у `@repo/ui` — **kebab-case** (`movie-card.tsx`, `content-row.tsx`); експортований компонент — **PascalCase** (`MovieCard`).
 - Сторінки в застосунках — **PascalCase** (`Home.tsx`, `Movies.tsx`, `Profile.tsx`).
-- Hooks are `useXxx` (`useMoviesOrSearch`, `useDebouncedValue`); query factories are `<domain>Queries` (`movieQueries`).
+- Hooks are `useXxx` (`useMoviesOrSearch`, `useMovieFilters`); query factories are `<domain>Queries` (`movieQueries`).
 - Спільні константи — `SCREAMING_SNAKE` (`ROUTE_PATHS`, `API_CONFIG`).
 
 ## Лінтинг і форматування

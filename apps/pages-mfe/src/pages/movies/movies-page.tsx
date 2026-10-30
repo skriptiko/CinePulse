@@ -1,251 +1,110 @@
-import { SEARCH_QUERY_MAX_LENGTH, genreQueries, useMoviesOrSearch } from '@repo/api';
-import {
-  Button,
-  CategoryPills,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-  Input,
-  MovieCard,
-  buttonVariants,
-  cn,
-  toMovieCardData,
-} from '@repo/ui';
-import { useSuspenseQuery } from '@tanstack/react-query';
-import { ChevronDown, Grid3X3, LayoutGrid, Search, SlidersHorizontal } from 'lucide-react';
+import { type Movie, genreQueries, useMoviesOrSearch } from '@repo/api';
+import { cn } from '@repo/ui';
+import { usePrefetchQuery } from '@tanstack/react-query';
 import { useDeferredValue, useMemo, useState } from 'react';
-import { useDebouncedValue } from './use-debounced-value';
+import { MoviesEmptyState } from './movies-empty-state';
+import { MoviesFilters, type ViewMode } from './movies-filters';
+import { MoviesGrid } from './movies-grid';
+import { MoviesHeader } from './movies-header';
+import {
+  DEFAULT_SORT,
+  normalizeQuery,
+  toDiscoverSortBy,
+  useMovieFilters,
+} from './use-movie-filters';
 
-const sortOptions = ['Popular', 'Newest', 'Rating'];
-const SEARCH_DEBOUNCE_MS = 300;
+const countFormat = new Intl.NumberFormat('en-US');
 
 export function Movies() {
-  const [activeCategory, setActiveCategory] = useState<number | 'All'>('All');
-  const [searchInput, setSearchInput] = useState('');
-  const [sortBy, setSortBy] = useState('Popular');
-  const [viewMode, setViewMode] = useState<'grid' | 'compact'>('grid');
-
-  // Debounce keystrokes, then defer the query so React keeps the current results
-  // on screen instead of showing the Suspense fallback while the new page loads.
-  const debouncedQuery = useDebouncedValue(searchInput, SEARCH_DEBOUNCE_MS);
-  const searchQuery = useDeferredValue(debouncedQuery);
-  const isSearchPending = searchQuery !== searchInput;
-
-  const { data: genresData } = useSuspenseQuery(genreQueries.movie());
+  // Starts the genre request next to the movies one, before `MoviesFilters` suspends on it.
+  usePrefetchQuery(genreQueries.movie());
 
   const {
-    data: moviesData,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useMoviesOrSearch(searchQuery);
+    filters,
+    searchInput,
+    isStale,
+    setSearchInput,
+    clearSearch,
+    setGenre,
+    setSort,
+    resetFilters,
+  } = useMovieFilters();
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
-  const categories = useMemo(() => {
-    const list = genresData?.genres.map((g) => ({ id: g.id, name: g.name })) || [];
-    return [{ id: 'All' as const, name: 'All' }, ...list];
-  }, [genresData]);
+  // URL writes are transitions already; deferring also keeps the current results on screen
+  // for a URL change that is not one (otherwise the Suspense fallback replaces the page).
+  const deferredFilters = useDeferredValue(filters);
+  const { query, genreId, sort } = deferredFilters;
+  const isShowingStale = isStale || deferredFilters !== filters;
 
-  const categoryNames = useMemo(() => categories.map((c) => c.name), [categories]);
+  const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage, isFetchNextPageError } =
+    useMoviesOrSearch(query, { genreId, sortBy: toDiscoverSortBy(sort) });
 
-  const filteredMovies = useMemo(() => {
-    if (!moviesData) return [];
+  // TMDB pages can overlap when the ranking shifts between requests; keep the first copy.
+  const movies = useMemo(() => uniqueById(data.pages.flatMap((page) => page.results)), [data]);
+  const totalResults = data.pages[0]?.total_results ?? 0;
 
-    // Combine all pages
-    let allResults = moviesData.pages.flatMap((page) => page.results);
-
-    // Filter by genre locally
-    if (activeCategory !== 'All') {
-      allResults = allResults.filter((movie) => movie.genre_ids?.includes(activeCategory));
-    }
-
-    // Sort locally
-    const sorted = [...allResults];
-    if (sortBy === 'Newest') {
-      sorted.sort((a, b) => {
-        const dateA = new Date(a.release_date || '').getTime();
-        const dateB = new Date(b.release_date || '').getTime();
-        return dateB - dateA;
-      });
-    } else if (sortBy === 'Rating') {
-      sorted.sort((a, b) => b.vote_average - a.vote_average);
-    }
-
-    return sorted;
-  }, [moviesData, activeCategory, sortBy]);
-
-  const handleCategoryChange = (categoryName: string) => {
-    const category = categories.find((c) => c.name === categoryName);
-    if (category) {
-      setActiveCategory(category.id);
-    }
+  const handleLoadMore = () => {
+    if (hasNextPage && !isFetching) void fetchNextPage();
   };
 
-  const activeCategoryName = useMemo(() => {
-    return categories.find((c) => c.id === activeCategory)?.name || 'All';
-  }, [categories, activeCategory]);
-
   return (
-    <>
-      <main className="pt-20 sm:pt-24">
-        {/* Page Header */}
-        <div className="px-4 sm:px-6 lg:px-12 py-8 sm:py-12">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight mb-2">Movies</h1>
-          <p className="text-muted-foreground text-sm sm:text-base">
-            Explore our collection of movies
-          </p>
-        </div>
+    <main className="pt-20 sm:pt-24">
+      <MoviesHeader />
 
-        {/* Filters Bar */}
-        <div className="sticky top-16 sm:top-20 z-30 bg-background/80 backdrop-blur-xl border-b border-border">
-          <div className="px-4 sm:px-6 lg:px-12 py-4">
-            <div className="flex flex-col gap-4">
-              {/* Search and Controls Row */}
-              <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-                {/* Search */}
-                <div className="relative flex-1 max-w-md">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    type="text"
-                    placeholder="Search movies..."
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    maxLength={SEARCH_QUERY_MAX_LENGTH}
-                    aria-label="Search movies"
-                    className="pl-10 h-10 bg-secondary border-0 rounded-lg"
-                  />
-                </div>
+      <MoviesFilters
+        searchInput={searchInput}
+        onSearchChange={setSearchInput}
+        genreId={filters.genreId}
+        onGenreChange={setGenre}
+        sort={filters.sort}
+        onSortChange={setSort}
+        isSearching={normalizeQuery(searchInput) !== ''}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+      />
 
-                {/* Controls */}
-                <div className="flex items-center gap-2">
-                  {/* Sort Dropdown */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger
-                      aria-label={`Sort by: ${sortBy}`}
-                      className={cn(
-                        buttonVariants({ variant: 'secondary' }),
-                        'rounded-lg gap-2 h-10'
-                      )}
-                    >
-                      <SlidersHorizontal className="w-4 h-4" />
-                      <span className="hidden sm:inline">{sortBy}</span>
-                      <ChevronDown className="w-4 h-4" />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-40">
-                      <DropdownMenuRadioGroup value={sortBy} onValueChange={setSortBy}>
-                        {sortOptions.map((option) => (
-                          <DropdownMenuRadioItem key={option} value={option}>
-                            {option}
-                          </DropdownMenuRadioItem>
-                        ))}
-                      </DropdownMenuRadioGroup>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+      <div className="px-4 sm:px-6 lg:px-12 py-4">
+        <output className="block text-sm text-muted-foreground">
+          {countFormat.format(totalResults)} {totalResults === 1 ? 'movie' : 'movies'} found
+        </output>
+      </div>
 
-                  {/* View Toggle */}
-                  <div className="flex items-center rounded-lg bg-secondary p-1">
-                    <button
-                      type="button"
-                      onClick={() => setViewMode('grid')}
-                      className={`p-2 rounded-md transition-colors ${
-                        viewMode === 'grid'
-                          ? 'bg-background text-foreground'
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      <LayoutGrid className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setViewMode('compact')}
-                      className={`p-2 rounded-md transition-colors ${
-                        viewMode === 'compact'
-                          ? 'bg-background text-foreground'
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      <Grid3X3 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Category Pills */}
-              <CategoryPills
-                categories={categoryNames}
-                value={activeCategoryName}
-                onValueChange={handleCategoryChange}
-                className="px-0 -mx-4 sm:mx-0 sm:px-0"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Results Count */}
-        <div className="px-4 sm:px-6 lg:px-12 py-4">
-          <p className="text-sm text-muted-foreground">
-            {filteredMovies.length} {filteredMovies.length === 1 ? 'movie' : 'movies'} found
-            {activeCategory !== 'All' && ` in ${activeCategoryName}`}
-            {searchQuery && ` matching "${searchQuery}"`}
-          </p>
-        </div>
-
-        {/* Movies Grid */}
-        <div
-          className={`px-4 sm:px-6 lg:px-12 pb-16 transition-opacity ${isSearchPending ? 'opacity-60' : ''}`}
-          aria-busy={isSearchPending}
-        >
-          {filteredMovies.length > 0 ? (
-            <>
-              <div
-                className={`grid gap-3 sm:gap-4 lg:gap-6 ${
-                  viewMode === 'grid'
-                    ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'
-                    : 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8'
-                }`}
-              >
-                {filteredMovies.map((movie) => (
-                  <MovieCard key={movie.id} movie={toMovieCardData(movie)} />
-                ))}
-              </div>
-
-              {hasNextPage && (
-                <div className="flex justify-center mt-12">
-                  <Button
-                    variant="outline"
-                    onClick={() => fetchNextPage()}
-                    disabled={isFetchingNextPage}
-                    className="rounded-full px-8"
-                  >
-                    {isFetchingNextPage ? 'Loading...' : 'Load More'}
-                  </Button>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4">
-                <Search className="w-8 h-8 text-muted-foreground" />
-              </div>
-              <h3 className="text-lg font-medium mb-2">No movies found</h3>
-              <p className="text-muted-foreground text-sm max-w-md">
-                Try adjusting your search or filter to find what you&apos;re looking for.
-              </p>
-              <Button
-                variant="secondary"
-                className="mt-4 rounded-lg"
-                onClick={() => {
-                  setSearchInput('');
-                  setActiveCategory('All');
-                }}
-              >
-                Clear filters
-              </Button>
-            </div>
-          )}
-        </div>
-      </main>
-    </>
+      <div
+        className={cn(
+          'px-4 sm:px-6 lg:px-12 pb-16 transition-opacity',
+          isShowingStale && 'opacity-60'
+        )}
+        aria-busy={isShowingStale}
+      >
+        {movies.length > 0 ? (
+          <MoviesGrid
+            movies={movies}
+            viewMode={viewMode}
+            hasNextPage={hasNextPage}
+            isFetching={isFetching}
+            isFetchingNextPage={isFetchingNextPage}
+            isFetchNextPageError={isFetchNextPageError}
+            onLoadMore={handleLoadMore}
+          />
+        ) : (
+          <MoviesEmptyState
+            query={query}
+            hasFilters={genreId !== null || sort !== DEFAULT_SORT}
+            onClearSearch={clearSearch}
+            onResetFilters={resetFilters}
+          />
+        )}
+      </div>
+    </main>
   );
+}
+
+function uniqueById(movies: Movie[]): Movie[] {
+  const seen = new Set<number>();
+  return movies.filter((movie) => {
+    if (seen.has(movie.id)) return false;
+    seen.add(movie.id);
+    return true;
+  });
 }

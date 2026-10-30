@@ -71,7 +71,7 @@ From here on, new or changed logic in `packages/*` and new UI states land with t
 4. `@repo/events`: event bus (`on` / `off` / `once` / `emit`) and the store.
 5. Components: `MovieCard`, `Hero`, `ContentRow`, `CategoryPills`, `AsyncBoundary` (fallback, Try again refetch, 404 → `NotFound`), `NotFound`, page skeletons.
 6. Pages:
-   - **Movies**: search ↔ list switching (regression for the conditional-hook bug), genre filter, sort, empty state, "Load more" (next-page error, end of list), state in the URL;
+   - ✅ **Movies** (`apps/pages-mfe/src/pages/movies/__tests__/`): search ↔ list switching (regression for the conditional-hook bug), genre filter, sort, empty state, "Load more" (next-page error, end of list), state in the URL, URL parsing;
    - **Home**: rows render from MSW fixtures, and one failing row does not blank the page.
 
 ### Step 3 — e2e (after phase 6)

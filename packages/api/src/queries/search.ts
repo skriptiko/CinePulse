@@ -19,6 +19,8 @@ export const searchQueries = {
       queryFn: ({ pageParam, signal }) => searchMovies({ query, page: pageParam }, { signal }),
       initialPageParam: 1,
       getNextPageParam,
+      // The Movies page shows a next-page failure inline.
+      meta: { inlineErrors: true },
     }),
 
   tv: (query: string) =>

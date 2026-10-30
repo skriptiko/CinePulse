@@ -14,7 +14,7 @@ export function DropdownMenu({ children }: DropdownMenuProps) {
 
 export type DropdownMenuTriggerProps = Pick<
   ComponentProps<typeof DropdownMenuPrimitive.Trigger>,
-  'aria-label'
+  'aria-label' | 'disabled'
 > & {
   children: ReactNode;
   /** Style the trigger with `buttonVariants(...)`; `asChild` is not supported. */
@@ -24,11 +24,13 @@ export type DropdownMenuTriggerProps = Pick<
 export function DropdownMenuTrigger({
   children,
   'aria-label': ariaLabel,
+  disabled,
   className,
 }: DropdownMenuTriggerProps) {
   return (
     <DropdownMenuPrimitive.Trigger
       aria-label={ariaLabel}
+      disabled={disabled}
       data-slot="dropdown-menu-trigger"
       className={className}
     >

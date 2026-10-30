@@ -28,6 +28,25 @@ describe('query keys', () => {
     ]);
   });
 
+  it('keys discover lists by genre and sort, under the movie lists', () => {
+    const options = movieQueries.discover({ genreId: 28, sortBy: 'vote_average.desc' });
+
+    expect(options.queryKey).toEqual([
+      'movies',
+      'list',
+      'discover',
+      { genreId: 28, sortBy: 'vote_average.desc' },
+    ]);
+    expect(options.queryKey.slice(0, 2)).toEqual(movieQueries.lists());
+  });
+
+  it('marks the Movies page queries as showing their errors inline', () => {
+    expect(movieQueries.discover({ genreId: null, sortBy: 'popularity.desc' }).meta).toEqual({
+      inlineErrors: true,
+    });
+    expect(searchQueries.movies('dune').meta).toEqual({ inlineErrors: true });
+  });
+
   it('puts the query text, not the page, in the search key', () => {
     expect(searchQueries.movies('dune').queryKey).toEqual(['search', 'movies', 'dune']);
   });

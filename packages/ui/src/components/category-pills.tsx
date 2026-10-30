@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { cn } from '../lib/utils';
 
 const pillVariants = cva(
-  'px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors duration-200',
+  'px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors duration-200 disabled:pointer-events-none disabled:opacity-50',
   {
     variants: {
       selected: {
@@ -21,6 +21,8 @@ export type CategoryPillsProps = {
   /** Initial selection when uncontrolled. Defaults to the first category. */
   defaultValue?: string;
   onValueChange?: (category: string) => void;
+  /** Disables every pill, e.g. while the filter does not apply. */
+  disabled?: boolean;
   className?: string;
 };
 
@@ -29,6 +31,7 @@ export function CategoryPills({
   value,
   defaultValue,
   onValueChange,
+  disabled,
   className,
 }: CategoryPillsProps) {
   const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue ?? categories[0]);
@@ -48,6 +51,7 @@ export function CategoryPills({
           key={category}
           type="button"
           aria-pressed={selected === category}
+          disabled={disabled}
           onClick={() => handleSelect(category)}
           className={pillVariants({ selected: selected === category })}
         >
