@@ -1,18 +1,21 @@
+import { ROUTE_PATHS } from '@repo/routes';
 import { cva } from 'class-variance-authority';
-import { Bell, Menu, Moon, Search, Sun, User, X } from 'lucide-react';
-import { type MouseEventHandler, type ReactNode, useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Menu, Moon, Search, Sun, User, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link, NavLink } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { Logo } from './logo';
-import { Button } from './ui/button';
+import { Button, buttonVariants } from './ui/button';
 
+// Only routes that exist: Series, New & Popular and My List come back with their pages.
 const NAV_ITEMS = [
-  { label: 'Home', href: '/' },
-  { label: 'Movies', href: '/movies' },
-  { label: 'Series', href: '/series' },
-  { label: 'New & Popular', href: '/new' },
-  { label: 'My List', href: '/my-list' },
-];
+  { label: 'Home', href: ROUTE_PATHS.HOME },
+  { label: 'Movies', href: ROUTE_PATHS.MOVIES },
+] as const;
+
+const MOBILE_NAV_ID = 'mobile-nav';
+
+const TOOLBAR_BUTTON_CLASS = 'rounded-lg text-muted-foreground hover:text-foreground';
 
 /** Scroll offset after which the header gets its glass background. */
 const SCROLLED_THRESHOLD_PX = 20;
@@ -76,29 +79,53 @@ export function Header({ className }: HeaderProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <IconButton label="Search">
+            <Link
+              to={ROUTE_PATHS.MOVIES}
+              aria-label="Search movies"
+              className={cn(
+                buttonVariants({ variant: 'ghost', size: 'icon' }),
+                TOOLBAR_BUTTON_CLASS
+              )}
+            >
               <Search />
-            </IconButton>
-            <IconButton label="Notifications" className="hidden sm:flex">
-              <Bell />
-            </IconButton>
-            <IconButton label="Toggle theme" onClick={toggleTheme}>
+            </Link>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Toggle theme"
+              onClick={toggleTheme}
+              className={TOOLBAR_BUTTON_CLASS}
+            >
               {isDark ? <Sun /> : <Moon />}
-            </IconButton>
-            <Button variant="ghost" size="icon" className="rounded-lg overflow-hidden">
-              <div className="size-8 rounded-lg bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center">
-                <User className="size-4 text-accent-foreground" />
-              </div>
-              <span className="sr-only">Profile</span>
             </Button>
-            <IconButton label="Menu" className="lg:hidden" onClick={handleMobileMenuToggle}>
+            <Link
+              to={ROUTE_PATHS.USER_PROFILE}
+              aria-label="Profile"
+              className={cn(
+                buttonVariants({ variant: 'ghost', size: 'icon' }),
+                'rounded-lg overflow-hidden'
+              )}
+            >
+              <span className="size-8 rounded-lg bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center">
+                <User className="size-4 text-accent-foreground" />
+              </span>
+            </Link>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Menu"
+              aria-expanded={isMobileMenuOpen}
+              aria-controls={MOBILE_NAV_ID}
+              onClick={handleMobileMenuToggle}
+              className={cn(TOOLBAR_BUTTON_CLASS, 'lg:hidden')}
+            >
               {isMobileMenuOpen ? <X /> : <Menu />}
-            </IconButton>
+            </Button>
           </div>
         </div>
 
         {isMobileMenuOpen && (
-          <nav className="lg:hidden pt-4 pb-2 border-t border-border mt-4">
+          <nav id={MOBILE_NAV_ID} className="lg:hidden pt-4 pb-2 border-t border-border mt-4">
             <div className="flex flex-col gap-1">
               <NavLinks layout="mobile" onNavigate={handleMobileMenuClose} />
             </div>
@@ -114,40 +141,17 @@ type NavLinksProps = {
   onNavigate?: () => void;
 };
 
+/** `NavLink` sets `aria-current="page"` on the active item; `end` keeps Home from matching all. */
 function NavLinks({ layout, onNavigate }: NavLinksProps) {
-  const { pathname } = useLocation();
-
   return NAV_ITEMS.map((item) => (
-    <Link
+    <NavLink
       key={item.label}
       to={item.href}
+      end
       onClick={onNavigate}
-      className={navLinkVariants({ layout, active: pathname === item.href })}
+      className={({ isActive }) => navLinkVariants({ layout, active: isActive })}
     >
       {item.label}
-    </Link>
+    </NavLink>
   ));
-}
-
-type IconButtonProps = {
-  /** Accessible name, rendered as screen-reader-only text. */
-  label: string;
-  children: ReactNode;
-  onClick?: MouseEventHandler<HTMLButtonElement>;
-  className?: string;
-};
-
-/** Muted ghost icon button of the header toolbar. */
-function IconButton({ label, children, onClick, className }: IconButtonProps) {
-  return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={onClick}
-      className={cn('rounded-lg text-muted-foreground hover:text-foreground', className)}
-    >
-      {children}
-      <span className="sr-only">{label}</span>
-    </Button>
-  );
 }

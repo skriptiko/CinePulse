@@ -1,31 +1,51 @@
-import { renderWithProviders, screen, within } from '@repo/test-utils';
+import { expectNoA11yViolations, renderWithProviders, screen, within } from '@repo/test-utils';
 import { describe, expect, it } from 'vitest';
 import { Header } from '../header';
 
 describe('Header', () => {
-  it('highlights the nav link of the current route', () => {
+  it('marks the nav link of the current route', () => {
     renderWithProviders(<Header />, { route: '/movies' });
 
     const nav = screen.getByRole('navigation');
-    expect(within(nav).getByRole('link', { name: 'Movies' })).toHaveClass('font-medium');
-    expect(within(nav).getByRole('link', { name: 'Home' })).not.toHaveClass('font-medium');
+    expect(within(nav).getByRole('link', { name: 'Movies' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+    expect(within(nav).getByRole('link', { name: 'Home' })).not.toHaveAttribute('aria-current');
+  });
+
+  it('links only to routes that exist', () => {
+    renderWithProviders(<Header />);
+
+    const links = within(screen.getByRole('navigation')).getAllByRole('link');
+    expect(links.map((link) => link.getAttribute('href'))).toEqual(['/', '/movies']);
+    expect(screen.getByRole('link', { name: 'Profile' })).toHaveAttribute('href', '/user/profile');
   });
 
   it('opens the mobile menu and closes it after navigating', async () => {
     const { user } = renderWithProviders(<Header />);
-    expect(screen.getAllByRole('navigation')).toHaveLength(1);
+    const menuButton = screen.getByRole('button', { name: 'Menu' });
+    expect(menuButton).toHaveAttribute('aria-expanded', 'false');
 
-    await user.click(screen.getByRole('button', { name: 'Menu' }));
-    const [, mobileNav] = screen.getAllByRole('navigation');
+    await user.click(menuButton);
+    expect(menuButton).toHaveAttribute('aria-expanded', 'true');
+    const mobileNav = document.getElementById(menuButton.getAttribute('aria-controls') ?? '');
     if (!mobileNav) throw new Error('Mobile navigation is not rendered');
-    await user.click(within(mobileNav).getByRole('link', { name: 'Series' }));
+    await user.click(within(mobileNav).getByRole('link', { name: 'Movies' }));
 
     expect(screen.getAllByRole('navigation')).toHaveLength(1);
+    expect(menuButton).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('accepts a className', () => {
     renderWithProviders(<Header className="custom" />);
 
     expect(screen.getByRole('banner')).toHaveClass('custom');
+  });
+
+  it('has no axe violations', async () => {
+    const { container } = renderWithProviders(<Header />);
+
+    await expectNoA11yViolations(container);
   });
 });

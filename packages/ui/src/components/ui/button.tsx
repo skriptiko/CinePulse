@@ -34,7 +34,14 @@ export const buttonVariants = cva(
 
 export type ButtonProps = Pick<
   ComponentProps<'button'>,
-  'aria-label' | 'aria-pressed' | 'disabled' | 'onClick' | 'ref' | 'type'
+  | 'aria-controls'
+  | 'aria-expanded'
+  | 'aria-label'
+  | 'aria-pressed'
+  | 'disabled'
+  | 'onClick'
+  | 'ref'
+  | 'type'
 > &
   VariantProps<typeof buttonVariants> & {
     children?: ReactNode;
@@ -47,6 +54,8 @@ export function Button({
   disabled,
   onClick,
   ref,
+  'aria-controls': ariaControls,
+  'aria-expanded': ariaExpanded,
   'aria-label': ariaLabel,
   'aria-pressed': ariaPressed,
   variant,
@@ -59,6 +68,8 @@ export function Button({
       type={type}
       disabled={disabled}
       onClick={onClick}
+      aria-controls={ariaControls}
+      aria-expanded={ariaExpanded}
       aria-label={ariaLabel}
       aria-pressed={ariaPressed}
       data-slot="button"
