@@ -1,68 +1,68 @@
-🔗 Роадмап і задачі — у [Notion](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb)
+🔗 Roadmap and tasks are in [Notion](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb)
 
-# Середовища
+# Environments
 
-Статус: **🟡** — є локальне dev і production; окремого staging / preview немає.
+Status: **🟡** — local dev and production exist; there is no separate staging / preview.
 
-## Огляд
+## Overview
 
-| Середовище | Де | Хостинг | TMDB-доступ | Статус |
+| Environment | Where | Hosting | TMDB access | Status |
 |-----------|-----|---------|-------------|:---:|
-| **Local dev** | локальна машина | Vite dev-servers (5000/5001/5002) | Vite proxy + `.env` | ✅ |
+| **Local dev** | local machine | Vite dev servers (5000/5001/5002) | Vite proxy + `.env` | ✅ |
 | **Production** | Firebase | Firebase Hosting `cinepulse-eec15` | Cloud Function `tmdbProxy` + Secret | ✅ |
-| **Staging / Preview** | — | — | — | ⬜ немає |
+| **Staging / Preview** | — | — | — | ⬜ none |
 
 ## Local dev
 
-Три Vite-сервери (Module Federation), запускаються разом через `pnpm dev` (Turbo):
+Three Vite servers (Module Federation), started together via `pnpm dev` (Turbo):
 
-| Застосунок | Роль | Порт |
+| App | Role | Port |
 |-----------|------|------|
-| `@repo/host` | shell (оболонка) | 5000 |
+| `@repo/host` | shell | 5000 |
 | `@repo/pages-mfe` | remote: Home, Movies | 5001 |
 | `@repo/user-mfe` | remote: Profile, Settings | 5002 |
 
-- Порти фіксовані (`strictPort: true`).
-- **TMDB у dev:** Vite proxy (`vite.config.ts`) перехоплює `/api/tmdb` → `https://api.themoviedb.org/3`, додаючи заголовок `Authorization: Bearer ${TMDB_API_READ_TOKEN}` з кореневого `.env`.
-- Гібридний режим: вказати staging-адреси remote через `PAGES_MFE_URL` / `USER_MFE_URL` (див. [SETUP](../04-development/SETUP.md)).
+- Ports are fixed (`strictPort: true`).
+- **TMDB in dev:** the Vite proxy (`vite.config.ts`) intercepts `/api/tmdb` → `https://api.themoviedb.org/3`, adding the `Authorization: Bearer ${TMDB_API_READ_TOKEN}` header from the root `.env`.
+- Hybrid mode: set staging URLs for the remotes via `PAGES_MFE_URL` / `USER_MFE_URL` (see [SETUP](../04-development/SETUP.md)).
 
 ## production
 
-- **Firebase project:** `cinepulse-eec15` (з `.firebaserc`, default).
-- **Hosting target:** `production` → сайт `cinepulse-eec15` (домен виду `https://cinepulse-eec15.web.app`).
-- **Public dir:** `dist` (об'єднаний через `merge-dist.js`).
-- **TMDB у prod:** Cloud Function `tmdbProxy` з токеном із Secret Manager (`defineSecret('TMDB_API_READ_TOKEN')`) — токен **не** потрапляє в клієнтський бандл. The function only serves an allowlist of read-only TMDB paths and sets `Cache-Control` so Hosting's CDN caches successful responses (see [ADR-0003](../03-architecture/decisions/ADR-0003-tmdb-proxy.md)).
+- **Firebase project:** `cinepulse-eec15` (from `.firebaserc`, default).
+- **Hosting target:** `production` → site `cinepulse-eec15` (domain like `https://cinepulse-eec15.web.app`).
+- **Public dir:** `dist` (merged via `merge-dist.js`).
+- **TMDB in prod:** Cloud Function `tmdbProxy` with the token from Secret Manager (`defineSecret('TMDB_API_READ_TOKEN')`) — the token does **not** end up in the client bundle. The function only serves an allowlist of read-only TMDB paths and sets `Cache-Control` so Hosting's CDN caches successful responses (see [ADR-0003](../03-architecture/decisions/ADR-0003-tmdb-proxy.md)).
 
 **Rewrites (`firebase.json`):**
-| Патерн | Призначення |
+| Pattern | Destination |
 |--------|-------------|
-| `/api/tmdb/**` | функція `tmdbProxy` |
+| `/api/tmdb/**` | function `tmdbProxy` |
 | `/pages-mfe/**` | `/pages-mfe/index.html` |
 | `/user-mfe/**` | `/user-mfe/index.html` |
-| `**` | `/index.html` (SPA-fallback) |
+| `**` | `/index.html` (SPA fallback) |
 
-**Headers:** host і remotes віддаються з одного origin, тому CORS-заголовків немає. Для всіх відповідей — заголовки безпеки: `Content-Security-Policy-Report-Only` (до переходу на enforce), `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`. HSTS Firebase Hosting додає сам.
+**Headers:** the host and remotes are served from the same origin, so there are no CORS headers. All responses get security headers: `Content-Security-Policy-Report-Only` (until the switch to enforce), `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`. Firebase Hosting adds HSTS itself.
 
-## Змінні оточення
+## Environment variables
 
-| Змінна | Local dev | Production |
+| Variable | Local dev | Production |
 |--------|-----------|-----------|
-| `TMDB_API_READ_TOKEN` | кореневий `.env`, використовується Vite proxy | Firebase Secret Manager (`defineSecret`) у функції |
-| `PAGES_MFE_URL` | (опційно) staging-URL remote для гібридного dev | — |
-| `USER_MFE_URL` | (опційно) staging-URL remote для гібридного dev | — |
+| `TMDB_API_READ_TOKEN` | root `.env`, used by the Vite proxy | Firebase Secret Manager (`defineSecret`) in the function |
+| `PAGES_MFE_URL` | (optional) remote staging URL for hybrid dev | — |
+| `USER_MFE_URL` | (optional) remote staging URL for hybrid dev | — |
 
-> `.env` не комітиться. Приклад/інструкція — у кореневому `.env` (шаблон із коментарем).
+> `.env` is not committed. An example/instructions are in the root `.env` (a template with a comment).
 
 ## staging
 
-⬜ **Немає окремого staging-середовища та PR-preview.** Деплой одразу в production на `push` у `main`.
+⬜ **There is no separate staging environment or PR preview.** Deployment goes straight to production on `push` to `main`.
 
-**Рекомендація:** використати **Firebase Hosting preview channels**:
-- Тимчасовий канал на кожен PR:
+**Recommendation:** use **Firebase Hosting preview channels**:
+- A temporary channel per PR:
   ```bash
   firebase hosting:channel:deploy pr-<N> --expires 7d
   ```
-- Або окремий постійний канал `staging` для інтеграційного тестування перед промоушеном у `live`.
-- Інтегрувати в CI через `FirebaseExtended/action-hosting-deploy` з `channelId` замість `live` для не-`main` гілок.
+- Or a separate permanent `staging` channel for integration testing before promotion to `live`.
+- Integrate into CI via `FirebaseExtended/action-hosting-deploy` with a `channelId` instead of `live` for non-`main` branches.
 
-**TODO:** визначити модель гілок → середовищ (напр. `develop` → staging-канал, `main` → production).
+**TODO:** define the branch → environment model (e.g. `develop` → staging channel, `main` → production).

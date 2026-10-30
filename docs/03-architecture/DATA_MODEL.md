@@ -1,16 +1,16 @@
-🔗 Роадмап і задачі — у [Notion](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb)
+🔗 Roadmap and tasks live in [Notion](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb)
 
-# Модель даних
+# Data model
 
-> **Важливо:** CinePulse **не має власної бази даних**. Це клієнтський застосунок поверх [TMDB API](https://developer.themoviedb.org/). «Модель даних» тут — це TypeScript-типи, що описують відповіді TMDB (`packages/api/src/types/*`) та клієнтський стан застосунку (`packages/events/src/types.ts`). Єдине персистентне сховище секретів — `TMDB_API_READ_TOKEN` (Firebase Secret).
+> **Important:** CinePulse **has no database of its own**. It is a client app on top of the [TMDB API](https://developer.themoviedb.org/). The "data model" here means the TypeScript types that describe TMDB responses (`packages/api/src/types/*`) and the app's client state (`packages/events/src/types.ts`). The only persistent secret storage is `TMDB_API_READ_TOKEN` (Firebase Secret).
 >
-> ➕ **Змінюється (вимоги 2026-07-12):** формалізований скоуп додає **watchlist**, який потребує **власної БД (Firestore)** — це буде перше персистентне сховище користувацьких даних. Планована модель — нижче, у розділі [«Планована модель: Watchlist»](#-планована-модель-watchlist-firestore).
+> ➕ **Changing (requirements 2026-07-12):** the formalized scope adds a **watchlist**, which needs **its own database (Firestore)**; it will be the first persistent store of user data. The planned model is below, in [Planned model: Watchlist](#-planned-model-watchlist-firestore).
 
-Усі типи реекспортуються з `@repo/api` (`packages/api/src/index.ts`) і `@repo/events`.
+All types are re-exported from `@repo/api` (`packages/api/src/index.ts`) and `@repo/events`.
 
-## Оболонка пагінації
+## Pagination wrapper
 
-Списковi відповіді TMDB загорнуті в дженерик (`packages/api/src/types/common.ts`):
+TMDB list responses are wrapped in a generic (`packages/api/src/types/common.ts`):
 
 ```ts
 type PaginatedResponse<T> = {
@@ -25,60 +25,60 @@ type PageParams = { page?: number }; // request params of every list, no index s
 
 The next page comes from the shared `getNextPageParam` (`core/pagination.ts`): `page + 1` while `page < min(total_pages, 500)`, otherwise `undefined`. `ProductionCompany` is one type in `types/common.ts`, used by both movie and TV details.
 
-## Домен: Фільми
+## Domain: Movies
 
-### `Movie` (`types/movie.ts`) — елемент списку
+### `Movie` (`types/movie.ts`) — list item
 
-| Поле | Тип | Нотатки |
+| Field | Type | Notes |
 |------|-----|---------|
-| `id` | `number` | Ідентифікатор TMDB |
-| `title` / `original_title` | `string` | Назва / оригінальна назва |
-| `overview` | `string` | Опис |
-| `poster_path` / `backdrop_path` | `string \| null` | Відносні шляхи; повний URL через `getImageUrl()` |
-| `release_date` | `string` | ISO-дата |
-| `vote_average` / `vote_count` | `number` | Рейтинг / кількість голосів |
+| `id` | `number` | TMDB ID |
+| `title` / `original_title` | `string` | Title / original title |
+| `overview` | `string` | Description |
+| `poster_path` / `backdrop_path` | `string \| null` | Relative paths; full URL via `getImageUrl()` |
+| `release_date` | `string` | ISO date |
+| `vote_average` / `vote_count` | `number` | Rating / vote count |
 | `popularity` | `number` | |
 | `adult` / `video` | `boolean` | |
-| `genre_ids` | `number[]` | ID жанрів (мапляться на `Genre.name`) |
+| `genre_ids` | `number[]` | Genre IDs (mapped to `Genre.name`) |
 | `original_language` | `string` | |
 
-### `MovieDetails` (`types/movie.ts`) — сторінка деталей
+### `MovieDetails` (`types/movie.ts`) — details page
 
-Розширює `Movie` (без `genre_ids`) і додає: `genres: Genre[]`, `budget`, `revenue`, `runtime: number | null`, `status`, `tagline`, `homepage`, `imdb_id`, `production_companies: ProductionCompany[]`, `production_countries: ProductionCountry[]`, `spoken_languages: SpokenLanguage[]`, `belongs_to_collection: Collection | null`.
+Extends `Movie` (without `genre_ids`) and adds: `genres: Genre[]`, `budget`, `revenue`, `runtime: number | null`, `status`, `tagline`, `homepage`, `imdb_id`, `production_companies: ProductionCompany[]`, `production_countries: ProductionCountry[]`, `spoken_languages: SpokenLanguage[]`, `belongs_to_collection: Collection | null`.
 
-Допоміжні типи: `ProductionCompany`, `ProductionCountry`, `SpokenLanguage`, `Collection`.
+Helper types: `ProductionCompany`, `ProductionCountry`, `SpokenLanguage`, `Collection`.
 
-## Домен: Серіали (TV)
+## Domain: TV shows
 
-### `TV` (`types/tv.ts`) — елемент списку
+### `TV` (`types/tv.ts`) — list item
 
-Аналог `Movie`, але зі специфікою серіалів: `name` / `original_name` замість `title`, `first_air_date` замість `release_date`, `origin_country: string[]`.
+Same as `Movie`, with TV specifics: `name` / `original_name` instead of `title`, `first_air_date` instead of `release_date`, `origin_country: string[]`.
 
 ### `TVDetails` (`types/tv.ts`)
 
-Розширює `TV` (без `genre_ids`) і додає: `genres`, `created_by: Creator[]`, `episode_run_time: number[]`, `in_production`, `languages`, `last_air_date`, `last_episode_to_air` / `next_episode_to_air: Episode | null`, `networks: Network[]`, `number_of_episodes`, `number_of_seasons`, `seasons: Season[]`, `status`, `tagline`, `type`.
+Extends `TV` (without `genre_ids`) and adds: `genres`, `created_by: Creator[]`, `episode_run_time: number[]`, `in_production`, `languages`, `last_air_date`, `last_episode_to_air` / `next_episode_to_air: Episode | null`, `networks: Network[]`, `number_of_episodes`, `number_of_seasons`, `seasons: Season[]`, `status`, `tagline`, `type`.
 
-Допоміжні типи: `Creator`, `Episode`, `Network`, `Season`, `ProductionCompany`.
+Helper types: `Creator`, `Episode`, `Network`, `Season`, `ProductionCompany`.
 
-## Домен: Персони
+## Domain: People
 
-### `Person` (`types/person.ts`) — елемент списку
+### `Person` (`types/person.ts`) — list item
 
 `id`, `name`, `original_name`, `profile_path`, `adult`, `popularity`, `gender`, `known_for_department`, `known_for: KnownFor[]`.
 
-`KnownFor` — уніфікований елемент фільму/серіалу з `media_type: 'movie' | 'tv'`.
+`KnownFor` is a unified movie/TV item with `media_type: 'movie' | 'tv'`.
 
 ### `PersonDetails` (`types/person.ts`)
 
-`biography`, `birthday`, `deathday`, `homepage`, `imdb_id`, `place_of_birth`, `also_known_as: string[]`, `profile_path`, `gender`, `known_for_department` тощо.
+`biography`, `birthday`, `deathday`, `homepage`, `imdb_id`, `place_of_birth`, `also_known_as: string[]`, `profile_path`, `gender`, `known_for_department`, etc.
 
-## Домен: Жанри
+## Domain: Genres
 
-`Genre = { id: number; name: string }`; `GenresResponse = { genres: Genre[] }` (`types/genre.ts`). Список фільмів містить лише `genre_ids`, тож UI зіставляє їх із назвами через відповідь `getMovieGenres()` (так робить `Home.tsx` і `Movies.tsx`).
+`Genre = { id: number; name: string }`; `GenresResponse = { genres: Genre[] }` (`types/genre.ts`). A movie list contains only `genre_ids`, so the UI maps them to names using the `getMovieGenres()` response (as `Home.tsx` and `Movies.tsx` do).
 
-## Домен: Trending і Search (уніфіковані типи)
+## Domain: Trending and Search (unified types)
 
-Trending і мультипошук повертають різнорідні елементи, дискриміновані полем `media_type` (`types/trending.ts`, `types/search.ts`):
+Trending and multi-search return mixed items, discriminated by the `media_type` field (`types/trending.ts`, `types/search.ts`):
 
 ```ts
 type MediaType = 'movie' | 'tv' | 'person' | 'all';
@@ -88,11 +88,11 @@ type TrendingItem  = TrendingMovie | TrendingTV | TrendingPerson; // Movie/TV/Pe
 type MultiSearchResult = SearchMovie | SearchTV | SearchPerson; // SearchMovie = TrendingMovie, etc.
 ```
 
-Дискримінантне поле `media_type` дозволяє звужувати тип у рантаймі (напр. `Home.tsx` фільтрує `media_type === 'movie'`).
+The `media_type` discriminant lets code narrow the type at runtime (e.g. `Home.tsx` filters `media_type === 'movie'`).
 
-## Клієнтський стан: Global Store
+## Client state: Global Store
 
-Єдине джерело клієнтського стану поза React Query — global store (`packages/events/src/store.ts`), singleton на `window.__CINEPULSE_STORE__`. It is a Zustand store ([ADR-0008](./decisions/ADR-0008-zustand-global-store.md)).
+The only source of client state outside React Query is the global store (`packages/events/src/store.ts`), a singleton on `window.__CINEPULSE_STORE__`. It is a Zustand store ([ADR-0008](./decisions/ADR-0008-zustand-global-store.md)).
 
 ### `GlobalState` (`packages/events/src/store.ts`)
 
@@ -113,17 +113,17 @@ type GlobalStore = GlobalState & GlobalActions;
 
 > **Status:** only the theme is stored. User state (`user`, sign-in status) comes back with Firebase Auth, when it has a real source. The theme switcher in the header is plan item 6.5.
 
-## ➕ Планована модель: Watchlist (Firestore)
+## ➕ Planned model: Watchlist (Firestore)
 
-> Ще не реалізовано. Джерело вимог — [PRD](../01-product/PRD.md#ключова-фіча-watchlist-папки--статуси). Наведене — цільова форма для опрацювання на Етапі 3 (точна структура колекцій і security rules — до проєктування).
+> Not implemented yet. Source of requirements: [PRD](../01-product/PRD.md#key-feature-watchlist-folders--statuses). What follows is the target shape to work out in Phase 3 (the exact collection structure and security rules are still to be designed).
 
-**Вимоги до моделі:**
-- **Папки** — дерево з вкладеністю **до 6 рівнів**, необмежена ширина. Належать конкретному користувачу.
-- **Тайтл у watchlist** — фільм або серіал; може перебувати **в кількох папках** (membership many-to-many).
-- **Статус тайтла** — `watched | planned` (переглянуто/заплановано), незалежно від папок.
-- **Доступ** — лише авторизований користувач бачить/змінює свої дані (security rules за `uid`).
+**Model requirements:**
+- **Folders** — a tree nested **up to 6 levels** deep, unlimited width. Owned by a specific user.
+- **Watchlist title** — a movie or a TV show; can be in **several folders** (many-to-many membership).
+- **Title status** — `watched | planned`, independent of folders.
+- **Access** — only the signed-in user sees and changes their own data (security rules by `uid`).
 
-**Ескіз типів (чернетка, до узгодження):**
+**Type sketch (draft, pending agreement):**
 
 ```ts
 type WatchStatus = 'watched' | 'planned';
@@ -132,7 +132,7 @@ interface WatchlistFolder {
   id: string;
   ownerUid: string;
   name: string;
-  parentId: string | null; // null = корінь; глибина ≤ 6
+  parentId: string | null; // null = root; depth ≤ 6
 }
 
 interface WatchlistItem {
@@ -141,15 +141,15 @@ interface WatchlistItem {
   mediaType: 'movie' | 'tv';
   tmdbId: number;
   status: WatchStatus;
-  folderIds: string[]; // тайтл може бути в кількох папках
+  folderIds: string[]; // a title can be in several folders
 }
 ```
 
-> Відкриті питання: спосіб зберігання дерева (parentId-посилання vs. materialized path), enforcement ліміту глибини 6, денормалізація метаданих тайтла (постер/назва) для офлайн-показу.
+> Open questions: how to store the tree (parentId references vs. materialized path), how to enforce the depth limit of 6, denormalizing title metadata (poster/title) for offline display.
 
-## Контракт подій: `EventMap`
+## Event contract: `EventMap`
 
-Типізований словник подій event bus (`packages/events/src/types.ts`):
+The typed event dictionary of the event bus (`packages/events/src/types.ts`):
 
 | Event | Payload |
 |-------|---------|
@@ -159,6 +159,6 @@ interface WatchlistItem {
 
 `NotificationPayload.type` ∈ `'success' | 'error' | 'warning' | 'info'`. Event names are typed as ``EventKey = `${EventDomain}:${string}` ``, so a key outside the `domain:action` format fails `tsc`. `mfe:error` carries plain data (`serializeError(error)` → `{ name, message }`); `error:report` keeps the original error because the host listener filters reports by `ApiError` kind. `error:report` is emitted by boundaries, `QueryCache`/`MutationCache` and the host's window handlers, and has one listener in the host; `notification:show` is emitted by `QueryCache.onError` and shown as a toast by the host; `mfe:error` is emitted when a remote fails to load. The former `user:*`, `navigation:change` and `mfe:ready` events had no emitters or listeners and were removed; they come back with Firebase Auth.
 
-## Робота із зображеннями
+## Images
 
-Типи розмірів (`packages/api/src/core/config.ts`): `ImageSize`, `BackdropSize`, `ProfileSize`. Повний URL будує `getImageUrl(path, size)` (`core/utils.ts`) на базі `TMDB_IMAGE_BASE_URL`. Значення `null` шляху повертає `null` (компоненти показують плейсхолдер).
+Size types (`packages/api/src/core/config.ts`): `ImageSize`, `BackdropSize`, `ProfileSize`. `getImageUrl(path, size)` (`core/utils.ts`) builds the full URL from `TMDB_IMAGE_BASE_URL`. A `null` path returns `null` (components show a placeholder).
