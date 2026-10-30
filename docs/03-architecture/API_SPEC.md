@@ -57,6 +57,7 @@ Paths are relative to the proxy base `/api/tmdb`. Keys follow `all → lists / d
 | Factory | Key | HTTP | Data |
 |---|---|---|---|
 | `movieQueries.list(category)` (infinite) | `['movies', 'list', category]` | `GET /movie/{category}` | `PaginatedResponse<Movie>` |
+| `movieQueries.discover({ genreId, sortBy })` (infinite) | `['movies', 'list', 'discover', { genreId, sortBy }]` | `GET /discover/movie?sort_by&with_genres&page` | `PaginatedResponse<Movie>` |
 | `movieQueries.row(category)` | `['movies', 'list', category, 'first-page']` | `GET /movie/{category}?page=1` | `PaginatedResponse<Movie>` |
 | `movieQueries.detail(id)` | `['movies', 'detail', id]` | `GET /movie/{id}` | `MovieDetails` |
 | `tvQueries.list(category)` / `.row(category)` / `.detail(id)` | `['tv', …]` | `GET /tv/{category}`, `GET /tv/{id}` | `PaginatedResponse<TV>`, `TVDetails` |
@@ -65,9 +66,13 @@ Paths are relative to the proxy base `/api/tmdb`. Keys follow `all → lists / d
 | `genreQueries.movie()` / `.tv()` | `['genres', 'movie' \| 'tv']` | `GET /genre/{movie,tv}/list` | `GenresResponse`, `staleTime: Infinity` |
 | `personQueries.detail(id)` | `['person', 'detail', id]` | `GET /person/{id}` | `PersonDetails` |
 
+`sortBy` (`DiscoverSortBy`) is `popularity.desc | primary_release_date.desc | vote_average.desc`; `genreId: null` omits `with_genres`. `vote_average.desc` also sends `vote_count.gte=200` (`DISCOVER_MIN_VOTE_COUNT`) and `primary_release_date.desc` sends `primary_release_date.lte=<today, UTC>`, so both sorts skip unrated and unreleased films. The proxy allowlist (`functions/src/proxy-rules.ts`) accepts exactly these params on `/discover/movie` and rejects anything else with 400.
+
+`movieQueries.discover` and `searchQueries.movies` set `meta: { inlineErrors: true }`: the Movies page shows a failed next page inline, so `QueryCache.onError` shows no toast.
+
 `category` is `popular | top_rated | upcoming | now_playing` for movies and `popular | top_rated | on_the_air | airing_today` for TV; `mediaType` is `movie | tv | person | all`, `timeWindow` is `day | week`.
 
-`useMoviesOrSearch(query, category = 'popular')` switches between `searchQueries.movies(query)` and `movieQueries.list(category)` inside one infinite query, using their keys, so the cache is shared.
+`useMoviesOrSearch(query, { genreId, sortBy })` switches between `searchQueries.movies(query)` and `movieQueries.discover({ genreId, sortBy })` inside one infinite query, using their keys, so the cache is shared. A non-empty `query` wins and the filters are ignored: TMDB search has no genre or sort.
 
 ## Images
 
@@ -78,9 +83,10 @@ Paths are relative to the proxy base `/api/tmdb`. Keys follow `all → lists / d
 | Factory | Used in UI | Where / planned page |
 |-----|:---:|-----------------------|
 | `movieQueries.row` | ✅ | Home (rows) |
-| `movieQueries.list`, `searchQueries.movies` | ✅ | Movies, through `useMoviesOrSearch` |
+| `movieQueries.discover`, `searchQueries.movies` | ✅ | Movies, through `useMoviesOrSearch` (genre, sort and search from the URL) |
+| `movieQueries.list` | ⬜ | not used since Movies moved to `discover`; kept for category pages |
 | `trendingQueries.row` | ✅ | Home (Hero + Trending) |
-| `genreQueries.movie` | ✅ | Home, Movies (genre pills) |
+| `genreQueries.movie` | ✅ | Home, Movies (genre pills, prefetched next to the list) |
 | `movieQueries.detail` | ⬜ | **Movie Detail** `/movies/:id` |
 | `tvQueries.*`, `genreQueries.tv` | ⬜ | **TV** `/tv`, `/tv/:id` |
 | `searchQueries.multi/tv/person` | ⬜ | **Search** `/search` |

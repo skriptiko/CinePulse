@@ -50,15 +50,25 @@
 
 🟡 Частково уніфіковано:
 - **Loading:** every page suspends into a skeleton shaped like it (`HomeSkeleton`, `MovieGridSkeleton`, `PageSkeleton`). The layout is reserved at once and the skeleton appears after 300 ms, so fast loads do not flicker.
-- **Empty:** реалізовано в **Movies** («No movies found» + кнопка «Clear filters»). На інших сторінках порожніх станів немає.
+- **Empty:** implemented in **Movies**: `No movies found for “…”` names the search query, with **Clear search** and **Reset filters**. Other pages have no empty states.
 - **Error:** without data, the page boundary shows a plain message with **Try again** (404 → `NotFound`); the host's `ShellBoundary` catches the rest and keeps the header; a failed background refetch keeps the data and shows one toast (bottom right).
 - **Offline:** one global banner at the bottom, "You are offline. Showing saved results."
 
-TODO: section-level boundaries on Home (item 6.1) and inline states for "Load more" (item 6.2).
+- **Load more** (Movies): the button is disabled with a spinner while a page loads; a failed next page keeps the loaded movies and shows an inline error with **Try again** (no toast); at the end of the list the button gives way to "That's all".
+
+TODO: section-level boundaries on Home (item 6.1).
+
+## Movies: search, genre and sort
+
+- Genre and sort are applied by TMDB (`/discover/movie`), not to the loaded pages, so the results and the "N movies found" counter (`total_results`) cover the whole catalog.
+- The state lives in the URL: `q` (search, debounced 300 ms, written with replace), `genre` (TMDB genre id) and `sort` (`popular` | `newest` | `rating`), both written with push, so Back/Forward and shared links restore the view. Missing or invalid values fall back to every genre / Popular.
+- TMDB search has no genre or sort: while a query is typed, the genre pills and the sort menu are disabled, with a one-line hint. The genre and sort stay in the URL and apply again once the search is cleared.
+- "Rating" needs at least 200 votes; "Newest" lists films released by today, not announced ones.
+- While new results load, the current ones stay on screen dimmed (`aria-busy`); the counter is a persistent `role="status"` (`<output>`) region.
 
 ## Accessibility
 
 > ⬜ Формального a11y-аудиту не проводилось.
 - Використовуються семантичні елементи (`<main>`, `<h1>`, `<button type="button">`) і Radix-компоненти (мають вбудовану a11y-підтримку).
-- Не перевірено: контраст у темній темі, навігація з клавіатури по всьому застосунку, ARIA для кастомних інтерактивних елементів (перемикач grid/compact у Movies), фокус-менеджмент.
+- Не перевірено: контраст у темній темі, навігація з клавіатури по всьому застосунку, фокус-менеджмент. The Movies grid/compact toggle has `aria-label` and `aria-pressed`.
 - TODO: прогнати axe / Lighthouse, визначити цільовий рівень WCAG.
