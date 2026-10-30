@@ -2,7 +2,7 @@ import { http, HttpResponse, delay } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { ApiError } from '../../core';
-import { getMovies } from '../movie';
+import { DISCOVER_MIN_VOTE_COUNT, discoverMovies, getMovies } from '../movie';
 
 // @repo/api cannot use @repo/test-utils (that package depends on @repo/api), so it owns its server.
 const server = setupServer();
@@ -62,5 +62,62 @@ describe('getMovies', () => {
     const call = (): unknown => getMovies('popular', { sort: 'asc' });
 
     expect(call).toBeTypeOf('function');
+  });
+});
+
+describe('discoverMovies', () => {
+  function captureDiscover(): { params: () => URLSearchParams; path: () => string } {
+    let url: URL | undefined;
+    server.use(
+      http.get('*/api/tmdb/discover/movie', ({ request }) => {
+        url = new URL(request.url);
+        return HttpResponse.json({ page: 1, results: [], total_pages: 1, total_results: 0 });
+      })
+    );
+    return {
+      params: () => url?.searchParams ?? new URLSearchParams(),
+      path: () => url?.pathname ?? '',
+    };
+  }
+
+  it('sends the genre, sort and page', async () => {
+    const request = captureDiscover();
+
+    await discoverMovies({ genreId: 28, sortBy: 'popularity.desc', page: 3 });
+
+    expect(request.path()).toBe('/api/tmdb/discover/movie');
+    expect(Object.fromEntries(request.params())).toEqual({
+      page: '3',
+      with_genres: '28',
+      sort_by: 'popularity.desc',
+    });
+  });
+
+  it('omits the genre when it is null', async () => {
+    const request = captureDiscover();
+
+    await discoverMovies({ genreId: null, sortBy: 'popularity.desc' });
+
+    expect(request.params().has('with_genres')).toBe(false);
+  });
+
+  it('adds a vote floor to the rating sort', async () => {
+    const request = captureDiscover();
+
+    await discoverMovies({ sortBy: 'vote_average.desc' });
+
+    expect(request.params().get('vote_count.gte')).toBe(String(DISCOVER_MIN_VOTE_COUNT));
+    expect(request.params().has('primary_release_date.lte')).toBe(false);
+  });
+
+  it('limits the newest sort to films released by today', async () => {
+    const request = captureDiscover();
+
+    await discoverMovies({ sortBy: 'primary_release_date.desc' });
+
+    expect(request.params().get('primary_release_date.lte')).toBe(
+      new Date().toISOString().slice(0, 10)
+    );
+    expect(request.params().has('vote_count.gte')).toBe(false);
   });
 });

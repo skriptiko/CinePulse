@@ -13,16 +13,29 @@ export const CACHE_CONTROL_DEFAULT = 'public, max-age=300, s-maxage=3600';
 export const CACHE_CONTROL_LONG = 'public, max-age=3600, s-maxage=86400';
 export const CACHE_CONTROL_NO_STORE = 'no-store';
 
-type QueryRule = 'page' | 'search';
+/** `sort_by` values `discoverMovies` sends. */
+export const DISCOVER_SORT_BY = [
+  'popularity.desc',
+  'primary_release_date.desc',
+  'vote_average.desc',
+] as const;
+export const MAX_VOTE_COUNT_FLOOR = 10_000;
+
+type QueryRule = 'page' | 'search' | 'discover';
 
 type RouteRule = {
   pattern: RegExp;
-  /** `page`: optional `page`; `search`: required `query` + optional `page`; none: no params. */
+  /**
+   * `page`: optional `page`; `search`: required `query` + optional `page`; `discover`:
+   * required `sort_by` + optional `page`, `with_genres`, `vote_count.gte`,
+   * `primary_release_date.lte`; none: no params.
+   */
   query?: QueryRule;
   cacheControl: string;
 };
 
 const ID = '[1-9]\\d{0,9}';
+const ID_PATTERN = new RegExp(`^${ID}$`);
 
 const ROUTES: readonly RouteRule[] = [
   {
@@ -31,6 +44,7 @@ const ROUTES: readonly RouteRule[] = [
     cacheControl: CACHE_CONTROL_DEFAULT,
   },
   { pattern: new RegExp(`^/movie/${ID}$`), cacheControl: CACHE_CONTROL_DEFAULT },
+  { pattern: /^\/discover\/movie$/, query: 'discover', cacheControl: CACHE_CONTROL_DEFAULT },
   {
     pattern: /^\/tv\/(popular|top_rated|on_the_air|airing_today)$/,
     query: 'page',
@@ -94,8 +108,14 @@ export function resolveProxyRequest(requestPath: string, params: URLSearchParams
   return { ok: true, target: { path, search, cacheControl: rule.cacheControl } };
 }
 
+const ALLOWED_PARAMS: Record<QueryRule, readonly string[]> = {
+  page: ['page'],
+  search: ['query', 'page'],
+  discover: ['sort_by', 'with_genres', 'vote_count.gte', 'primary_release_date.lte', 'page'],
+};
+
 function sanitizeQuery(params: URLSearchParams, rule: QueryRule | undefined): string | null {
-  const allowed = rule === 'search' ? ['query', 'page'] : rule === 'page' ? ['page'] : [];
+  const allowed = rule ? ALLOWED_PARAMS[rule] : [];
   const keys = [...params.keys()];
   const hasUnknownOrRepeated =
     keys.some((key) => !allowed.includes(key)) || new Set(keys).size !== keys.length;
@@ -109,6 +129,8 @@ function sanitizeQuery(params: URLSearchParams, rule: QueryRule | undefined): st
     result.set('query', query);
   }
 
+  if (rule === 'discover' && !copyDiscoverParams(params, result)) return null;
+
   const page = params.get('page');
   if (page !== null) {
     if (!isValidPage(page)) return null;
@@ -117,6 +139,43 @@ function sanitizeQuery(params: URLSearchParams, rule: QueryRule | undefined): st
 
   const search = result.toString();
   return search ? `?${search}` : '';
+}
+
+/** Validates the discover params and copies them in a fixed order; `false` if any is invalid. */
+function copyDiscoverParams(params: URLSearchParams, result: URLSearchParams): boolean {
+  const sortBy = params.get('sort_by');
+  const sortValues: readonly string[] = DISCOVER_SORT_BY;
+  if (sortBy === null || !sortValues.includes(sortBy)) return false;
+  result.set('sort_by', sortBy);
+
+  const genre = params.get('with_genres');
+  if (genre !== null) {
+    if (!ID_PATTERN.test(genre)) return false;
+    result.set('with_genres', genre);
+  }
+
+  const voteCount = params.get('vote_count.gte');
+  if (voteCount !== null) {
+    if (!/^(0|[1-9]\d{0,4})$/.test(voteCount) || Number(voteCount) > MAX_VOTE_COUNT_FLOOR) {
+      return false;
+    }
+    result.set('vote_count.gte', voteCount);
+  }
+
+  const releasedBy = params.get('primary_release_date.lte');
+  if (releasedBy !== null) {
+    if (!isValidIsoDate(releasedBy)) return false;
+    result.set('primary_release_date.lte', releasedBy);
+  }
+
+  return true;
+}
+
+/** A real calendar date as `YYYY-MM-DD`. */
+function isValidIsoDate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T00:00:00Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }
 
 function isValidPage(value: string): boolean {

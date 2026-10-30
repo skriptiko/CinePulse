@@ -68,6 +68,8 @@ describe('resolveProxyRequest: paths', () => {
     '/authentication/token/new',
     '/movie/550/../../account',
     '/MOVIE/popular',
+    '/discover/tv',
+    '/discover/movie/',
   ])('rejects %s with 404', (path) => {
     expect(resolve(`/api/tmdb${path}`)).toEqual({
       ok: false,
@@ -132,6 +134,80 @@ describe('resolveProxyRequest: query', () => {
 
   it('rejects query on non-search routes', () => {
     expect(resolve('/api/tmdb/movie/popular', 'query=x')).toEqual(BAD_REQUEST);
+  });
+});
+
+describe('resolveProxyRequest: discover', () => {
+  const BAD_REQUEST = { ok: false, error: { status: 400, error: 'Invalid query parameters' } };
+
+  function discover(query: string) {
+    return resolve('/api/tmdb/discover/movie', query);
+  }
+
+  it('forwards every param the client sends, in a fixed order', () => {
+    const result = discover(
+      'page=2&primary_release_date.lte=2026-10-30&with_genres=28&sort_by=primary_release_date.desc'
+    );
+    expect(result).toEqual({
+      ok: true,
+      target: {
+        path: '/discover/movie',
+        search:
+          '?sort_by=primary_release_date.desc&with_genres=28&primary_release_date.lte=2026-10-30&page=2',
+        cacheControl: CACHE_CONTROL_DEFAULT,
+      },
+    });
+  });
+
+  it.each(['popularity.desc', 'primary_release_date.desc', 'vote_average.desc'])(
+    'accepts sort_by=%s',
+    (sortBy) => {
+      expect(discover(`sort_by=${sortBy}`).ok).toBe(true);
+    }
+  );
+
+  it('accepts a vote floor for the rating sort', () => {
+    const result = discover('sort_by=vote_average.desc&vote_count.gte=200');
+    expect(result.ok && result.target.search).toBe('?sort_by=vote_average.desc&vote_count.gte=200');
+  });
+
+  it('requires a known sort_by', () => {
+    expect(discover('')).toEqual(BAD_REQUEST);
+    expect(discover('with_genres=28')).toEqual(BAD_REQUEST);
+    expect(discover('sort_by=revenue.desc')).toEqual(BAD_REQUEST);
+    expect(discover('sort_by=popularity.asc')).toEqual(BAD_REQUEST);
+  });
+
+  it.each(['0', '-1', 'abc', '28,12', '28|12', '01', ''])('rejects with_genres=%s', (genre) => {
+    expect(discover(`sort_by=popularity.desc&with_genres=${encodeURIComponent(genre)}`)).toEqual(
+      BAD_REQUEST
+    );
+  });
+
+  it.each(['-1', '1.5', 'abc', '10001', '007', ''])('rejects vote_count.gte=%s', (count) => {
+    expect(discover(`sort_by=vote_average.desc&vote_count.gte=${count}`)).toEqual(BAD_REQUEST);
+  });
+
+  it.each(['2026-13-01', '2026-02-30', '26-10-30', '2026-10-30T00:00', 'today', ''])(
+    'rejects primary_release_date.lte=%s',
+    (date) => {
+      expect(
+        discover(`sort_by=primary_release_date.desc&primary_release_date.lte=${date}`)
+      ).toEqual(BAD_REQUEST);
+    }
+  );
+
+  it('rejects unknown, repeated and invalid page params', () => {
+    expect(discover('sort_by=popularity.desc&with_cast=1')).toEqual(BAD_REQUEST);
+    expect(discover('sort_by=popularity.desc&language=en-US')).toEqual(BAD_REQUEST);
+    expect(discover('sort_by=popularity.desc&query=x')).toEqual(BAD_REQUEST);
+    expect(discover('sort_by=popularity.desc&with_genres=28&with_genres=12')).toEqual(BAD_REQUEST);
+    expect(discover('sort_by=popularity.desc&page=501')).toEqual(BAD_REQUEST);
+  });
+
+  it('rejects discover params on other routes', () => {
+    expect(resolve('/api/tmdb/movie/popular', 'sort_by=popularity.desc')).toEqual(BAD_REQUEST);
+    expect(resolve('/api/tmdb/search/movie', 'query=x&with_genres=28')).toEqual(BAD_REQUEST);
   });
 });
 

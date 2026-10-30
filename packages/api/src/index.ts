@@ -14,7 +14,7 @@ export {
 } from './core';
 export type { ApiErrorKind, BackdropSize, ImageSize, ProfileSize } from './core';
 
-export type { MovieCategory, TVCategory } from './endpoints';
+export type { DiscoverSortBy, MovieCategory, TVCategory } from './endpoints';
 
 export {
   genreQueries,
@@ -26,6 +26,7 @@ export {
   trendingQueries,
   tvQueries,
 } from './queries';
+export type { DiscoverMovieFilters } from './queries';
 
 export { useMoviesOrSearch } from './hooks';
 

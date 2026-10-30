@@ -1,6 +1,17 @@
 import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 import { getNextPageParam } from '../core';
-import { type MovieCategory, getMovieDetails, getMovies } from '../endpoints';
+import {
+  type DiscoverSortBy,
+  type MovieCategory,
+  discoverMovies,
+  getMovieDetails,
+  getMovies,
+} from '../endpoints';
+
+export type DiscoverMovieFilters = {
+  genreId: number | null;
+  sortBy: DiscoverSortBy;
+};
 
 export const movieQueries = {
   all: () => ['movies'] as const,
@@ -14,6 +25,20 @@ export const movieQueries = {
       queryFn: ({ pageParam, signal }) => getMovies(category, { page: pageParam }, { signal }),
       initialPageParam: 1,
       getNextPageParam,
+    }),
+
+  /**
+   * Every page of `/discover/movie` for one genre + sort, for "Load more". A next-page
+   * failure is shown inline by the page, so it never becomes a toast.
+   */
+  discover: ({ genreId, sortBy }: DiscoverMovieFilters) =>
+    infiniteQueryOptions({
+      queryKey: [...movieQueries.lists(), 'discover', { genreId, sortBy }],
+      queryFn: ({ pageParam, signal }) =>
+        discoverMovies({ genreId, sortBy, page: pageParam }, { signal }),
+      initialPageParam: 1,
+      getNextPageParam,
+      meta: { inlineErrors: true },
     }),
 
   /** The first page only, for a content row. */

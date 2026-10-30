@@ -40,7 +40,7 @@ export function Movies() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useMoviesOrSearch(searchQuery);
+  } = useMoviesOrSearch(searchQuery, { genreId: null, sortBy: 'popularity.desc' });
 
   const categories = useMemo(() => {
     const list = genresData?.genres.map((g) => ({ id: g.id, name: g.name })) || [];
