@@ -7,6 +7,7 @@ const MOVIE: HeroData = {
   title: 'Dune',
   description: 'A desert planet.',
   imageUrl: 'https://image.tmdb.org/t/p/w1280/dune-bg.jpg',
+  imageSrcSet: null,
   year: '2021',
   rating: '7.8',
 };
@@ -24,7 +25,16 @@ describe('Hero', () => {
 
   it('falls back to a placeholder and hides empty fields', () => {
     renderWithProviders(
-      <Hero movie={{ ...MOVIE, description: null, imageUrl: null, rating: null, year: null }} />
+      <Hero
+        movie={{
+          ...MOVIE,
+          description: null,
+          imageUrl: null,
+          imageSrcSet: null,
+          rating: null,
+          year: null,
+        }}
+      />
     );
 
     expect(screen.getByRole('heading', { level: 2, name: 'Dune' })).toBeInTheDocument();
