@@ -3,7 +3,7 @@
     "name": "host JS (gzip, incl. shared singletons, without the lazy Firebase SDK)",
     "path": ["apps/host/dist/assets/*.js", "!apps/host/dist/assets/index.esm-*.js"],
     "gzip": true,
-    "limit": "207 kB"
+    "limit": "208 kB"
   },
   {
     "name": "Firebase SDK (gzip, signed-in visitors only)",

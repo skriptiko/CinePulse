@@ -35,6 +35,11 @@
       "matchPackageNames": ["@module-federation/**"]
     },
     {
+      "description": "1.12+ adds up to 40 kB of runtime to the host (CIN-80), so an update starts from a size check.",
+      "matchPackageNames": ["@module-federation/vite"],
+      "allowedVersions": "<1.12.0"
+    },
+    {
       "groupName": "Tooling",
       "matchPackageNames": [
         "@biomejs/biome",

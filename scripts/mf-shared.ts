@@ -23,8 +23,13 @@ interface SharedConfig {
 /**
  * Module Federation `shared` map for host and remotes; every app must use the same one.
  * `requiredVersion` comes from the pnpm catalog, the single source of shared versions.
+ * `without` lists packages the app does not depend on: the plugin must resolve every entry.
  */
-export function createMfShared(): Record<string, SharedConfig> {
+export function createMfShared({
+  without = [],
+}: {
+  without?: string[];
+} = {}): Record<string, SharedConfig> {
   const catalog = readCatalog();
 
   const strict = STRICT_SINGLETONS.map((name) => {
@@ -36,7 +41,9 @@ export function createMfShared(): Record<string, SharedConfig> {
     }
     return [name, { singleton: true, requiredVersion, strictVersion: true }] as const;
   });
-  const workspace = WORKSPACE_SINGLETONS.map((name) => [name, { singleton: true }] as const);
+  const workspace = WORKSPACE_SINGLETONS.filter((name) => !without.includes(name)).map(
+    (name) => [name, { singleton: true }] as const
+  );
 
   return Object.fromEntries([...strict, ...workspace]);
 }

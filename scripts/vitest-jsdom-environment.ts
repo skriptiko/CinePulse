@@ -1,4 +1,4 @@
-import { builtinEnvironments, type Environment } from 'vitest/environments';
+import { builtinEnvironments, type Environment } from 'vitest/runtime';
 
 /**
  * Globals of Node's fetch stack (undici). jsdom replaces them with its own classes, which undici

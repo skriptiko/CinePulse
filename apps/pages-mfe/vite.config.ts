@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => {
         exposes: {
           './routes': './src/routes.tsx',
         },
-        shared: createMfShared(),
+        shared: createMfShared({ without: ['@repo/firebase'] }),
         // The default, 'version-first', downloads every remote at startup (ADR-0011).
         shareStrategy: 'loaded-first',
       }),

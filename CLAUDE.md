@@ -4,7 +4,7 @@ Guidance for working with the code in this repository.
 
 ## Overview
 
-CinePulse is a movie/TV catalog built on TMDB data as a micro-frontend app: Turborepo + pnpm (9.15.4, Node >= 24), Vite 5, React 19 (ADR-0007: `ref` as a prop, no `forwardRef`), `@module-federation/vite`, React Router 7, TanStack Query 5, Tailwind 4 + shadcn/Radix. Project documentation is in English, in `docs/` (conventions: `docs/04-development/CONVENTIONS.md`).
+CinePulse is a movie/TV catalog built on TMDB data as a micro-frontend app: Turborepo + pnpm (9.15.4, Node >= 24), Vite 7, React 19 (ADR-0007: `ref` as a prop, no `forwardRef`), `@module-federation/vite`, React Router 7, TanStack Query 5, Tailwind 4 + shadcn/Radix. Project documentation is in English, in `docs/` (conventions: `docs/04-development/CONVENTIONS.md`).
 
 ## Project management — Notion
 
@@ -35,7 +35,7 @@ pnpm test:rules                       # Firestore rules on the emulator: needs J
 ```
 
 Verifying changes = `pnpm typecheck` + `pnpm lint` + `pnpm test`. Test stack: ADR-0006, plan: `docs/05-testing/TEST_STRATEGY.md`:
-- Vitest 3.2 (not 4+, because of Vite 5), Testing Library, MSW 3, jsdom, axe-core.
+- Vitest 4, Testing Library, MSW 3, jsdom, axe-core.
 - Tests live in `__tests__/<name>.test.ts(x)` next to the code. A project becomes part of the run once it has its own `vitest.config.ts`.
 - jsdom projects set `environment: scripts/vitest-jsdom-environment.ts` (jsdom with Node fetch globals); with plain `jsdom`, MSW fails on `AbortSignal`.
 - Helpers are in `@repo/test-utils`:
@@ -58,7 +58,7 @@ TMDB requires `TMDB_API_READ_TOKEN` in the root `.env` (Vite `loadEnv` reads the
 - `apps/host` is the shell. `useRemoteRoutes(REMOTES)` (`src/remotes/`, ADR-0011) dynamically imports a remote's `routes` the first time the user reaches one of its paths, so a page downloads only the remote it needs: the paths of a remote that failed to load get `RemoteUnavailable` and an `mfe:error` is emitted. For a new remote, add it to `REMOTES` together with its `ROUTE_PATHS`; a new route of a remote also goes into its `paths` there. The `RouteObject[]` arrays are concatenated and rendered via `useRoutes` inside `AppLayout` from `@repo/ui`, wrapped in `ShellBoundary` (react-error-boundary); the last route is `*` → `NotFound`. `vite:preloadError` → one reload (`src/stale-chunk-reload.ts`). Every `element` in the remotes' `routes.tsx` is wrapped in `PageBoundary` (`AsyncBoundary` with `resetKeys`/`Suspense key` = `pathname`, a page skeleton, Retry resets the queries, 404 → `NotFound`).
 - `apps/pages-mfe` (public catalog: Home, Movies) and `apps/user-mfe` (account: Profile, Settings) are remotes, each exposing only `./routes` (`src/routes.tsx`). Their `main.tsx` is used **only** for standalone development (with `ApiProvider` + `AppLayout`); in the integration the host takes only `routes`.
 - Remote URLs in the host: `PAGES_MFE_URL` / `USER_MFE_URL` (default `http://localhost:500x/remoteEntry.js`; in production, `apps/host/.env.production`, `/pages-mfe/remoteEntry.js`; the host reads env from its own directory, and `vite build` fails without these variables). A staging URL can be set for hybrid development.
-- **Shared singletons**: `react`, `react-dom`, `react-router-dom`, `@tanstack/react-query`, `react-error-boundary`, `zustand`, `@repo/events`, `@repo/routes`, `@repo/api`, `@repo/firebase`. The `shared` map for all three `vite.config.ts` files is built by `createMfShared()` in `scripts/mf-shared.ts`: all are `singleton`, and third-party ones also get `strictVersion` with `requiredVersion` from the pnpm catalog. A version mismatch fails with an explicit Federation Runtime error. Add a new shared dependency only there (and to the catalog). `@repo/ui` is deliberately not shared: it holds no state of its own, and each app bundles only the components it uses.
+- **Shared singletons**: `react`, `react-dom`, `react-router-dom`, `@tanstack/react-query`, `react-error-boundary`, `zustand`, `@repo/events`, `@repo/routes`, `@repo/api`, `@repo/firebase`. The `shared` map for all three `vite.config.ts` files is built by `createMfShared()` in `scripts/mf-shared.ts`: all are `singleton`, and third-party ones also get `strictVersion` with `requiredVersion` from the pnpm catalog. A version mismatch fails with an explicit Federation Runtime error. Add a new shared dependency only there (and to the catalog). The plugin must resolve every entry, so an app that does not depend on one opts out with `createMfShared({ without: [...] })`. `@repo/ui` is deliberately not shared: it holds no state of its own, and each app bundles only the components it uses.
 - Remote types for the host are manual declarations in `apps/host/src/@types/remotes/*.d.ts` (plus the generated `apps/host/@mf-types/`). Update them when adding a new remote or export.
 - Styles (ADR-0009): Tailwind 4 via `@tailwindcss/vite`. The theme is `@repo/ui/theme.css`; each app's `src/styles/globals.css` imports `tailwindcss`, the theme, and `@source` for what it renders. In the integration only the host's CSS loads: its `@source` covers `packages/ui/src` and both remotes, so host and remotes must deploy together.
 
