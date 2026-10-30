@@ -26,7 +26,17 @@ TMDB_API_READ_TOKEN=<your TMDB read access token>
 
 - Get the token here: https://www.themoviedb.org/settings/api (API Read Access Token).
 - `.env` is **not committed**. The token is used both in dev (the Vite proxy adds `Authorization` to requests to `/api/tmdb`) and in production (the Firebase Function `tmdbProxy` via `defineSecret`).
-- For the Functions emulator (`pnpm --filter @repo/functions serve`) the secret is read from `functions/.secret.local`: copy `functions/.secret.local.example` and put the token in it (not committed).
+- For the Firebase emulators (`pnpm emulators`) the secret is read from `functions/.secret.local`: copy `functions/.secret.local.example` and put the token in it (not committed).
+
+## Running the Firebase emulators
+
+```bash
+pnpm emulators   # build:deploy, then Hosting on http://127.0.0.1:5010 and Functions on 5011
+```
+
+This serves the merged `dist/` with the rewrites and headers from `firebase.json`, so use it to check those before a deploy. Requires a global `firebase-tools`.
+
+It runs on the `demo` alias (`demo-cinepulse`), which cannot reach real Firebase resources. Without `functions/.secret.local`, `/api/tmdb/*` answers `500` with `no-store`; the static pages still work. Avoid `--project cinepulse-eec15` here: without that file the emulator would read the production secret from Secret Manager.
 
 ## Running in development mode
 

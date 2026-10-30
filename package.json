@@ -13,6 +13,7 @@
     "prepare": "husky",
     "merge-dist": "node scripts/merge-dist.js",
     "build:deploy": "turbo build --filter=!@repo/design && pnpm merge-dist",
+    "emulators": "pnpm build:deploy && firebase emulators:start --project demo --only hosting,functions",
     "deploy": "pnpm build:deploy && firebase deploy --only hosting:production",
     "size": "size-limit",
     "test": "vitest run",

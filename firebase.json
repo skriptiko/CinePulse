@@ -72,6 +72,11 @@
       }
     ]
   },
+  "emulators": {
+    "hosting": { "port": 5010 },
+    "functions": { "port": 5011 },
+    "ui": { "enabled": false }
+  },
   "functions": {
     "source": "functions",
     "codebase": "default",

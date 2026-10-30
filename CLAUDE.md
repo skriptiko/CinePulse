@@ -29,6 +29,7 @@ pnpm build:deploy                     # as in CI: build without apps/design + sc
 pnpm test                             # vitest run across all projects (root vitest.config.ts)
 pnpm exec vitest run --project ui     # a single project; pnpm test:coverage — report in coverage/
 pnpm size                             # host JS budget (.size-limit.json); run turbo build --filter=@repo/host first
+pnpm emulators                        # build:deploy + Firebase Hosting (5010) and Functions (5011) on the demo project
 ```
 
 Verifying changes = `pnpm typecheck` + `pnpm lint` + `pnpm test`. Test stack: ADR-0006, plan: `docs/05-testing/TEST_STRATEGY.md`:
