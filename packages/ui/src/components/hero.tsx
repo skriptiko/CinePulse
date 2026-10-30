@@ -56,9 +56,9 @@ export function Hero({ movie, className }: HeroProps) {
           </div>
 
           {/* Title */}
-          <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-3 sm:mb-4 text-balance">
+          <h2 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-3 sm:mb-4 text-balance">
             {title}
-          </h1>
+          </h2>
 
           {/* Description */}
           {description !== null && (
