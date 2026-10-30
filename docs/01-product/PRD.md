@@ -1,130 +1,130 @@
-🔗 Роадмап і задачі — у [Notion](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb)
+🔗 Roadmap and tasks are in [Notion](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb)
 
 # PRD — Product Requirements Document
 
-> Статус документа: **✅ заповнено.** Продуктову частину (природа, проблема, цілі, персони, метрики, скоуп) зафіксовано у grilling-сесії з власником продукту **2026-07-12**. Технічний функціонал раніше виведено «як є» з коду.
+> Document status: **✅ complete.** The product part (nature, problem, goals, personas, metrics, scope) was settled in a grilling session with the product owner on **2026-07-12**. The technical functionality was earlier derived "as is" from the code.
 
-## Огляд продукту
+## Product overview
 
-**CinePulse** — вебзастосунок-каталог фільмів і серіалів на даних [TMDB](https://www.themoviedb.org/), доповнений **особистим трекером перегляду (watchlist)**. Реалізований як micro-frontend (MFE) застосунок: спільна оболонка (`host`) динамічно завантажує remote-модулі публічного каталогу (`pages-mfe`) та особистого кабінету (`user-mfe`).
+**CinePulse** is a web catalog of movies and TV shows built on [TMDB](https://www.themoviedb.org/) data, complemented by a **personal viewing tracker (watchlist)**. It is implemented as a micro-frontend (MFE) application: a shared shell (`host`) dynamically loads the remote modules of the public catalog (`pages-mfe`) and the personal account (`user-mfe`).
 
-Продукт складається з двох взаємодоповнюючих частин, і поділ на MFE навмисно дзеркалить цей поділ:
+The product has two complementary parts, and the MFE split deliberately mirrors that split:
 
-- **Публічний каталог (`pages-mfe`)** — *відкриття*: переглядати добірки, шукати, фільтрувати, вивчати деталі фільмів/серіалів/персон. Працює **анонімно**.
-- **Особистий кабінет (`user-mfe`)** — *трекінг*: зареєстрований користувач веде watchlist — організовує фільми й серіали у власну структуру папок і позначає статус перегляду.
+- **Public catalog (`pages-mfe`)** — *discovery*: browse collections, search, filter, explore details of movies/TV shows/people. Works **anonymously**.
+- **Personal account (`user-mfe`)** — *tracking*: a registered user keeps a watchlist, organizing movies and TV shows into their own folder structure and marking the viewing status.
 
-## Природа та контекст проєкту
+## Project nature and context
 
-CinePulse — **портфоліо-проєкт**, головна мета якого — **навчальний рубіж**: практично опанувати micro-frontend-архітектуру (Module Federation), Firebase (Auth + Firestore), культуру тестування та CI-дисципліну на цілісному, наскрізному продукті.
+CinePulse is a **portfolio project** whose main goal is a **learning milestone**: to gain hands-on mastery of micro-frontend architecture (Module Federation), Firebase (Auth + Firestore), testing culture and CI discipline on a complete, end-to-end product.
 
-Проєкт свідомо демонструє чотири компетенції:
+The project deliberately demonstrates four competencies:
 
-1. **Архітектура / MFE** — Module Federation, монорепо (Turborepo + pnpm), типізована event bus, чіткі межі host/remote.
-2. **Frontend / UX-майстерність** — дизайн-система, уніфіковані стани UI, адаптивність, accessibility.
-3. **Продуктове мислення** — цей PRD: проблема, персони, скоуп, метрики.
-4. **Інженерна зрілість** — тестування, quality gates у CI, спостережуваність, ADR.
+1. **Architecture / MFE** — Module Federation, monorepo (Turborepo + pnpm), typed event bus, clear host/remote boundaries.
+2. **Frontend / UX craft** — design system, unified UI states, responsiveness, accessibility.
+3. **Product thinking** — this PRD: problem, personas, scope, metrics.
+4. **Engineering maturity** — testing, quality gates in CI, observability, ADRs.
 
-> «Реальний продукт для ринку» — **не** ціль. Продуктова історія нижче (проблема, персони, цінність) реалістична навмисно — щоб продуктові й технічні рішення були коген­тними, а не щоб конкурувати з TMDB/Letterboxd за користувачів.
+> "A real product for the market" is **not** a goal. The product story below (problem, personas, value) is deliberately realistic so that product and technical decisions stay coherent, not to compete with TMDB/Letterboxd for users.
 
-## Проблема / ціннісна пропозиція
+## Problem / value proposition
 
-**Зображена проблема користувача.** Активний глядач тримає «що подивитись» у голові, нотатках і розкиданих списках. TMDB/IMDb чудові як *довідники*, але слабкі як *особистий інструмент організації*: немає зручного способу згрупувати тайтли за власною логікою (за настроєм, приводом, компанією для перегляду) і відстежити, що вже переглянуто.
+**The user problem as framed.** An active viewer keeps "what to watch" in their head, in notes and in scattered lists. TMDB/IMDb are great as *reference sources* but weak as a *personal organization tool*: there is no convenient way to group titles by one's own logic (by mood, occasion, viewing company) and to track what has already been watched.
 
-**Ціннісна пропозиція.** CinePulse — це особистий **трекер фільмів і серіалів**: користувач будує власну, довільно вкладену структуру папок і одним рухом додає туди тайтли з каталогу, позначаючи статус *переглянуто/заплановано*.
+**Value proposition.** CinePulse is a personal **movie and TV show tracker**: the user builds their own, arbitrarily nested folder structure and adds titles from the catalog in one move, marking them *watched/planned*.
 
-**Чесне позиціювання проти TMDB/IMDb/Letterboxd.** CinePulse **не** змагається за повноту даних (джерело — той самий TMDB) чи соціальні фічі (стрічки, друзі, огляди спільноти). Диференціація — у **гнучкій особистій організації** (глибокі папки на розсуд користувача) поверх швидкого сучасного discovery-UX.
+**Honest positioning against TMDB/IMDb/Letterboxd.** CinePulse does **not** compete on data completeness (the source is the same TMDB) or on social features (feeds, friends, community reviews). The differentiator is **flexible personal organization** (deep folders at the user's discretion) on top of a fast, modern discovery UX.
 
-## Персони
+## Personas
 
-### Основна — «Кіно-ентузіаст-організатор»
+### Primary — "Movie enthusiast-organizer"
 
-- **Хто:** дивиться багато фільмів і серіалів, планує перегляди наперед.
-- **Jobs-to-be-done:** швидко зберегти цікавий тайтл; структурувати збережене за власною логікою (тематичні папки/підпапки, за настроєм, приводом); бачити, що вже переглянуто, а що заплановано.
-- **Цінує:** гнучкі папки з вкладеністю, швидке додавання з будь-якої сторінки, порядок у власній бібліотеці.
-- **Пристрої:** desktop + mobile (mobile-first).
+- **Who:** watches a lot of movies and TV shows, plans viewing ahead.
+- **Jobs-to-be-done:** quickly save an interesting title; structure saved titles by their own logic (themed folders/subfolders, by mood, occasion); see what has been watched and what is planned.
+- **Values:** flexible nested folders, quick adding from any page, order in their own library.
+- **Devices:** desktop + mobile (mobile-first).
 
-### Вторинна — «Кежуал-глядач»
+### Secondary — "Casual viewer"
 
-- **Хто:** час від часу шукає «що подивитись увечері».
-- **Jobs-to-be-done:** швидко відкрити щось релевантне (добірки, схожі, пошук); іноді зберегти тайтл «на потім».
-- **Цінує:** швидке відкриття, мінімум тертя; майже не веде складну структуру папок.
-- **Роль у продукті:** тримає в фокусі discovery-частину (Home/Movies/деталі), щоб продукт не був лише для power-users.
+- **Who:** occasionally looks for "something to watch tonight".
+- **Jobs-to-be-done:** quickly discover something relevant (collections, similar titles, search); sometimes save a title "for later".
+- **Values:** fast discovery, minimal friction; rarely maintains a complex folder structure.
+- **Role in the product:** keeps the discovery part (Home/Movies/details) in focus so the product is not just for power users.
 
-### Мета-аудиторія (контекст портфоліо)
+### Meta-audience (portfolio context)
 
-Автор проєкту як **учень** — реальний «замовник» цінності: наскрізна реалізація продукту є навчальним результатом. Оцінювачі коду (за наявності) — вторинна аудиторія.
+The project author as a **learner** is the real "customer" of the value: the end-to-end implementation of the product is the learning outcome. Code reviewers (if any) are a secondary audience.
 
-## Цілі та метрики успіху
+## Goals and success metrics
 
-**Бізнес-ціль:** навчальний рубіж — опанувати цільові технології на цілісному наскрізному продукті. Тому метрики зміщені на *опановані технології* та *функціональну повноту*, а не на продуктові KPI (DAU, конверсія тощо не застосовні).
+**Business goal:** a learning milestone — master the target technologies on a complete end-to-end product. The metrics are therefore shifted towards *technologies mastered* and *functional completeness* rather than product KPIs (DAU, conversion and the like do not apply).
 
-**Метрики успіху:**
+**Success metrics:**
 
-| Категорія | Ціль |
+| Category | Goal |
 |-----------|------|
-| **Опановані технології** | MFE (Module Federation, крос-MFE стан), Firebase (Auth + Firestore), тестування (Vitest + Testing Library + e2e), quality gates у CI, ієрархічна модель даних (дерево папок). |
-| **Функціональна повнота** | Виконано [Definition of Done](#скоуп-проєкту-definition-of-done): усі задокументовані сторінки + профіль + робочий watchlist. |
-| **Якість коду** | Покриття тестами ≥ 70% на `@repo/api` і ключових компонентах; 0 помилок lint/typecheck; зелений CI із quality gates. |
-| **UX / перформанс** | Виконано [нефункціональні цілі](#нефункціональні-вимоги-nfr); кожна сторінка має стани loading/empty/error. |
-| **Архітектурна ясність** | ADR задокументовані; чисті межі MFE. |
+| **Technologies mastered** | MFE (Module Federation, cross-MFE state), Firebase (Auth + Firestore), testing (Vitest + Testing Library + e2e), quality gates in CI, hierarchical data model (folder tree). |
+| **Functional completeness** | The [Definition of Done](#project-scope-definition-of-done) is met: all documented pages + profile + a working watchlist. |
+| **Code quality** | Test coverage ≥ 70% on `@repo/api` and key components; 0 lint/typecheck errors; green CI with quality gates. |
+| **UX / performance** | The [non-functional goals](#non-functional-requirements-nfr) are met; every page has loading/empty/error states. |
+| **Architectural clarity** | ADRs are documented; clean MFE boundaries. |
 
-## Нефункціональні вимоги (NFR)
+## Non-functional requirements (NFR)
 
-- **Перформанс:** Lighthouse Performance ≥ **90**; LCP < **2.5s** (особлива увага через оверхед завантаження remote-модулів MFE).
-- **Accessibility:** **WCAG 2.1 рівень AA**.
-- **Браузери:** evergreen — останні 2 версії Chrome, Edge, Firefox, Safari. Без підтримки IE/legacy.
-- **Адаптивність:** mobile-first, робота від мобільних до десктопних ширин.
+- **Performance:** Lighthouse Performance ≥ **90**; LCP < **2.5s** (with particular attention to the overhead of loading MFE remote modules).
+- **Accessibility:** **WCAG 2.1 level AA**.
+- **Browsers:** evergreen — the last 2 versions of Chrome, Edge, Firefox, Safari. No IE/legacy support.
+- **Responsiveness:** mobile-first, working from mobile to desktop widths.
 
-## Скоуп проєкту (Definition of Done)
+## Project scope (Definition of Done)
 
-> **MVP-фазування не застосовуємо.** Замість цього — визначення завершеності всього проєкту.
+> **We do not use MVP phasing.** Instead, there is a definition of done for the whole project.
 
-**Проєкт вважається завершеним, коли реалізовано всі задокументовані сторінки й функціонал (IMDb-подібне покриття даних TMDB — але не весь TMDB API) + профіль користувача + робочий watchlist.**
+**The project is considered done when all documented pages and functionality are implemented (IMDb-like coverage of TMDB data, but not the whole TMDB API) + the user profile + a working watchlist.**
 
-**У скоупі (з [Каталогу сторінок (Notion)](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb)):**
+**In scope (from the [page catalog (Notion)](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb)):**
 
-- **Публічний каталог:** Home ✅, Movies ✅, Movie Detail, TV (список), TV Detail, Search, Person, 404.
-- **Особистий кабінет:** Auth (логін/реєстрація), Watchlist (папки), Profile, Settings.
-- **Сторінки деталей (обсяг «IMDb-like»):** база (огляд, жанри, рейтинг TMDB, дата, тривалість) + каст і знімальна група + медіа (трейлери/відео, галерея) + схожі/рекомендації + рейтинги/відгуки TMDB + провайдери «де дивитись».
+- **Public catalog:** Home ✅, Movies ✅, Movie Detail, TV (list), TV Detail, Search, Person, 404.
+- **Personal account:** Auth (login/sign-up), Watchlist (folders), Profile, Settings.
+- **Detail pages ("IMDb-like" scope):** basics (overview, genres, TMDB rating, date, runtime) + cast and crew + media (trailers/videos, gallery) + similar/recommendations + TMDB ratings/reviews + "where to watch" providers.
 
-**Поза скоупом (свідомо):**
+**Out of scope (deliberately):**
 
-- Не весь TMDB API (лише перелічене вище IMDb-подібне покриття).
-- Соц-логін (Google тощо) — лише email+пароль.
-- Соціальні фічі (друзі, стрічки активності, публічні огляди спільноти).
-- Синхронізація «дивлюсь/в процесі» як окремий стан (для серіалів статус той самий: переглянуто/заплановано).
+- Not the whole TMDB API (only the IMDb-like coverage listed above).
+- Social login (Google, etc.) — email+password only.
+- Social features (friends, activity feeds, public community reviews).
+- Syncing "watching/in progress" as a separate state (TV shows use the same status: watched/planned).
 
-## Ключова фіча: Watchlist (папки + статуси)
+## Key feature: Watchlist (folders + statuses)
 
-Ядро особистого кабінету. Доступний **лише зареєстрованому** користувачу; дані зберігаються у **Firestore**.
+The core of the personal account. Available **only to a registered** user; data is stored in **Firestore**.
 
-- **Папки:** користувач створює власну структуру папок і підпапок. Вкладеність — **до 6 рівнів**; кількість папок/підпапок на кожному рівні необмежена.
-- **Наповнення:** у папки додаються **і фільми, і серіали**. Один тайтл може лежати **в кількох папках** одночасно (папки поводяться як мітки).
-- **Статус тайтла:** окреме поле — **переглянуто / заплановано** — незалежно від розміщення в папках.
-- **Додавання:** тайтл додається у watchlist / папку з карток каталогу та зі сторінок деталей.
+- **Folders:** the user creates their own structure of folders and subfolders. Nesting goes **up to 6 levels**; the number of folders/subfolders on each level is unlimited.
+- **Contents:** folders hold **both movies and TV shows**. One title can sit **in several folders** at once (folders behave like tags).
+- **Title status:** a separate field — **watched / planned** — independent of folder placement.
+- **Adding:** a title is added to the watchlist / a folder from catalog cards and from detail pages.
 
-Модель даних під цю фічу (структура Firestore для дерева папок) — див. [DATA_MODEL](../03-architecture/DATA_MODEL.md); наслідки для архітектури (Firebase Auth + Firestore) — див. [ARCHITECTURE](../03-architecture/ARCHITECTURE.md).
+The data model for this feature (Firestore structure for the folder tree) — see [DATA_MODEL](../03-architecture/DATA_MODEL.md); architectural implications (Firebase Auth + Firestore) — see [ARCHITECTURE](../03-architecture/ARCHITECTURE.md).
 
-## Функціонал де-факто (з коду)
+## Functionality in practice (from the code)
 
-Реалізовано і працює:
-- **Home** (`/`) — головна з Hero, категоріями, рядами Trending / New Releases / Top Rated / Popular та блоком «Editor's Picks». Реальні дані TMDB. ✅
-- **Movies** (`/movies`) — каталог із пошуком, фільтром за жанром, сортуванням (Popular / Newest / Rating), перемиканням grid/compact та довантаженням («Load More»). ✅
+Implemented and working:
+- **Home** (`/`) — the main page with Hero, categories, the Trending / New Releases / Top Rated / Popular rows and the "Editor's Picks" block. Real TMDB data. ✅
+- **Movies** (`/movies`) — a catalog with search, genre filter, sorting (Popular / Newest / Rating), a grid/compact toggle and incremental loading ("Load More"). ✅
 
-Заглушки (є роут, але без функціоналу) — за скоупом мають стати частиною особистого кабінету з watchlist:
-- **Profile** (`/user/profile`) — лише заголовок. 🟡
-- **Settings** (`/user/settings`) — лише заголовок. 🟡
+Stubs (a route exists, but no functionality) — per the scope, they are to become part of the personal account with the watchlist:
+- **Profile** (`/user/profile`) — a heading only. 🟡
+- **Settings** (`/user/settings`) — a heading only. 🟡
 
-Повний перелік сторінок і їхній стан — у [Каталозі сторінок роадмапи (Notion)](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb).
+The full list of pages and their state is in the [roadmap page catalog (Notion)](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb).
 
-## Припущення та відкриті питання
+## Assumptions and open questions
 
-Зафіксовані припущення (підтверджені у сесії 2026-07-12):
-- Соц-логін (Google) — поза поточним скоупом; лише email+пароль із реєстрацією.
-- Для серіалів статус — той самий *переглянуто/заплановано* (без окремого «дивлюсь/в процесі»).
-- Публічний каталог працює анонімно; авторизація потрібна лише для watchlist.
+Recorded assumptions (confirmed in the 2026-07-12 session):
+- Social login (Google) is outside the current scope; email+password with sign-up only.
+- TV shows use the same *watched/planned* status (no separate "watching/in progress").
+- The public catalog works anonymously; authentication is required only for the watchlist.
 
-Відкриті питання до опрацювання на наступних етапах:
-- Структура колекцій Firestore і правила безпеки (security rules) для дерева папок → [Етап 3 (Notion)](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb).
-- UX керування деревом папок: створення/перейменування/переміщення, drag-n-drop, breadcrumbs → [Етап 2 (Notion)](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb).
-- Дедуплікація та обмеження TMDB (rate limits) при масовому додаванні тайтлів.
+Open questions to work out in later stages:
+- Firestore collection structure and security rules for the folder tree → [Stage 3 (Notion)](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb).
+- UX for managing the folder tree: create/rename/move, drag-n-drop, breadcrumbs → [Stage 2 (Notion)](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb).
+- Deduplication and TMDB limits (rate limits) when adding titles in bulk.

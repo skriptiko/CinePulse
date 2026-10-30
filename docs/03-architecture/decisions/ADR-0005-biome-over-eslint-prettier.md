@@ -1,31 +1,31 @@
-🔗 Роадмап і задачі — у [Notion](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb)
+🔗 Roadmap and tasks live in [Notion](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb)
 
-# ADR-0005: Biome замість ESLint + Prettier
+# ADR-0005: Biome instead of ESLint + Prettier
 
-## Статус
+## Status
 
 Accepted
 
-## Контекст
+## Context
 
-Монорепо потребує статичного аналізу та форматування для TypeScript/React коду в кількох застосунках і пакетах. Традиційний стек ESLint + Prettier вимагає окремих конфігів, плагінів, взаємного узгодження правил і помітно уповільнює лінтинг на великій кодовій базі.
+The monorepo needs static analysis and formatting for TypeScript/React code across several apps and packages. The traditional ESLint + Prettier stack requires separate configs, plugins and rules kept in sync with each other, and it noticeably slows down linting on a large codebase.
 
-## Рішення
+## Decision
 
-Обрано **Biome** (`@biomejs/biome`, `biome.json`) як єдиний інструмент лінтингу і форматування:
+We chose **Biome** (`@biomejs/biome`, `biome.json`) as the single tool for linting and formatting:
 
-- Один конфіг `biome.json`: `organizeImports`, лінтер (recommended + кастомні правила: `noUnusedImports`/`noUnusedVariables` = error, `noExplicitAny` = warn, `useConst` = error, `noNonNullAssertion` = warn), форматер (2 пробіли, ширина 100, одинарні лапки, крапки з комою, ES5 trailing commas).
-- Скрипти: `pnpm lint` (через Turbo), `pnpm format`, `pnpm check` (з автофіксом).
-- **Pre-commit** — Husky (`.husky/pre-commit`) запускає `lint-staged`, який виконує `biome check` на застейджених файлах.
+- One config, `biome.json`: `organizeImports`, the linter (recommended + custom rules: `noUnusedImports`/`noUnusedVariables` = error, `noExplicitAny` = warn, `useConst` = error, `noNonNullAssertion` = warn), the formatter (2 spaces, width 100, single quotes, semicolons, ES5 trailing commas).
+- Scripts: `pnpm lint` (via Turbo), `pnpm format`, `pnpm check` (with autofix).
+- **Pre-commit** — Husky (`.husky/pre-commit`) runs `lint-staged`, which runs `biome check` on staged files.
 
-## Наслідки
+## Consequences
 
-**Плюси:**
-- Один інструмент і один конфіг замість зв'язки ESLint + Prettier + плагіни.
-- Значно швидший лінтинг/форматування (Rust-движок).
-- Єдині правила для всього монорепо, автофікс на коміті.
+**Pros:**
+- One tool and one config instead of ESLint + Prettier + plugins.
+- Much faster linting/formatting (Rust engine).
+- The same rules for the whole monorepo, autofix on commit.
 
-**Мінуси / компроміси:**
-- Менша екосистема правил/плагінів порівняно з ESLint (специфічні правила можуть бути відсутні).
-- Частина команди/інструментів може бути менш знайома з Biome.
-- **Quality gate лише локальний:** `biome check` запускається на pre-commit, але ще **не** в CI — деплойний пайплайн не блокує мердж на лінт-помилках (див. роадмап, Етап 6, «Наступні кроки» #2).
+**Cons / trade-offs:**
+- A smaller ecosystem of rules/plugins than ESLint (some specific rules may be missing).
+- Part of the team/tooling may be less familiar with Biome.
+- **Quality gate is local only:** `biome check` runs on pre-commit but **not** yet in CI, so the deploy pipeline does not block merges on lint errors (see the roadmap, Phase 6, "Next steps" #2).

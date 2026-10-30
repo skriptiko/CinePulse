@@ -6,8 +6,8 @@ import { BrowserRouter, useRoutes } from 'react-router-dom';
 import { routes } from './routes';
 import './styles/globals.css';
 
-// Цей файл використовується ТІЛЬКИ для standalone розробки
-// При інтеграції з host використовується тільки експорт routes
+// This file is used ONLY for standalone development
+// When integrated into the host, only the routes export is used
 function App() {
   return useRoutes(routes);
 }
@@ -18,7 +18,7 @@ if (!rootElement) {
   throw new Error('Root element not found');
 }
 
-// Для standalone розробки - з усіма провайдерами та layout
+// Standalone development: with all providers and the layout
 createRoot(rootElement).render(
   <StrictMode>
     <ApiProvider>
