@@ -1,5 +1,15 @@
+import { DEFAULT_DISCOVER_FILTERS, movieQueries } from '@repo/api';
 import { globalStore } from '@repo/events';
-import { expectNoA11yViolations, renderWithProviders, screen, within } from '@repo/test-utils';
+import {
+  buildPaginated,
+  expectNoA11yViolations,
+  renderWithProviders,
+  screen,
+  server,
+  waitFor,
+  within,
+} from '@repo/test-utils';
+import { http, HttpResponse } from 'msw';
 import { afterEach, describe, expect, it } from 'vitest';
 import { AppLayout } from '../app-layout';
 import { Header } from '../header';
@@ -66,5 +76,20 @@ describe('Header theme toggle', () => {
     expect(globalStore.getState().theme).toBe('light');
     expect(toggle).toHaveAttribute('aria-pressed', 'false');
     expect(document.documentElement).not.toHaveClass('dark');
+  });
+});
+
+describe('Header prefetch', () => {
+  it('prefetches the default Movies list after hovering the link', async () => {
+    server.use(
+      http.get('*/api/tmdb/discover/movie', () => HttpResponse.json(buildPaginated([]))),
+      http.get('*/api/tmdb/genre/movie/list', () => HttpResponse.json({ genres: [] }))
+    );
+    const { user, queryClient } = renderWithProviders(<Header />);
+    const moviesKey = movieQueries.discover(DEFAULT_DISCOVER_FILTERS).queryKey;
+
+    await user.hover(within(screen.getByRole('navigation')).getByRole('link', { name: 'Movies' }));
+
+    await waitFor(() => expect(queryClient.getQueryState(moviesKey)).toBeDefined());
   });
 });

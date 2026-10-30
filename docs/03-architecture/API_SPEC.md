@@ -66,7 +66,7 @@ Paths are relative to the proxy base `/api/tmdb`. Keys follow `all → lists / d
 | `genreQueries.movie()` / `.tv()` | `['genres', 'movie' \| 'tv']` | `GET /genre/{movie,tv}/list` | `GenresResponse`, `staleTime: Infinity` |
 | `personQueries.detail(id)` | `['person', 'detail', id]` | `GET /person/{id}` | `PersonDetails` |
 
-`sortBy` (`DiscoverSortBy`) is `popularity.desc | primary_release_date.desc | vote_average.desc`; `genreId: null` omits `with_genres`. `vote_average.desc` also sends `vote_count.gte=200` (`DISCOVER_MIN_VOTE_COUNT`) and `primary_release_date.desc` sends `primary_release_date.lte=<today, UTC>`, so both sorts skip unrated and unreleased films. The proxy allowlist (`functions/src/proxy-rules.ts`) accepts exactly these params on `/discover/movie` and rejects anything else with 400.
+`DEFAULT_DISCOVER_FILTERS` (`{ genreId: null, sortBy: 'popularity.desc' }`) is the unfiltered Movies view; the header prefetches it (and the genres) after 200 ms of hover or focus on the Movies link. `sortBy` (`DiscoverSortBy`) is `popularity.desc | primary_release_date.desc | vote_average.desc`; `genreId: null` omits `with_genres`. `vote_average.desc` also sends `vote_count.gte=200` (`DISCOVER_MIN_VOTE_COUNT`) and `primary_release_date.desc` sends `primary_release_date.lte=<today, UTC>`, so both sorts skip unrated and unreleased films. The proxy allowlist (`functions/src/proxy-rules.ts`) accepts exactly these params on `/discover/movie` and rejects anything else with 400.
 
 `movieQueries.discover` and `searchQueries.movies` set `meta: { inlineErrors: true }`: the Movies page shows a failed next page inline, so `QueryCache.onError` shows no toast.
 

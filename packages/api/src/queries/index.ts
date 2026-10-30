@@ -1,5 +1,5 @@
 export { genreQueries } from './genre';
-export { movieQueries } from './movie';
+export { DEFAULT_DISCOVER_FILTERS, movieQueries } from './movie';
 export type { DiscoverMovieFilters } from './movie';
 export { personQueries } from './person';
 export { searchQueries } from './search';

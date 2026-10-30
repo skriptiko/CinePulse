@@ -1,9 +1,12 @@
+import { DEFAULT_DISCOVER_FILTERS, genreQueries, movieQueries } from '@repo/api';
 import { useGlobalStore } from '@repo/events';
 import { ROUTE_PATHS } from '@repo/routes';
+import { useQueryClient } from '@tanstack/react-query';
 import { cva } from 'class-variance-authority';
 import { Menu, Moon, Search, Sun, User, X } from 'lucide-react';
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
+import { type IntentHandlers, useIntentPrefetch } from '../hooks/use-intent-prefetch';
 import { useIsScrolled } from '../hooks/use-is-scrolled';
 import { useResolvedTheme } from '../hooks/use-resolved-theme';
 import { cn } from '../lib/utils';
@@ -134,15 +137,34 @@ type NavLinksProps = {
 
 /** `NavLink` sets `aria-current="page"` on the active item; `end` keeps Home from matching all. */
 function NavLinks({ layout, onNavigate }: NavLinksProps) {
-  return NAV_ITEMS.map((item) => (
-    <NavLink
-      key={item.label}
-      to={item.href}
-      end
-      onClick={onNavigate}
-      className={({ isActive }) => navLinkVariants({ layout, active: isActive })}
-    >
-      {item.label}
-    </NavLink>
-  ));
+  const moviesIntent = useMoviesPrefetch();
+
+  return NAV_ITEMS.map((item) => {
+    const intent = item.href === ROUTE_PATHS.MOVIES ? moviesIntent : undefined;
+    return (
+      <NavLink
+        key={item.label}
+        to={item.href}
+        end
+        onClick={onNavigate}
+        onMouseEnter={intent?.onMouseEnter}
+        onMouseLeave={intent?.onMouseLeave}
+        onFocus={intent?.onFocus}
+        onBlur={intent?.onBlur}
+        className={({ isActive }) => navLinkVariants({ layout, active: isActive })}
+      >
+        {item.label}
+      </NavLink>
+    );
+  });
+}
+
+/** Warms the cache for the default Movies view (and its genres) on hover or focus intent. */
+function useMoviesPrefetch(): IntentHandlers {
+  const queryClient = useQueryClient();
+
+  return useIntentPrefetch(() => {
+    void queryClient.prefetchInfiniteQuery(movieQueries.discover(DEFAULT_DISCOVER_FILTERS));
+    void queryClient.prefetchQuery(genreQueries.movie());
+  });
 }

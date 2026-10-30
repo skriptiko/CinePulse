@@ -13,6 +13,12 @@ export type DiscoverMovieFilters = {
   sortBy: DiscoverSortBy;
 };
 
+/** What Movies shows with no filters: also what the header prefetches on intent. */
+export const DEFAULT_DISCOVER_FILTERS: DiscoverMovieFilters = {
+  genreId: null,
+  sortBy: 'popularity.desc',
+};
+
 export const movieQueries = {
   all: () => ['movies'] as const,
   lists: () => [...movieQueries.all(), 'list'] as const,

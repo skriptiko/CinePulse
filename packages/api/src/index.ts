@@ -17,6 +17,7 @@ export type { ApiErrorKind, BackdropSize, ImageSize, ProfileSize } from './core'
 export type { DiscoverSortBy, MovieCategory, TVCategory } from './endpoints';
 
 export {
+  DEFAULT_DISCOVER_FILTERS,
   genreQueries,
   movieQueries,
   personQueries,
