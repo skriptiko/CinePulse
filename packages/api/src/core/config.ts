@@ -17,3 +17,6 @@ export const BACKDROP_SIZE_FEATURED = 'w780' satisfies BackdropSize;
 
 /** Full-bleed backdrop in the `Hero`. */
 export const BACKDROP_SIZE_HERO = 'w1280' satisfies BackdropSize;
+
+/** Longest search query the proxy accepts (`MAX_QUERY_LENGTH` in `functions/src/proxy-rules.ts`). */
+export const SEARCH_QUERY_MAX_LENGTH = 100;

@@ -9,6 +9,7 @@ export {
   isApiError,
   isNotFound,
   POSTER_SIZE_CARD,
+  SEARCH_QUERY_MAX_LENGTH,
   TMDB_MAX_PAGES,
 } from './core';
 export type { ApiErrorKind, BackdropSize, ImageSize, ProfileSize } from './core';
