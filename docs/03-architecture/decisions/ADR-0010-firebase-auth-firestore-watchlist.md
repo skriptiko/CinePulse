@@ -44,7 +44,7 @@ The watchlist is the first feature with user data: a folder tree up to 6 levels 
 - **`FirebaseError` becomes `ApiError`** in `@repo/firebase`, so boundaries, toasts and the error report work unchanged.
 - **The login page loads the SDK on mount,** not on the click. Browsers allow a popup only right after a user gesture, and a network wait spends it.
 - **A `demo-` project talks to the Auth emulator.** It is Firebase's convention for a project with no backend, so production code needs no test flag.
-- **The CSP gains only what sign-in needs:** `https://apis.google.com` in `script-src`, the project's `firebaseapp.com` in `frame-src`, Google avatars in `img-src`. These are the documented origins; they are not yet confirmed against the real popup. `connect-src` already allows `https://*.googleapis.com`.
+- **The CSP gains only what sign-in needs:** `https://apis.google.com` in `script-src`, the project's `firebaseapp.com` in `frame-src`, Google avatars in `img-src`. A real sign-in on production confirmed them. `connect-src` already allows `https://*.googleapis.com`.
 
 ## Alternatives considered
 
@@ -66,4 +66,4 @@ The watchlist is the first feature with user data: a folder tree up to 6 levels 
 - ADR-0008's `globalStore` gets user state back, and `user:login` / `user:logout` return to `EventMap`.
 - A session started in another tab reaches this tab only after a reload: without the flag, this tab has no SDK listening.
 - The Firebase SDK adds about 51 kB gzip for signed-in visitors, with its own size budget of 55 kB. The host's own budget moves from 205 to 207 kB for the auth code in `@repo/firebase`, `@repo/events` and the header. The budget counts every host chunk except the SDK, and matches the SDK by its chunk name (`index.esm-*.js`), so a change of that name fails `pnpm size` rather than passing silently.
-- The Auth emulator cannot run under the enforced CSP, so `e2e/auth.spec.ts` bypasses it. The production CSP for sign-in is only checked by a real sign-in.
+- The Auth emulator cannot run under the enforced CSP, so `e2e/auth.spec.ts` bypasses it. The production CSP for sign-in is only checked by a real sign-in, so a change to these origins needs one.
