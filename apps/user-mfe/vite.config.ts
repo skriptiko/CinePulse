@@ -35,6 +35,10 @@ export default defineConfig({
     strictPort: true,
     cors: true,
     origin: 'http://localhost:5002',
+    proxy: {
+      // The Firebase config comes from Hosting, as in production.
+      '/__/firebase': { target: 'https://cinepulse-eec15.web.app', changeOrigin: true },
+    },
   },
   preview: {
     port: 5002,

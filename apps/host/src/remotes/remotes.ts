@@ -10,6 +10,6 @@ export const REMOTES: readonly RemoteDefinition[] = [
   {
     name: 'userMfe',
     load: () => import('userMfe/routes'),
-    paths: [ROUTE_PATHS.USER_PROFILE, ROUTE_PATHS.USER_SETTINGS],
+    paths: [ROUTE_PATHS.AUTH_LOGIN, ROUTE_PATHS.USER_PROFILE, ROUTE_PATHS.USER_SETTINGS],
   },
 ];

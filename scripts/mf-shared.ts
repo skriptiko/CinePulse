@@ -12,7 +12,7 @@ const STRICT_SINGLETONS = [
 ];
 
 /** Workspace packages: always the same source, so singleton is enough. */
-const WORKSPACE_SINGLETONS = ['@repo/events', '@repo/routes', '@repo/api'];
+const WORKSPACE_SINGLETONS = ['@repo/events', '@repo/routes', '@repo/api', '@repo/firebase'];
 
 interface SharedConfig {
   singleton: true;

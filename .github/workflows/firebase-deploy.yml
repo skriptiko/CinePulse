@@ -67,6 +67,34 @@ jobs:
       - name: Check bundle size
         run: pnpm size
 
+  rules:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Test Firestore rules
+        run: pnpm dlx firebase-tools@15.18.0 emulators:exec --project demo --only firestore "pnpm exec vitest run --config firestore/vitest.config.ts"
+
   # Smoke scenarios on the merged dist/ (docs/05-testing/TEST_STRATEGY.md), for PRs into main only.
   e2e:
     if: github.event_name == 'pull_request' && github.base_ref == 'main'
@@ -97,10 +125,10 @@ jobs:
       - name: Run e2e
         run: pnpm test:e2e
         env:
-          FIREBASE_CLI: pnpm dlx firebase-tools@15.18.0 emulators:start --project demo --only hosting
+          FIREBASE_CLI: pnpm dlx firebase-tools@15.18.0 emulators:start --project demo --only hosting,auth
 
   build-and-deploy:
-    needs: quality
+    needs: [quality, rules]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     # Never run two production deploys at once; a newer push waits for the current one.
@@ -136,6 +164,9 @@ jobs:
 
       - name: Deploy Functions
         run: pnpm dlx firebase-tools@15.18.0 deploy --only functions --project cinepulse-eec15 --non-interactive --force
+
+      - name: Deploy Firestore rules
+        run: pnpm dlx firebase-tools@15.18.0 deploy --only firestore:rules --project cinepulse-eec15 --non-interactive
 
       - name: Deploy to Production
         uses: FirebaseExtended/action-hosting-deploy@v0

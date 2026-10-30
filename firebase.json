@@ -27,7 +27,7 @@
         "headers": [
           {
             "key": "Content-Security-Policy",
-            "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' https://image.tmdb.org data:; font-src 'self'; connect-src 'self' https://*.googleapis.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
+            "value": "default-src 'self'; script-src 'self' https://apis.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' https://image.tmdb.org https://lh3.googleusercontent.com data:; font-src 'self'; connect-src 'self' https://*.googleapis.com; frame-src https://cinepulse-eec15.firebaseapp.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
           },
           {
             "key": "X-Content-Type-Options",
@@ -72,9 +72,14 @@
       }
     ]
   },
+  "firestore": {
+    "rules": "firestore/firestore.rules"
+  },
   "emulators": {
     "hosting": { "port": 5010 },
     "functions": { "port": 5011 },
+    "firestore": { "port": 5012 },
+    "auth": { "port": 5013 },
     "ui": { "enabled": false }
   },
   "functions": {

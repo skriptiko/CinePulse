@@ -5,6 +5,7 @@ export {
 } from './event-bus';
 export { serializeError } from './serialize-error';
 export type {
+  AuthStatus,
   GlobalActions,
   GlobalState,
   GlobalStore,
@@ -19,6 +20,7 @@ export {
   useGlobalStore,
 } from './store';
 export type {
+  AuthUser,
   ErrorReportPayload,
   ErrorReportSource,
   EventDomain,
@@ -29,4 +31,6 @@ export type {
   MfeErrorPayload,
   NotificationPayload,
   SerializedError,
+  UserLoginPayload,
+  UserLogoutPayload,
 } from './types';

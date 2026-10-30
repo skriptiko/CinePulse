@@ -13,6 +13,7 @@
   "dependencies": {
     "@repo/api": "workspace:*",
     "@repo/events": "workspace:*",
+    "@repo/firebase": "workspace:*",
     "@repo/routes": "workspace:*",
     "@repo/ui": "workspace:*",
     "@tanstack/react-query": "catalog:",
@@ -25,14 +26,19 @@
   "devDependencies": {
     "@module-federation/dts-plugin": "catalog:",
     "@module-federation/vite": "catalog:",
+    "@repo/test-utils": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@tailwindcss/vite": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
+    "firebase": "catalog:",
+    "jsdom": "catalog:",
+    "msw": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:",
-    "vite": "catalog:"
+    "vite": "catalog:",
+    "vitest": "catalog:"
   }
 }

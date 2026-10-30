@@ -31,7 +31,26 @@ describe('Header', () => {
 
     const links = within(screen.getByRole('navigation')).getAllByRole('link');
     expect(links.map((link) => link.getAttribute('href'))).toEqual(['/', '/movies']);
+  });
+
+  it('offers sign-in to an anonymous visitor', () => {
+    renderWithProviders(<Header />);
+
+    expect(screen.getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/auth/login');
+  });
+
+  it('links a signed-in user to the profile and shows their avatar', () => {
+    globalStore.getState().setUser({
+      uid: 'uid-1',
+      displayName: 'Ada',
+      email: null,
+      photoUrl: 'https://example.com/ada.png',
+    });
+    const { container } = renderWithProviders(<Header />);
+
     expect(screen.getByRole('link', { name: 'Profile' })).toHaveAttribute('href', '/user/profile');
+    expect(container.querySelector('img')).toHaveAttribute('src', 'https://example.com/ada.png');
+    globalStore.getState().setUser(null);
   });
 
   it('opens the mobile menu and closes it after navigating', async () => {

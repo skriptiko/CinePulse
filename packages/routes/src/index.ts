@@ -5,6 +5,7 @@ export const ROUTE_PATHS = {
   MOVIE_DETAIL: '/movies/:id',
   TV_DETAIL: '/tv/:id',
   PERSON_DETAIL: '/person/:id',
+  AUTH_LOGIN: '/auth/login',
   USER: '/user',
   USER_PROFILE: '/user/profile',
   USER_SETTINGS: '/user/settings',

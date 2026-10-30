@@ -1,0 +1,76 @@
+rules_version = '2';
+
+// Model and reasoning: ADR-0010. Anything not matched below is denied.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    match /users/{uid} {
+      function folderDepth(folderId) {
+        return getAfter(/databases/$(database)/documents/users/$(uid)/folders/$(folderId)).data.depth;
+      }
+
+      match /folders/{folderId} {
+        // Checks one document: rules cannot see children, so the client keeps a branch consistent.
+        function hasValidPlace(data) {
+          return data.depth is int
+            && data.depth >= 1
+            && data.depth <= 6
+            && (data.parentId == null
+              ? data.depth == 1
+              : data.parentId is string
+                && data.parentId != folderId
+                && folderDepth(data.parentId) == data.depth - 1);
+        }
+
+        function hasValidFields(data) {
+          return data.keys().hasOnly(['name', 'parentId', 'depth', 'createdAt'])
+            && data.keys().hasAll(['name', 'parentId', 'depth', 'createdAt'])
+            && data.name is string
+            && data.name.size() >= 1
+            && data.name.size() <= 100
+            && hasValidPlace(data);
+        }
+
+        allow read, delete: if isOwner(uid);
+        allow create: if isOwner(uid)
+          && hasValidFields(request.resource.data)
+          && request.resource.data.createdAt == request.time;
+        allow update: if isOwner(uid)
+          && hasValidFields(request.resource.data)
+          && request.resource.data.createdAt == resource.data.createdAt;
+      }
+
+      match /items/{itemId} {
+        function hasValidFields(data) {
+          return data.keys().hasOnly(
+              ['mediaType', 'tmdbId', 'title', 'posterPath', 'status', 'folderIds', 'addedAt']
+            )
+            && data.keys().hasAll(
+              ['mediaType', 'tmdbId', 'title', 'posterPath', 'status', 'folderIds', 'addedAt']
+            )
+            && data.mediaType in ['movie', 'tv']
+            && data.tmdbId is int
+            && itemId == data.mediaType + '_' + string(data.tmdbId)
+            && data.title is string
+            && data.title.size() >= 1
+            && data.title.size() <= 500
+            && (data.posterPath == null || data.posterPath is string)
+            && data.status in ['watched', 'planned']
+            && data.folderIds is list
+            && data.folderIds.size() <= 100;
+        }
+
+        allow read, delete: if isOwner(uid);
+        allow create: if isOwner(uid)
+          && hasValidFields(request.resource.data)
+          && request.resource.data.addedAt == request.time;
+        allow update: if isOwner(uid)
+          && hasValidFields(request.resource.data)
+          && request.resource.data.addedAt == resource.data.addedAt;
+      }
+    }
+  }
+}

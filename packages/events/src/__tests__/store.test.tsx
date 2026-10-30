@@ -18,6 +18,31 @@ afterEach(() => {
   globalStore.setState({ theme: 'dark' });
 });
 
+describe('auth state', () => {
+  const user = { uid: 'uid-1', displayName: 'Ada', email: null, photoUrl: null };
+
+  it('starts anonymous, so a page never waits for a session nobody has', () => {
+    expect(createGlobalStore().getState()).toMatchObject({ user: null, authStatus: 'anonymous' });
+  });
+
+  it('marks a set user as authenticated', () => {
+    const store = createGlobalStore();
+
+    store.getState().setUser(user);
+
+    expect(store.getState()).toMatchObject({ user, authStatus: 'authenticated' });
+  });
+
+  it('marks a cleared user as anonymous', () => {
+    const store = createGlobalStore();
+    store.getState().setUser(user);
+
+    store.getState().setUser(null);
+
+    expect(store.getState()).toMatchObject({ user: null, authStatus: 'anonymous' });
+  });
+});
+
 describe('theme persistence', () => {
   it('restores a saved theme', () => {
     localStorage.setItem(THEME_STORAGE_KEY, 'light');
