@@ -6,27 +6,19 @@ export type RemoteDefinition = {
   /** Federation name, reported in `mfe:error`. */
   name: string;
   load: () => Promise<{ routes: RouteObject[] }>;
-  /** Paths the remote owns: they show `RemoteUnavailable` when it fails to load. */
+  /** Paths the remote owns: they load it, and show `RemoteUnavailable` if that fails. */
   paths: readonly string[];
 };
 
 const emitMfeError = createTypedEmitter('mfe:error');
 
-/**
- * Loads every remote independently: a failed one is replaced by placeholder routes on its
- * own paths and reported, the others load as usual.
- */
-export async function loadRemoteRoutes(
-  remotes: readonly RemoteDefinition[]
-): Promise<RouteObject[]> {
-  const results = await Promise.allSettled(remotes.map((remote) => remote.load()));
-
-  return results.flatMap((result, index) => {
-    const remote = remotes[index];
-    if (result.status === 'fulfilled') return result.value.routes;
-    if (remote === undefined) return [];
-
-    emitMfeError({ name: remote.name, error: serializeError(result.reason) });
+/** Never rejects: a failed remote is reported and replaced by placeholder routes on its paths. */
+export async function loadRemote(remote: RemoteDefinition): Promise<RouteObject[]> {
+  try {
+    const { routes } = await remote.load();
+    return routes;
+  } catch (error) {
+    emitMfeError({ name: remote.name, error: serializeError(error) });
     return remote.paths.map((path) => ({ path, element: <RemoteUnavailable /> }));
-  });
+  }
 }

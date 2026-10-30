@@ -1,5 +1,5 @@
 import { ROUTE_PATHS } from '@repo/routes';
-import type { RemoteDefinition } from './load-remote-routes';
+import type { RemoteDefinition } from './load-remote';
 
 export const REMOTES: readonly RemoteDefinition[] = [
   {
