@@ -72,9 +72,13 @@
       }
     ]
   },
+  "firestore": {
+    "rules": "firestore/firestore.rules"
+  },
   "emulators": {
     "hosting": { "port": 5010 },
     "functions": { "port": 5011 },
+    "firestore": { "port": 5012 },
     "ui": { "enabled": false }
   },
   "functions": {

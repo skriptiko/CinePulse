@@ -56,6 +56,6 @@ Key project terms. Most are derived from the code (reliable); the watchlist/auth
 - **Folder** — a watchlist container that the user creates and names. Supports subfolders nested **up to 6 levels**; the number on each level is unlimited. Behaves like a tag: a title can sit in several folders.
 - **Title status** — a separate field on a watchlist title, independent of folders: **watched / planned**.
 - **Title** — the generic name for a catalog item that can be added to the watchlist: a movie (`Movie`) or a TV show (`TV`).
-- **Firebase Auth** — the authentication provider; in scope: email+password with sign-up (social login is out of scope).
+- **Firebase Auth** — the authentication provider; in scope: Google sign-in only (ADR-0010).
 - **Firestore** — Firebase's document database for persistent watchlist storage (folders, membership, statuses). Not in the code yet — a planned architectural change (so far the project has had only the stateless `tmdbProxy`).
 - **Definition of Done (DoD)** — the project completion criterion used instead of MVP phasing: all documented pages + profile + a working watchlist ("IMDb-like" TMDB coverage, but not the whole API).

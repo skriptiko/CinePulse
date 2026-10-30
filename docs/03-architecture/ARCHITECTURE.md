@@ -152,10 +152,10 @@ Pipeline details: [CI_CD.md](../06-deployment/CI_CD.md); environments: [ENVIRONM
 
 > The formalized scope (see the [PRD](../01-product/PRD.md)) adds **watchlist + authentication**. This requires new backend components that the current architecture does not have (so far only the stateless `tmdbProxy`). **To be worked out in Phases 3–4:**
 
-- **Firebase Auth** — authentication (email + password with sign-up). Connect a real provider to `globalStore` (add the user state back then; it was removed in ADR-0008 because it had no source) and to the `user:login`/`user:logout` events. Gate access to `user-mfe` (watchlist for signed-in users only).
+- **Firebase Auth** — authentication (Google sign-in, ADR-0010). Connect a real provider to `globalStore` (add the user state back then; it was removed in ADR-0008 because it had no source) and to the `user:login`/`user:logout` events. Gate access to `user-mfe` (watchlist for signed-in users only).
 - **Firestore** — persistent watchlist storage (a folder tree up to 6 levels deep, many-to-many title membership, watched/planned status) + security rules (per-user data isolation). This is the project's **first own database**, so update [DATA_MODEL](./DATA_MODEL.md).
 - **Impact on data flow:** next to "read-only TMDB through the proxy" comes "read/write user data through the Firestore SDK"; `user-mfe` must keep these two paths separate.
-- **Potential ADR:** choosing Firestore vs. alternatives and the storage shape of the folder tree are candidates for a new ADR.
+- **Decision:** [ADR-0010](./decisions/ADR-0010-firebase-auth-firestore-watchlist.md) fixes the storage shape and the integration.
 
 ## Diagrams
 

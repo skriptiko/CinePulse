@@ -84,13 +84,13 @@ The project author as a **learner** is the real "customer" of the value: the end
 **In scope (from the [page catalog (Notion)](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb)):**
 
 - **Public catalog:** Home ✅, Movies ✅, Movie Detail, TV (list), TV Detail, Search, Person, 404.
-- **Personal account:** Auth (login/sign-up), Watchlist (folders), Profile, Settings.
+- **Personal account:** Auth (Google sign-in), Watchlist (folders), Profile, Settings.
 - **Detail pages ("IMDb-like" scope):** basics (overview, genres, TMDB rating, date, runtime) + cast and crew + media (trailers/videos, gallery) + similar/recommendations + TMDB ratings/reviews + "where to watch" providers.
 
 **Out of scope (deliberately):**
 
 - Not the whole TMDB API (only the IMDb-like coverage listed above).
-- Social login (Google, etc.) — email+password only.
+- Email and password sign-in — Google sign-in only ([ADR-0010](../03-architecture/decisions/ADR-0010-firebase-auth-firestore-watchlist.md)).
 - Social features (friends, activity feeds, public community reviews).
 - Syncing "watching/in progress" as a separate state (TV shows use the same status: watched/planned).
 
@@ -120,7 +120,7 @@ The full list of pages and their state is in the [roadmap page catalog (Notion)]
 ## Assumptions and open questions
 
 Recorded assumptions (confirmed in the 2026-07-12 session):
-- Social login (Google) is outside the current scope; email+password with sign-up only.
+- Sign-in is Google only (ADR-0010).
 - TV shows use the same *watched/planned* status (no separate "watching/in progress").
 - The public catalog works anonymously; authentication is required only for the watchlist.
 
