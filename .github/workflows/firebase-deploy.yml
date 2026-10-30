@@ -67,6 +67,38 @@ jobs:
       - name: Check bundle size
         run: pnpm size
 
+  # Smoke scenarios on the merged dist/ (docs/05-testing/TEST_STRATEGY.md), for PRs into main only.
+  e2e:
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build and merge dist
+        run: pnpm build:deploy
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run e2e
+        run: pnpm test:e2e
+        env:
+          FIREBASE_CLI: pnpm dlx firebase-tools@15.18.0 emulators:start --project demo --only hosting
+
   build-and-deploy:
     needs: quality
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'

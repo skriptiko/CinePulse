@@ -48,3 +48,7 @@ cine-pulse-ui-design
 
 # Firebase deploy cache
 .firebase/
+
+# Playwright
+test-results/
+playwright-report/
