@@ -113,39 +113,35 @@ type GlobalStore = GlobalState & GlobalActions;
 
 > **Status:** only the theme is stored. User state (`user`, sign-in status) comes back with Firebase Auth, when it has a real source. The theme switcher in the header is plan item 6.5.
 
-## ➕ Planned model: Watchlist (Firestore)
+## Watchlist (Firestore)
 
-> Not implemented yet. Source of requirements: [PRD](../01-product/PRD.md#key-feature-watchlist-folders--statuses). What follows is the target shape to work out in Phase 3 (the exact collection structure and security rules are still to be designed).
-
-**Model requirements:**
-- **Folders** — a tree nested **up to 6 levels** deep, unlimited width. Owned by a specific user.
-- **Watchlist title** — a movie or a TV show; can be in **several folders** (many-to-many membership).
-- **Title status** — `watched | planned`, independent of folders.
-- **Access** — only the signed-in user sees and changes their own data (security rules by `uid`).
-
-**Type sketch (draft, pending agreement):**
+> Rules are in `firestore/firestore.rules`, tested with `pnpm test:rules`. The UI is not implemented yet. Reasoning and trade-offs: [ADR-0010](./decisions/ADR-0010-firebase-auth-firestore-watchlist.md).
 
 ```ts
 type WatchStatus = 'watched' | 'planned';
 
+// users/{uid}/folders/{folderId}
 interface WatchlistFolder {
-  id: string;
-  ownerUid: string;
-  name: string;
-  parentId: string | null; // null = root; depth ≤ 6
+  name: string; // 1–100 characters
+  parentId: string | null; // null = root
+  depth: number; // 1–6, parent's depth + 1
+  createdAt: Timestamp;
 }
 
+// users/{uid}/items/{mediaType}_{tmdbId}
 interface WatchlistItem {
-  id: string;
-  ownerUid: string;
   mediaType: 'movie' | 'tv';
   tmdbId: number;
+  title: string; // copied from TMDB
+  posterPath: string | null; // copied from TMDB
   status: WatchStatus;
-  folderIds: string[]; // a title can be in several folders
+  folderIds: string[]; // up to 100; a title can be in several folders
+  addedAt: Timestamp;
 }
 ```
 
-> Open questions: how to store the tree (parentId references vs. materialized path), how to enforce the depth limit of 6, denormalizing title metadata (poster/title) for offline display.
+- **Moving a branch:** one batch updates `parentId` on its root and `depth` on every descendant. The client checks for moves into the folder's own branch and past level 6.
+- **Access:** only the signed-in owner reads and writes `users/{uid}/**`; everything else is denied.
 
 ## Event contract: `EventMap`
 
