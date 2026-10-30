@@ -69,7 +69,7 @@ Rewrites in `firebase.json` route `/pages-mfe/**` and `/user-mfe/**` to their re
 
 🟡 **Bundle budget** — job `size` reports on every trigger but does not block the deploy.
 
-⬜ **Branch protection** — to make sure a PR cannot be merged with a red `quality`, enable a required check in the repo settings (GitHub → Settings → Branches → `main`). See [TEST_STRATEGY → CI](../05-testing/TEST_STRATEGY.md#ci).
+🟢 **Rulesets** — `main` takes changes only through a PR with green `quality`, `rules`, `e2e` and `pr-title`, merged with a merge commit; no approval is required, and `size` stays optional. `develop` keeps direct pushes. Both forbid force-pushes and deletion. Do not enable auto-delete of head branches: the head of a release PR is `develop`.
 
 ## Rollback
 
