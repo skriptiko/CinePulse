@@ -4,7 +4,7 @@
 
 ## Prerequisites
 
-- **Node.js** >= 20
+- **Node.js** >= 24
 - **pnpm** >= 9.15.4 (the project is pinned to `pnpm@9.15.4` via `packageManager`)
 - A TMDB API access token (read access token)
 
@@ -68,7 +68,7 @@ Ports are fixed (`strictPort: true`): if a port is taken, the app does not start
 
 ### MFE startup order
 
-At runtime the host loads the `remoteEntry.js` of each remote module. So **the remotes (5001, 5002) must be reachable** when the host tries to load them. `pnpm dev` starts everything in parallel; if you start them manually, start the remotes before or together with the host. If a remote is unreachable, the host logs a route loading error and shows an empty set of routes.
+At runtime the host loads the `remoteEntry.js` of each remote module. So **the remotes (5001, 5002) must be reachable** when the host tries to load them. `pnpm dev` starts everything in parallel; if you start them manually, start the remotes before or together with the host. If a remote is unreachable, its paths show `RemoteUnavailable` with a Retry button, the other remote keeps working, and `mfe:error` is logged in development.
 
 ### Hybrid mode (remote from staging)
 
@@ -112,4 +112,5 @@ pnpm sync-types
 - **Port is taken** — because of `strictPort: true` the app will crash; free the port (5000/5001/5002) or stop the previous process.
 - **Empty data / 401 from TMDB** — check `TMDB_API_READ_TOKEN` in the (root) `.env` and that it is the Read Access Token, not the API Key v3.
 - **Remote types out of sync** — run `pnpm sync-types` (requires the remote modules to be built first).
-- **CORS / conflicting styles** — make sure each MFE started on its own port with its own style scope prefix.
+- **Unstyled remote in the integration** — only the host's CSS loads, and its `@source` must cover the remote (ADR-0009). Restart the host after adding a remote.
+- **`vite build` of the host fails on `PAGES_MFE_URL` / `USER_MFE_URL`** — production builds read them from `apps/host/.env.production` (the host reads env from its own directory, TMDB variables from the repo root).

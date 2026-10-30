@@ -2,6 +2,7 @@ import { infiniteQueryOptions } from '@tanstack/react-query';
 import { getNextPageParam } from '../core';
 import { searchMovies, searchMulti, searchPerson, searchTV } from '../endpoints';
 
+/** Query options for TMDB search. Share keys with `useMoviesOrSearch`. */
 export const searchQueries = {
   all: () => ['search'] as const,
 

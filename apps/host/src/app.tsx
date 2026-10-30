@@ -1,6 +1,5 @@
-import { AppLayout, PageSkeleton, ShellBoundary } from '@repo/ui';
-import { lazy, Suspense, useEffect, useState } from 'react';
-import type { RouteObject } from 'react-router-dom';
+import { AppLayout, ShellBoundary } from '@repo/ui';
+import { lazy, Suspense } from 'react';
 import { AppRoutes } from '@/app-routes';
 import { OfflineBanner } from './error-channel/offline-banner';
 
@@ -10,30 +9,17 @@ const Toaster = lazy(() =>
   import('./error-channel/toaster').then((module) => ({ default: module.Toaster }))
 );
 
-import { loadRemoteRoutes } from './remotes/load-remote-routes';
 import { REMOTES } from './remotes/remotes';
+import { useRemoteRoutes } from './remotes/use-remote-routes';
 
 export function App() {
-  const [remoteRoutes, setRemoteRoutes] = useState<RouteObject[] | null>(null);
-
-  useEffect(() => {
-    // StrictMode runs the effect twice; only the last run may set state.
-    let ignore = false;
-
-    void loadRemoteRoutes(REMOTES).then((routes) => {
-      if (!ignore) setRemoteRoutes(routes);
-    });
-
-    return () => {
-      ignore = true;
-    };
-  }, []);
+  const remoteRoutes = useRemoteRoutes(REMOTES);
 
   return (
     // The shell boundary sits inside AppLayout, so the header survives any page error.
     <AppLayout>
       <ShellBoundary>
-        {remoteRoutes === null ? <PageSkeleton /> : <AppRoutes routes={remoteRoutes} />}
+        <AppRoutes routes={remoteRoutes} />
       </ShellBoundary>
       <OfflineBanner />
       <Suspense fallback={null}>

@@ -76,16 +76,14 @@ export function Hero({ movie, className }: HeroProps) {
           {/* Title */}
           <h2
             id={titleId}
-            className="mb-3 text-3xl font-bold tracking-tight text-balance sm:mb-4 sm:text-4xl md:text-6xl lg:text-7xl"
+            className="fluid-display mb-3 font-bold tracking-tight text-balance sm:mb-4"
           >
             {title}
           </h2>
 
           {/* Description */}
           {description !== null && (
-            <p className="text-muted-foreground mb-6 max-w-lg text-sm leading-relaxed sm:mb-8 sm:text-base md:text-lg">
-              {description}
-            </p>
+            <p className="text-muted-foreground fluid-body mb-6 max-w-lg sm:mb-8">{description}</p>
           )}
 
           {/* "My List" comes back with a watchlist, as on `MovieCard`. */}

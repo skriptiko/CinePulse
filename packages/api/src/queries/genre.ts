@@ -2,6 +2,7 @@ import { queryOptions } from '@tanstack/react-query';
 import { getMovieGenres, getTVGenres } from '../endpoints';
 import { STALE_TIME_REFERENCE } from './stale-time';
 
+/** Query options for genre lists, which rarely change. */
 export const genreQueries = {
   all: () => ['genres'] as const,
 

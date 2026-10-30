@@ -19,6 +19,7 @@ export const DEFAULT_DISCOVER_FILTERS: DiscoverMovieFilters = {
   sortBy: 'popularity.desc',
 };
 
+/** Query options for movies. Render with `useSuspenseQuery` or `useSuspenseInfiniteQuery`. */
 export const movieQueries = {
   all: () => ['movies'] as const,
   lists: () => [...movieQueries.all(), 'list'] as const,

@@ -12,6 +12,18 @@ test('Home shows the hero and content rows', async ({ page }) => {
   await expect(page.getByRole('region', { name: 'Popular' })).toBeVisible();
 });
 
+test('a page downloads only the remote it needs', async ({ page }) => {
+  const remoteRequests: string[] = [];
+  page.on('request', (request) => {
+    if (request.url().includes('/user-mfe/')) remoteRequests.push(request.url());
+  });
+
+  await page.goto('/');
+  await expect(page.getByRole('region', { name: 'Popular' })).toBeVisible();
+
+  expect(remoteRequests).toEqual([]);
+});
+
 test('navigates across remotes', async ({ page }) => {
   await page.goto('/');
 

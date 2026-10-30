@@ -18,8 +18,8 @@ export function MoviesEmptyState({
 }: MoviesEmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="bg-secondary mb-4 flex h-16 w-16 items-center justify-center rounded-full">
-        <Search className="text-muted-foreground h-8 w-8" aria-hidden="true" />
+      <div className="bg-secondary mb-4 flex size-16 items-center justify-center rounded-full">
+        <Search className="text-muted-foreground size-8" aria-hidden="true" />
       </div>
       <h2 className="mb-2 text-lg font-medium">
         {query ? `No movies found for “${query}”` : 'No movies found'}

@@ -2,6 +2,7 @@ import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 import { getNextPageParam } from '../core';
 import { getTVDetails, getTVShows, type TVCategory } from '../endpoints';
 
+/** Query options for TV shows. Render with `useSuspenseQuery`. */
 export const tvQueries = {
   all: () => ['tv'] as const,
   lists: () => [...tvQueries.all(), 'list'] as const,

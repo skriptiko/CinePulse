@@ -13,5 +13,17 @@ const movieHandlers = [
   }),
 ];
 
+const genreHandlers = [
+  http.get(`${TMDB}/genre/movie/list`, () =>
+    HttpResponse.json({ genres: [{ id: 28, name: 'Action' }] })
+  ),
+];
+
+const trendingHandlers = [
+  http.get(`${TMDB}/trending/movie/:window`, () =>
+    HttpResponse.json(buildPaginated([{ ...buildMovie(), media_type: 'movie' }]))
+  ),
+];
+
 /** Default happy-path handlers; override per test with `server.use(...)`. */
-export const handlers = [...movieHandlers];
+export const handlers = [...movieHandlers, ...genreHandlers, ...trendingHandlers];
