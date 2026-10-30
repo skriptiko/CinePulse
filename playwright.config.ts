@@ -17,9 +17,12 @@ export default defineConfig({
   webServer: {
     // biome-ignore lint/suspicious/noUndeclaredEnvVars: read by Playwright, not by a Turbo task.
     command:
-      process.env.FIREBASE_CLI ?? 'firebase emulators:start --project demo --only hosting,auth',
+      process.env.FIREBASE_CLI ??
+      'firebase emulators:start --project demo --only hosting,auth,firestore',
     url: `http://127.0.0.1:${PORT}`,
     reuseExistingServer: !process.env.CI,
-    timeout: 60_000,
+    timeout: 120_000,
+    // Firestore runs as a detached Java process: a plain kill of the CLI leaves it holding its port.
+    gracefulShutdown: { signal: 'SIGTERM', timeout: 10_000 },
   },
 });

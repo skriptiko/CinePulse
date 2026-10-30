@@ -56,7 +56,7 @@ Each package/app extends the relevant config in its own `tsconfig.json`. `*.d.ts
 The single source of truth for paths is `ROUTE_PATHS` in `@repo/routes`:
 
 ```ts
-HOME '/', MOVIES '/movies', USER '/user', USER_PROFILE '/user/profile', USER_SETTINGS '/user/settings'
+HOME '/', MOVIES '/movies', USER '/user', USER_PROFILE '/user/profile', USER_SETTINGS '/user/settings', USER_WATCHLIST '/user/watchlist'
 ```
 
 Each MFE exposes a `routes` array (`RouteObject[]`) through Module Federation (`exposes: { './routes': './src/routes.tsx' }`); the host collects them and renders them via `useRoutes`.

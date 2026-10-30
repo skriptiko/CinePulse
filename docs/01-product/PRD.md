@@ -115,6 +115,9 @@ Stubs (a route exists, but no functionality) — per the scope, they are to beco
 - **Profile** (`/user/profile`) — a heading only. 🟡
 - **Settings** (`/user/settings`) — a heading only. 🟡
 
+In progress:
+- **Watchlist** (`/user/watchlist`) — the folder tree and the titles of a folder. No link leads to it yet, and titles cannot be added yet. 🟡
+
 The full list of pages and their state is in the [roadmap page catalog (Notion)](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb).
 
 ## Assumptions and open questions

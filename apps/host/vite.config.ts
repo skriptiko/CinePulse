@@ -50,6 +50,14 @@ export default defineConfig(({ command, mode }) => {
         shareStrategy: 'loaded-first',
       }),
     ],
+    // Found late, these would be re-bundled with a second `firebase/app` until Vite reloads.
+    optimizeDeps: {
+      include: [
+        '@repo/firebase > firebase/app',
+        '@repo/firebase > firebase/auth',
+        '@repo/firebase > firebase/firestore/lite',
+      ],
+    },
     resolve: {
       alias: {
         '@': resolve(__dirname, './src'),

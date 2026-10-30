@@ -18,6 +18,8 @@ export type { HeaderProps } from './components/header';
 export { Header } from './components/header';
 export type { HeroData, HeroProps } from './components/hero';
 export { Hero } from './components/hero';
+export type { ImagePlaceholderProps } from './components/image-placeholder';
+export { ImagePlaceholder } from './components/image-placeholder';
 export type { MovieCardData, MovieCardProps } from './components/movie-card';
 export { MovieCard } from './components/movie-card';
 export type { MovieDetailData, MovieDetailViewProps } from './components/movie-detail-view';

@@ -6,6 +6,7 @@ import {
   type RulesTestEnvironment,
 } from '@firebase/rules-unit-testing';
 import {
+  arrayRemove,
   deleteDoc,
   doc,
   type Firestore,
@@ -224,5 +225,30 @@ describe('items', () => {
     await setDoc(doc(db, itemPath), item());
 
     await assertSucceeds(deleteDoc(doc(db, itemPath)));
+  });
+});
+
+describe('deleting a branch', () => {
+  it('removes the folders and keeps the titles in one batch', async () => {
+    await seedChain('alice', 2);
+    const db = asUser('alice');
+    await setDoc(doc(db, 'users/alice/folders/other'), folder('Other', null, 1));
+    await setDoc(doc(db, 'users/alice/items/movie_550'), item({ folderIds: ['f2', 'other'] }));
+    await setDoc(
+      doc(db, 'users/alice/items/tv_1399'),
+      item({ mediaType: 'tv', tmdbId: 1399, folderIds: ['f2'] })
+    );
+
+    const batch = writeBatch(db);
+    batch.delete(doc(db, 'users/alice/folders/f1'));
+    batch.delete(doc(db, 'users/alice/folders/f2'));
+    batch.update(doc(db, 'users/alice/items/movie_550'), { folderIds: arrayRemove('f1', 'f2') });
+    batch.update(doc(db, 'users/alice/items/tv_1399'), { folderIds: arrayRemove('f1', 'f2') });
+    await assertSucceeds(batch.commit());
+
+    const kept = await getDoc(doc(db, 'users/alice/items/movie_550'));
+    const emptied = await getDoc(doc(db, 'users/alice/items/tv_1399'));
+    expect(kept.data()?.folderIds).toEqual(['other']);
+    expect(emptied.data()?.folderIds).toEqual([]);
   });
 });

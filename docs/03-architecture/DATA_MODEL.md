@@ -2,11 +2,11 @@
 
 # Data model
 
-> **Important:** CinePulse **has no database of its own**. It is a client app on top of the [TMDB API](https://developer.themoviedb.org/). The "data model" here means the TypeScript types that describe TMDB responses (`packages/api/src/types/*`) and the app's client state (`packages/events/src/types.ts`). The only persistent secret storage is `TMDB_API_READ_TOKEN` (Firebase Secret).
+> **Important:** CinePulse **has no catalog database of its own**. It is a client app on top of the [TMDB API](https://developer.themoviedb.org/). The "data model" here means the TypeScript types that describe TMDB responses (`packages/api/src/types/*`) and the app's client state (`packages/events/src/types.ts`). The only persistent secret storage is `TMDB_API_READ_TOKEN` (Firebase Secret).
 >
-> ➕ **Changing (requirements 2026-07-12):** the formalized scope adds a **watchlist**, which needs **its own database (Firestore)**; it will be the first persistent store of user data. The planned model is below, in [Planned model: Watchlist](#-planned-model-watchlist-firestore).
+> The **watchlist** is the exception: user data lives in **Firestore**, the first persistent store of the project. The model is below, in [Watchlist (Firestore)](#watchlist-firestore).
 
-All types are re-exported from `@repo/api` (`packages/api/src/index.ts`) and `@repo/events`.
+TMDB and client-state types are re-exported from `@repo/api` (`packages/api/src/index.ts`) and `@repo/events`. Watchlist types come from `@repo/firebase`, and `WatchlistFolder` from `@repo/firebase/watchlist-tree`.
 
 ## Pagination wrapper
 
@@ -118,7 +118,7 @@ type GlobalStore = GlobalState & GlobalActions;
 
 ## Watchlist (Firestore)
 
-> Rules are in `firestore/firestore.rules`, tested with `pnpm test:rules`. The UI is not implemented yet. Reasoning and trade-offs: [ADR-0010](./decisions/ADR-0010-firebase-auth-firestore-watchlist.md).
+> Rules are in `firestore/firestore.rules`, tested with `pnpm test:rules`. Reasoning and trade-offs: [ADR-0010](./decisions/ADR-0010-firebase-auth-firestore-watchlist.md), [ADR-0013](./decisions/ADR-0013-firestore-lite-watchlist-store.md).
 
 ```ts
 type WatchStatus = 'watched' | 'planned';
@@ -144,6 +144,7 @@ interface WatchlistItem {
 ```
 
 - **Moving a branch:** one batch updates `parentId` on its root and `depth` on every descendant. The client checks for moves into the folder's own branch and past level 6.
+- **Deleting a branch:** one batch deletes its folders and removes their ids from `folderIds` with `arrayRemove`. Item documents stay; `folderIds: []` is valid, and such a title shows under All titles.
 - **Access:** only the signed-in owner reads and writes `users/{uid}/**`; everything else is denied.
 
 ## Event contract: `EventMap`

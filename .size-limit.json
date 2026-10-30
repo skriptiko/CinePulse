@@ -1,7 +1,11 @@
 [
   {
-    "name": "host JS (gzip, incl. shared singletons, without the lazy Firebase SDK)",
-    "path": ["apps/host/dist/assets/*.js", "!apps/host/dist/assets/index.esm-*.js"],
+    "name": "host JS (gzip, incl. shared singletons, without the lazy Firebase SDK and Firestore)",
+    "path": [
+      "apps/host/dist/assets/*.js",
+      "!apps/host/dist/assets/index.esm-*.js",
+      "!apps/host/dist/assets/watchlist-store-*.js"
+    ],
     "gzip": true,
     "limit": "208 kB"
   },
@@ -10,5 +14,11 @@
     "path": "apps/host/dist/assets/index.esm-*.js",
     "gzip": true,
     "limit": "55 kB"
+  },
+  {
+    "name": "Firestore Lite and the watchlist store (gzip, watchlist page only)",
+    "path": "apps/host/dist/assets/watchlist-store-*.js",
+    "gzip": true,
+    "limit": "38 kB"
   }
 ]
