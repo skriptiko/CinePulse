@@ -1,4 +1,5 @@
 import { Info, Play, Plus } from 'lucide-react';
+import { cn } from '../lib/utils';
 import { ImagePlaceholder } from './image-placeholder';
 import { Button } from './ui/button';
 
@@ -16,17 +17,23 @@ export type HeroData = {
 
 export type HeroProps = {
   movie: HeroData;
+  className?: string;
 };
 
-export function Hero({ movie }: HeroProps) {
+export function Hero({ movie, className }: HeroProps) {
   const { title, description, imageUrl, year, rating } = movie;
 
   return (
-    <section className="relative min-h-[70vh] sm:min-h-[80vh] lg:min-h-[85vh] flex items-end">
+    <section
+      className={cn(
+        'relative min-h-[70svh] sm:min-h-[80svh] lg:min-h-[85svh] flex items-end',
+        className
+      )}
+    >
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         {imageUrl ? (
-          <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
+          <img src={imageUrl} alt={title} className="size-full object-cover" />
         ) : (
           <ImagePlaceholder />
         )}
@@ -66,7 +73,7 @@ export function Hero({ movie }: HeroProps) {
               size="lg"
               className="rounded-lg gap-2 px-5 sm:px-8 h-10 sm:h-12 text-sm sm:text-base font-medium"
             >
-              <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
+              <Play className="fill-current" />
               Play
             </Button>
             <Button
@@ -74,15 +81,11 @@ export function Hero({ movie }: HeroProps) {
               size="lg"
               className="rounded-lg gap-2 px-4 sm:px-6 h-10 sm:h-12 text-sm sm:text-base font-medium glass"
             >
-              <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+              <Plus />
               My List
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-lg w-10 h-10 sm:w-12 sm:h-12 glass"
-            >
-              <Info className="w-4 h-4 sm:w-5 sm:h-5" />
+            <Button variant="ghost" size="icon" className="rounded-lg size-10 sm:size-12 glass">
+              <Info />
               <span className="sr-only">More Info</span>
             </Button>
           </div>
