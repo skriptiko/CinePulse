@@ -67,7 +67,6 @@ jobs:
       - name: Check bundle size
         run: pnpm size
 
-  # Smoke scenarios on the merged dist/ (docs/05-testing/TEST_STRATEGY.md), for PRs into main only.
   rules:
     runs-on: ubuntu-latest
 
@@ -87,9 +86,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
       - name: Test Firestore rules
         run: pnpm dlx firebase-tools@15.18.0 emulators:exec --project demo --only firestore "pnpm exec vitest run --config firestore/vitest.config.ts"
 
+  # Smoke scenarios on the merged dist/ (docs/05-testing/TEST_STRATEGY.md), for PRs into main only.
   e2e:
     if: github.event_name == 'pull_request' && github.base_ref == 'main'
     runs-on: ubuntu-latest
