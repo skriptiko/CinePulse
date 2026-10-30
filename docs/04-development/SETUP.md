@@ -26,6 +26,7 @@ TMDB_API_READ_TOKEN=<твій TMDB read access token>
 
 - Токен береться тут: https://www.themoviedb.org/settings/api (API Read Access Token).
 - `.env` **не комітиться**. Токен використовується як у dev (Vite-proxy додає `Authorization` до запитів на `/api/tmdb`), так і в проді (Firebase Function `tmdbProxy` через `defineSecret`).
+- For the Functions emulator (`pnpm --filter @repo/functions serve`) the secret is read from `functions/.secret.local`: copy `functions/.secret.local.example` and put the token in it (not committed).
 
 ## Запуск у режимі розробки
 

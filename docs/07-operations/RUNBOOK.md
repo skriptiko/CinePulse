@@ -10,7 +10,12 @@
 
 ### TMDB proxy повертає 5xx
 - **Симптоми:** сторінки без контенту; fallback with Retry on pages (`ApiError` of kind `server`).
-- **Діагностика:** TODO — логи функції `tmdbProxy` (Firebase Console → Functions → Logs); перевірити валідність `TMDB_API_READ_TOKEN`; статус TMDB API.
+- **Діагностика:** логи функції `tmdbProxy` (Firebase Console → Functions → Logs). The proxy answers with neutral statuses, so the logs tell the cause:
+  - `502` + `upstream error` warning with `status: 401` → the token is invalid or revoked; set a new secret and redeploy the functions.
+  - `502` + `upstream error` with 5xx, or `upstream request failed` (`TimeoutError`/`TypeError`) → TMDB is down or slow; check the TMDB status page.
+  - `503` → TMDB rate limit (`429`); it clears by itself, CDN caching keeps repeats off TMDB.
+  - `500 Proxy misconfigured` + `TMDB_API_READ_TOKEN is not configured` → the secret is missing for the deployed function.
+  - `404`/`400` for a real client request → the endpoint or param is missing from the allowlist in `functions/src/proxy-rules.ts`.
 - **Дії:** TODO.
 
 ### Remote MFE (remoteEntry) недоступний
@@ -55,6 +60,7 @@ pnpm build:deploy && firebase deploy
 
 - **`TMDB_API_READ_TOKEN`** — TMDB Read Access Token.
   - **Локально:** кореневий `.env` (використовує Vite proxy). Не комітиться.
+  - **Functions emulator:** `functions/.secret.local` (copy `functions/.secret.local.example` and put the token in it). Ignored by git (`*.local`) and by the functions deploy.
   - **Production:** Firebase Secret Manager, оголошений через `defineSecret('TMDB_API_READ_TOKEN')` у `functions/src/index.ts`.
   - **Встановити/оновити секрет:**
     ```bash
