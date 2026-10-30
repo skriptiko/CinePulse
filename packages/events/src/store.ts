@@ -1,6 +1,6 @@
 // The main `zustand` entry (not `zustand/vanilla`): Module Federation shares `zustand` as one
 // strict singleton, and a subpath import would bypass that share.
-import { type StoreApi, createStore, useStore } from 'zustand';
+import { createStore, type StoreApi, useStore } from 'zustand';
 
 export const THEMES = ['light', 'dark', 'system'] as const;
 

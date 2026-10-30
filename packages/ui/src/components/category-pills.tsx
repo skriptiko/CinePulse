@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 
 const pillVariants = cva(
-  'px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors duration-200 disabled:pointer-events-none disabled:opacity-50',
+  'rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors duration-200 disabled:pointer-events-none disabled:opacity-50',
   {
     variants: {
       selected: {
@@ -24,6 +24,8 @@ export type CategoryPillsProps = {
   onValueChange?: (category: string) => void;
   /** Disables every pill, e.g. while the filter does not apply. */
   disabled?: boolean;
+  /** Accessible name of the group, e.g. "Filter by genre". */
+  label?: string;
   className?: string;
 };
 
@@ -33,6 +35,7 @@ export function CategoryPills({
   defaultValue,
   onValueChange,
   disabled,
+  label,
   className,
 }: CategoryPillsProps) {
   const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue ?? categories[0]);
@@ -46,7 +49,13 @@ export function CategoryPills({
   };
 
   return (
-    <div className={cn('flex gap-2 overflow-x-auto scrollbar-hide px-4 md:px-8 pb-2', className)}>
+    <fieldset
+      aria-label={label}
+      className={cn(
+        'scrollbar-hide flex min-w-0 gap-2 overflow-x-auto px-4 pb-2 md:px-8',
+        className
+      )}
+    >
       {categories.map((category) => (
         <button
           key={category}
@@ -59,7 +68,7 @@ export function CategoryPills({
           {category}
         </button>
       ))}
-    </div>
+    </fieldset>
   );
 }
 
@@ -79,7 +88,7 @@ export type CategoryLinksProps = {
 export function CategoryLinks({ links, label, className }: CategoryLinksProps) {
   return (
     <nav aria-label={label}>
-      <ul className={cn('flex gap-2 overflow-x-auto scrollbar-hide px-4 md:px-8 pb-2', className)}>
+      <ul className={cn('scrollbar-hide flex gap-2 overflow-x-auto px-4 pb-2 md:px-8', className)}>
         {links.map((link) => (
           <li key={link.href}>
             <Link to={link.href} className={cn(pillVariants({ selected: false }), 'inline-block')}>

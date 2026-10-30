@@ -1,4 +1,4 @@
-import { type EndpointOptions, apiGet } from '../core';
+import { apiGet, type EndpointOptions } from '../core';
 import type { Movie, MultiSearchResult, PageParams, PaginatedResponse, Person, TV } from '../types';
 
 export type SearchParams = PageParams & {

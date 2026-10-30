@@ -11,8 +11,8 @@ export type LogoProps = {
 export function Logo({ className, labelClassName }: LogoProps) {
   return (
     <Link to="/" className={cn('flex items-center gap-2', className)}>
-      <div className="size-8 rounded-lg bg-foreground flex items-center justify-center">
-        <span className="text-background font-bold text-sm">CP</span>
+      <div className="bg-foreground flex size-8 items-center justify-center rounded-lg">
+        <span className="text-background text-sm font-bold">CP</span>
       </div>
       <span className={cn('font-semibold tracking-tight', labelClassName)}>CinePulse</span>
     </Link>

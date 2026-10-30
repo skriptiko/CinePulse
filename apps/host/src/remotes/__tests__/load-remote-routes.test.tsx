@@ -1,9 +1,9 @@
 import { createTypedListener } from '@repo/events';
 import { renderWithProviders, screen } from '@repo/test-utils';
-import { useRoutes } from 'react-router-dom';
 import type { RouteObject } from 'react-router-dom';
+import { useRoutes } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
-import { type RemoteDefinition, loadRemoteRoutes } from '../load-remote-routes';
+import { loadRemoteRoutes, type RemoteDefinition } from '../load-remote-routes';
 
 const onMfeError = createTypedListener('mfe:error');
 

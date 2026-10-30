@@ -1,7 +1,9 @@
-import { Info, Play, Plus } from 'lucide-react';
+import { Info } from 'lucide-react';
+import { useId } from 'react';
+import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { ImagePlaceholder } from './image-placeholder';
-import { Button } from './ui/button';
+import { buttonVariants } from './ui/button';
 
 /** What the `Hero` renders; build it with `toHeroData`. */
 export type HeroData = {
@@ -15,6 +17,8 @@ export type HeroData = {
   year: string | null;
   /** Formatted rating; `null` hides the badge (`'0.0'` is shown). */
   rating: string | null;
+  /** Details page. */
+  href: string;
 };
 
 export type HeroProps = {
@@ -23,12 +27,14 @@ export type HeroProps = {
 };
 
 export function Hero({ movie, className }: HeroProps) {
-  const { title, description, imageUrl, imageSrcSet, year, rating } = movie;
+  const { title, description, imageUrl, imageSrcSet, year, rating, href } = movie;
+  const titleId = useId();
 
   return (
     <section
+      aria-labelledby={titleId}
       className={cn(
-        'relative min-h-[70svh] sm:min-h-[80svh] lg:min-h-[85svh] flex items-end',
+        'relative flex min-h-[70svh] items-end sm:min-h-[80svh] lg:min-h-[85svh]',
         className
       )}
     >
@@ -41,7 +47,7 @@ export function Hero({ movie, className }: HeroProps) {
             src={imageUrl}
             srcSet={imageSrcSet ?? undefined}
             sizes="100vw"
-            alt={title}
+            alt=""
             fetchPriority="high"
             decoding="async"
             className="size-full object-cover"
@@ -50,17 +56,17 @@ export function Hero({ movie, className }: HeroProps) {
           <ImagePlaceholder />
         )}
         {/* Gradient Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/40 to-transparent" />
+        <div className="from-background via-background/60 absolute inset-0 bg-linear-to-t to-transparent" />
+        <div className="from-background/80 via-background/40 absolute inset-0 bg-linear-to-r to-transparent" />
       </div>
 
       {/* Content */}
-      <div className="relative z-10 max-w-[1800px] mx-auto px-4 sm:px-6 md:px-8 pb-12 sm:pb-16 md:pb-24 pt-24 sm:pt-32 w-full">
+      <div className="max-w-page relative z-10 mx-auto w-full px-4 pt-24 pb-12 sm:px-6 sm:pt-32 sm:pb-16 md:px-8 md:pb-24">
         <div className="max-w-2xl">
           {/* Metadata */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3 sm:mb-4 text-xs sm:text-sm">
+          <div className="mb-3 flex flex-wrap items-center gap-2 text-xs sm:mb-4 sm:gap-3 sm:text-sm">
             {rating !== null && (
-              <span className="px-2 py-1 rounded bg-foreground text-background font-medium">
+              <span className="bg-foreground text-background rounded px-2 py-1 font-medium">
                 {rating}
               </span>
             )}
@@ -68,39 +74,31 @@ export function Hero({ movie, className }: HeroProps) {
           </div>
 
           {/* Title */}
-          <h2 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-3 sm:mb-4 text-balance">
+          <h2
+            id={titleId}
+            className="mb-3 text-3xl font-bold tracking-tight text-balance sm:mb-4 sm:text-4xl md:text-6xl lg:text-7xl"
+          >
             {title}
           </h2>
 
           {/* Description */}
           {description !== null && (
-            <p className="text-muted-foreground text-sm sm:text-base md:text-lg leading-relaxed mb-6 sm:mb-8 max-w-lg">
+            <p className="text-muted-foreground mb-6 max-w-lg text-sm leading-relaxed sm:mb-8 sm:text-base md:text-lg">
               {description}
             </p>
           )}
 
-          {/* Actions */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <Button
-              size="lg"
-              className="rounded-lg gap-2 px-5 sm:px-8 h-10 sm:h-12 text-sm sm:text-base font-medium"
-            >
-              <Play className="fill-current" />
-              Play
-            </Button>
-            <Button
-              variant="secondary"
-              size="lg"
-              className="rounded-lg gap-2 px-4 sm:px-6 h-10 sm:h-12 text-sm sm:text-base font-medium glass"
-            >
-              <Plus />
-              My List
-            </Button>
-            <Button variant="ghost" size="icon" className="rounded-lg size-10 sm:size-12 glass">
-              <Info />
-              <span className="sr-only">More Info</span>
-            </Button>
-          </div>
+          {/* "My List" comes back with a watchlist, as on `MovieCard`. */}
+          <Link
+            to={href}
+            className={cn(
+              buttonVariants({ size: 'lg' }),
+              'h-10 gap-2 rounded-lg px-5 text-sm font-medium sm:h-12 sm:px-8 sm:text-base'
+            )}
+          >
+            <Info aria-hidden="true" />
+            More Info
+          </Link>
         </div>
       </div>
     </section>

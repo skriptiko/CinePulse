@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { RELOAD_COOLDOWN_MS, handlePreloadError } from '../stale-chunk-reload';
+import { handlePreloadError, RELOAD_COOLDOWN_MS } from '../stale-chunk-reload';
 
 describe('handlePreloadError', () => {
   beforeEach(() => {

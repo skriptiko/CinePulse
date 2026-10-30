@@ -21,6 +21,7 @@ describe('toHeroData', () => {
         'https://image.tmdb.org/t/p/w780/dune-bg.jpg 780w, https://image.tmdb.org/t/p/w1280/dune-bg.jpg 1280w',
       year: '2021',
       rating: '7.8',
+      href: `/movies/${movie.id}`,
     });
   });
 

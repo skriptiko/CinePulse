@@ -1,11 +1,13 @@
 import { resolve } from 'node:path';
 import { federation } from '@module-federation/vite';
+import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { createMfShared } from '../../scripts/mf-shared';
 
 export default defineConfig({
   plugins: [
+    tailwindcss(),
     react(),
     federation({
       name: 'userMfe',
@@ -24,6 +26,8 @@ export default defineConfig({
   build: {
     modulePreload: false,
     target: 'chrome89',
+    // Tailwind 4 output: `@layer`, `@property` and `color-mix()` must reach the browser as written.
+    cssTarget: 'chrome111',
     cssCodeSplit: false,
   },
   server: {

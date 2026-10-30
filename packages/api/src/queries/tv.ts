@@ -1,6 +1,6 @@
 import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 import { getNextPageParam } from '../core';
-import { type TVCategory, getTVDetails, getTVShows } from '../endpoints';
+import { getTVDetails, getTVShows, type TVCategory } from '../endpoints';
 
 export const tvQueries = {
   all: () => ['tv'] as const,

@@ -6,7 +6,7 @@ import {
   server,
   within,
 } from '@repo/test-utils';
-import { http, HttpResponse } from 'msw';
+import { HttpResponse, http } from 'msw';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Home } from '../home-page';
 
@@ -37,6 +37,16 @@ describe('Home', () => {
   });
 
   afterEach(() => vi.restoreAllMocks());
+
+  it('uses the app name as the document title', async () => {
+    document.title = 'Previous page';
+    mockHome();
+    renderWithProviders(<Home />);
+
+    await screen.findByRole('heading', { level: 1 });
+
+    expect(document.title).toBe('CinePulse');
+  });
 
   it('renders every section from its own request', async () => {
     mockHome();

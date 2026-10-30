@@ -1,12 +1,16 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
-  "organizeImports": {
-    "enabled": true
+  "$schema": "https://biomejs.dev/schemas/2.6.4/schema.json",
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
   },
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
       "complexity": {
         "noUselessFragments": "warn"
       },
@@ -29,14 +33,18 @@
       "suspicious": {
         "noExplicitAny": "error"
       },
-      "a11y": {
-        "all": true
-      },
+      "a11y": "error",
       "performance": {
         "noReExportAll": "error"
       },
       "security": {
         "noDangerouslySetInnerHtml": "error"
+      },
+      "nursery": {
+        "useTailwindSortedClasses": {
+          "level": "error",
+          "fix": "safe"
+        }
       }
     }
   },
@@ -54,21 +62,29 @@
     }
   },
   "files": {
-    "ignore": [
-      "node_modules",
-      "dist",
-      ".turbo",
-      ".idea",
-      ".husky",
-      ".github",
-      "*.d.ts",
-      "**/.__mf__temp/**",
-      "docs/08-design-files"
+    "includes": [
+      "**",
+      "!**/node_modules",
+      "!**/dist",
+      "!**/.turbo",
+      "!**/.idea",
+      "!**/.husky",
+      "!**/.github",
+      "!**/*.d.ts",
+      "!**/.__mf__temp",
+      "!**/docs/08-design-files",
+      "!**/coverage",
+      "!**/apps/design/src/styles",
+      "!**/*.md",
+      "!**/*.yaml",
+      "!**/*.yml",
+      "!**/test-results",
+      "!**/playwright-report"
     ]
   },
   "overrides": [
     {
-      "include": ["*.config.*", "**/*.config.*"],
+      "includes": ["**/*.config.*"],
       "linter": {
         "rules": {
           "style": {
@@ -76,6 +92,21 @@
           }
         }
       }
+    },
+    {
+      "includes": ["**/theme.css"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noImportantStyles": "off"
+          }
+        }
+      }
     }
-  ]
+  ],
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  }
 }

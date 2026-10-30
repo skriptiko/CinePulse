@@ -1,4 +1,4 @@
-import { type EndpointOptions, apiGet } from '../core';
+import { apiGet, type EndpointOptions } from '../core';
 import type { PageParams, PaginatedResponse, TV, TVDetails } from '../types';
 
 export type TVCategory = 'popular' | 'top_rated' | 'on_the_air' | 'airing_today';

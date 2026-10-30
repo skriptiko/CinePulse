@@ -1,19 +1,21 @@
-import { SEARCH_QUERY_MAX_LENGTH, genreQueries } from '@repo/api';
+import { genreQueries, SEARCH_QUERY_MAX_LENGTH } from '@repo/api';
 import {
+  buttonVariants,
   CategoryPills,
+  cn,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
   Input,
-  buttonVariants,
-  cn,
+  ToggleGroup,
+  ToggleGroupItem,
 } from '@repo/ui';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { ChevronDown, Grid3X3, LayoutGrid, Search, SlidersHorizontal } from 'lucide-react';
-import { useMemo } from 'react';
-import { SORT_LABELS, SORT_OPTIONS, type SortOption, isSortOption } from './use-movie-filters';
+import { type FormEvent, useId, useMemo } from 'react';
+import { isSortOption, SORT_LABELS, SORT_OPTIONS, type SortOption } from './use-movie-filters';
 
 export type ViewMode = 'grid' | 'compact';
 
@@ -44,6 +46,7 @@ export function MoviesFilters({
   onViewModeChange,
 }: MoviesFiltersProps) {
   const { data: genresData } = useSuspenseQuery(genreQueries.movie());
+  const searchId = useId();
 
   const genreNames = useMemo(
     () => [ALL_GENRES, ...genresData.genres.map((genre) => genre.name)],
@@ -61,37 +64,49 @@ export function MoviesFilters({
     if (isSortOption(value)) onSortChange(value);
   };
 
+  // Results follow the input as the user types, so Enter has nothing left to submit.
+  const handleSearchSubmit = (event: FormEvent) => event.preventDefault();
+
   return (
-    <div className="sticky top-16 sm:top-20 z-30 bg-background/80 backdrop-blur-xl border-b border-border">
-      <div className="px-4 sm:px-6 lg:px-12 py-4">
+    <div className="bg-background/80 border-border sticky top-16 z-30 border-b backdrop-blur-xl sm:top-20">
+      <div className="px-4 py-4 sm:px-6 lg:px-12">
         <div className="flex flex-col gap-4">
-          <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Search movies..."
-                value={searchInput}
-                onChange={(event) => onSearchChange(event.target.value)}
-                maxLength={SEARCH_QUERY_MAX_LENGTH}
-                aria-label="Search movies"
-                className="pl-10 h-10 bg-secondary border-0 rounded-lg"
-              />
-            </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <search className="relative max-w-md flex-1">
+              <form onSubmit={handleSearchSubmit}>
+                <label htmlFor={searchId} className="sr-only">
+                  Search movies
+                </label>
+                <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+                <Input
+                  id={searchId}
+                  type="search"
+                  placeholder="Search movies..."
+                  value={searchInput}
+                  onChange={(event) => onSearchChange(event.target.value)}
+                  maxLength={SEARCH_QUERY_MAX_LENGTH}
+                  className="bg-secondary h-10 rounded-lg border-0 pl-10"
+                />
+              </form>
+            </search>
 
             <div className="flex items-center gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger
                   aria-label={`Sort by: ${SORT_LABELS[sort]}`}
                   disabled={isSearching}
-                  className={cn(buttonVariants({ variant: 'secondary' }), 'rounded-lg gap-2 h-10')}
+                  className={cn(buttonVariants({ variant: 'secondary' }), 'h-10 gap-2 rounded-lg')}
                 >
-                  <SlidersHorizontal className="w-4 h-4" />
+                  <SlidersHorizontal className="h-4 w-4" />
                   <span className="hidden sm:inline">{SORT_LABELS[sort]}</span>
-                  <ChevronDown className="w-4 h-4" />
+                  <ChevronDown className="h-4 w-4" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-40">
-                  <DropdownMenuRadioGroup value={sort} onValueChange={handleSortChange}>
+                  <DropdownMenuRadioGroup
+                    aria-label="Sort by"
+                    value={sort}
+                    onValueChange={handleSortChange}
+                  >
                     {SORT_OPTIONS.map((option) => (
                       <DropdownMenuRadioItem key={option} value={option}>
                         {SORT_LABELS[option]}
@@ -110,11 +125,12 @@ export function MoviesFilters({
             value={activeGenreName}
             onValueChange={handleGenreChange}
             disabled={isSearching}
-            className="px-0 -mx-4 sm:mx-0 sm:px-0"
+            label="Filter by genre"
+            className="-mx-4 px-0 sm:mx-0 sm:px-0"
           />
 
           {isSearching && (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Genre and sort don&apos;t apply to search results. Clear the search to use them.
             </p>
           )}
@@ -135,25 +151,18 @@ const VIEW_MODES = [
 ] as const;
 
 function ViewModeToggle({ viewMode, onViewModeChange }: ViewModeToggleProps) {
+  const handleValueChange = (value: string) => {
+    const next = VIEW_MODES.find(({ mode }) => mode === value);
+    if (next) onViewModeChange(next.mode);
+  };
+
   return (
-    <div className="flex items-center rounded-lg bg-secondary p-1">
+    <ToggleGroup aria-label="Card size" value={viewMode} onValueChange={handleValueChange}>
       {VIEW_MODES.map(({ mode, label, Icon }) => (
-        <button
-          key={mode}
-          type="button"
-          aria-label={label}
-          aria-pressed={viewMode === mode}
-          onClick={() => onViewModeChange(mode)}
-          className={cn(
-            'p-2 rounded-md transition-colors',
-            viewMode === mode
-              ? 'bg-background text-foreground'
-              : 'text-muted-foreground hover:text-foreground'
-          )}
-        >
-          <Icon className="w-4 h-4" aria-hidden="true" />
-        </button>
+        <ToggleGroupItem key={mode} value={mode} aria-label={label}>
+          <Icon className="h-4 w-4" aria-hidden="true" />
+        </ToggleGroupItem>
       ))}
-    </div>
+    </ToggleGroup>
   );
 }

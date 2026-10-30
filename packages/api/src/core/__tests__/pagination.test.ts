@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TMDB_MAX_PAGES, getNextPageParam } from '../pagination';
+import { getNextPageParam, TMDB_MAX_PAGES } from '../pagination';
 
 function page(pageNumber: number, totalPages: number) {
   return { page: pageNumber, results: [], total_pages: totalPages, total_results: totalPages * 20 };

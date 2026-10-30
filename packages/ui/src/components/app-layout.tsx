@@ -1,22 +1,51 @@
-import { type ReactNode, useEffect } from 'react';
+import { type ReactNode, type RefObject, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useResolvedTheme } from '../hooks/use-resolved-theme';
 import { Footer } from './footer';
 import { Header } from './header';
+
+const MAIN_ID = 'main';
 
 export type AppLayoutProps = {
   children: ReactNode;
 };
 
 export function AppLayout({ children }: AppLayoutProps) {
+  const mainRef = useRef<HTMLElement>(null);
   useThemeClass();
+  useFocusOnNavigation(mainRef);
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    <div className="bg-background text-foreground flex min-h-screen flex-col">
+      <a
+        href={`#${MAIN_ID}`}
+        className="focus:bg-background sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[60] focus:rounded-lg focus:px-4 focus:py-2 focus:text-sm focus:font-medium"
+      >
+        Skip to content
+      </a>
       <Header />
-      <main className="flex-grow">{children}</main>
+      <main ref={mainRef} id={MAIN_ID} tabIndex={-1} className="min-h-svh grow outline-hidden">
+        {children}
+      </main>
       <Footer />
     </div>
   );
+}
+
+/**
+ * A client-side navigation leaves focus on a link that may be gone, so it moves to `main`,
+ * which exists while the next page suspends. Query changes stay put: they come from filters
+ * the user is still typing in.
+ */
+function useFocusOnNavigation(mainRef: RefObject<HTMLElement | null>): void {
+  const { pathname } = useLocation();
+  const previousPathname = useRef(pathname);
+
+  useEffect(() => {
+    if (previousPathname.current === pathname) return;
+    previousPathname.current = pathname;
+    mainRef.current?.focus({ preventScroll: true });
+  }, [pathname, mainRef]);
 }
 
 /**
