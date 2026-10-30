@@ -119,13 +119,19 @@ jobs:
       - name: Build and merge dist
         run: pnpm build:deploy
 
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Run e2e
         run: pnpm test:e2e
         env:
-          FIREBASE_CLI: pnpm dlx firebase-tools@15.18.0 emulators:start --project demo --only hosting,auth
+          FIREBASE_CLI: pnpm dlx firebase-tools@15.18.0 emulators:start --project demo --only hosting,auth,firestore
 
   build-and-deploy:
     needs: [quality, rules]
