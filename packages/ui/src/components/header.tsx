@@ -62,7 +62,7 @@ export function Header({ className }: HeaderProps) {
         className
       )}
     >
-      <div className="max-w-[1800px] mx-auto px-4 md:px-8">
+      <div className="max-w-page mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between gap-8">
           <div className="flex items-center gap-8">
             <Logo labelClassName="text-xl hidden sm:block" />
@@ -100,7 +100,7 @@ export function Header({ className }: HeaderProps) {
                 'rounded-lg overflow-hidden'
               )}
             >
-              <span className="size-8 rounded-lg bg-gradient-to-br from-accent to-accent/60 flex items-center justify-center">
+              <span className="size-8 rounded-lg bg-linear-to-br from-accent to-accent/60 flex items-center justify-center">
                 <User className="size-4 text-accent-foreground" />
               </span>
             </Link>

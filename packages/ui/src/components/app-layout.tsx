@@ -24,7 +24,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         Skip to content
       </a>
       <Header />
-      <main ref={mainRef} id={MAIN_ID} tabIndex={-1} className="min-h-svh flex-grow outline-none">
+      <main ref={mainRef} id={MAIN_ID} tabIndex={-1} className="min-h-svh grow outline-hidden">
         {children}
       </main>
       <Footer />

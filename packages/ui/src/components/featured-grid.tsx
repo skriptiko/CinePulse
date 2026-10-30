@@ -77,7 +77,7 @@ function FeaturedTile({ item, featured }: FeaturedTileProps) {
           <ImagePlaceholder />
         )}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+        <div className="absolute inset-0 bg-linear-to-t from-background via-background/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
 
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
           <div className="size-14 rounded-full bg-foreground/90 hover:bg-foreground flex items-center justify-center transition-[transform,background-color] motion-safe:hover:scale-110">

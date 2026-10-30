@@ -29,6 +29,7 @@ Isolation relied on `important: '#mfe-…-root'`, which Tailwind 4 does not have
 
 - A remote deployed alone with classes the host has never seen renders unstyled. Host and remotes must deploy together, which CI already does in one job. If independent deploys become a goal, this ADR must be revisited.
 - Standalone remotes use the same theme and differ from the integration only in being built separately.
+- Tailwind 4 needs Chrome 111, Safari 16.4 or Firefox 128; older browsers lose the theme.
 - `tailwind-merge` moves to v3 to understand Tailwind 4 classes.
 - The palette changes from the hsl placeholder to the design's oklch tokens: this is an intended visual change.
 - `apps/design` is not part of the build and stays on Tailwind 3 with its own pinned version.

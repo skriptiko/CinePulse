@@ -3,6 +3,6 @@
     "name": "host JS (gzip, incl. shared singletons)",
     "path": "apps/host/dist/assets/*.js",
     "gzip": true,
-    "limit": "203 kB"
+    "limit": "205 kB"
   }
 ]

@@ -1,0 +1,150 @@
+/*
+ * The shared theme (ADR-0009). Import it after `tailwindcss` in each app's stylesheet.
+ * Dark-first: `.dark` on <html> holds the primary palette.
+ */
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Tailwind 4 limits `hover:` to pointer devices; card overlays must still open on tap. */
+@custom-variant hover (&:hover);
+
+:root {
+  --background: oklch(0.98 0 0);
+  --foreground: oklch(0.13 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.13 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.13 0 0);
+  --primary: oklch(0.13 0 0);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.94 0 0);
+  --secondary-foreground: oklch(0.13 0 0);
+  --muted: oklch(0.94 0.005 250);
+  --muted-foreground: oklch(0.45 0 0);
+  --accent: oklch(0.55 0.15 250);
+  --accent-foreground: oklch(0.98 0 0);
+  --destructive: oklch(0.55 0.22 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.9 0 0);
+  --input: oklch(0.9 0 0);
+  --ring: oklch(0.55 0.15 250);
+  --radius: 0.5rem;
+
+  --glass: oklch(1 0 0 / 0.7);
+  --glass-border: oklch(0 0 0 / 0.08);
+  --surface: oklch(0.96 0 0);
+  --surface-elevated: oklch(1 0 0);
+  --highlight: oklch(0.55 0.15 250);
+}
+
+.dark {
+  --background: oklch(0.09 0.005 250);
+  --foreground: oklch(0.95 0 0);
+  --card: oklch(0.13 0.008 250);
+  --card-foreground: oklch(0.95 0 0);
+  --popover: oklch(0.11 0.006 250);
+  --popover-foreground: oklch(0.95 0 0);
+  --primary: oklch(0.95 0 0);
+  --primary-foreground: oklch(0.09 0 0);
+  --secondary: oklch(0.18 0.01 250);
+  --secondary-foreground: oklch(0.95 0 0);
+  --muted: oklch(0.22 0.015 250);
+  --muted-foreground: oklch(0.65 0 0);
+  --accent: oklch(0.6 0.18 250);
+  --accent-foreground: oklch(0.95 0 0);
+  --destructive: oklch(0.5 0.2 25);
+  --destructive-foreground: oklch(0.95 0 0);
+  --border: oklch(0.22 0.01 250);
+  --input: oklch(0.18 0.01 250);
+  --ring: oklch(0.6 0.18 250);
+
+  --glass: oklch(0.15 0.01 250 / 0.6);
+  --glass-border: oklch(1 0 0 / 0.08);
+  --surface: oklch(0.13 0.008 250);
+  --surface-elevated: oklch(0.16 0.01 250);
+  --highlight: oklch(0.6 0.18 250);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-highlight: var(--highlight);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --container-page: 1800px;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  /* Keeps anchored targets, such as the skip link's, clear of the fixed header. */
+  html {
+    scroll-padding-top: 6rem;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+
+  /* Tailwind 4's preflight no longer sets this. */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@utility glass {
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+}
+
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

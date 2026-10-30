@@ -4,7 +4,7 @@ Guidance for working with the code in this repository.
 
 ## Overview
 
-CinePulse is a movie/TV catalog built on TMDB data as a micro-frontend app: Turborepo + pnpm (9.15.4, Node >= 24), Vite 5, React 19 (ADR-0007: `ref` as a prop, no `forwardRef`), `@module-federation/vite`, React Router 7, TanStack Query 5, Tailwind 3 + shadcn/Radix. Project documentation is in English, in `docs/` (conventions: `docs/04-development/CONVENTIONS.md`).
+CinePulse is a movie/TV catalog built on TMDB data as a micro-frontend app: Turborepo + pnpm (9.15.4, Node >= 24), Vite 5, React 19 (ADR-0007: `ref` as a prop, no `forwardRef`), `@module-federation/vite`, React Router 7, TanStack Query 5, Tailwind 4 + shadcn/Radix. Project documentation is in English, in `docs/` (conventions: `docs/04-development/CONVENTIONS.md`).
 
 ## Project management — Notion
 
@@ -58,7 +58,7 @@ TMDB requires `TMDB_API_READ_TOKEN` in the root `.env` (Vite `loadEnv` reads the
 - Remote URLs in the host: `PAGES_MFE_URL` / `USER_MFE_URL` (default `http://localhost:500x/remoteEntry.js`; in production, `apps/host/.env.production`, `/pages-mfe/remoteEntry.js`; the host reads env from its own directory, and `vite build` fails without these variables). A staging URL can be set for hybrid development.
 - **Shared singletons**: `react`, `react-dom`, `react-router-dom`, `@tanstack/react-query`, `react-error-boundary`, `zustand`, `@repo/events`, `@repo/routes`, `@repo/api`. The `shared` map for all three `vite.config.ts` files is built by `createMfShared()` in `scripts/mf-shared.ts`: all are `singleton`, and third-party ones also get `strictVersion` with `requiredVersion` from the pnpm catalog. A version mismatch fails with an explicit Federation Runtime error. Add a new shared dependency only there (and to the catalog).
 - Remote types for the host are manual declarations in `apps/host/src/@types/remotes/*.d.ts` (plus the generated `apps/host/@mf-types/`). Update them when adding a new remote or export.
-- Style isolation: each remote's Tailwind has `important: '#mfe-pages-root'` / `'#mfe-user-root'` (the id of the root div in `index.html`), and `content` includes `packages/ui/src`, so `@repo/ui` classes are generated in each app.
+- Styles (ADR-0009): Tailwind 4 via `@tailwindcss/vite`. The theme is `@repo/ui/theme.css`; each app's `src/styles/globals.css` imports `tailwindcss`, the theme, and `@source` for what it renders. In the integration only the host's CSS loads: its `@source` covers `packages/ui/src` and both remotes, so host and remotes must deploy together.
 
 ### Shared packages (`packages/*`)
 

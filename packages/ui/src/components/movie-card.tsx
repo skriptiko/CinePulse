@@ -48,7 +48,7 @@ export function MovieCard({ movie, className }: MovieCardProps) {
         {/* Hover Overlay */}
         <div
           className={cn(
-            'absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent',
+            'absolute inset-0 bg-linear-to-t from-background via-background/60 to-transparent',
             'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100',
             'transition-opacity duration-300'
           )}
