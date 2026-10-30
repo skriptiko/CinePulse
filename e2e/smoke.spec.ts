@@ -49,6 +49,17 @@ test('Movies filters and search live in the URL and survive Back', async ({ page
   await expect(page).not.toHaveURL(/genre=/);
 });
 
+test('a card opens the details page, also by direct URL', async ({ page }) => {
+  await page.goto('/movies');
+
+  await page.getByRole('link', { name: /Any movie 1/ }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Detail movie' })).toBeVisible();
+  await expect(page).toHaveURL(/\/movies\/\d+$/);
+
+  await page.reload();
+  await expect(page.getByRole('heading', { level: 1, name: 'Detail movie' })).toBeVisible();
+});
+
 test('a remote that fails to load leaves the rest of the app working', async ({ page }) => {
   await page.route('**/user-mfe/remoteEntry.js', (route) => route.abort());
   await page.goto('/user/profile');

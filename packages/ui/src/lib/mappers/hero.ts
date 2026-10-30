@@ -1,5 +1,6 @@
 import type { Movie } from '@repo/api';
 import { BACKDROP_SIZE_FEATURED, BACKDROP_SIZE_HERO, getImageUrl } from '@repo/api';
+import { buildPath } from '@repo/routes';
 import type { HeroData } from '../../components/hero';
 import { formatRating, formatYear } from '../format';
 
@@ -13,11 +14,12 @@ export function toHeroData(movie: Movie): HeroData {
     imageSrcSet: toBackdropSrcSet(movie.backdrop_path),
     year: formatYear(movie.release_date),
     rating: formatRating(movie.vote_average),
+    href: buildPath.movie(movie.id),
   };
 }
 
 /** w780 for phones and tablets, w1280 for larger screens; the browser picks by width. */
-function toBackdropSrcSet(path: string | null): string | null {
+export function toBackdropSrcSet(path: string | null): string | null {
   const smallUrl = getImageUrl(path, BACKDROP_SIZE_FEATURED);
   const largeUrl = getImageUrl(path, BACKDROP_SIZE_HERO);
   if (smallUrl === null || largeUrl === null) return null;

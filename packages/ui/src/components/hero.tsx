@@ -1,8 +1,9 @@
-import { Info, Play } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { useId } from 'react';
+import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { ImagePlaceholder } from './image-placeholder';
-import { Button } from './ui/button';
+import { buttonVariants } from './ui/button';
 
 /** What the `Hero` renders; build it with `toHeroData`. */
 export type HeroData = {
@@ -16,6 +17,8 @@ export type HeroData = {
   year: string | null;
   /** Formatted rating; `null` hides the badge (`'0.0'` is shown). */
   rating: string | null;
+  /** Details page. */
+  href: string;
 };
 
 export type HeroProps = {
@@ -24,7 +27,7 @@ export type HeroProps = {
 };
 
 export function Hero({ movie, className }: HeroProps) {
-  const { title, description, imageUrl, imageSrcSet, year, rating } = movie;
+  const { title, description, imageUrl, imageSrcSet, year, rating, href } = movie;
   const titleId = useId();
 
   return (
@@ -85,20 +88,17 @@ export function Hero({ movie, className }: HeroProps) {
             </p>
           )}
 
-          {/* Actions: "My List" comes back with a watchlist, as on `MovieCard`. */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <Button
-              size="lg"
-              className="h-10 gap-2 rounded-lg px-5 text-sm font-medium sm:h-12 sm:px-8 sm:text-base"
-            >
-              <Play className="fill-current" />
-              Play
-            </Button>
-            <Button variant="ghost" size="icon" className="glass size-10 rounded-lg sm:size-12">
-              <Info />
-              <span className="sr-only">More Info</span>
-            </Button>
-          </div>
+          {/* "My List" comes back with a watchlist, as on `MovieCard`. */}
+          <Link
+            to={href}
+            className={cn(
+              buttonVariants({ size: 'lg' }),
+              'h-10 gap-2 rounded-lg px-5 text-sm font-medium sm:h-12 sm:px-8 sm:text-base'
+            )}
+          >
+            <Info aria-hidden="true" />
+            More Info
+          </Link>
         </div>
       </div>
     </section>

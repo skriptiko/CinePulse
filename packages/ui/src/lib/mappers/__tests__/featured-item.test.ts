@@ -24,6 +24,7 @@ describe('toFeaturedItemData', () => {
       year: '2021',
       rating: '7.8',
       genre: 'Science Fiction',
+      href: `/movies/${movie.id}`,
     });
   });
 

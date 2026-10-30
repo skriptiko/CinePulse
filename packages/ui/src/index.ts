@@ -19,6 +19,8 @@ export type { HeroData, HeroProps } from './components/hero';
 export { Hero } from './components/hero';
 export type { MovieCardData, MovieCardProps } from './components/movie-card';
 export { MovieCard } from './components/movie-card';
+export type { MovieDetailData, MovieDetailViewProps } from './components/movie-detail-view';
+export { MovieDetailView } from './components/movie-detail-view';
 export { NotFound } from './components/not-found';
 export type { PageBoundaryProps } from './components/page-boundary';
 export { PageBoundary } from './components/page-boundary';
@@ -27,6 +29,7 @@ export {
   ContentRowSkeleton,
   FeaturedGridSkeleton,
   HeroSkeleton,
+  MovieDetailSkeleton,
   MovieGridSkeleton,
   PageSkeleton,
   SKELETON_DELAY_MS,
@@ -60,5 +63,6 @@ export { usePageMeta } from './hooks/use-page-meta';
 export { toFeaturedItemData } from './lib/mappers/featured-item';
 export { toHeroData } from './lib/mappers/hero';
 export { toMovieCardData, toTrendingCardData, toTvCardData } from './lib/mappers/movie-card';
+export { toMovieDetailData } from './lib/mappers/movie-detail';
 
 export { cn } from './lib/utils';

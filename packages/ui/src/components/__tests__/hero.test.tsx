@@ -10,6 +10,7 @@ const MOVIE: HeroData = {
   imageSrcSet: null,
   year: '2021',
   rating: '7.8',
+  href: '/movies/1',
 };
 
 describe('Hero', () => {
@@ -23,6 +24,12 @@ describe('Hero', () => {
     expect(screen.getByRole('region', { name: 'Dune' })).toBeInTheDocument();
     expect(screen.getByText('7.8')).toBeInTheDocument();
     expect(screen.getByText('2021')).toBeInTheDocument();
+  });
+
+  it('links to the details page', () => {
+    renderWithProviders(<Hero movie={MOVIE} />);
+
+    expect(screen.getByRole('link', { name: 'More Info' })).toHaveAttribute('href', '/movies/1');
   });
 
   it('does not offer a list that cannot save anything', () => {
