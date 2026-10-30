@@ -74,7 +74,7 @@ From here on, new or changed logic in `packages/*` and new UI states land with t
    - ✅ **Movies** (`apps/pages-mfe/src/pages/movies/__tests__/`): search ↔ list switching (regression for the conditional-hook bug), genre filter, sort, empty state, "Load more" (next-page error, end of list), state in the URL, URL parsing;
    - **Home**: rows render from MSW fixtures, and one failing row does not blank the page.
 
-### Step 3 — e2e (after phase 6)
+### Step 3 — ✅ e2e
 
 Add Playwright (chromium) on the merged `dist/` served by `firebase emulators:start --only hosting`. Network goes through `page.route('**/api/tmdb/**')` with fixtures. Scenarios:
 
@@ -89,7 +89,7 @@ e2e runs on PRs into `main` only.
 ## CI
 
 - `quality` job: `pnpm install --frozen-lockfile` → `pnpm lint` → `pnpm typecheck` → `pnpm test`.
-- e2e: a separate job on PRs into `main`, after `build:deploy`.
+- ✅ e2e: a separate `e2e` job on PRs into `main`, after `build:deploy`. `FIREBASE_CLI` overrides the emulator command there, because CI has no global `firebase-tools`.
 
 ## Coverage
 

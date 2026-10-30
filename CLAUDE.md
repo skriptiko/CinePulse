@@ -30,6 +30,7 @@ pnpm test                             # vitest run across all projects (root vit
 pnpm exec vitest run --project ui     # a single project; pnpm test:coverage — report in coverage/
 pnpm size                             # host JS budget (.size-limit.json); run turbo build --filter=@repo/host first
 pnpm emulators                        # build:deploy + Firebase Hosting (5010) and Functions (5011) on the demo project
+pnpm test:e2e                         # Playwright on the merged dist/: run pnpm build:deploy first; needs a global firebase-tools
 ```
 
 Verifying changes = `pnpm typecheck` + `pnpm lint` + `pnpm test`. Test stack: ADR-0006, plan: `docs/05-testing/TEST_STRATEGY.md`:
