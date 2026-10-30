@@ -67,6 +67,7 @@ Task orchestration is in `turbo.json`: `build` (with `dependsOn: ["^build"]`, ca
 | Package | Purpose |
 |-------|-------------|
 | `@repo/api` | TMDB client, endpoints, React Query hooks, types |
+| `@repo/firebase` | Firebase app and Auth session behind dynamic imports; the only importer of the SDK |
 | `@repo/ui` | Design system (Shadcn UI + Radix + Tailwind), mappers |
 | `@repo/events` | Typed event bus + global store |
 | `@repo/routes` | Path constants (`ROUTE_PATHS`) and helpers |

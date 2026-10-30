@@ -100,8 +100,11 @@ The only source of client state outside React Query is the global store (`packag
 const THEMES = ['light', 'dark', 'system'] as const;
 type Theme = (typeof THEMES)[number];
 
-type GlobalState = { theme: Theme }; // default: 'dark' (dark-first)
-type GlobalActions = { setTheme: (theme: Theme) => void };
+type AuthStatus = 'loading' | 'authenticated' | 'anonymous';
+type AuthUser = { uid: string; displayName: string | null; email: string | null; photoUrl: string | null };
+
+type GlobalState = { theme: Theme; user: AuthUser | null; authStatus: AuthStatus }; // defaults: 'dark', null, 'anonymous'
+type GlobalActions = { setTheme: (theme: Theme) => void; setUser: (user: AuthUser | null) => void };
 type GlobalStore = GlobalState & GlobalActions;
 ```
 
@@ -111,7 +114,7 @@ type GlobalStore = GlobalState & GlobalActions;
 - `useGlobalStore(selector)` — React hook; the component re-renders when the selected value changes. The selector must return a stable value; wrap a selector that builds an object or array in `useShallow`.
 - `getGlobalStore()` / `createGlobalStore()` — the shared instance and a fresh one (tests).
 
-> **Status:** only the theme is stored. User state (`user`, sign-in status) comes back with Firebase Auth, when it has a real source. The theme switcher in the header is plan item 6.5.
+> `user` and `authStatus` are written only by `@repo/firebase`. `authStatus` is `loading` while a known session is restored, so protected pages neither flash nor redirect.
 
 ## Watchlist (Firestore)
 
@@ -151,9 +154,11 @@ The typed event dictionary of the event bus (`packages/events/src/types.ts`):
 |-------|---------|
 | `notification:show` | `NotificationPayload { type, message, duration? }` |
 | `mfe:error` | `MfeErrorPayload { name; error: SerializedError }` |
-| `error:report` | `ErrorReportPayload { error: unknown; source: 'boundary' \| 'query' \| 'mutation' \| 'window' }` |
+| `error:report` | `ErrorReportPayload { error: unknown; source: 'boundary' \| 'query' \| 'mutation' \| 'window' \| 'auth' }` |
+| `user:login` | `UserLoginPayload { user: AuthUser }` |
+| `user:logout` | `UserLogoutPayload { uid: string }` |
 
-`NotificationPayload.type` ∈ `'success' | 'error' | 'warning' | 'info'`. Event names are typed as ``EventKey = `${EventDomain}:${string}` ``, so a key outside the `domain:action` format fails `tsc`. `mfe:error` carries plain data (`serializeError(error)` → `{ name, message }`); `error:report` keeps the original error because the host listener filters reports by `ApiError` kind. `error:report` is emitted by boundaries, `QueryCache`/`MutationCache` and the host's window handlers, and has one listener in the host; `notification:show` is emitted by `QueryCache.onError` and shown as a toast by the host; `mfe:error` is emitted when a remote fails to load. The former `user:*`, `navigation:change` and `mfe:ready` events had no emitters or listeners and were removed; they come back with Firebase Auth.
+`NotificationPayload.type` ∈ `'success' | 'error' | 'warning' | 'info'`. Event names are typed as ``EventKey = `${EventDomain}:${string}` ``, so a key outside the `domain:action` format fails `tsc`. `mfe:error` carries plain data (`serializeError(error)` → `{ name, message }`); `error:report` keeps the original error because the host listener filters reports by `ApiError` kind. `error:report` is emitted by boundaries, `QueryCache`/`MutationCache` and the host's window handlers, and has one listener in the host; `notification:show` is emitted by `QueryCache.onError` and shown as a toast by the host; `mfe:error` is emitted when a remote fails to load. `user:login` / `user:logout` are emitted by `@repo/firebase` when the signed-in user changes, including a restored session. The former `navigation:change` and `mfe:ready` events had no emitters or listeners and were removed.
 
 ## Images
 

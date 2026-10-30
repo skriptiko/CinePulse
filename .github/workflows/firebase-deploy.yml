@@ -119,7 +119,7 @@ jobs:
       - name: Run e2e
         run: pnpm test:e2e
         env:
-          FIREBASE_CLI: pnpm dlx firebase-tools@15.18.0 emulators:start --project demo --only hosting
+          FIREBASE_CLI: pnpm dlx firebase-tools@15.18.0 emulators:start --project demo --only hosting,auth
 
   build-and-deploy:
     needs: [quality, rules]

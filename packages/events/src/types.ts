@@ -1,5 +1,5 @@
 /** Domains an event name may start with; a new domain is added here first. */
-export type EventDomain = 'notification' | 'mfe' | 'error';
+export type EventDomain = 'notification' | 'mfe' | 'error' | 'user';
 
 /** Every event is named `domain:action`. */
 export type EventKey = `${EventDomain}:${string}`;
@@ -22,7 +22,7 @@ export type MfeErrorPayload = {
   error: SerializedError;
 };
 
-export type ErrorReportSource = 'boundary' | 'query' | 'mutation' | 'window';
+export type ErrorReportSource = 'boundary' | 'query' | 'mutation' | 'window' | 'auth';
 
 export type ErrorReportPayload = {
   /** The original error: the host listener needs its type (`ApiError` kind) to filter reports. */
@@ -30,10 +30,28 @@ export type ErrorReportPayload = {
   source: ErrorReportSource;
 };
 
+/** The signed-in user, as the app sees it; the Firebase `User` stays in `@repo/firebase`. */
+export type AuthUser = {
+  uid: string;
+  displayName: string | null;
+  email: string | null;
+  photoUrl: string | null;
+};
+
+export type UserLoginPayload = {
+  user: AuthUser;
+};
+
+export type UserLogoutPayload = {
+  uid: string;
+};
+
 export type EventMap = {
   'notification:show': NotificationPayload;
   'mfe:error': MfeErrorPayload;
   'error:report': ErrorReportPayload;
+  'user:login': UserLoginPayload;
+  'user:logout': UserLogoutPayload;
 };
 
 /** Compile-time check: fails when an `EventMap` key does not match `EventKey`. */

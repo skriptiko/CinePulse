@@ -12,6 +12,7 @@ export {
   POSTER_SIZE_CARD,
   SEARCH_QUERY_MAX_LENGTH,
   TMDB_MAX_PAGES,
+  toHttpError,
 } from './core';
 
 export type { DiscoverSortBy, MovieCategory, TVCategory } from './endpoints';

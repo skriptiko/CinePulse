@@ -1,4 +1,5 @@
 import { ApiProvider } from '@repo/api';
+import { startAuthSession } from '@repo/firebase';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
@@ -18,6 +19,7 @@ window.addEventListener('vite:preloadError', (event) => handlePreloadError(event
 // Once per page, before the first render: remotes may emit during their first render.
 startErrorReporting();
 subscribeToNotifications();
+startAuthSession();
 
 createRoot(rootElement).render(
   <StrictMode>
