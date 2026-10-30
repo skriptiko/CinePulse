@@ -1,3 +1,4 @@
+import { useGlobalStore } from '@repo/events';
 import { Toaster as Sonner } from 'sonner';
 
 /**
@@ -5,9 +6,11 @@ import { Toaster as Sonner } from 'sonner';
  * `notification:show`, and `subscribeToNotifications` shows it here.
  */
 export function Toaster() {
+  const theme = useGlobalStore((state) => state.theme);
+
   return (
     <Sonner
-      theme="dark"
+      theme={theme}
       position="bottom-right"
       toastOptions={{
         classNames: {

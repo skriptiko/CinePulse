@@ -6,9 +6,10 @@ packages:
 # Single source of versions shared across workspace packages (`"catalog:"` in package.json).
 # functions/ stays on plain ranges: Cloud Build installs it with npm, which has no catalog protocol.
 catalog:
+  "@fontsource-variable/geist": ^5.3.0
   react: ^19.3.1
   react-dom: ^19.3.1
-  react-router-dom: ^7.13.0
+  react-router-dom: ^7.18.5
   "@tanstack/react-query": ^5.62.14
   react-error-boundary: ^6.1.6
   zustand: ^5.0.16
@@ -19,14 +20,15 @@ catalog:
   "@types/react-dom": ^19.3.0
   "@types/node": ^24.0.0
   typescript: ^5.7.3
-  vite: ^5.4.14
-  "@vitejs/plugin-react": ^4.3.4
-  "@module-federation/vite": ^1.11.0
+  vite: ^7.3.7
+  "@vitejs/plugin-react": ^5.2.0
+  # 1.12+ adds up to 40 kB of runtime to the host (CIN-80); Renovate is capped to match.
+  "@module-federation/vite": ~1.11.0
   "@module-federation/dts-plugin": ^0.11.0
   tailwindcss: ^4.3.3
   '@tailwindcss/vite': ^4.3.3
-  vitest: ^3.2.7
-  "@vitest/coverage-v8": ^3.2.7
+  vitest: ^4.1.12
+  "@vitest/coverage-v8": ^4.1.12
   jsdom: ^30.1.3
   msw: ^3.0.3
   "@testing-library/react": ^16.3.3

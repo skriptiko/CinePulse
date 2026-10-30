@@ -4,16 +4,22 @@ import { onlineManager } from '@tanstack/react-query';
 
 const emitErrorReport = createTypedEmitter('error:report');
 const onErrorReport = createTypedListener('error:report');
+const onMfeError = createTypedListener('mfe:error');
 
 /**
- * The only `error:report` listener, plus global handlers for errors nothing else caught.
+ * The only `error:report` and `mfe:error` listener, plus global handlers for errors nothing else caught.
  * No reporting vendor is chosen yet, so reports go to the console in development only.
  */
 export function startErrorReporting(): () => void {
-  const unsubscribe = onErrorReport(({ error, source }) => {
+  const stopErrorReports = onErrorReport(({ error, source }) => {
     if (!shouldReport(error)) return;
     if (import.meta.env.DEV) {
       console.error(`[error:report] ${source}`, error);
+    }
+  });
+  const stopMfeErrors = onMfeError(({ name, error }) => {
+    if (import.meta.env.DEV) {
+      console.error(`[mfe:error] ${name}`, error);
     }
   });
 
@@ -21,7 +27,8 @@ export function startErrorReporting(): () => void {
   window.addEventListener('unhandledrejection', handleUnhandledRejection);
 
   return () => {
-    unsubscribe();
+    stopErrorReports();
+    stopMfeErrors();
     window.removeEventListener('error', handleWindowError);
     window.removeEventListener('unhandledrejection', handleUnhandledRejection);
   };

@@ -1,5 +1,5 @@
 import { resolve } from 'node:path';
-import { defineProject } from 'vitest/config';
+import { configDefaults, defineProject } from 'vitest/config';
 
 export default defineProject({
   resolve: {
@@ -7,6 +7,7 @@ export default defineProject({
   },
   test: {
     name: 'host',
+    exclude: [...configDefaults.exclude, '**/dist/**'],
     environment: resolve(__dirname, '../../scripts/vitest-jsdom-environment.ts'),
     setupFiles: ['@repo/test-utils/setup'],
   },

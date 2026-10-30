@@ -60,7 +60,7 @@ export function MoviesGrid({
             disabled={isFetching}
             className="rounded-full px-8"
           >
-            {isFetchingNextPage && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
+            {isFetchingNextPage && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
             {loadMoreLabel(isFetchingNextPage, isFetchNextPageError)}
           </Button>
         ) : (

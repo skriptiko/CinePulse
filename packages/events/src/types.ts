@@ -46,11 +46,17 @@ export type UserLogoutPayload = {
   uid: string;
 };
 
+/** Every event of the bus with its payload; a new event is added here first. */
 export type EventMap = {
+  /** Show a toast. Emitted by `QueryCache`/`MutationCache`, shown by the host. */
   'notification:show': NotificationPayload;
+  /** A remote failed to load. Emitted and handled by the host. */
   'mfe:error': MfeErrorPayload;
+  /** An error worth reporting. The host holds the only listener. */
   'error:report': ErrorReportPayload;
+  /** A user signed in, or a session was restored. Emitted by `@repo/firebase`. */
   'user:login': UserLoginPayload;
+  /** The signed-in user left. Emitted by `@repo/firebase`. */
   'user:logout': UserLogoutPayload;
 };
 

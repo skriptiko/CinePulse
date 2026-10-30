@@ -120,7 +120,7 @@ Boundaries are built on `react-error-boundary` (a strict MF singleton) and live 
 
 Also:
 - **Unknown URL** — the host appends a catch-all `*` route rendering `NotFound` after the remotes' routes.
-- **Remote route loading** — `loadRemoteRoutes(REMOTES)` (`apps/host/src/remotes/`) loads each remote independently. A failed remote gets `RemoteUnavailable` ("This section is unavailable" + Try again, which reloads) on the paths listed for it in `REMOTES`, and `mfe:error` is emitted with a serialized error; the other remotes keep working.
+- **Remote route loading** — `useRemoteRoutes(REMOTES)` (`apps/host/src/remotes/`) loads a remote the first time the user reaches one of its paths ([ADR-0011](./decisions/ADR-0011-lazy-remotes-declarative-routing.md)). A failed remote gets `RemoteUnavailable` ("This section is unavailable" + Try again, which reloads) on the paths listed for it in `REMOTES`, and `mfe:error` is emitted with a serialized error; the other remotes keep working.
 - **Stale chunks after a deploy** — `vite:preloadError` triggers one `location.reload()`; the reload time in `sessionStorage` blocks another reload for 60 s, so a really missing chunk cannot loop.
 - **API errors** — `ApiError` with `kind` (`network`, `not_found`, `server`, `client`, `validation`), `status` and `cause`; an abort is rethrown unchanged. See [API_SPEC.md](./API_SPEC.md#errors).
 - **One channel per error** — `createQueryClient` (`@repo/api`) sets `QueryCache.onError`: every failed query emits `error:report` (`source: 'query'`); a toast (`notification:show`, text from `getErrorMessage`) is emitted only when the query already has data (a failed background refetch), never for a 404 and never when `meta.inlineErrors` is set. Without data the error goes to the page boundary instead. Failed mutations always toast.
@@ -145,8 +145,8 @@ Pipeline details: [CI_CD.md](../06-deployment/CI_CD.md); environments: [ENVIRONM
 
 ## Known limitations
 
+- **`new Function` in the Module Federation runtime.** The bundle contains such branches, but the paths we use never reach them: the CSP is enforced without `'unsafe-eval'`, and the production pages load with a clean console (checked 2026-10-30). A runtime upgrade that reaches them would fail under the CSP, and `e2e/smoke.spec.ts` would catch it, because it runs under the same headers.
 - Shared dependencies tightly couple the `react`/`react-router-dom` versions across all MFEs, so upgrades must be coordinated.
-- The global store is not reactive for React out of the box (no subscription hook); for now it is mostly used as a state bus (see [ADR-0004](./decisions/ADR-0004-typed-event-bus.md)).
 - There is no separate staging environment; deploys go straight to production (Phase 6).
 
 ## ➕ Planned impact of the requirements (2026-07-12)

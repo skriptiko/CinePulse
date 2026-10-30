@@ -17,11 +17,14 @@ Pipeline: [`.github/workflows/firebase-deploy.yml`](../../.github/workflows/fire
   4. `pnpm typecheck`.
   5. `pnpm test`.
 - **Job `size`** (on every trigger, not required for merge): `pnpm turbo build --filter=@repo/host` → `pnpm size` (budget in `.size-limit.json`).
-- **Job `build-and-deploy`** (`needs: quality`, push to `main` only, no concurrent deploys):
+- **Job `rules`** (on every trigger): sets up Java 21 and runs the Firestore rules tests on the emulator.
+- **Job `e2e`** (PRs into `main` only): `pnpm build:deploy`, then Playwright on the merged `dist/` with the Hosting and Auth emulators.
+- **Job `build-and-deploy`** (`needs: [quality, rules]`, push to `main` only, no concurrent deploys):
   1. The same checkout / pnpm / Node / install.
   2. `pnpm build:deploy` — Turbo builds all apps and packages except the `apps/design` sandbox (it does not go to production), and `scripts/merge-dist.js` merges `dist/` (see below). Locally it is the same command.
   3. Functions deploy (`firebase deploy --only functions`) — first, because the `/api/tmdb/**` rewrite points to `tmdbProxy`.
-  4. `FirebaseExtended/action-hosting-deploy@v0` — deploys to `projectId: cinepulse-eec15`, `target: production`, `channelId: live`.
+  4. Firestore rules deploy (`firebase deploy --only firestore:rules`).
+  5. `FirebaseExtended/action-hosting-deploy@v0` — deploys to `projectId: cinepulse-eec15`, `target: production`, `channelId: live`.
 
 **GitHub secrets:**
 
@@ -29,8 +32,6 @@ Pipeline: [`.github/workflows/firebase-deploy.yml`](../../.github/workflows/fire
 |--------|-------------|
 | `FIREBASE_SERVICE_ACCOUNT` | Service account for deploying to Firebase |
 | `GITHUB_TOKEN` | Standard Actions token (`repoToken`) |
-
-> ⚠️ The workflow deploys only **hosting**. Cloud Functions are currently deployed manually (see [RUNBOOK](../07-operations/RUNBOOK.md#manual-deploy-procedure)) or via a local `firebase deploy`.
 
 ## Functions
 
@@ -60,11 +61,15 @@ Rewrites in `firebase.json` route `/pages-mfe/**` and `/user-mfe/**` to their re
 
 ## Quality gates
 
-🟡 **Lint + typecheck** — job `quality`; deployment depends on it (`needs`), so a failure stops the deploy. On a PR the checks are visible in the Checks tab.
+🟢 **Lint, typecheck, tests** — job `quality`; deployment depends on it (`needs`), so a failure stops the deploy. On a PR the checks are visible in the Checks tab.
 
-⬜ **Tests** — `pnpm test` is added to job `quality` once tests are introduced.
+🟢 **Firestore rules** — job `rules`; deployment depends on it too.
 
-⬜ **Branch protection** — to make sure a PR cannot be merged with a red `quality`, enable a required check in the repo settings (GitHub → Settings → Branches → `main`). See [TEST_STRATEGY → CI](../05-testing/TEST_STRATEGY.md#ci).
+🟢 **E2E** — job `e2e` on PRs into `main`.
+
+🟡 **Bundle budget** — job `size` reports on every trigger but does not block the deploy.
+
+🟢 **Rulesets** — `main` takes changes only through a PR with green `quality`, `rules`, `e2e` and `pr-title`, merged with a merge commit; no approval is required, and `size` stays optional. `develop` keeps direct pushes. Both forbid force-pushes and deletion. Do not enable auto-delete of head branches: the head of a release PR is `develop`.
 
 ## Rollback
 

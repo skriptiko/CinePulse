@@ -2,12 +2,12 @@
 
 # Test strategy
 
-> **Current state: no tests yet.** This document is the rollout plan. Tools and versions are fixed in [ADR-0006](../03-architecture/decisions/ADR-0006-testing-stack.md). The rules for writing tests (queries, mocking, states, timers, coverage) live in the engineering standards, §14 (Notion). Where this document and the standards disagree, the standards win.
+> **Current state:** unit, component and integration tests run in job `quality`, Firestore rules in job `rules`, Playwright smoke and auth scenarios in job `e2e`. Tools and versions are fixed in [ADR-0006](../03-architecture/decisions/ADR-0006-testing-stack.md). The rules for writing tests (queries, mocking, states, timers, coverage) live in the engineering standards, §14 (Notion). Where this document and the standards disagree, the standards win.
 
 ## Pyramid
 
 ```
-        ▲     E2E (few, critical paths)               → Playwright, later
+        ▲     E2E (few, critical paths)               → Playwright
        ▲▲▲    Component / integration (some)          → Vitest + Testing Library + MSW
       ▲▲▲▲▲   Unit (many, cheap, fast)                → Vitest
 ```
@@ -33,7 +33,7 @@ packages/ui/src/components/
 apps/pages-mfe/src/pages/movies/
   movies-page.tsx
   __tests__/movies-page.test.tsx
-e2e/                             # later: <scenario>.spec.ts
+e2e/                             # <scenario>.spec.ts
 ```
 
 - Run everything with `pnpm test` from the root (one Vitest run over all projects). `pnpm test:coverage` gives a merged v8 report in `coverage/`.

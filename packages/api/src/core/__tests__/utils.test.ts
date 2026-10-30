@@ -18,15 +18,11 @@ describe('buildQueryString', () => {
 });
 
 describe('getImageUrl', () => {
-  it('builds a TMDB image URL with the w500 size by default', () => {
-    expect(getImageUrl('/abc.jpg')).toBe('https://image.tmdb.org/t/p/w500/abc.jpg');
-  });
-
   it('uses the requested size', () => {
     expect(getImageUrl('/abc.jpg', 'original')).toBe('https://image.tmdb.org/t/p/original/abc.jpg');
   });
 
   it.each([null, undefined, ''])('returns null when the path is %j', (path) => {
-    expect(getImageUrl(path)).toBeNull();
+    expect(getImageUrl(path, 'w500')).toBeNull();
   });
 });

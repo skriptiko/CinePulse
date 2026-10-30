@@ -46,6 +46,8 @@ export default defineConfig(({ command, mode }) => {
           },
         },
         shared: createMfShared(),
+        // The default, 'version-first', downloads every remote at startup (ADR-0011).
+        shareStrategy: 'loaded-first',
       }),
     ],
     resolve: {

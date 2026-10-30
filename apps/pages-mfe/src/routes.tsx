@@ -1,5 +1,5 @@
 import { ROUTE_PATHS } from '@repo/routes';
-import { MovieDetailSkeleton, MovieGridSkeleton, PageBoundary } from '@repo/ui';
+import { HomeSkeleton, MovieDetailSkeleton, MovieGridSkeleton, PageBoundary } from '@repo/ui';
 import { lazy } from 'react';
 import type { RouteObject } from 'react-router-dom';
 
@@ -20,7 +20,7 @@ export const routes: RouteObject[] = [
     path: ROUTE_PATHS.HOME,
     element: (
       // Past its chunk Home never suspends as a whole: each section has its own boundary.
-      <PageBoundary>
+      <PageBoundary fallback={<HomeSkeleton />}>
         <Home />
       </PageBoundary>
     ),

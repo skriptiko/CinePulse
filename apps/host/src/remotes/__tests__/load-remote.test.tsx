@@ -1,9 +1,8 @@
 import { createTypedListener } from '@repo/events';
 import { renderWithProviders, screen } from '@repo/test-utils';
-import type { RouteObject } from 'react-router-dom';
-import { useRoutes } from 'react-router-dom';
+import { type RouteObject, useRoutes } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
-import { loadRemoteRoutes, type RemoteDefinition } from '../load-remote-routes';
+import { loadRemote, type RemoteDefinition } from '../load-remote';
 
 const onMfeError = createTypedListener('mfe:error');
 
@@ -23,17 +22,17 @@ function Routes({ routes }: { routes: RouteObject[] }) {
   return useRoutes(routes);
 }
 
-describe('loadRemoteRoutes', () => {
-  it('returns the routes of every loaded remote', async () => {
-    const routes = await loadRemoteRoutes([PAGES]);
+describe('loadRemote', () => {
+  it('returns the routes of a loaded remote', async () => {
+    const routes = await loadRemote(PAGES);
 
     expect(routes.map((route) => route.path)).toEqual(['/']);
   });
 
-  it('puts placeholders on the paths of a failed remote and keeps the others', async () => {
-    const routes = await loadRemoteRoutes([PAGES, BROKEN_USER]);
+  it('puts placeholders on the paths of a failed remote', async () => {
+    const routes = await loadRemote(BROKEN_USER);
 
-    expect(routes.map((route) => route.path)).toEqual(['/', '/user/profile', '/user/settings']);
+    expect(routes.map((route) => route.path)).toEqual(['/user/profile', '/user/settings']);
 
     renderWithProviders(<Routes routes={routes} />, { route: '/user/settings' });
     expect(screen.getByRole('alert')).toHaveTextContent('This section is unavailable');
@@ -43,7 +42,7 @@ describe('loadRemoteRoutes', () => {
     const reports: unknown[] = [];
     const unsubscribe = onMfeError((payload) => reports.push(payload));
 
-    await loadRemoteRoutes([BROKEN_USER]);
+    await loadRemote(BROKEN_USER);
 
     expect(reports).toEqual([
       {

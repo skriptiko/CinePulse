@@ -3,6 +3,7 @@ import { getNextPageParam } from '../core';
 import { getTrending } from '../endpoints';
 import type { MediaType, TimeWindow } from '../types';
 
+/** Query options for trending lists, mixed by `media_type`. */
 export const trendingQueries = {
   all: () => ['trending'] as const,
   lists: () => [...trendingQueries.all(), 'list'] as const,

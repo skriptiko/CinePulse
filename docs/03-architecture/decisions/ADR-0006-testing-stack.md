@@ -6,6 +6,8 @@
 
 Accepted (2026-10-29)
 
+Amended 2026-10-30 (CIN-80): security updates moved the repo to Vite 7 and Vitest 4. The version constraint below no longer applies; the rest of the decision stands. Vitest 4 no longer skips `dist/` by default, so every project excludes it.
+
 ## Context
 
 The repo has no tests. Phases 4–6 of the refactoring plan rewrite the data layer (`ApiError`, retry policy, pagination) and the UI models (mappers, formatting), and that code should land with unit tests from the start. The engineering standards (§14) already set the rules for how tests are written. This ADR fixes the tools, versions and layout those rules rely on.
@@ -37,7 +39,7 @@ Constraints:
   - Without this, Node's `fetch` (undici) rejects jsdom's `AbortSignal`, and every MSW-backed request fails. It is the same approach as `jest-fixed-jsdom`.
 - Tests live in `__tests__/` next to the code, named `<name>.test.ts(x)` (kebab-case). E2E specs go in the root `e2e/` folder as `<scenario>.spec.ts`.
 - Shared infrastructure goes in **`@repo/test-utils`** (a devDependency of the projects that use it). `@repo/api` is the one exception: `@repo/test-utils` depends on it for DTO types, so `@repo/api` cannot use it back without a dependency cycle, which Turbo rejects. Its few transport tests create their own `setupServer()` from `msw/node`.
-  - `renderWithProviders`: a fresh `QueryClient` per test with `retry: false`, a router, `AsyncBoundary`, and a `userEvent.setup({ advanceTimers })` instance;
+  - `renderWithProviders`: a fresh `QueryClient` per test with `retry: false`, a router, and a `userEvent.setup({ advanceTimers })` instance;
   - MSW `server` with handlers grouped by domain;
   - fixture factories (`buildMovie`, `buildPaginated`) typed with the TMDB DTO types;
   - the axe helper.

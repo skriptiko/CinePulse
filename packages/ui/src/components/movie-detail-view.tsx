@@ -51,9 +51,7 @@ export function MovieDetailView({ movie }: MovieDetailViewProps) {
         </div>
 
         <div className="max-w-2xl">
-          <h1 className="mb-2 text-3xl font-bold tracking-tight text-balance sm:text-4xl md:text-5xl">
-            {title}
-          </h1>
+          <h1 className="fluid-heading mb-2 font-bold tracking-tight text-balance">{title}</h1>
           {tagline !== null && <p className="text-muted-foreground mb-4 italic">{tagline}</p>}
 
           <div className="text-muted-foreground mb-4 flex flex-wrap items-center gap-2 text-sm sm:gap-3">

@@ -26,6 +26,7 @@
     "react-router-dom": "catalog:"
   },
   "dependencies": {
+    "@fontsource-variable/geist": "catalog:",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@radix-ui/react-toggle-group": "^1.2.1",
     "@repo/api": "workspace:*",

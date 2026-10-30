@@ -21,6 +21,15 @@ export function PageSkeleton() {
   );
 }
 
+export function HomeSkeleton() {
+  return (
+    <>
+      <HeroSkeleton />
+      <ContentRowSkeleton />
+    </>
+  );
+}
+
 export function HeroSkeleton() {
   return (
     <SkeletonFrame>
