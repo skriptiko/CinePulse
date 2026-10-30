@@ -22,8 +22,8 @@ test('navigates across remotes', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1, name: 'Movies' })).toBeVisible();
   await expect(page).toHaveTitle('Movies · CinePulse');
 
-  await page.getByRole('banner').getByRole('link', { name: 'Profile' }).click();
-  await expect(page.getByRole('heading', { level: 1, name: 'User Profile' })).toBeVisible();
+  await page.getByRole('banner').getByRole('link', { name: 'Sign in' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Sign in' })).toBeVisible();
 });
 
 test('Movies filters and search live in the URL and survive Back', async ({ page }) => {

@@ -48,6 +48,8 @@ export function Header({ className }: HeaderProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const isDark = useResolvedTheme() === 'dark';
   const setTheme = useGlobalStore((state) => state.setTheme);
+  const user = useGlobalStore((state) => state.user);
+  const isAnonymous = useGlobalStore((state) => state.authStatus === 'anonymous');
 
   const handleThemeToggle = () => setTheme(isDark ? 'light' : 'dark');
 
@@ -93,16 +95,26 @@ export function Header({ className }: HeaderProps) {
               {isDark ? <Sun /> : <Moon />}
             </Button>
             <Link
-              to={ROUTE_PATHS.USER_PROFILE}
-              aria-label="Profile"
+              to={isAnonymous ? ROUTE_PATHS.AUTH_LOGIN : ROUTE_PATHS.USER_PROFILE}
+              aria-label={isAnonymous ? 'Sign in' : 'Profile'}
               className={cn(
                 buttonVariants({ variant: 'ghost', size: 'icon' }),
                 'overflow-hidden rounded-lg'
               )}
             >
-              <span className="from-accent to-accent/60 flex size-8 items-center justify-center rounded-lg bg-linear-to-br">
-                <User className="text-accent-foreground size-4" />
-              </span>
+              {user?.photoUrl ? (
+                // Google rejects avatar requests that carry a referrer.
+                <img
+                  src={user.photoUrl}
+                  alt=""
+                  referrerPolicy="no-referrer"
+                  className="size-8 rounded-lg object-cover"
+                />
+              ) : (
+                <span className="from-accent to-accent/60 flex size-8 items-center justify-center rounded-lg bg-linear-to-br">
+                  <User className="text-accent-foreground size-4" />
+                </span>
+              )}
             </Link>
             <Button
               variant="ghost"

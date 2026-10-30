@@ -65,6 +65,8 @@ export default defineConfig(({ command, mode }) => {
       strictPort: true,
       origin: 'http://localhost:5000',
       proxy: {
+        // The Firebase config comes from Hosting, as in production.
+        '/__/firebase': { target: 'https://cinepulse-eec15.web.app', changeOrigin: true },
         '/api/tmdb': {
           target: 'https://api.themoviedb.org/3',
           changeOrigin: true,
