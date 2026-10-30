@@ -14,7 +14,7 @@ import {
 } from '@repo/ui';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { ChevronDown, Grid3X3, LayoutGrid, Search, SlidersHorizontal } from 'lucide-react';
-import { type FormEvent, useId, useMemo } from 'react';
+import { type FormEvent, useId } from 'react';
 import { isSortOption, SORT_LABELS, SORT_OPTIONS, type SortOption } from './use-movie-filters';
 
 export type ViewMode = 'grid' | 'compact';
@@ -48,10 +48,7 @@ export function MoviesFilters({
   const { data: genresData } = useSuspenseQuery(genreQueries.movie());
   const searchId = useId();
 
-  const genreNames = useMemo(
-    () => [ALL_GENRES, ...genresData.genres.map((genre) => genre.name)],
-    [genresData]
-  );
+  const genreNames = [ALL_GENRES, ...genresData.genres.map((genre) => genre.name)];
   const activeGenreName =
     genresData.genres.find((genre) => genre.id === genreId)?.name ?? ALL_GENRES;
 
@@ -77,7 +74,7 @@ export function MoviesFilters({
                 <label htmlFor={searchId} className="sr-only">
                   Search movies
                 </label>
-                <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+                <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
                 <Input
                   id={searchId}
                   type="search"
@@ -97,9 +94,9 @@ export function MoviesFilters({
                   disabled={isSearching}
                   className={cn(buttonVariants({ variant: 'secondary' }), 'h-10 gap-2 rounded-lg')}
                 >
-                  <SlidersHorizontal className="h-4 w-4" />
+                  <SlidersHorizontal className="size-4" />
                   <span className="hidden sm:inline">{SORT_LABELS[sort]}</span>
-                  <ChevronDown className="h-4 w-4" />
+                  <ChevronDown className="size-4" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-40">
                   <DropdownMenuRadioGroup
@@ -160,7 +157,7 @@ function ViewModeToggle({ viewMode, onViewModeChange }: ViewModeToggleProps) {
     <ToggleGroup aria-label="Card size" value={viewMode} onValueChange={handleValueChange}>
       {VIEW_MODES.map(({ mode, label, Icon }) => (
         <ToggleGroupItem key={mode} value={mode} aria-label={label}>
-          <Icon className="h-4 w-4" aria-hidden="true" />
+          <Icon className="size-4" aria-hidden="true" />
         </ToggleGroupItem>
       ))}
     </ToggleGroup>

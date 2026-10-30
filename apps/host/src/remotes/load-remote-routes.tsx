@@ -26,14 +26,7 @@ export async function loadRemoteRoutes(
     if (result.status === 'fulfilled') return result.value.routes;
     if (remote === undefined) return [];
 
-    reportRemoteFailure(remote.name, result.reason);
+    emitMfeError({ name: remote.name, error: serializeError(result.reason) });
     return remote.paths.map((path) => ({ path, element: <RemoteUnavailable /> }));
   });
-}
-
-function reportRemoteFailure(name: string, reason: unknown): void {
-  emitMfeError({ name, error: serializeError(reason) });
-  if (import.meta.env.DEV) {
-    console.error(`Failed to load remote "${name}":`, reason);
-  }
 }

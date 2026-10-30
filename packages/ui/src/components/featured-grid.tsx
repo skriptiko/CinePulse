@@ -90,7 +90,7 @@ function FeaturedTile({ item, featured }: FeaturedTileProps) {
             <div className="text-muted-foreground mb-2 flex items-center gap-2 text-xs">
               {rating !== null && (
                 <div className="flex items-center gap-1">
-                  <Star aria-hidden="true" className="size-3 fill-yellow-500 text-yellow-500" />
+                  <Star aria-hidden="true" className="fill-rating text-rating size-3" />
                   <span className="text-foreground font-medium">{rating}</span>
                 </div>
               )}

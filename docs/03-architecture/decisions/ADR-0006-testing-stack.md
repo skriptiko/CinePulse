@@ -37,7 +37,7 @@ Constraints:
   - Without this, Node's `fetch` (undici) rejects jsdom's `AbortSignal`, and every MSW-backed request fails. It is the same approach as `jest-fixed-jsdom`.
 - Tests live in `__tests__/` next to the code, named `<name>.test.ts(x)` (kebab-case). E2E specs go in the root `e2e/` folder as `<scenario>.spec.ts`.
 - Shared infrastructure goes in **`@repo/test-utils`** (a devDependency of the projects that use it). `@repo/api` is the one exception: `@repo/test-utils` depends on it for DTO types, so `@repo/api` cannot use it back without a dependency cycle, which Turbo rejects. Its few transport tests create their own `setupServer()` from `msw/node`.
-  - `renderWithProviders`: a fresh `QueryClient` per test with `retry: false`, a router, `AsyncBoundary`, and a `userEvent.setup({ advanceTimers })` instance;
+  - `renderWithProviders`: a fresh `QueryClient` per test with `retry: false`, a router, and a `userEvent.setup({ advanceTimers })` instance;
   - MSW `server` with handlers grouped by domain;
   - fixture factories (`buildMovie`, `buildPaginated`) typed with the TMDB DTO types;
   - the axe helper.

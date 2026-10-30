@@ -4,7 +4,7 @@ export type QueryParams = Record<string, string | number | boolean | undefined>;
 
 export function getImageUrl(
   path: string | null | undefined,
-  size: ImageSize | BackdropSize | ProfileSize = 'w500'
+  size: ImageSize | BackdropSize | ProfileSize
 ): string | null {
   if (!path) return null;
   return `${API_CONFIG.TMDB_IMAGE_BASE_URL}/${size}${path}`;

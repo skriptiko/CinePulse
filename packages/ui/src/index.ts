@@ -14,6 +14,7 @@ export type { FeaturedGridProps, FeaturedItemData } from './components/featured-
 export { FeaturedGrid } from './components/featured-grid';
 export type { FooterProps } from './components/footer';
 export { Footer } from './components/footer';
+export type { HeaderProps } from './components/header';
 export { Header } from './components/header';
 export type { HeroData, HeroProps } from './components/hero';
 export { Hero } from './components/hero';
@@ -29,6 +30,7 @@ export {
   ContentRowSkeleton,
   FeaturedGridSkeleton,
   HeroSkeleton,
+  HomeSkeleton,
   MovieDetailSkeleton,
   MovieGridSkeleton,
   PageSkeleton,

@@ -3,8 +3,8 @@ import { createTypedEmitter } from '@repo/events';
 import { renderWithProviders, screen } from '@repo/test-utils';
 import { onlineManager } from '@tanstack/react-query';
 import { act } from 'react';
-import { afterEach, describe, expect, it } from 'vitest';
-import { shouldReport } from '../error-reporting';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { shouldReport, startErrorReporting } from '../error-reporting';
 import { subscribeToNotifications } from '../notification-toasts';
 import { OfflineBanner } from '../offline-banner';
 import { Toaster } from '../toaster';
@@ -24,6 +24,21 @@ describe('shouldReport', () => {
     expect(shouldReport(new ApiError('server', 'HTTP 500', { status: 500 }))).toBe(true);
     expect(shouldReport(new ApiError('network', 'fetch failed'))).toBe(true);
     expect(shouldReport(new TypeError('x is undefined'))).toBe(true);
+  });
+});
+
+describe('startErrorReporting', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it('logs a remote that failed to load', () => {
+    const logError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const stop = startErrorReporting();
+    const error = { name: 'TypeError', message: 'Failed to fetch' };
+
+    createTypedEmitter('mfe:error')({ name: 'userMfe', error });
+    stop();
+
+    expect(logError).toHaveBeenCalledWith('[mfe:error] userMfe', error);
   });
 });
 

@@ -88,6 +88,7 @@
   --color-surface: var(--surface);
   --color-surface-elevated: var(--surface-elevated);
   --color-highlight: var(--highlight);
+  --color-rating: oklch(0.795 0.184 86.047);
 
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);

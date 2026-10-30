@@ -1,6 +1,7 @@
 import {
   buildMovie,
   buildPaginated,
+  expectNoA11yViolations,
   renderWithProviders,
   screen,
   server,
@@ -77,5 +78,13 @@ describe('Home', () => {
       '/movies?genre=28'
     );
     expect(within(genres).getByRole('link', { name: 'All' })).toHaveAttribute('href', '/movies');
+  });
+
+  it('has no axe violations', async () => {
+    mockHome();
+    const { container } = renderWithProviders(<Home />);
+    await screen.findByRole('link', { name: 'Action' });
+
+    await expectNoA11yViolations(container);
   });
 });
