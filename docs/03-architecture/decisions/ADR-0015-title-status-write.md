@@ -18,11 +18,11 @@ Every read of `items` costs one read per title. A list of rows also differs from
 - **One mutation per row.** `useTitleStatus` is page-local, as ADR-0013 keeps mutation hooks with the page. `variables` follows a single call, so one mutation for the list would lose the state of every row but the last.
 - **The row shows the press, and the cache holds only what the server accepted.** A row shows `variables` while the write is pending. There is no `onMutate`, so a failure has nothing to roll back: pending ends and the stored value shows again. This stays true for any mix of success and failure across queued presses.
 - **`scope: { id: titleId }` runs the writes of a title in order,** so the last press is the last write.
-- **Success patches `items` from the write and does not refetch.** This deviates from engineering standards §7.5, because a refetch would cost a read of every title per press. A running read is cancelled first, so that a read from before the commit cannot bring the old status back, and then runs again, as it can carry another change, such as a title just added. A failure does refetch: the title may be gone.
+- **Success patches `items` from the write and does not refetch.** This deviates from engineering standards §7.5, because a refetch would cost a read of every title per press. A running or paused read is cancelled first, so that a read from before the commit cannot bring the old status back. It then runs again, as it can carry another change, such as a title just added, and so does a read that a failure left owing, because the patch marks `items` fresh. A failure does refetch: the title may be gone.
 - **No `disabled` and no spinner.** A disabled control drops focus, and the press already shows.
 - **A row changed under a filter stays until the folder or the filter changes.** If it left at once, the next row would move under the finger, and the second tap of a double tap would change that title. It also gives an undo in place. A kept row does not come back when the person returns to the filter.
 - **The filter is `?status=`,** with pills as on Movies, so that it looks different from the control that writes. A press pushes a history entry, an unknown value reads as All, and a press on the chosen pill adds nothing. `getFolderSearch` keeps other params, so neither param knows the other, and a folder delete reads them when it lands, so a filter pressed during the delete stays.
-- **In forced colours, a chosen segment or pill takes the system highlight.** Forced colours remove the fill and the ring, the only marks of the chosen state, and the row no longer prints its status as text. An outline would look like focus.
+- **In forced colours, a chosen segment or pill takes the system highlight.** Forced colours remove the fill and the ring, the only marks of the chosen state, and the row no longer prints its status as text. An outline would look like focus. The highlight needs `forced-color-adjust: none`, which also frees the focus ring from the system colours, so a chosen control draws its own inset ring.
 - **`WATCH_STATUSES` and `STATUS_LABELS` stay in user-mfe.** A value on the entry of `@repo/firebase` would reach anonymous visitors.
 
 ## Alternatives considered
@@ -44,7 +44,7 @@ Every read of `items` costs one read per title. A list of rows also differs from
 - A kept row can contradict the filter on screen, and the count includes it. The state is local, so it is lost on leaving the page.
 - Each row adds a Tab stop, so a movie row now takes two.
 - A second tab keeps the old status until its next read.
-- `setQueryData` resets the freshness of `items`, and a write that lands during a read costs a second read of every title.
+- A write that lands during a read costs another read of every title. In a burst of presses each read is the running read for the next landing, so one overlap costs one read per landing while presses land faster than a read finishes. A cancelled read also still completes on the server, as `getItems` passes no abort signal. Repeating only after the last landing would need a mutation key and a marker for the owed read, which is not worth it for a burst.
 - A failed press shows the generic toast, which names no title, and each failed press shows its own.
 - A row remounted during a write shows the old value until the write lands.
 - Whether Lite gives up on a write that hangs is unverified. The row would show the press until it does.
