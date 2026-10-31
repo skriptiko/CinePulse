@@ -276,6 +276,7 @@ describe('items', () => {
     const db = asUser('alice');
     await setDoc(doc(db, itemPath), item());
 
+    await assertFails(deleteDoc(doc(asUser('bob'), itemPath)));
     await assertSucceeds(deleteDoc(doc(db, itemPath)));
   });
 });

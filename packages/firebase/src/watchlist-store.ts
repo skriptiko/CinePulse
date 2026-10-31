@@ -4,6 +4,7 @@ import {
   arrayUnion,
   collection,
   connectFirestoreEmulator,
+  deleteDoc,
   doc,
   type Firestore,
   getDoc,
@@ -192,6 +193,11 @@ export function saveTitle(
     if (removed.length > 0) batch.update(ref, { folderIds: arrayRemove(...removed) });
     await batch.commit();
   });
+}
+
+/** Folders live on the title, so this also takes it out of every folder. */
+export function removeTitle(uid: string, titleId: string): Promise<void> {
+  return run((db) => deleteDoc(doc(db, 'users', uid, 'items', titleId)));
 }
 
 /** Only the status: a title deleted elsewhere is refused here, not brought back. */
