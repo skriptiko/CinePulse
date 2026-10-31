@@ -918,3 +918,225 @@ test.describe('on a touch screen', () => {
     await expect(folder).toBeChecked();
   });
 });
+
+function statusBox(page: Page, title: string, status: string) {
+  return page
+    .getByRole('radiogroup', { name: `Status of ${title}` })
+    .getByRole('radio', { name: status });
+}
+
+function filterPill(page: Page, name: string) {
+  return page.getByRole('group', { name: 'Filter by status' }).getByRole('button', { name });
+}
+
+test('a status belongs to the title, in every folder and after a reload', async ({
+  page,
+  request,
+}) => {
+  await openWatchlist(page);
+  const folderIds = await makeFolders(page, ['First', 'Second']);
+  const uid = await getUid(page);
+  await seedTitle(request, uid, MOVIE_ID, MOVIE, folderIds);
+  await page.goto('/user/watchlist');
+
+  await statusBox(page, MOVIE, 'Watched').click();
+  await expect
+    .poll(async () => (await readTitle(request, uid, `movie_${MOVIE_ID}`)).status)
+    .toBe('watched');
+
+  await selectFolder(page, 'First', 1);
+  await expect(statusBox(page, MOVIE, 'Watched')).toBeChecked();
+  await selectFolder(page, 'Second', 1);
+  await expect(statusBox(page, MOVIE, 'Watched')).toBeChecked();
+  await page.reload();
+  await expect(statusBox(page, MOVIE, 'Watched')).toBeChecked();
+  const stored = await readTitle(request, uid, `movie_${MOVIE_ID}`);
+  expect(stored.folderIds.sort()).toEqual([...folderIds].sort());
+});
+
+test('the status filter survives a sign-in, a folder change, a reload and Back', async ({
+  page,
+  request,
+}) => {
+  await page.goto('/user/watchlist?status=watched');
+  await signIn(page);
+  await expect(page).toHaveURL(/status=watched/);
+  await expect(filterPill(page, 'Watched')).toHaveAttribute('aria-pressed', 'true');
+
+  const [folderId] = await makeFolders(page, ['Tonight']);
+  const uid = await getUid(page);
+  await seedTitle(request, uid, 1, 'Seen', [folderId], { status: 'watched' });
+  await seedTitle(request, uid, 2, 'Unseen', [folderId]);
+  await page.reload();
+
+  await expect(page.getByText('Seen', { exact: true })).toBeVisible();
+  await expect(page.getByText('Unseen')).toHaveCount(0);
+  await folderLink(page, 'Tonight', 1).click();
+  await expect(page).toHaveURL(/status=watched/);
+  await expect(page).toHaveURL(/folder=/);
+  await filterPill(page, 'Planned').click();
+  await expect(page.getByText('Unseen')).toBeVisible();
+
+  await page.goBack();
+  await expect(page.getByText('Unseen')).toHaveCount(0);
+  await expect(filterPill(page, 'Watched')).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('the switch opens nothing, and the rest of the row opens the title', async ({
+  page,
+  request,
+}) => {
+  // Longer than the switch, or the row has no room past it for the link to reach.
+  const title = 'A title long enough to run well past the status switch';
+  await openWatchlist(page);
+  const uid = await getUid(page);
+  await seedTitle(request, uid, MOVIE_ID, title, []);
+  await page.goto('/user/watchlist');
+
+  const spot = await statusBox(page, title, 'Watched').boundingBox();
+  if (!spot) throw new Error('No switch');
+  await page.mouse.click(spot.x + spot.width / 2, spot.y + spot.height / 2);
+  await expect(statusBox(page, title, 'Watched')).toBeChecked();
+  await expect(page).toHaveURL(/\/user\/watchlist$/);
+
+  await page.mouse.click(spot.x + spot.width + 40, spot.y + spot.height / 2);
+  await expect(page).toHaveURL(new RegExp(`/movies/${MOVIE_ID}$`));
+});
+
+test('a correction during a slow write ends on the last press', async ({ page, request }) => {
+  await openWatchlist(page);
+  const uid = await getUid(page);
+  await seedTitle(request, uid, MOVIE_ID, MOVIE, []);
+  await page.goto('/user/watchlist');
+  await expect(statusBox(page, MOVIE, 'Planned')).toBeChecked();
+
+  let release = () => {};
+  const released = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  let commits = 0;
+  await page.route(/documents:commit/, async (route) => {
+    commits += 1;
+    if (commits === 1) await released;
+    await route.continue();
+  });
+
+  await statusBox(page, MOVIE, 'Watched').click();
+  await expect.poll(() => commits).toBe(1);
+  await statusBox(page, MOVIE, 'Planned').click();
+  await expect(statusBox(page, MOVIE, 'Planned')).toBeChecked();
+
+  // The second write waits for the first, or it could land before it.
+  await page.waitForTimeout(300);
+  expect(commits).toBe(1);
+  release();
+  await expect.poll(() => commits).toBe(2);
+  await expect(statusBox(page, MOVIE, 'Planned')).toBeChecked();
+  await expect
+    .poll(async () => (await readTitle(request, uid, `movie_${MOVIE_ID}`)).status)
+    .toBe('planned');
+});
+
+test('a failed write puts the stored status back and keeps focus', async ({ page, request }) => {
+  await openWatchlist(page);
+  const uid = await getUid(page);
+  await seedTitle(request, uid, MOVIE_ID, MOVIE, []);
+  await page.goto('/user/watchlist');
+  await expect(statusBox(page, MOVIE, 'Planned')).toBeChecked();
+
+  await page.route(/documents:commit/, (route) => route.abort());
+  await statusBox(page, MOVIE, 'Watched').click();
+
+  await expect(page.getByText('Could not reach the server. Check your connection.')).toBeVisible();
+  await expect(statusBox(page, MOVIE, 'Planned')).toBeChecked();
+  await expect(statusBox(page, MOVIE, 'Watched')).toBeFocused();
+});
+
+test('the keyboard reaches the switch, and a row it changes keeps focus under a filter', async ({
+  page,
+  request,
+}) => {
+  await openWatchlist(page);
+  const uid = await getUid(page);
+  await seedTitle(request, uid, 1, 'First', []);
+  await seedTitle(request, uid, 2, 'Second', []);
+  await page.goto('/user/watchlist?status=planned');
+
+  await statusBox(page, 'First', 'Planned').focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(statusBox(page, 'First', 'Watched')).toBeFocused();
+  await page.keyboard.press('Space');
+
+  await expect(statusBox(page, 'First', 'Watched')).toBeChecked();
+  await expect(statusBox(page, 'First', 'Watched')).toBeFocused();
+  await expect(page.getByText('2 titles', { exact: true })).toBeVisible();
+  await expect.poll(async () => (await readTitle(request, uid, 'movie_1')).status).toBe('watched');
+  await expect(statusBox(page, 'First', 'Watched')).toBeFocused();
+});
+
+test('Back that takes away the focused row moves focus to the heading', async ({
+  page,
+  request,
+}) => {
+  await openWatchlist(page);
+  const uid = await getUid(page);
+  await seedTitle(request, uid, 1, 'Seen', [], { status: 'watched' });
+  await seedTitle(request, uid, 2, 'Unseen', []);
+  await page.goto('/user/watchlist?status=planned');
+  await expect(page.getByText('Unseen')).toBeVisible();
+  await filterPill(page, 'Watched').click();
+
+  await statusBox(page, 'Seen', 'Watched').focus();
+  await page.goBack();
+
+  await expect(page.getByText('Unseen')).toBeVisible();
+  await expect(page.getByRole('heading', { level: 2, name: 'All titles' })).toBeFocused();
+});
+
+test.describe('the status on a phone', () => {
+  test.use({ hasTouch: true, viewport: { width: 320, height: 640 } });
+
+  test('a double tap under a filter leaves the next title alone', async ({ page, request }) => {
+    await openWatchlist(page);
+    const uid = await getUid(page);
+    await seedTitle(request, uid, 1, 'Second', []);
+    await seedTitle(request, uid, 2, 'First', [], {
+      addedAt: new Date(Date.now() + 60_000).toISOString(),
+    });
+    await page.goto('/user/watchlist?status=planned');
+
+    const spot = await statusBox(page, 'First', 'Watched').boundingBox();
+    if (!spot) throw new Error('No switch');
+    await page.touchscreen.tap(spot.x + spot.width / 2, spot.y + spot.height / 2);
+    await page.waitForTimeout(120);
+    await page.touchscreen.tap(spot.x + spot.width / 2, spot.y + spot.height / 2);
+
+    await expect
+      .poll(async () => (await readTitle(request, uid, 'movie_2')).status)
+      .toBe('watched');
+    await page.waitForTimeout(300);
+    expect((await readTitle(request, uid, 'movie_1')).status).toBe('planned');
+    await expect(statusBox(page, 'First', 'Watched')).toBeChecked();
+  });
+
+  test('the switch and the filter fit, with 44 px to press', async ({ page, request }) => {
+    await openWatchlist(page);
+    const uid = await getUid(page);
+    await seedTitle(request, uid, MOVIE_ID, 'A title long enough to reach past the edge', []);
+    await page.goto('/user/watchlist');
+
+    const group = page.getByRole('radiogroup', { name: /^Status of / });
+    const groupBox = await group.boundingBox();
+    const radio = await group.getByRole('radio', { name: 'Watched' }).boundingBox();
+    const pill = await filterPill(page, 'Watched').boundingBox();
+    if (!groupBox || !radio || !pill) throw new Error('No control');
+
+    expect(groupBox.x + groupBox.width).toBeLessThanOrEqual(320);
+    expect(radio.height).toBeGreaterThanOrEqual(44);
+    expect(pill.height).toBeGreaterThanOrEqual(44);
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+    );
+    expect(overflow).toBe(0);
+  });
+});
