@@ -1,25 +1,22 @@
 import { useGlobalStore } from '@repo/events';
-import { signOutUser } from '@repo/firebase';
 import { ROUTE_PATHS } from '@repo/routes';
 import {
   AsyncBoundary,
-  Button,
   buttonVariants,
   cn,
   formatTimestamp,
   SectionErrorFallback,
   usePageMeta,
 } from '@repo/ui';
-import { useMutation } from '@tanstack/react-query';
 import { useId, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { SignOutButton } from '../../components/sign-out-button';
 import { WatchlistStats, WatchlistStatsSkeleton } from './watchlist-stats';
 
 export function ProfilePage() {
   usePageMeta('Profile');
 
   const user = useGlobalStore((state) => state.user);
-  const signOut = useMutation({ mutationFn: signOutUser });
   const headingId = useId();
   const [isPhotoBroken, setIsPhotoBroken] = useState(false);
 
@@ -73,14 +70,7 @@ export function ProfilePage() {
         >
           Settings
         </Link>
-        <Button
-          variant="outline"
-          className="touch-target"
-          onClick={() => signOut.mutate()}
-          disabled={signOut.isPending}
-        >
-          Sign out
-        </Button>
+        <SignOutButton />
       </div>
     </div>
   );

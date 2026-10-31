@@ -83,8 +83,7 @@ function TitleRow({ uid, item, onStatusChange }: TitleRowProps) {
               key={status}
               value={status}
               aria-label={STATUS_LABELS[status]}
-              // The fill alone is 1.1:1 against the track.
-              className="touch-target data-[state=on]:ring-foreground/60 px-3 py-1 text-sm data-[state=on]:ring-1"
+              className="touch-target px-3 py-1 text-sm"
             >
               {STATUS_LABELS[status]}
             </ToggleGroupItem>
