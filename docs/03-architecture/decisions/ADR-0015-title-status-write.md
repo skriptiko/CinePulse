@@ -40,7 +40,7 @@ Every read of `items` costs one read per title. A list of rows also differs from
 
 ## Consequences
 
-- The store chunk grows by about 0.02 kB, and host JS does not grow. The host stylesheet, which every visitor loads, grows by about 0.17 kB gzip. The watchlist page chunk grows from 3.9 to 13.7 kB gzip for Radix ToggleGroup, for signed-in visitors only.
+- The store chunk grows by about 0.02 kB, and host JS does not grow. The host stylesheet, which every visitor loads, grows by about 0.2 kB gzip. The watchlist page chunk grows from 3.9 to 13.7 kB gzip for Radix ToggleGroup, for signed-in visitors only.
 - A kept row can contradict the filter on screen, and the count includes it. The state is local, so it is lost on leaving the page.
 - Each row adds a Tab stop, so a movie row now takes two.
 - A second tab keeps the old status until its next read.
