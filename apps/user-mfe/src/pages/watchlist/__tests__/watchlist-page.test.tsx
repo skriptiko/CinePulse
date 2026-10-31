@@ -1,4 +1,5 @@
 import { globalStore } from '@repo/events';
+import { watchlistQueries } from '@repo/firebase';
 import {
   expectNoA11yViolations,
   fireEvent,
@@ -6,6 +7,7 @@ import {
   screen,
   server,
   waitFor,
+  within,
 } from '@repo/test-utils';
 import { PageBoundary } from '@repo/ui';
 import { onlineManager } from '@tanstack/react-query';
@@ -72,6 +74,22 @@ function countReads(collectionName: string): number {
     .mock.calls.filter(([ref]) =>
       (ref as unknown as { path: string }).path.endsWith(collectionName)
     ).length;
+}
+
+function statusOf(title: string, status: string) {
+  const group = screen.getByRole('radiogroup', { name: `Status of ${title}` });
+  return within(group).getByRole('radio', { name: status });
+}
+
+/** A held write: the returned function lands it. */
+function holdWrite(result: () => Promise<void> = () => Promise.resolve()) {
+  let land = () => {};
+  vi.mocked(updateDoc).mockImplementationOnce(() =>
+    new Promise<void>((resolve) => {
+      land = resolve;
+    }).then(result)
+  );
+  return () => land();
 }
 
 function renderPage(route = '/user/watchlist') {
@@ -183,6 +201,155 @@ describe('WatchlistPage', () => {
 
     await screen.findByText('Lost');
     expect(screen.queryByRole('link', { name: 'Lost' })).not.toBeInTheDocument();
+  });
+
+  it('shows the stored status of each title, on a show too', async () => {
+    renderPage();
+
+    await screen.findByRole('link', { name: 'Alien' });
+    expect(statusOf('Alien', 'Planned')).toBeChecked();
+    expect(statusOf('Alien', 'Watched')).not.toBeChecked();
+    expect(statusOf('Lost', 'Watched')).toBeChecked();
+  });
+
+  it('shows a new status at once, stores it, and reads nothing for it', async () => {
+    vi.mocked(updateDoc).mockResolvedValue(undefined);
+    const { user } = renderPage();
+    await screen.findByRole('link', { name: 'Alien' });
+    const reads = countReads('items');
+
+    await user.click(statusOf('Alien', 'Watched'));
+
+    expect(statusOf('Alien', 'Watched')).toBeChecked();
+    await waitFor(() =>
+      expect(updateDoc).toHaveBeenCalledExactlyOnceWith(
+        { path: 'users/u/items/movie_1' },
+        { status: 'watched' }
+      )
+    );
+    await waitFor(() => expect(statusOf('Alien', 'Watched')).toBeChecked());
+    expect(statusOf('Alien', 'Watched')).toHaveFocus();
+    expect(countReads('items')).toBe(reads);
+  });
+
+  it('does nothing for a press on the status a title already has', async () => {
+    const { user } = renderPage();
+    await screen.findByRole('link', { name: 'Alien' });
+
+    await user.click(statusOf('Alien', 'Planned'));
+
+    expect(updateDoc).not.toHaveBeenCalled();
+  });
+
+  it('never disables the switch, so focus stays on it during a write', async () => {
+    const land = holdWrite();
+    const { user } = renderPage();
+    await screen.findByRole('link', { name: 'Alien' });
+
+    await user.click(statusOf('Alien', 'Watched'));
+
+    await waitFor(() => expect(updateDoc).toHaveBeenCalled());
+    expect(statusOf('Alien', 'Planned')).toBeEnabled();
+    expect(statusOf('Alien', 'Watched')).toHaveFocus();
+    land();
+  });
+
+  it('returns to the stored status and rereads the titles when a write fails', async () => {
+    vi.mocked(updateDoc).mockRejectedValue(
+      Object.assign(new Error('failed'), { code: 'permission-denied' })
+    );
+    const { user } = renderPage();
+    await screen.findByRole('link', { name: 'Alien' });
+    const reads = countReads('items');
+
+    await user.click(statusOf('Alien', 'Watched'));
+
+    await waitFor(() => expect(statusOf('Alien', 'Planned')).toBeChecked());
+    await waitFor(() => expect(countReads('items')).toBe(reads + 1));
+    expect(statusOf('Alien', 'Planned')).toBeInTheDocument();
+  });
+
+  it('tries a write at once while offline', async () => {
+    vi.mocked(updateDoc).mockRejectedValue(
+      Object.assign(new Error('failed'), { code: 'unavailable' })
+    );
+    const { user } = renderPage();
+    await screen.findByRole('link', { name: 'Alien' });
+    onlineManager.setOnline(false);
+
+    await user.click(statusOf('Alien', 'Watched'));
+
+    await waitFor(() => expect(updateDoc).toHaveBeenCalledOnce());
+    await waitFor(() => expect(statusOf('Alien', 'Planned')).toBeChecked());
+  });
+
+  it('runs the writes of a title in order, so the last press wins', async () => {
+    const land = holdWrite();
+    vi.mocked(updateDoc).mockResolvedValue(undefined);
+    const { user } = renderPage();
+    await screen.findByRole('link', { name: 'Alien' });
+
+    await user.click(statusOf('Alien', 'Watched'));
+    await waitFor(() => expect(updateDoc).toHaveBeenCalledOnce());
+    await user.click(statusOf('Alien', 'Planned'));
+
+    expect(statusOf('Alien', 'Planned')).toBeChecked();
+    expect(updateDoc).toHaveBeenCalledOnce();
+
+    land();
+    await waitFor(() => expect(updateDoc).toHaveBeenCalledTimes(2));
+    expect(vi.mocked(updateDoc).mock.calls[1]?.[1]).toEqual({ status: 'planned' });
+    await waitFor(() => expect(statusOf('Alien', 'Planned')).toBeChecked());
+  });
+
+  it('shows the first press landed when a correction fails', async () => {
+    const land = holdWrite();
+    vi.mocked(updateDoc).mockRejectedValueOnce(
+      Object.assign(new Error('failed'), { code: 'permission-denied' })
+    );
+    const { user } = renderPage();
+    await screen.findByRole('link', { name: 'Alien' });
+    const watched = [{ ...ALIEN, status: 'watched' }, LOST];
+    vi.mocked(getDocs).mockImplementation((async (ref: { path: string }) =>
+      toSnapshot(ref.path.endsWith('folders') ? folders : watched)) as never);
+
+    await user.click(statusOf('Alien', 'Watched'));
+    await waitFor(() => expect(updateDoc).toHaveBeenCalledOnce());
+    await user.click(statusOf('Alien', 'Planned'));
+    land();
+
+    await waitFor(() => expect(updateDoc).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(statusOf('Alien', 'Watched')).toBeChecked());
+  });
+
+  it('does not let a read from before the commit bring the old status back', async () => {
+    vi.mocked(updateDoc).mockResolvedValue(undefined);
+    const { user, queryClient } = renderPage();
+    await screen.findByRole('link', { name: 'Alien' });
+    let finishRead = () => {};
+    vi.mocked(getDocs).mockImplementationOnce(
+      (() =>
+        new Promise((resolve) => {
+          finishRead = () => resolve(toSnapshot([ALIEN, LOST]));
+        })) as never
+    );
+    void queryClient.refetchQueries({ queryKey: watchlistQueries.items('u').queryKey });
+
+    await user.click(statusOf('Alien', 'Watched'));
+    await waitFor(() => expect(updateDoc).toHaveBeenCalledOnce());
+    await waitFor(() =>
+      expect(queryClient.isFetching({ queryKey: watchlistQueries.items('u').queryKey })).toBe(0)
+    );
+    finishRead();
+
+    await waitFor(() =>
+      expect(
+        queryClient
+          .getQueryData(watchlistQueries.items('u').queryKey)
+          ?.find(({ id }) => id === ALIEN.id)?.status
+      ).toBe('watched')
+    );
+    expect(statusOf('Alien', 'Watched')).toBeChecked();
   });
 
   it('offers no subfolder at the last level and says why', async () => {

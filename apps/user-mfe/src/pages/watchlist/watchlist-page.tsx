@@ -62,7 +62,7 @@ function WatchlistContent({ uid }: WatchlistContentProps) {
             selected={selected}
             onDeleted={replaceSelection}
           />
-          <TitleList titles={titles} />
+          <TitleList uid={uid} titles={titles} />
         </section>
       </div>
     </div>
