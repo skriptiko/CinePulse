@@ -1,12 +1,14 @@
 import { useGlobalStore } from '@repo/events';
-import { watchlistQueries } from '@repo/firebase';
+import { type WatchStatus, watchlistQueries } from '@repo/firebase';
 import { usePageMeta } from '@repo/ui';
 import { useSuspenseQueries } from '@tanstack/react-query';
 import { useEffect, useId, useRef } from 'react';
 import { FolderActions } from './folder-actions';
 import { FolderTree } from './folder-tree';
+import { StatusFilter } from './status-filter';
 import { TitleList } from './title-list';
 import { useSelectedFolder } from './use-selected-folder';
+import { STATUS_LABELS, useKeptRows, useStatusFilter } from './use-status-filter';
 
 export function WatchlistPage() {
   usePageMeta('Watchlist');
@@ -25,21 +27,27 @@ function WatchlistContent({ uid }: WatchlistContentProps) {
     queries: [watchlistQueries.folders(uid), watchlistQueries.items(uid)],
   });
   const { selected, replaceSelection } = useSelectedFolder(folders);
+  const { statusFilter, setStatusFilter } = useStatusFilter();
   const headingId = useId();
   const headingRef = useRef<HTMLHeadingElement>(null);
   const selectedId = selected?.id;
-  const previousIdRef = useRef(selectedId);
-  const titles = selected
+  const view = `${selectedId}/${statusFilter}`;
+  const previousViewRef = useRef(view);
+  const { keptIds, keepRow } = useKeptRows(view);
+  const folderTitles = selected
     ? items.filter(({ folderIds }) => folderIds.includes(selected.id))
     : items;
+  const titles = statusFilter
+    ? folderTitles.filter(({ id, status }) => status === statusFilter || keptIds.includes(id))
+    : folderTitles;
 
   // After the render, so the heading already names the new selection. Focus left on a control stays.
   useEffect(() => {
-    if (selectedId === previousIdRef.current) return;
-    previousIdRef.current = selectedId;
-    // The form that held focus went with its folder.
+    if (view === previousViewRef.current) return;
+    previousViewRef.current = view;
+    // The form that held focus went with its folder, or Back took the row that held it.
     if (document.activeElement === document.body) headingRef.current?.focus();
-  }, [selectedId]);
+  }, [view]);
 
   return (
     <div className="max-w-page mx-auto px-4 pt-20 pb-16 sm:px-6 sm:pt-24 md:px-8">
@@ -62,9 +70,20 @@ function WatchlistContent({ uid }: WatchlistContentProps) {
             selected={selected}
             onDeleted={replaceSelection}
           />
-          <TitleList uid={uid} titles={titles} />
+          <StatusFilter value={statusFilter} onChange={setStatusFilter} />
+          {/* Always in the DOM: a live region announces a change only once it is already there. */}
+          <output className="text-muted-foreground">
+            {getSummary(titles.length, statusFilter)}
+          </output>
+          <TitleList uid={uid} titles={titles} onStatusChange={keepRow} />
         </section>
       </div>
     </div>
   );
+}
+
+function getSummary(count: number, statusFilter: WatchStatus | null): string {
+  if (count > 0) return count === 1 ? '1 title' : `${count} titles`;
+  if (statusFilter === null) return 'No titles here yet.';
+  return `No ${STATUS_LABELS[statusFilter].toLowerCase()} titles here.`;
 }

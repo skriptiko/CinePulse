@@ -11,17 +11,19 @@ const POSTER_SIZE_ROW = 'w92';
 export type TitleListProps = {
   uid: string;
   titles: WatchlistItem[];
+  /** Runs on a press that changes a status, before the write. */
+  onStatusChange: (titleId: string) => void;
 };
 
 // Rows, not `MovieCard`: its title shows only on hover or focus, an inert TV card takes no focus,
 // and a watchlist item has no year or rating to fill the card.
-export function TitleList({ uid, titles }: TitleListProps) {
-  if (titles.length === 0) return <p className="text-muted-foreground">No titles here yet.</p>;
+export function TitleList({ uid, titles, onStatusChange }: TitleListProps) {
+  if (titles.length === 0) return null;
 
   return (
     <ul className="flex flex-col gap-3">
       {titles.map((item) => (
-        <TitleRow key={item.id} uid={uid} item={item} />
+        <TitleRow key={item.id} uid={uid} item={item} onStatusChange={onStatusChange} />
       ))}
     </ul>
   );
@@ -30,14 +32,17 @@ export function TitleList({ uid, titles }: TitleListProps) {
 type TitleRowProps = {
   uid: string;
   item: WatchlistItem;
+  onStatusChange: (titleId: string) => void;
 };
 
-function TitleRow({ uid, item }: TitleRowProps) {
+function TitleRow({ uid, item, onStatusChange }: TitleRowProps) {
   const { title, imageUrl, href } = toTitleRowData(item);
   const { mutate, isPending, variables } = useTitleStatus(uid, item.id);
 
   const handleStatusChange = (status: string) => {
-    if (isWatchStatus(status)) mutate(status);
+    if (!isWatchStatus(status)) return;
+    onStatusChange(item.id);
+    mutate(status);
   };
 
   return (

@@ -13,6 +13,7 @@ import { PageBoundary } from '@repo/ui';
 import { onlineManager } from '@tanstack/react-query';
 import { getDocs, setDoc, updateDoc, writeBatch } from 'firebase/firestore/lite';
 import { HttpResponse, http } from 'msw';
+import { useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { WatchlistPage } from '../watchlist-page';
 
@@ -92,10 +93,15 @@ function holdWrite(result: () => Promise<void> = () => Promise.resolve()) {
   return () => land();
 }
 
+function LocationKey() {
+  return <span data-testid="location-key">{useLocation().key}</span>;
+}
+
 function renderPage(route = '/user/watchlist') {
   return renderWithProviders(
     <PageBoundary>
       <WatchlistPage />
+      <LocationKey />
     </PageBoundary>,
     { route }
   );
@@ -350,6 +356,99 @@ describe('WatchlistPage', () => {
       ).toBe('watched')
     );
     expect(statusOf('Alien', 'Watched')).toBeChecked();
+  });
+
+  it('shows only the titles of the chosen status, and counts them', async () => {
+    const { user } = renderPage();
+    await screen.findByRole('link', { name: 'Alien' });
+    expect(screen.getByText('2 titles')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Watched' }));
+
+    await waitFor(() => expect(screen.queryByRole('link', { name: 'Alien' })).toBeNull());
+    expect(screen.getByText('Lost')).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('1 title');
+    expect(screen.getByRole('button', { name: 'Watched' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('filters within the selected folder and survives a change of folder', async () => {
+    const { user } = renderPage('/user/watchlist?folder=top&status=watched');
+
+    expect(await screen.findByText('No watched titles here.')).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('No watched titles here.');
+
+    await user.click(screen.getByRole('link', { name: 'All titles' }));
+
+    expect(await screen.findByText('Lost')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Watched' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.queryByRole('link', { name: 'Alien' })).not.toBeInTheDocument();
+  });
+
+  it('keeps the folder in the URL when the filter changes', async () => {
+    const { user } = renderPage('/user/watchlist?folder=top');
+    await screen.findByRole('link', { name: 'Alien' });
+
+    await user.click(screen.getByRole('button', { name: 'Planned' }));
+    await user.click(screen.getByRole('button', { name: 'All' }));
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Top' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Alien' })).toBeInTheDocument();
+  });
+
+  it('treats an unknown status as all of them', async () => {
+    renderPage('/user/watchlist?status=dropped');
+
+    expect(await screen.findByRole('link', { name: 'Alien' })).toBeInTheDocument();
+    expect(screen.getByText('Lost')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'All' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('adds no history entry for a press on the chosen filter', async () => {
+    const { user } = renderPage('/user/watchlist?status=planned');
+    await screen.findByRole('link', { name: 'Alien' });
+    const key = screen.getByTestId('location-key').textContent;
+
+    await user.click(screen.getByRole('button', { name: 'Planned' }));
+
+    expect(screen.getByTestId('location-key').textContent).toBe(key);
+  });
+
+  it('keeps a row changed under a filter, with its focus, until the view changes', async () => {
+    vi.mocked(updateDoc).mockResolvedValue(undefined);
+    const { user } = renderPage('/user/watchlist?status=planned');
+    await screen.findByRole('link', { name: 'Alien' });
+
+    await user.click(statusOf('Alien', 'Watched'));
+
+    await waitFor(() => expect(updateDoc).toHaveBeenCalledOnce());
+    await waitFor(() => expect(statusOf('Alien', 'Watched')).toBeChecked());
+    expect(statusOf('Alien', 'Watched')).toHaveFocus();
+    expect(screen.getByRole('status')).toHaveTextContent('1 title');
+
+    await user.click(screen.getByRole('button', { name: 'Planned' }));
+    expect(screen.getByRole('link', { name: 'Alien' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Watched' }));
+    expect(screen.getByRole('link', { name: 'Alien' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Planned' }));
+
+    await waitFor(() => expect(screen.queryByRole('link', { name: 'Alien' })).toBeNull());
+    expect(screen.getByRole('status')).toHaveTextContent('No planned titles here.');
+  });
+
+  it('does not bring back a kept row with its filter', async () => {
+    vi.mocked(updateDoc).mockResolvedValue(undefined);
+    const { user } = renderPage('/user/watchlist?status=planned');
+    await screen.findByRole('link', { name: 'Alien' });
+
+    await user.click(statusOf('Alien', 'Watched'));
+    await waitFor(() => expect(updateDoc).toHaveBeenCalledOnce());
+    await waitFor(() => expect(statusOf('Alien', 'Watched')).toBeChecked());
+
+    await user.click(screen.getByRole('button', { name: 'All' }));
+    await user.click(screen.getByRole('button', { name: 'Planned' }));
+
+    await waitFor(() => expect(screen.queryByRole('link', { name: 'Alien' })).toBeNull());
   });
 
   it('offers no subfolder at the last level and says why', async () => {
