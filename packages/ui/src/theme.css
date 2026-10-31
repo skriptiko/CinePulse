@@ -124,12 +124,19 @@
 }
 
 /* Forced colours remove fills and shadows, the only marks of a chosen control. An outline would
-   look like focus, and without `forced-color-adjust` a backplate hides the highlighted text. */
+   look like focus, and without `forced-color-adjust` a backplate hides the highlighted text. That
+   property also frees the focus ring from the system colours, so the control draws its own, inset
+   because pills sit in a scroller that clips them. */
 @utility forced-chosen {
   @media (forced-colors: active) {
     forced-color-adjust: none;
     background-color: Highlight !important;
     color: HighlightText !important;
+
+    &:focus-visible {
+      outline: 2px solid HighlightText;
+      outline-offset: -4px;
+    }
   }
 }
 

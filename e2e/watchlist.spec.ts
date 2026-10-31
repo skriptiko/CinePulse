@@ -1113,9 +1113,11 @@ test.describe('in forced colours', () => {
     await statusBox(page, MOVIE, 'Watched').focus();
     await page.keyboard.press('ArrowLeft');
     await expect(chosen).toBeFocused();
-    expect(await chosen.evaluate((element) => getComputedStyle(element).outlineStyle)).not.toBe(
-      'none'
-    );
+    const ring = await chosen.evaluate((element) => {
+      const { color, outlineColor, outlineOffset, outlineStyle } = getComputedStyle(element);
+      return { onFill: outlineColor === color, outlineOffset, outlineStyle };
+    });
+    expect(ring).toEqual({ onFill: true, outlineOffset: '-4px', outlineStyle: 'solid' });
   });
 });
 
