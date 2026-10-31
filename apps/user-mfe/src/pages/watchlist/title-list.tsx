@@ -1,8 +1,11 @@
 import { getImageUrl } from '@repo/api';
 import type { WatchlistItem } from '@repo/firebase';
 import { buildPath } from '@repo/routes';
-import { ImagePlaceholder, ToggleGroup, ToggleGroupItem } from '@repo/ui';
+import { Button, ImagePlaceholder, ToggleGroup, ToggleGroupItem } from '@repo/ui';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { focusOnMount } from './focus-on-mount';
+import { RemoveTitleForm } from './remove-title-form';
 import { isWatchStatus, STATUS_LABELS, WATCH_STATUSES } from './use-status-filter';
 import { useTitleStatus } from './use-title-status';
 
@@ -38,11 +41,23 @@ type TitleRowProps = {
 function TitleRow({ uid, item, onStatusChange }: TitleRowProps) {
   const { title, imageUrl, href } = toTitleRowData(item);
   const { mutate, isPending, variables } = useTitleStatus(uid, item.id);
+  const [isAsking, setIsAsking] = useState(false);
+  const [isReturningFocus, setIsReturningFocus] = useState(false);
 
   const handleStatusChange = (status: string) => {
     if (!isWatchStatus(status)) return;
     onStatusChange(item.id);
     mutate(status);
+  };
+
+  const handleAsk = () => {
+    setIsAsking(true);
+    setIsReturningFocus(false);
+  };
+
+  const handleCancel = () => {
+    setIsAsking(false);
+    setIsReturningFocus(true);
   };
 
   return (
@@ -71,24 +86,41 @@ function TitleRow({ uid, item, onStatusChange }: TitleRowProps) {
         ) : (
           <p className="truncate font-medium">{title}</p>
         )}
-        {/* Over the stretched link, and only as wide as it must be: the rest opens the title. */}
-        <ToggleGroup
-          aria-label={`Status of ${title}`}
-          value={isPending ? variables : item.status}
-          onValueChange={handleStatusChange}
-          className="relative z-10 mt-1 w-fit"
-        >
-          {WATCH_STATUSES.map((status) => (
-            <ToggleGroupItem
-              key={status}
-              value={status}
-              aria-label={STATUS_LABELS[status]}
-              className="touch-target px-3 py-1 text-sm"
-            >
-              {STATUS_LABELS[status]}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+        {/* The controls sit over the stretched link: the rest of the row opens the title. */}
+        <div className="mt-1 flex flex-wrap items-center gap-x-2">
+          <ToggleGroup
+            aria-label={`Status of ${title}`}
+            value={isPending ? variables : item.status}
+            onValueChange={handleStatusChange}
+            className="relative z-10"
+          >
+            {WATCH_STATUSES.map((status) => (
+              <ToggleGroupItem
+                key={status}
+                value={status}
+                aria-label={STATUS_LABELS[status]}
+                className="touch-target px-3 py-1 text-sm"
+              >
+                {STATUS_LABELS[status]}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+          <Button
+            ref={isReturningFocus ? focusOnMount : undefined}
+            size="sm"
+            variant="ghost"
+            aria-label={`Remove ${title}`}
+            disabled={isAsking}
+            className="touch-target relative z-10"
+            onClick={handleAsk}
+          >
+            Remove
+          </Button>
+        </div>
+        {/* Below the controls, not in their place: a double tap must not reach the confirming button. */}
+        {isAsking && (
+          <RemoveTitleForm uid={uid} titleId={item.id} title={title} onClose={handleCancel} />
+        )}
       </div>
     </li>
   );

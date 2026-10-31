@@ -10,6 +10,7 @@ import {
 import { Button, Input } from '@repo/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { type FormEvent, useId, useState } from 'react';
+import { focusOnMount } from './focus-on-mount';
 import { useFolderWrite, type WatchlistStore } from './use-folder-write';
 
 const MAX_NAME_LENGTH = 100;
@@ -115,11 +116,6 @@ export function FolderActions({ uid, folders, selected, onDeleted }: FolderActio
       )}
     </>
   );
-}
-
-/** A stable function: an inline one would run again on every keystroke. */
-function focusOnMount(element: HTMLElement | null): void {
-  element?.focus();
 }
 
 type NameFormProps = {

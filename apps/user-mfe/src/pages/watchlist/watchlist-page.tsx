@@ -33,6 +33,7 @@ function WatchlistContent({ uid }: WatchlistContentProps) {
   const selectedId = selected?.id;
   const view = `${selectedId}/${statusFilter}`;
   const previousViewRef = useRef(view);
+  const previousCountRef = useRef(0);
   const { keptIds, keepRow } = useKeptRows(view);
   const folderTitles = selected
     ? items.filter(({ folderIds }) => folderIds.includes(selected.id))
@@ -41,13 +42,21 @@ function WatchlistContent({ uid }: WatchlistContentProps) {
     ? folderTitles.filter(({ id, status }) => status === statusFilter || keptIds.includes(id))
     : folderTitles;
 
+  const count = titles.length;
+
   // After the render, so the heading already names the new selection. Focus left on a control stays.
   useEffect(() => {
-    if (view === previousViewRef.current) return;
+    const isNewView = view !== previousViewRef.current;
+    const isShorter = count < previousCountRef.current;
     previousViewRef.current = view;
-    // The form that held focus went with its folder, or Back took the row that held it.
-    if (document.activeElement === document.body) headingRef.current?.focus();
-  }, [view]);
+    previousCountRef.current = count;
+    if (!isNewView && !isShorter) return;
+    // The form that held focus went with its folder, or the row that held it left. Within a view
+    // the page keeps its place, for someone working down a long list with a mouse.
+    if (document.activeElement === document.body) {
+      headingRef.current?.focus({ preventScroll: !isNewView });
+    }
+  }, [view, count]);
 
   return (
     <div className="max-w-page mx-auto px-4 pt-20 pb-16 sm:px-6 sm:pt-24 md:px-8">
@@ -72,9 +81,7 @@ function WatchlistContent({ uid }: WatchlistContentProps) {
           />
           <StatusFilter value={statusFilter} onChange={setStatusFilter} />
           {/* Always in the DOM: a live region announces a change only once it is already there. */}
-          <output className="text-muted-foreground">
-            {getSummary(titles.length, statusFilter)}
-          </output>
+          <output className="text-muted-foreground">{getSummary(count, statusFilter)}</output>
           <TitleList uid={uid} titles={titles} onStatusChange={keepRow} />
         </section>
       </div>

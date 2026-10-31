@@ -982,12 +982,12 @@ test('the status filter survives a sign-in, a folder change, a reload and Back',
   await expect(filterPill(page, 'Watched')).toHaveAttribute('aria-pressed', 'true');
 });
 
-test('the switch opens nothing, and the rest of the row opens the title', async ({
+test('the row controls open nothing, and the rest of the row opens the title', async ({
   page,
   request,
 }) => {
-  // Longer than the switch, or the row has no room past it for the link to reach.
-  const title = 'A title long enough to run well past the status switch';
+  // Longer than the controls, or the row has no room past them for the link to reach.
+  const title = 'A title long enough to run well past the status switch and the Remove button';
   await openWatchlist(page);
   const uid = await getUid(page);
   await seedTitle(request, uid, MOVIE_ID, title, []);
@@ -999,7 +999,9 @@ test('the switch opens nothing, and the rest of the row opens the title', async 
   await expect(statusBox(page, title, 'Watched')).toBeChecked();
   await expect(page).toHaveURL(/\/user\/watchlist$/);
 
-  await page.mouse.click(spot.x + spot.width + 40, spot.y + spot.height / 2);
+  const remove = await page.getByRole('button', { name: `Remove ${title}` }).boundingBox();
+  if (!remove) throw new Error('No Remove');
+  await page.mouse.click(remove.x + remove.width + 40, remove.y + remove.height / 2);
   await expect(page).toHaveURL(new RegExp(`/movies/${MOVIE_ID}$`));
 });
 
@@ -1124,6 +1126,23 @@ test.describe('in forced colours', () => {
 test.describe('the status on a phone', () => {
   test.use({ hasTouch: true, viewport: { width: 320, height: 640 } });
 
+  test('the row controls and the question fit', async ({ page, request }) => {
+    const title = 'A title long enough to fill the whole width of a phone screen and more';
+    await openWatchlist(page);
+    await seedTitle(request, await getUid(page), MOVIE_ID, title, []);
+    await page.reload();
+
+    const remove = page.getByRole('button', { name: `Remove ${title}` });
+    expect((await remove.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+    await remove.click();
+    await expect(page.getByRole('button', { name: 'Remove title' })).toBeVisible();
+
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+    );
+    expect(overflow).toBe(0);
+  });
+
   test('the retry on the profile is large enough to press', async ({ page }) => {
     await openWatchlist(page);
     await page.route(/:runQuery/, (route) => route.abort());
@@ -1224,4 +1243,47 @@ test('a failed read of the watchlist leaves the account on the profile', async (
   await page.unroute(/:runQuery/);
   await page.getByRole('button', { name: 'Try again' }).click();
   await expect(page.locator('dt', { hasText: 'Titles' }).locator('+ dd')).toHaveText('1');
+});
+
+test('a removed title leaves every folder and the profile', async ({ page, request }) => {
+  await openWatchlist(page);
+  const [folderId] = await makeFolders(page, ['Tonight']);
+  const uid = await getUid(page);
+  await seedTitle(request, uid, MOVIE_ID, MOVIE, [folderId]);
+  await seedTitle(request, uid, 2, 'Stays', [folderId]);
+  await page.goto('/user/watchlist');
+
+  await page.getByRole('button', { name: `Remove ${MOVIE}` }).click();
+  await expect(page.getByRole('button', { name: 'Cancel' })).toBeFocused();
+  await page.getByRole('button', { name: 'Remove title' }).click();
+
+  await expect(page.getByRole('link', { name: MOVIE })).toHaveCount(0);
+  await expect(page.getByRole('heading', { level: 2, name: 'All titles' })).toBeFocused();
+  const stored = `${FIRESTORE_DOCUMENTS}/users/${uid}/items/movie_${MOVIE_ID}`;
+  const headers = { Authorization: 'Bearer owner' };
+  await expect.poll(async () => (await request.get(stored, { headers })).status()).toBe(404);
+  await selectFolder(page, 'Tonight', 1);
+  await expect(page.getByText('1 title', { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByText('1 title', { exact: true })).toBeVisible();
+
+  await page.goto('/user/profile');
+  await expect(page.locator('dt', { hasText: 'Titles' }).locator('+ dd')).toHaveText('1');
+});
+
+test('a removal in a long list keeps the page where it is', async ({ page, request }) => {
+  await openWatchlist(page);
+  const uid = await getUid(page);
+  for (let id = 1; id <= 24; id += 1) await seedTitle(request, uid, id, `Row ${id}`, []);
+  await page.reload();
+  const last = page.getByRole('button', { name: 'Remove Row 1', exact: true });
+  await last.scrollIntoViewIfNeeded();
+  await last.click();
+  const scrollY = await page.evaluate(() => window.scrollY);
+  expect(scrollY).toBeGreaterThan(300);
+
+  await page.getByRole('button', { name: 'Remove title' }).click();
+
+  await expect(page.getByRole('link', { name: 'Row 1', exact: true })).toHaveCount(0);
+  expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(scrollY - 200);
 });
