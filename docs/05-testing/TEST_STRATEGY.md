@@ -104,6 +104,10 @@ Add Playwright (chromium) on the merged `dist/` served by `firebase emulators:st
 16. The dialog survives a second press outside, a double tap on a touch screen, a long list on a phone, Enter in the picker, a second card pressed during the download, and sign-out.
 17. A failed save keeps the ticks. A dialog chunk that will not load, online or offline, leaves the page working, and a page lost with the connection loads on Try again once it returns.
 18. Keyboard focus stays clear of the sticky filters on Movies and of the edges of a Home row.
+19. A status belongs to the title: it shows in every folder and after a reload, and `folderIds` stay.
+20. The status filter survives a sign-in, a folder change, a reload and Back.
+21. The switch opens nothing, and the rest of the row opens the title. A correction during a slow write ends on the last press, and a failed write puts the stored status back.
+22. Under a filter, a double tap leaves the next title alone, the keyboard keeps its focus, and Back that takes the focused row moves focus to the heading. At 320 px the switch and the pills fit, with 44 px to press.
 
 Titles are seeded through the emulator's REST API only for states the UI cannot produce on demand. `pnpm test:e2e` needs Java as well as `firebase-tools`.
 

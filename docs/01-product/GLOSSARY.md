@@ -54,7 +54,8 @@ Key project terms. Most are derived from the code (reliable); the watchlist/auth
 
 - **Watchlist** — a personal viewing tracker; the core of the personal account (`user-mfe`). Available only to a registered user; stored in Firestore.
 - **Folder** — a watchlist container that the user creates and names. Supports subfolders nested **up to 6 levels**; the number on each level is unlimited. Behaves like a tag: a title can sit in several folders.
-- **Title status** — a separate field on a watchlist title, independent of folders: **watched / planned**.
+- **Title status** — a separate field on a watchlist title, independent of folders: **watched / planned**. One title has one status in all its folders.
+- **Status filter** — the All, Planned and Watched pills on the watchlist page, kept in `?status=` (ADR-0015).
 - **Title** — the generic name for a catalog item that can be added to the watchlist: a movie (`Movie`) or a TV show (`TV`).
 - **Firebase Auth** — the authentication provider; in scope: Google sign-in only (ADR-0010).
 - **Firestore** — Firebase's document database for persistent watchlist storage (folders, membership, statuses).
