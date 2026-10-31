@@ -71,8 +71,8 @@ describe('formatRating', () => {
 });
 
 describe('formatTimestamp', () => {
-  it('renders the UTC day of a timestamp', () => {
-    expect(formatTimestamp('Sat, 31 Oct 2026 23:30:00 GMT')).toBe('Oct 31, 2026');
+  it('renders the day of the viewer, as a timestamp is a moment', () => {
+    expect(formatTimestamp('Sun, 01 Nov 2026 03:00:00 GMT')).toBe('Oct 31, 2026');
   });
 
   it('hides a missing or invalid timestamp', () => {
