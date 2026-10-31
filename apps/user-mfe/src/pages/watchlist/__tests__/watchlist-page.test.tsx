@@ -135,7 +135,13 @@ describe('WatchlistPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     folders = [TOP, CHILD, DEEP, OTHER];
-    globalStore.getState().setUser({ uid: 'u', displayName: null, email: null, photoUrl: null });
+    globalStore.getState().setUser({
+      uid: 'u',
+      displayName: null,
+      email: null,
+      photoUrl: null,
+      createdAt: null,
+    });
     server.use(
       http.get('*/__/firebase/init.json', () =>
         HttpResponse.json({ apiKey: 'key', projectId: 'cinepulse-test' })

@@ -19,7 +19,7 @@ afterEach(() => {
 });
 
 describe('auth state', () => {
-  const user = { uid: 'uid-1', displayName: 'Ada', email: null, photoUrl: null };
+  const user = { uid: 'uid-1', displayName: 'Ada', email: null, photoUrl: null, createdAt: null };
 
   it('starts anonymous, so a page never waits for a session nobody has', () => {
     expect(createGlobalStore().getState()).toMatchObject({ user: null, authStatus: 'anonymous' });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatDate, formatRating, formatRuntime, formatYear } from '../format';
+import { formatDate, formatRating, formatRuntime, formatTimestamp, formatYear } from '../format';
 
 describe('formatRuntime', () => {
   it('splits minutes into hours and minutes', () => {
@@ -68,4 +68,16 @@ describe('formatRating', () => {
       expect(formatRating(value)).toBeNull();
     }
   );
+});
+
+describe('formatTimestamp', () => {
+  it('renders the day of the viewer, as a timestamp is a moment', () => {
+    expect(formatTimestamp('Sun, 01 Nov 2026 03:00:00 GMT')).toBe('Oct 31, 2026');
+  });
+
+  it('hides a missing or invalid timestamp', () => {
+    expect(formatTimestamp(null)).toBeNull();
+    expect(formatTimestamp('')).toBeNull();
+    expect(formatTimestamp('not a date')).toBeNull();
+  });
 });

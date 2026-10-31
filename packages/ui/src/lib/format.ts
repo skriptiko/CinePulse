@@ -6,13 +6,13 @@ const ratingFormatter = new Intl.NumberFormat(LOCALE, {
   maximumFractionDigits: 1,
 });
 
+const DATE_PARTS = { year: 'numeric', month: 'short', day: 'numeric' } as const;
+
 // Calendar dates are rendered in UTC so the day never shifts with the viewer's time zone.
-const dateFormatter = new Intl.DateTimeFormat(LOCALE, {
-  year: 'numeric',
-  month: 'short',
-  day: 'numeric',
-  timeZone: 'UTC',
-});
+const dateFormatter = new Intl.DateTimeFormat(LOCALE, { ...DATE_PARTS, timeZone: 'UTC' });
+
+// A timestamp is a moment, not a calendar date: it shows the day it was for the viewer.
+const timestampFormatter = new Intl.DateTimeFormat(LOCALE, DATE_PARTS);
 
 const TMDB_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
 
@@ -46,6 +46,12 @@ export function formatYear(date: string | null | undefined): string | null {
 export function formatDate(date: string | null | undefined): string | null {
   const parsed = parseTmdbDate(date);
   return parsed ? dateFormatter.format(parsed) : null;
+}
+
+/** `'Sat, 31 Oct 2026 08:00:00 GMT'` → `'Oct 31, 2026'`; `null` when missing or invalid. */
+export function formatTimestamp(timestamp: string | null | undefined): string | null {
+  const parsed = timestamp ? new Date(timestamp) : null;
+  return parsed && Number.isFinite(parsed.getTime()) ? timestampFormatter.format(parsed) : null;
 }
 
 /**
