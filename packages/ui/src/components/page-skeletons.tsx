@@ -111,7 +111,7 @@ type SkeletonFrameProps = {
 };
 
 /** Reserves the page layout at once, but shows it (and announces loading) only after a delay. */
-function SkeletonFrame({ children, className }: SkeletonFrameProps) {
+export function SkeletonFrame({ children, className }: SkeletonFrameProps) {
   const isVisible = useDelayedFlag(SKELETON_DELAY_MS);
 
   return (

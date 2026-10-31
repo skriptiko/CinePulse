@@ -1,6 +1,7 @@
 import { type AuthUser, globalStore } from '@repo/events';
 import {
   expectNoA11yViolations,
+  fireEvent,
   renderWithProviders,
   screen,
   server,
@@ -37,7 +38,7 @@ const USER: AuthUser = {
   displayName: 'Ada',
   email: 'ada@example.com',
   photoUrl: null,
-  createdAt: 'Sat, 31 Oct 2026 08:00:00 GMT',
+  createdAt: 'Sat, 31 Oct 2026 12:00:00 GMT',
 };
 
 const FOLDER = { id: 'top', name: 'Top', parentId: null, depth: 1 };
@@ -100,6 +101,16 @@ describe('ProfilePage', () => {
     expect(photo).toHaveAttribute('referrerpolicy', 'no-referrer');
   });
 
+  it('drops a photo that fails to load', () => {
+    globalStore.getState().setUser({ ...USER, photoUrl: 'https://example.com/ada.png' });
+    const { container } = renderWithProviders(<ProfilePage />);
+
+    fireEvent.error(container.querySelector('img') as HTMLImageElement);
+
+    expect(container.querySelector('img')).not.toBeInTheDocument();
+    expect(screen.getByText('ada@example.com')).toBeInTheDocument();
+  });
+
   it('counts the titles by status and the folders', async () => {
     renderWithProviders(<ProfilePage />);
 
@@ -110,12 +121,22 @@ describe('ProfilePage', () => {
     expect(stat('Folders')).toBe('1');
   });
 
-  it('shows the account while the stats load', () => {
+  it('counts titles that lie in no folder', async () => {
+    mockWatchlist([], [PLANNED]);
+    renderWithProviders(<ProfilePage />);
+
+    await screen.findByText('Titles');
+    expect(stat('Titles')).toBe('1');
+    expect(stat('Folders')).toBe('0');
+  });
+
+  it('shows the account while the stats load, and announces the wait', async () => {
     vi.mocked(getDocs).mockImplementation((() => new Promise(() => {})) as never);
     renderWithProviders(<ProfilePage />);
 
     expect(screen.getByText('ada@example.com')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Open watchlist' })).toBeInTheDocument();
+    expect(await screen.findByText('Loading…')).toBeInTheDocument();
   });
 
   it('keeps the account when the stats fail, and offers a retry', async () => {
@@ -144,6 +165,23 @@ describe('ProfilePage', () => {
     expect(await screen.findByText('No titles yet.')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Browse movies' })).toHaveAttribute('href', '/movies');
     expect(screen.queryByText('Titles')).not.toBeInTheDocument();
+  });
+
+  it('says there are no titles when only folders exist', async () => {
+    mockWatchlist([FOLDER], []);
+    renderWithProviders(<ProfilePage />);
+
+    expect(await screen.findByText('No titles yet.')).toBeInTheDocument();
+  });
+
+  it('lines its text links up with the section', async () => {
+    mockWatchlist([], []);
+    renderWithProviders(<ProfilePage />);
+
+    await screen.findByText('No titles yet.');
+    for (const name of ['Open watchlist', 'Browse movies']) {
+      expect(screen.getByRole('link', { name })).not.toHaveClass('px-3');
+    }
   });
 
   it('links to the watchlist and the settings', () => {

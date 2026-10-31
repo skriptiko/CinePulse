@@ -1,6 +1,6 @@
 import { type WatchStatus, watchlistQueries } from '@repo/firebase';
 import { ROUTE_PATHS } from '@repo/routes';
-import { buttonVariants, Skeleton } from '@repo/ui';
+import { buttonVariants, cn, Skeleton, SkeletonFrame } from '@repo/ui';
 import { useSuspenseQueries } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 
@@ -22,11 +22,7 @@ export function WatchlistStats({ uid }: WatchlistStatsProps) {
         <p className="text-muted-foreground">No titles yet.</p>
         <Link
           to={ROUTE_PATHS.MOVIES}
-          className={buttonVariants({
-            variant: 'link',
-            size: 'sm',
-            className: 'touch-target px-0',
-          })}
+          className={cn(buttonVariants({ variant: 'link', size: 'sm' }), 'touch-target px-0')}
         >
           Browse movies
         </Link>
@@ -56,11 +52,11 @@ export function WatchlistStats({ uid }: WatchlistStatsProps) {
 
 export function WatchlistStatsSkeleton() {
   return (
-    <div className={STATS_GRID_CLASS}>
-      <Skeleton className="h-14" />
-      <Skeleton className="h-14" />
-      <Skeleton className="h-14" />
-      <Skeleton className="h-14" />
-    </div>
+    <SkeletonFrame className={STATS_GRID_CLASS}>
+      <Skeleton className="h-13" />
+      <Skeleton className="h-13" />
+      <Skeleton className="h-13" />
+      <Skeleton className="h-13" />
+    </SkeletonFrame>
   );
 }

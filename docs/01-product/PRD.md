@@ -116,7 +116,7 @@ Stubs (a route exists, but no functionality) — per the scope, they are to beco
 - **Settings** (`/user/settings`) — a heading only. 🟡
 
 In progress:
-- **Watchlist** (`/user/watchlist`) — the folder tree and the titles of a folder, each with a Watched or Planned switch, and a filter by status. Titles are added from catalog cards and the movie details page, and the only link to the page is "Open watchlist" in that dialog. 🟡
+- **Watchlist** (`/user/watchlist`) — the folder tree and the titles of a folder, each with a Watched or Planned switch, and a filter by status. Titles are added from catalog cards and the movie details page, and the links to the page are "Open watchlist" in that dialog and on Profile. 🟡
 
 The full list of pages and their state is in the [roadmap page catalog (Notion)](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb).
 

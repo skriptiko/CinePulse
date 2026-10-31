@@ -1124,6 +1124,17 @@ test.describe('in forced colours', () => {
 test.describe('the status on a phone', () => {
   test.use({ hasTouch: true, viewport: { width: 320, height: 640 } });
 
+  test('the retry on the profile is large enough to press', async ({ page }) => {
+    await openWatchlist(page);
+    await page.route(/:runQuery/, (route) => route.abort());
+
+    await page.goto('/user/profile');
+
+    const retry = page.getByRole('button', { name: 'Try again' });
+    await expect(retry).toBeVisible({ timeout: 10_000 });
+    expect((await retry.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+  });
+
   test('a double tap under a filter leaves the next title alone', async ({ page, request }) => {
     await openWatchlist(page);
     const uid = await getUid(page);
@@ -1195,8 +1206,12 @@ test('the profile shows the account, counts the watchlist and leads to it', asyn
   await expect(page).toHaveURL('/user/settings');
 });
 
-test('a failed read of the watchlist leaves the account on the profile', async ({ page }) => {
+test('a failed read of the watchlist leaves the account on the profile', async ({
+  page,
+  request,
+}) => {
   await openWatchlist(page);
+  await seedTitle(request, await getUid(page), 1, 'Seen', []);
   await page.route(/:runQuery/, (route) => route.abort());
 
   await page.goto('/user/profile');
@@ -1208,5 +1223,5 @@ test('a failed read of the watchlist leaves the account on the profile', async (
   await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible();
   await page.unroute(/:runQuery/);
   await page.getByRole('button', { name: 'Try again' }).click();
-  await expect(page.getByText('No titles yet.')).toBeVisible();
+  await expect(page.locator('dt', { hasText: 'Titles' }).locator('+ dd')).toHaveText('1');
 });

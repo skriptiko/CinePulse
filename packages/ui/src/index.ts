@@ -37,6 +37,7 @@ export {
   MovieGridSkeleton,
   PageSkeleton,
   SKELETON_DELAY_MS,
+  SkeletonFrame,
 } from './components/page-skeletons';
 export { SectionErrorFallback } from './components/section-error-fallback';
 export type { ShellBoundaryProps } from './components/shell-boundary';

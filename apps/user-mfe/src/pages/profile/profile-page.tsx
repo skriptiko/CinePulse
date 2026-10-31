@@ -5,12 +5,13 @@ import {
   AsyncBoundary,
   Button,
   buttonVariants,
+  cn,
   formatTimestamp,
   SectionErrorFallback,
   usePageMeta,
 } from '@repo/ui';
 import { useMutation } from '@tanstack/react-query';
-import { useId } from 'react';
+import { useId, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { WatchlistStats, WatchlistStatsSkeleton } from './watchlist-stats';
 
@@ -20,6 +21,7 @@ export function ProfilePage() {
   const user = useGlobalStore((state) => state.user);
   const signOut = useMutation({ mutationFn: signOutUser });
   const headingId = useId();
+  const [isPhotoBroken, setIsPhotoBroken] = useState(false);
 
   // `RequireAuth` guards the route; this covers the one render in which sign-out lands.
   if (!user) return null;
@@ -31,13 +33,15 @@ export function ProfilePage() {
     <div className="max-w-page mx-auto px-4 pt-20 pb-16 sm:px-6 sm:pt-24 md:px-8">
       <h1 className="mb-6 text-2xl font-bold">User Profile</h1>
       <div className="flex items-center gap-4">
-        {photoUrl && (
+        {photoUrl && !isPhotoBroken && (
           // Google rejects avatar requests that carry a referrer.
+          // biome-ignore lint/a11y/noNoninteractiveElementInteractions: a failed load is no interaction.
           <img
             src={photoUrl}
             alt=""
             referrerPolicy="no-referrer"
             className="size-16 shrink-0 rounded-lg object-cover"
+            onError={() => setIsPhotoBroken(true)}
           />
         )}
         <div className="min-w-0 break-words">
@@ -57,11 +61,7 @@ export function ProfilePage() {
         </AsyncBoundary>
         <Link
           to={ROUTE_PATHS.USER_WATCHLIST}
-          className={buttonVariants({
-            variant: 'link',
-            size: 'sm',
-            className: 'touch-target px-0',
-          })}
+          className={cn(buttonVariants({ variant: 'link', size: 'sm' }), 'touch-target px-0')}
         >
           Open watchlist
         </Link>
