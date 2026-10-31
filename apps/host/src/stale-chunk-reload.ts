@@ -9,6 +9,9 @@ export const RELOAD_COOLDOWN_MS = 60_000;
  * `sessionStorage`, so a chunk that fails again right after the reload cannot cause a loop.
  */
 export function handlePreloadError(event: Event, reload: () => void = reloadPage): void {
+  // Offline, a reload fetches no new `index.html`, only the browser's error page.
+  if (!navigator.onLine) return;
+
   const lastReloadAt = readLastReloadAt();
   if (lastReloadAt !== null && Date.now() - lastReloadAt < RELOAD_COOLDOWN_MS) return;
 
