@@ -10,7 +10,7 @@ import {
   within,
 } from '@repo/test-utils';
 import { PageBoundary } from '@repo/ui';
-import { onlineManager } from '@tanstack/react-query';
+import { onlineManager, type QueryClient } from '@tanstack/react-query';
 import { getDocs, setDoc, updateDoc, writeBatch } from 'firebase/firestore/lite';
 import { HttpResponse, http } from 'msw';
 import { useLocation } from 'react-router-dom';
@@ -61,12 +61,36 @@ const LOST = {
   status: 'watched',
   folderIds: [],
 };
+const ALIEN_WATCHED = { ...ALIEN, status: 'watched' };
+const HEAT = { ...ALIEN, id: 'movie_3', tmdbId: 3, title: 'Heat', folderIds: [] };
 
 let folders: FolderRow[];
 const batch = { commit: vi.fn(), delete: vi.fn(), update: vi.fn() };
 
 function toSnapshot(rows: { id: string }[]) {
   return { docs: rows.map(({ id, ...data }) => ({ id, data: () => data })) };
+}
+
+function mockItems(rows: { id: string }[]) {
+  vi.mocked(getDocs).mockImplementation((async (ref: { path: string }) =>
+    toSnapshot(ref.path.endsWith('folders') ? folders : rows)) as never);
+}
+
+/** A read of `items` that waits: the returned function finishes it with these rows. */
+function holdRead(rows: { id: string }[]) {
+  let finish = () => {};
+  vi.mocked(getDocs).mockImplementationOnce(
+    (() =>
+      new Promise((resolve) => {
+        finish = () => resolve(toSnapshot(rows));
+      })) as never
+  );
+  return () => finish();
+}
+
+function cachedStatus(queryClient: QueryClient, id: string) {
+  const { queryKey } = watchlistQueries.items('u');
+  return queryClient.getQueryData(queryKey)?.find((item) => item.id === id)?.status;
 }
 
 function countReads(collectionName: string): number {
@@ -118,8 +142,7 @@ describe('WatchlistPage', () => {
       )
     );
     vi.mocked(writeBatch).mockReturnValue(batch as never);
-    vi.mocked(getDocs).mockImplementation((async (ref: { path: string }) =>
-      toSnapshot(ref.path.endsWith('folders') ? folders : [ALIEN, LOST])) as never);
+    mockItems([ALIEN, LOST]);
   });
 
   afterEach(() => {
@@ -315,9 +338,7 @@ describe('WatchlistPage', () => {
     );
     const { user } = renderPage();
     await screen.findByRole('link', { name: 'Alien' });
-    const watched = [{ ...ALIEN, status: 'watched' }, LOST];
-    vi.mocked(getDocs).mockImplementation((async (ref: { path: string }) =>
-      toSnapshot(ref.path.endsWith('folders') ? folders : watched)) as never);
+    mockItems([ALIEN_WATCHED, LOST]);
 
     await user.click(statusOf('Alien', 'Watched'));
     await waitFor(() => expect(updateDoc).toHaveBeenCalledOnce());
@@ -332,30 +353,64 @@ describe('WatchlistPage', () => {
     vi.mocked(updateDoc).mockResolvedValue(undefined);
     const { user, queryClient } = renderPage();
     await screen.findByRole('link', { name: 'Alien' });
-    let finishRead = () => {};
-    vi.mocked(getDocs).mockImplementationOnce(
-      (() =>
-        new Promise((resolve) => {
-          finishRead = () => resolve(toSnapshot([ALIEN, LOST]));
-        })) as never
-    );
+    const finishRead = holdRead([ALIEN, LOST]);
     void queryClient.refetchQueries({ queryKey: watchlistQueries.items('u').queryKey });
+    mockItems([ALIEN_WATCHED, LOST]);
 
     await user.click(statusOf('Alien', 'Watched'));
-    await waitFor(() => expect(updateDoc).toHaveBeenCalledOnce());
-    await waitFor(() =>
-      expect(queryClient.isFetching({ queryKey: watchlistQueries.items('u').queryKey })).toBe(0)
-    );
+    await waitFor(() => expect(cachedStatus(queryClient, ALIEN.id)).toBe('watched'));
     finishRead();
 
     await waitFor(() =>
-      expect(
-        queryClient
-          .getQueryData(watchlistQueries.items('u').queryKey)
-          ?.find(({ id }) => id === ALIEN.id)?.status
-      ).toBe('watched')
+      expect(queryClient.isFetching({ queryKey: watchlistQueries.items('u').queryKey })).toBe(0)
     );
+    expect(cachedStatus(queryClient, ALIEN.id)).toBe('watched');
     expect(statusOf('Alien', 'Watched')).toBeChecked();
+  });
+
+  it('repeats a read that a write cancelled, as it can carry another change', async () => {
+    vi.mocked(updateDoc).mockResolvedValue(undefined);
+    const { user, queryClient } = renderPage();
+    await screen.findByRole('link', { name: 'Alien' });
+    const stored = [ALIEN_WATCHED, HEAT, LOST];
+    holdRead(stored);
+    void queryClient.refetchQueries({ queryKey: watchlistQueries.items('u').queryKey });
+    mockItems(stored);
+
+    await user.click(statusOf('Alien', 'Watched'));
+
+    expect(await screen.findByRole('link', { name: 'Heat' })).toBeInTheDocument();
+    expect(statusOf('Alien', 'Watched')).toBeChecked();
+  });
+
+  it('changes the shown status of the pressed title only', async () => {
+    mockItems([ALIEN, HEAT, LOST]);
+    vi.mocked(updateDoc).mockResolvedValue(undefined);
+    const { user, queryClient } = renderPage();
+    await screen.findByRole('link', { name: 'Alien' });
+
+    await user.click(statusOf('Alien', 'Watched'));
+
+    await waitFor(() => expect(cachedStatus(queryClient, ALIEN.id)).toBe('watched'));
+    expect(cachedStatus(queryClient, HEAT.id)).toBe('planned');
+    expect(statusOf('Heat', 'Planned')).toBeChecked();
+  });
+
+  it('runs the writes of two titles at once, each row showing its press', async () => {
+    const landAlien = holdWrite();
+    const landLost = holdWrite();
+    const { user } = renderPage();
+    await screen.findByRole('link', { name: 'Alien' });
+
+    await user.click(statusOf('Alien', 'Watched'));
+    await waitFor(() => expect(updateDoc).toHaveBeenCalledOnce());
+    await user.click(statusOf('Lost', 'Planned'));
+
+    await waitFor(() => expect(updateDoc).toHaveBeenCalledTimes(2));
+    expect(statusOf('Alien', 'Watched')).toBeChecked();
+    expect(statusOf('Lost', 'Planned')).toBeChecked();
+    landAlien();
+    landLost();
   });
 
   it('shows only the titles of the chosen status, and counts them', async () => {
@@ -367,7 +422,7 @@ describe('WatchlistPage', () => {
 
     await waitFor(() => expect(screen.queryByRole('link', { name: 'Alien' })).toBeNull());
     expect(screen.getByText('Lost')).toBeInTheDocument();
-    expect(screen.getByRole('status')).toHaveTextContent('1 title');
+    expect(screen.getByRole('status')).toHaveTextContent(/^1 title$/);
     expect(screen.getByRole('button', { name: 'Watched' })).toHaveAttribute('aria-pressed', 'true');
   });
 
@@ -423,7 +478,7 @@ describe('WatchlistPage', () => {
     await waitFor(() => expect(updateDoc).toHaveBeenCalledOnce());
     await waitFor(() => expect(statusOf('Alien', 'Watched')).toBeChecked());
     expect(statusOf('Alien', 'Watched')).toHaveFocus();
-    expect(screen.getByRole('status')).toHaveTextContent('1 title');
+    expect(screen.getByRole('status')).toHaveTextContent(/^1 title$/);
 
     await user.click(screen.getByRole('button', { name: 'Planned' }));
     expect(screen.getByRole('link', { name: 'Alien' })).toBeInTheDocument();
@@ -449,6 +504,35 @@ describe('WatchlistPage', () => {
     await user.click(screen.getByRole('button', { name: 'Planned' }));
 
     await waitFor(() => expect(screen.queryByRole('link', { name: 'Alien' })).toBeNull());
+  });
+
+  it('keeps every row changed under a filter', async () => {
+    mockItems([ALIEN, HEAT, LOST]);
+    vi.mocked(updateDoc).mockResolvedValue(undefined);
+    const { user, queryClient } = renderPage('/user/watchlist?status=planned');
+    await screen.findByRole('link', { name: 'Alien' });
+
+    await user.click(statusOf('Alien', 'Watched'));
+    await waitFor(() => expect(cachedStatus(queryClient, ALIEN.id)).toBe('watched'));
+    await user.click(statusOf('Heat', 'Watched'));
+    await waitFor(() => expect(cachedStatus(queryClient, HEAT.id)).toBe('watched'));
+
+    expect(screen.getByRole('link', { name: 'Alien' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Heat' })).toBeInTheDocument();
+  });
+
+  it('drops a kept row when the folder changes', async () => {
+    vi.mocked(updateDoc).mockResolvedValue(undefined);
+    const { user, queryClient } = renderPage('/user/watchlist?status=planned');
+    await screen.findByRole('link', { name: 'Alien' });
+
+    await user.click(statusOf('Alien', 'Watched'));
+    await waitFor(() => expect(cachedStatus(queryClient, ALIEN.id)).toBe('watched'));
+    await user.click(screen.getByRole('link', { name: 'Top, level 1' }));
+
+    await screen.findByRole('heading', { level: 2, name: 'Top' });
+    expect(screen.queryByRole('link', { name: 'Alien' })).toBeNull();
+    expect(screen.getByRole('status')).toHaveTextContent('No planned titles here.');
   });
 
   it('offers no subfolder at the last level and says why', async () => {
@@ -730,6 +814,29 @@ describe('WatchlistPage', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'Other' })).toBeInTheDocument();
   });
 
+  it('keeps a filter pressed while a delete was running', async () => {
+    let finishCommit = () => {};
+    batch.commit.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          finishCommit = () => {
+            folders = [TOP, DEEP, OTHER];
+            resolve();
+          };
+        })
+    );
+    const { user } = renderPage('/user/watchlist?folder=child');
+    await user.click(await screen.findByRole('button', { name: 'Delete' }));
+    await user.click(screen.getByRole('button', { name: 'Delete folder' }));
+    await waitFor(() => expect(batch.commit).toHaveBeenCalled());
+
+    await user.click(screen.getByRole('button', { name: 'Watched' }));
+    finishCommit();
+
+    expect(await screen.findByRole('heading', { level: 2, name: 'Top' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Watched' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('focuses the heading when a failed write finds its folder gone', async () => {
     vi.mocked(setDoc).mockRejectedValueOnce(
       Object.assign(new Error('denied'), { code: 'permission-denied' })
@@ -752,8 +859,7 @@ describe('WatchlistPage', () => {
     const { user } = renderPage();
 
     await user.click(await screen.findByRole('button', { name: 'Try again' }));
-    vi.mocked(getDocs).mockImplementation((async (ref: { path: string }) =>
-      toSnapshot(ref.path.endsWith('folders') ? folders : [ALIEN, LOST])) as never);
+    mockItems([ALIEN, LOST]);
     await user.click(await screen.findByRole('button', { name: 'Try again' }));
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Watchlist' })).toBeInTheDocument();

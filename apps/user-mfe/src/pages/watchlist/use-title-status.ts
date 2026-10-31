@@ -18,11 +18,14 @@ export function useTitleStatus(uid: string, titleId: string) {
     // Lite has no write queue: offline, a write fails at once instead of pausing.
     networkMode: 'always',
     onSuccess: async (_result, status) => {
-      // A read from before the commit must not bring the old status back.
+      // A read from before the commit must not bring the old status back, but it can carry
+      // another change, such as a title just added, so it runs again.
+      const wasReading = queryClient.isFetching({ queryKey }) > 0;
       await queryClient.cancelQueries({ queryKey });
       queryClient.setQueryData(queryKey, (items) =>
         items?.map((item) => (item.id === titleId ? { ...item, status } : item))
       );
+      if (wasReading) void queryClient.invalidateQueries({ queryKey });
     },
     // The title may be gone, or changed elsewhere.
     onError: () => {

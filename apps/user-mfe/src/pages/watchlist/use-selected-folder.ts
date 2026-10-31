@@ -1,4 +1,5 @@
 import type { WatchlistFolder } from '@repo/firebase/watchlist-tree';
+import { useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 const FOLDER_PARAM = 'folder';
@@ -17,9 +18,15 @@ export function useSelectedFolder(folders: readonly WatchlistFolder[]) {
   const [searchParams, setSearchParams] = useSearchParams();
   const selected = folders.find(({ id }) => id === searchParams.get(FOLDER_PARAM)) ?? null;
 
+  // A delete lands after its render: the params it started with would drop a filter pressed since.
+  const latestParamsRef = useRef(searchParams);
+  useEffect(() => {
+    latestParamsRef.current = searchParams;
+  }, [searchParams]);
+
   // Replaces the entry: Back must not lead to a folder that is gone.
   function replaceSelection(folderId: string | null): void {
-    setSearchParams(getFolderSearch(folderId, searchParams), { replace: true });
+    setSearchParams(getFolderSearch(folderId, latestParamsRef.current), { replace: true });
   }
 
   return { selected, replaceSelection };
