@@ -1168,3 +1168,45 @@ test.describe('the status on a phone', () => {
     expect(overflow).toBe(0);
   });
 });
+
+test('the profile shows the account, counts the watchlist and leads to it', async ({
+  page,
+  request,
+}) => {
+  await openWatchlist(page);
+  const [folderId] = await makeFolders(page, ['Tonight']);
+  const uid = await getUid(page);
+  await seedTitle(request, uid, 1, 'Seen', [folderId], { status: 'watched' });
+  await seedTitle(request, uid, 2, 'Unseen', []);
+  await seedTitle(request, uid, 3, 'Also unseen', []);
+
+  await page.goto('/user/profile');
+  await expect(page.getByText(/^Member since \w{3} \d{1,2}, \d{4}$/)).toBeVisible();
+  const statOf = (label: string) => page.locator('dt', { hasText: label }).locator('+ dd');
+  await expect(statOf('Titles')).toHaveText('3');
+  await expect(statOf('Planned')).toHaveText('2');
+  await expect(statOf('Watched')).toHaveText('1');
+  await expect(statOf('Folders')).toHaveText('1');
+
+  await page.getByRole('link', { name: 'Open watchlist' }).click();
+  await expect(page.getByText('3 titles', { exact: true })).toBeVisible();
+  await page.goBack();
+  await page.getByRole('main').getByRole('link', { name: 'Settings' }).click();
+  await expect(page).toHaveURL('/user/settings');
+});
+
+test('a failed read of the watchlist leaves the account on the profile', async ({ page }) => {
+  await openWatchlist(page);
+  await page.route(/:runQuery/, (route) => route.abort());
+
+  await page.goto('/user/profile');
+
+  // A failed read is retried first.
+  await expect(page.getByText('This section could not be loaded.')).toBeVisible({
+    timeout: 10_000,
+  });
+  await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible();
+  await page.unroute(/:runQuery/);
+  await page.getByRole('button', { name: 'Try again' }).click();
+  await expect(page.getByText('No titles yet.')).toBeVisible();
+});
