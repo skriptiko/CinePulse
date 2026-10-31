@@ -2,6 +2,7 @@ import type { Movie } from '@repo/api';
 import { Button, cn, MovieCard, toMovieCardData } from '@repo/ui';
 import { Loader2 } from 'lucide-react';
 import { useId } from 'react';
+import { renderAddToWatchlist } from '../../components/add-to-watchlist';
 import type { ViewMode } from './movies-filters';
 
 export type MoviesGridProps = {
@@ -35,16 +36,21 @@ export function MoviesGrid({
       <ul
         className={cn(
           'grid gap-3 sm:gap-4 lg:gap-6',
+          // The sticky filters reach below `scroll-padding-top`; 52 clears them on every width.
+          '[&_a]:scroll-mt-52 [&_button]:scroll-mt-52',
           viewMode === 'grid'
             ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'
             : 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8'
         )}
       >
-        {movies.map((movie) => (
-          <li key={movie.id}>
-            <MovieCard movie={toMovieCardData(movie)} />
-          </li>
-        ))}
+        {movies.map((movie) => {
+          const card = toMovieCardData(movie);
+          return (
+            <li key={movie.id}>
+              <MovieCard movie={card} action={renderAddToWatchlist(card)} />
+            </li>
+          );
+        })}
       </ul>
 
       <div className="mt-12 flex flex-col items-center gap-3">

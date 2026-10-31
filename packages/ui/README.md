@@ -4,7 +4,7 @@ The design system: primitives, domain components, layout and error boundaries.
 
 ## Public API
 
-- **Primitives:** `Button`, `buttonVariants`, `Input`, `DropdownMenu`, `Skeleton`, `ToggleGroup`.
+- **Primitives:** `Button`, `buttonVariants`, `Dialog`, `DialogContent`, `Input`, `DropdownMenu`, `Skeleton`, `ToggleGroup`.
 - **Domain components:** `MovieCard`, `Hero`, `ContentRow`, `FeaturedGrid`, `MovieDetailView`. Each takes one UI model.
 - **Mappers:** `toMovieCardData`, `toHeroData`, `toFeaturedItemData` and others turn TMDB data into UI models.
 - **Layout:** `AppLayout`, `Header`, `Footer`.

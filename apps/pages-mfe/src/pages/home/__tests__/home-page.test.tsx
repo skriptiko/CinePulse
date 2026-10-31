@@ -59,6 +59,18 @@ describe('Home', () => {
     expect(screen.getByRole('heading', { name: 'Trending Now' })).toBeInTheDocument();
   });
 
+  it('gives every row a way to add its titles', async () => {
+    mockHome();
+    renderWithProviders(<Home />);
+
+    for (const name of ['Trending Now', 'New Releases', 'Top Rated', 'Popular']) {
+      const row = await screen.findByRole('region', { name });
+      expect(
+        within(row).getByRole('button', { name: /^Add .* to your watchlist$/ })
+      ).toBeInTheDocument();
+    }
+  });
+
   it('keeps the page when one row fails', async () => {
     mockHome({ failingCategory: 'upcoming' });
     renderWithProviders(<Home />);

@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useId } from 'react';
+import { type ReactNode, useId } from 'react';
 import { type ScrollDirection, useHorizontalScroll } from '../hooks/use-horizontal-scroll';
 import { cn } from '../lib/utils';
 import { MovieCard, type MovieCardData } from './movie-card';
@@ -8,10 +8,12 @@ import { Button } from './ui/button';
 export type ContentRowProps = {
   title: string;
   movies: MovieCardData[];
+  /** Builds each card's `action`. */
+  renderCardAction?: (movie: MovieCardData) => ReactNode;
   className?: string;
 };
 
-export function ContentRow({ title, movies, className }: ContentRowProps) {
+export function ContentRow({ title, movies, renderCardAction, className }: ContentRowProps) {
   const { ref, canScrollLeft, canScrollRight, scroll } = useHorizontalScroll<HTMLUListElement>();
   const titleId = useId();
 
@@ -29,13 +31,14 @@ export function ContentRow({ title, movies, className }: ContentRowProps) {
         <CarouselArrow direction="left" hidden={!canScrollLeft} onScroll={scroll} />
         <CarouselArrow direction="right" hidden={!canScrollRight} onScroll={scroll} />
 
+        {/* `scroll-px-*` matches a card, so focus never stops on a card cut off at the edge. */}
         <ul
           ref={ref}
-          className="scrollbar-hide flex gap-3 overflow-x-auto px-4 pb-4 md:gap-4 md:px-8"
+          className="scrollbar-hide flex scroll-px-36 gap-3 overflow-x-auto px-4 pb-4 sm:scroll-px-40 md:scroll-px-44 md:gap-4 md:px-8 lg:scroll-px-48"
         >
           {movies.map((movie) => (
             <li key={movie.id} className="w-36 shrink-0 sm:w-40 md:w-44 lg:w-48">
-              <MovieCard movie={movie} />
+              <MovieCard movie={movie} action={renderCardAction?.(movie)} />
             </li>
           ))}
         </ul>

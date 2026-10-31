@@ -60,4 +60,5 @@ Key project terms. Most are derived from the code (reliable); the watchlist/auth
 - **Firestore** — Firebase's document database for persistent watchlist storage (folders, membership, statuses).
 - **Firestore Lite** — the REST-only entry point of the Firestore SDK (`firebase/firestore/lite`), with no `onSnapshot` and no offline persistence; the watchlist's client (ADR-0013).
 - **All titles** — the virtual first row of the folder tree: every title in the watchlist, including titles that are in no folder.
+- **Folder picker** — the dialog opened by `AddToWatchlist` on a catalog card or the details page: it ticks the folders of a title and shows an offer to sign in to a signed-out visitor (ADR-0014).
 - **Definition of Done (DoD)** — the project completion criterion used instead of MVP phasing: all documented pages + profile + a working watchlist ("IMDb-like" TMDB coverage, but not the whole API).

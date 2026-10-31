@@ -1,10 +1,12 @@
 import { ApiError } from '@repo/api';
 import {
   arrayRemove,
+  arrayUnion,
   collection,
   connectFirestoreEmulator,
   doc,
   type Firestore,
+  getDoc,
   getDocs,
   getFirestore,
   orderBy,
@@ -36,6 +38,15 @@ export type WatchlistItem = {
   posterPath: string | null;
   status: WatchStatus;
   folderIds: string[];
+};
+
+/** What the catalog knows about a title; the store fills in the rest of `WatchlistItem`. */
+export type WatchlistTitle = Pick<WatchlistItem, 'mediaType' | 'tmdbId' | 'title' | 'posterPath'>;
+
+/** A difference, not a list: a folder added from another tab is not this picker's to drop. */
+export type FolderChanges = {
+  added: string[];
+  removed: string[];
 };
 
 let firestore: Promise<Firestore> | undefined;
@@ -137,6 +148,48 @@ export function deleteFolder(uid: string, folderId: string): Promise<void> {
     for (const { id } of getFolderIdUpdates(items, deletedIds)) {
       batch.update(doc(db, 'users', uid, 'items', id), { folderIds: arrayRemove(...deletedIds) });
     }
+    await batch.commit();
+  });
+}
+
+/**
+ * Creates the title, or changes only its `folderIds`: `status` and `addedAt` are never rewritten,
+ * and transforms keep a folder added since this read. Two tabs can both see no title; rules refuse
+ * the second create, because its `addedAt` differs, so a create can never overwrite one. A folder
+ * deleted since the picker's read is refused here: no row would be left to untick its id.
+ */
+export function saveTitle(
+  uid: string,
+  { mediaType, tmdbId, title, posterPath }: WatchlistTitle,
+  { added, removed }: FolderChanges
+): Promise<void> {
+  return run(async (db) => {
+    if (added.length > 0) {
+      const folders = await readFolders(db, uid);
+      if (!added.every((id) => folders.some((folder) => folder.id === id))) {
+        throw new ApiError('client', 'A chosen folder no longer exists');
+      }
+    }
+
+    const ref = doc(db, 'users', uid, 'items', `${mediaType}_${tmdbId}`);
+
+    if (!(await getDoc(ref)).exists()) {
+      await setDoc(ref, {
+        mediaType,
+        tmdbId,
+        title,
+        posterPath,
+        status: 'planned',
+        folderIds: added,
+        addedAt: serverTimestamp(),
+      });
+      return;
+    }
+
+    // Two writes, because one write cannot hold two transforms of a field.
+    const batch = writeBatch(db);
+    if (added.length > 0) batch.update(ref, { folderIds: arrayUnion(...added) });
+    if (removed.length > 0) batch.update(ref, { folderIds: arrayRemove(...removed) });
     await batch.commit();
   });
 }

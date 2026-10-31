@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { ImagePlaceholder } from './image-placeholder';
 
 /** What `MovieDetailView` renders; build it with `toMovieDetailData`. */
@@ -18,9 +19,11 @@ export type MovieDetailData = {
 
 export type MovieDetailViewProps = {
   movie: MovieDetailData;
+  /** A control under the metadata. */
+  action?: ReactNode;
 };
 
-export function MovieDetailView({ movie }: MovieDetailViewProps) {
+export function MovieDetailView({ movie, action }: MovieDetailViewProps) {
   const { title, tagline, description, posterUrl, backdropUrl, backdropSrcSet } = movie;
   const { year, rating, runtime, genres } = movie;
 
@@ -73,6 +76,8 @@ export function MovieDetailView({ movie }: MovieDetailViewProps) {
               ))}
             </ul>
           )}
+
+          {action !== undefined && <div className="mb-6">{action}</div>}
 
           {description !== null && (
             <p className="text-muted-foreground leading-relaxed sm:text-lg">{description}</p>

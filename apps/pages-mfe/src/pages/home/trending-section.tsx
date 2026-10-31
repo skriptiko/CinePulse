@@ -1,6 +1,7 @@
 import { trendingQueries } from '@repo/api';
 import { ContentRow, ContentRowSkeleton, toTrendingCardData } from '@repo/ui';
 import { useSuspenseQuery } from '@tanstack/react-query';
+import { renderAddToWatchlist } from '../../components/add-to-watchlist';
 import { SectionBoundary } from './section-boundary';
 import { isTrendingCard } from './trending';
 
@@ -17,5 +18,11 @@ function TrendingRow() {
   const trendingMovies = trending.results.filter(isTrendingCard).map(toTrendingCardData);
 
   if (trendingMovies.length === 0) return null;
-  return <ContentRow title="Trending Now" movies={trendingMovies} />;
+  return (
+    <ContentRow
+      title="Trending Now"
+      movies={trendingMovies}
+      renderCardAction={renderAddToWatchlist}
+    />
+  );
 }

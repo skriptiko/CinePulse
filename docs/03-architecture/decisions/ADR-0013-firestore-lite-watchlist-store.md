@@ -4,7 +4,7 @@
 
 ## Status
 
-Accepted (2026-10-30). Builds on [ADR-0010](./ADR-0010-firebase-auth-firestore-watchlist.md).
+Accepted (2026-10-30). Builds on [ADR-0010](./ADR-0010-firebase-auth-firestore-watchlist.md). [ADR-0014](./ADR-0014-add-to-watchlist-dialog.md) adds the catalog's write.
 
 ## Context
 
@@ -40,7 +40,7 @@ Rules also see one document at a time, so they cannot check a branch or a title 
 
 ## Consequences
 
-- Firestore Lite and the store get their own size budget of 38 kB (35.45 kB today). The host budget stays at 208 kB with 0.07 kB left, so static growth in a shared package will need a recorded budget move.
+- Firestore Lite and the store get their own size budget of 38 kB (35.96 kB today). The host budget stays at 208 kB with 0.04 kB left, so static growth in a shared package will need a recorded budget move.
 - Opening the page reads all folders and titles, a delete reads them again, and opening Move or Delete rereads folders. That is acceptable for personal lists, but the list has no paging.
 - A stale move, a rename of an orphaned folder and a wide move all show the generic error toast, because `MutationCache` knows no per-write message. Data stays safe. The limit of 20 document lookups per batch from ADR-0010 still applies to wide moves.
 - A write from another tab between the fresh read and the commit can still leave a stale depth, a loop or a dangling folder id. The tree helpers tolerate these, and a move to the top level repairs a folder. Closing that gap needs a server.

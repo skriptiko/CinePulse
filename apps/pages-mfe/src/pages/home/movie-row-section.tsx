@@ -1,6 +1,7 @@
 import { type MovieCategory, movieQueries } from '@repo/api';
 import { ContentRow, ContentRowSkeleton, toMovieCardData } from '@repo/ui';
 import { useSuspenseQuery } from '@tanstack/react-query';
+import { renderAddToWatchlist } from '../../components/add-to-watchlist';
 import { SectionBoundary } from './section-boundary';
 
 type MovieRowSectionProps = {
@@ -21,5 +22,5 @@ function MovieRow({ category, title }: MovieRowSectionProps) {
   const movies = moviesPage.results.map(toMovieCardData);
 
   if (movies.length === 0) return null;
-  return <ContentRow title={title} movies={movies} />;
+  return <ContentRow title={title} movies={movies} renderCardAction={renderAddToWatchlist} />;
 }

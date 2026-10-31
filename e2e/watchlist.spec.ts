@@ -1,6 +1,6 @@
-import { type APIRequestContext, expect, type Page, test } from '@playwright/test';
+import { type APIRequestContext, expect, type Locator, type Page, test } from '@playwright/test';
 import { signIn } from './sign-in';
-import { mockTmdb } from './tmdb-mock';
+import { mockTmdb, paginated } from './tmdb-mock';
 
 const FIRESTORE_DOCUMENTS =
   'http://127.0.0.1:5012/v1/projects/demo-cinepulse/databases/(default)/documents';
@@ -42,13 +42,14 @@ function getFolderId(page: Page): string {
   return new URL(page.url()).searchParams.get('folder') ?? '';
 }
 
-/** No UI adds a title until CIN-26, so the emulator's admin access seeds it. */
+/** Admin access through the emulator: seeds a state the UI has no way to produce on demand. */
 async function seedTitle(
   request: APIRequestContext,
   uid: string,
   tmdbId: number,
   title: string,
-  folderIds: string[]
+  folderIds: string[],
+  { status = 'planned', addedAt = new Date().toISOString() } = {}
 ) {
   const response = await request.post(
     `${FIRESTORE_DOCUMENTS}/users/${uid}/items?documentId=movie_${tmdbId}`,
@@ -60,9 +61,9 @@ async function seedTitle(
           tmdbId: { integerValue: String(tmdbId) },
           title: { stringValue: title },
           posterPath: { nullValue: null },
-          status: { stringValue: 'planned' },
+          status: { stringValue: status },
           folderIds: { arrayValue: { values: folderIds.map((stringValue) => ({ stringValue })) } },
-          addedAt: { timestampValue: new Date().toISOString() },
+          addedAt: { timestampValue: addedAt },
         },
       },
     }
@@ -265,4 +266,655 @@ test('Firestore runs from the host singleton with the signed-in user', async ({ 
   expect(storeChunks.every((path) => path.startsWith('/assets/'))).toBe(true);
   expect(firestoreRequests.length).toBeGreaterThan(0);
   expect(firestoreRequests.every((header) => header?.startsWith('Bearer '))).toBe(true);
+});
+
+const MOVIE = 'Any movie 1';
+const MOVIE_ID = 100;
+
+function addButton(scope: Page | Locator, title = MOVIE) {
+  return scope.getByRole('button', { name: `Add ${title} to your watchlist` }).first();
+}
+
+function folderBox(page: Page, name: string, level: number) {
+  return page.getByRole('checkbox', { name: `${name}, level ${level}` });
+}
+
+async function readTitle(request: APIRequestContext, uid: string, id: string) {
+  const response = await request.get(`${FIRESTORE_DOCUMENTS}/users/${uid}/items/${id}`, {
+    headers: { Authorization: 'Bearer owner' },
+  });
+  expect(response.ok()).toBe(true);
+  const { fields } = await response.json();
+  return {
+    status: fields.status.stringValue as string,
+    addedAt: fields.addedAt.timestampValue as string,
+    folderIds: (fields.folderIds.arrayValue.values ?? []).map(
+      ({ stringValue }: { stringValue: string }) => stringValue
+    ) as string[],
+  };
+}
+
+async function makeFolders(page: Page, names: string[]) {
+  const ids: string[] = [];
+  for (const name of names) {
+    await createFolder(page, 'New folder', name, 1);
+    await selectFolder(page, name, 1);
+    ids.push(getFolderId(page));
+  }
+  return ids;
+}
+
+function openMovies(page: Page) {
+  return page.getByRole('link', { name: 'Movies', exact: true }).first().click();
+}
+
+test('a title goes into several folders and shows in the watchlist at once', async ({ page }) => {
+  await openWatchlist(page);
+  await makeFolders(page, ['Tonight', 'Classics']);
+
+  // Client-side, so the cached list is what the watchlist must not keep showing.
+  await openMovies(page);
+  await addButton(page).click();
+  await folderBox(page, 'Tonight', 1).check();
+  await folderBox(page, 'Classics', 1).check();
+  await page.getByRole('button', { name: 'Add to watchlist' }).click();
+
+  await expect(page.getByText(`${MOVIE} is in your watchlist`)).toBeVisible();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(addButton(page)).toBeFocused();
+
+  await addButton(page).click();
+  await expect(folderBox(page, 'Tonight', 1)).toBeChecked();
+  await page.getByRole('link', { name: 'Open watchlist' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Watchlist' })).toBeVisible();
+  await expect(page.getByRole('link', { name: MOVIE })).toBeVisible();
+  await selectFolder(page, 'Tonight', 1);
+  await expect(page.getByRole('link', { name: MOVIE })).toBeVisible();
+  await selectFolder(page, 'Classics', 1);
+  await expect(page.getByRole('link', { name: MOVIE })).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByRole('link', { name: MOVIE })).toBeVisible();
+});
+
+test('a details page adds a title and shows its ticks on the next open', async ({ page }) => {
+  await openWatchlist(page);
+  await makeFolders(page, ['Tonight']);
+
+  await page.goto(`/movies/${MOVIE_ID}`);
+  const button = page.getByRole('button', { name: 'Add to watchlist', exact: true });
+  await button.click();
+  await folderBox(page, 'Tonight', 1).check();
+  await page.getByRole('dialog').getByRole('button', { name: 'Add to watchlist' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(button).toBeFocused();
+
+  await button.click();
+  await expect(folderBox(page, 'Tonight', 1)).toBeChecked();
+  await expect(page.getByRole('button', { name: 'Save' })).toBeDisabled();
+});
+
+test('a person with no folders keeps the title under All titles', async ({ page }) => {
+  await openWatchlist(page);
+  await openMovies(page);
+  await addButton(page).click();
+  await expect(page.getByText(/No folders yet/)).toBeVisible();
+  await page.getByRole('button', { name: 'Add to watchlist' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+
+  await page.goBack();
+  await expect(page.getByRole('link', { name: MOVIE })).toBeVisible();
+});
+
+test('saving folders leaves the status and addedAt of a title alone', async ({ page, request }) => {
+  await openWatchlist(page);
+  const [keepId, addId] = await makeFolders(page, ['Keep', 'Add']);
+  const uid = await getUid(page);
+  const addedAt = '2020-01-02T03:04:05Z';
+  await seedTitle(request, uid, MOVIE_ID, MOVIE, [keepId, 'from-another-tab'], {
+    status: 'watched',
+    addedAt,
+  });
+
+  await page.goto('/movies');
+  await addButton(page).click();
+  await expect(folderBox(page, 'Keep', 1)).toBeChecked();
+  await folderBox(page, 'Add', 1).check();
+  await folderBox(page, 'Keep', 1).uncheck();
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+
+  const saved = await readTitle(request, uid, `movie_${MOVIE_ID}`);
+  expect(saved.status).toBe('watched');
+  expect(new Date(saved.addedAt).getTime()).toBe(new Date(addedAt).getTime());
+  expect(saved.folderIds.sort()).toEqual([addId, 'from-another-tab'].sort());
+});
+
+/** Holds a tab's commit until the returned function runs. */
+async function holdCommit(page: Page) {
+  let release = () => {};
+  const released = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  let isHeld = false;
+  await page.route(/documents:commit/, async (route) => {
+    isHeld = true;
+    await released;
+    await route.continue();
+  });
+  return { release, isHeld: () => isHeld };
+}
+
+async function pickInOtherTab(page: Page, folder: string, submit: string) {
+  const otherTab = await page.context().newPage();
+  await mockTmdb(otherTab);
+  await otherTab.goto('/movies');
+  await addButton(otherTab).click();
+  await folderBox(otherTab, folder, 1).check();
+  await otherTab.getByRole('button', { name: submit }).click();
+  await expect(otherTab.getByRole('dialog')).toHaveCount(0);
+  await otherTab.close();
+}
+
+test('two tabs changing a stored title keep both folders', async ({ page, request }) => {
+  await openWatchlist(page);
+  const [firstId, secondId] = await makeFolders(page, ['First', 'Second']);
+  const uid = await getUid(page);
+  await seedTitle(request, uid, MOVIE_ID, MOVIE, []);
+  await page.goto('/movies');
+
+  const commit = await holdCommit(page);
+  await addButton(page).click();
+  await folderBox(page, 'First', 1).check();
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect.poll(commit.isHeld).toBe(true);
+
+  await pickInOtherTab(page, 'Second', 'Save');
+  commit.release();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+
+  const saved = await readTitle(request, uid, `movie_${MOVIE_ID}`);
+  expect(saved.folderIds.sort()).toEqual([firstId, secondId].sort());
+});
+
+test('a tab that lost the race to create a title overwrites nothing and retries', async ({
+  page,
+  request,
+}) => {
+  await openWatchlist(page);
+  const [firstId, secondId] = await makeFolders(page, ['First', 'Second']);
+  const uid = await getUid(page);
+  await page.goto('/movies');
+
+  const commit = await holdCommit(page);
+  await addButton(page).click();
+  await folderBox(page, 'First', 1).check();
+  await page.getByRole('button', { name: 'Add to watchlist' }).click();
+  await expect.poll(commit.isHeld).toBe(true);
+
+  await pickInOtherTab(page, 'Second', 'Add to watchlist');
+  const { folderIds: winnerFolders, addedAt } = await readTitle(request, uid, `movie_${MOVIE_ID}`);
+  expect(winnerFolders).toEqual([secondId]);
+
+  await page.unroute(/documents:commit/);
+  commit.release();
+  await expect(page.getByText('Something went wrong. Please try again.')).toBeVisible();
+  await expect(folderBox(page, 'First', 1)).toBeChecked();
+
+  // The failure refreshed the list, so the same press is now an update.
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  const saved = await readTitle(request, uid, `movie_${MOVIE_ID}`);
+  expect(saved.addedAt).toBe(addedAt);
+  expect(saved.folderIds.sort()).toEqual([firstId, secondId].sort());
+});
+
+test('a show on a catalog card is stored as TV', async ({ page, request }) => {
+  await page.route('**/api/tmdb/trending/**', (route) =>
+    route.fulfill({
+      json: {
+        page: 1,
+        total_pages: 1,
+        total_results: 1,
+        results: [
+          {
+            id: 900,
+            name: 'A show',
+            overview: '',
+            poster_path: null,
+            backdrop_path: null,
+            first_air_date: '2024-01-01',
+            vote_average: 7,
+            vote_count: 1,
+            genre_ids: [],
+            origin_country: [],
+            media_type: 'tv',
+          },
+        ],
+      },
+    })
+  );
+  await openWatchlist(page);
+  const uid = await getUid(page);
+  await page.goto('/');
+  await addButton(page, 'A show').click();
+  await page.getByRole('button', { name: 'Add to watchlist' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+
+  expect((await readTitle(request, uid, 'tv_900')).status).toBe('planned');
+  await page.goto('/user/watchlist');
+  await expect(page.getByText('A show')).toBeVisible();
+});
+
+test('a signed-out visitor gets the offer with no Firebase, and comes back', async ({ page }) => {
+  const chunks: string[] = [];
+  page.on('request', (request) => {
+    const { pathname } = new URL(request.url());
+    if (/watchlist-store|index\.esm|watchlist-dialog/.test(pathname)) chunks.push(pathname);
+  });
+
+  await page.goto('/movies?genre=28');
+  await expect(addButton(page, 'Action movie 1')).toBeVisible();
+  expect(chunks).toEqual([]);
+
+  await addButton(page, 'Action movie 1').click();
+  await expect(page.getByRole('dialog', { name: 'Sign in to save Action movie 1' })).toBeVisible();
+  expect(chunks.filter((path) => !path.includes('watchlist-dialog'))).toEqual([]);
+
+  await page.getByRole('button', { name: 'Close' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(addButton(page, 'Action movie 1')).toBeFocused();
+
+  await addButton(page, 'Action movie 1').click();
+  // Scoped: the header has a link with this name too.
+  await page.getByRole('dialog').getByRole('link', { name: 'Sign in' }).click();
+  await expect(page).toHaveURL(/\/auth\/login$/);
+  await signIn(page);
+  await expect(page).toHaveURL(/\/movies\?genre=28$/);
+  await expect(addButton(page, 'Action movie 1')).toBeVisible();
+});
+
+test('a signed-in catalog page reads nothing until the picker opens', async ({ page }) => {
+  await openWatchlist(page);
+  const chunks: string[] = [];
+  const firestore: string[] = [];
+  const authorization: (string | undefined)[] = [];
+  page.on('request', (request) => {
+    const url = new URL(request.url());
+    if (/watchlist-store|watchlist-dialog/.test(url.pathname)) chunks.push(url.pathname);
+    if (url.port === '5012' && request.method() !== 'OPTIONS') {
+      firestore.push(url.pathname);
+      authorization.push(request.headers().authorization);
+    }
+  });
+
+  await page.goto('/movies');
+  await expect(addButton(page)).toBeVisible();
+  expect(chunks).toEqual([]);
+  expect(firestore).toEqual([]);
+
+  await addButton(page).click();
+  await page.getByRole('button', { name: 'Add to watchlist' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+
+  const store = chunks.filter((path) => path.includes('watchlist-store'));
+  expect(store.length).toBeGreaterThan(0);
+  expect(store.every((path) => path.startsWith('/assets/'))).toBe(true);
+  expect(authorization.length).toBeGreaterThan(0);
+  expect(authorization.every((header) => header?.startsWith('Bearer '))).toBe(true);
+});
+
+test('the whole card opens the title and its button does not', async ({ page }) => {
+  await page.goto('/movies');
+
+  await addButton(page).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await expect(page).toHaveURL(/\/movies$/);
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(addButton(page)).toBeFocused();
+
+  const card = page.getByRole('listitem').filter({ hasText: MOVIE }).first();
+  await card.hover();
+  const box = await card.boundingBox();
+  if (!box) throw new Error('No card');
+  // The revealed title sits over the gradient, not under it.
+  await expect(card.getByRole('heading', { name: MOVIE })).toBeVisible();
+  const onTop = await card.getByRole('heading', { name: MOVIE }).evaluate((heading) => {
+    const { x, y, height } = heading.getBoundingClientRect();
+    const element = document.elementFromPoint(x + 4, y + height / 2);
+    return element?.closest('a')?.getAttribute('href') ?? element?.tagName;
+  });
+  expect(onTop).toBe(`/movies/${MOVIE_ID}`);
+  await page.mouse.click(box.x + 12, box.y + 12);
+  await expect(page).toHaveURL(new RegExp(`/movies/${MOVIE_ID}$`));
+});
+
+test('the metadata of a card opens the title, hovered or not', async ({ page }) => {
+  await page.goto('/movies');
+  const card = page.getByRole('listitem').filter({ hasText: MOVIE }).first();
+  const year = card.getByText('2024');
+  await year.evaluate((element) => element.scrollIntoView({ block: 'center' }));
+  // Invisible at rest, as on a phone, where a tap there must still reach the link.
+  const getTarget = () =>
+    year.evaluate((element) => {
+      const { x, y, width, height } = element.getBoundingClientRect();
+      const target = document.elementFromPoint(x + width / 2, y + height / 2);
+      return target?.closest('a')?.getAttribute('href') ?? target?.tagName;
+    });
+  expect(await getTarget()).toBe(`/movies/${MOVIE_ID}`);
+
+  await card.hover();
+  await expect(year).toBeVisible();
+  expect(await getTarget()).toBe(`/movies/${MOVIE_ID}`);
+  const box = await year.boundingBox();
+  if (!box) throw new Error('No year');
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await expect(page).toHaveURL(new RegExp(`/movies/${MOVIE_ID}$`));
+});
+
+test('a second press outside the dialog leaves it open', async ({ page }) => {
+  await page.goto('/movies');
+  await addButton(page).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+
+  const box = await addButton(page).boundingBox();
+  if (!box) throw new Error('No button');
+  await page.mouse.click(box.x + 10, box.y + 10);
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.mouse.click(box.x + 10, box.y + 10);
+  await expect(page.getByRole('dialog')).toBeVisible();
+});
+
+test('a long list of folders scrolls and keeps the buttons on a phone', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 667 });
+  await openWatchlist(page);
+  await makeFolders(
+    page,
+    Array.from({ length: 12 }, (_, index) => `Folder ${index + 1}`)
+  );
+  await page.goto('/movies');
+  await addButton(page).click();
+
+  await expect(folderBox(page, 'Folder 1', 1)).toBeVisible();
+  await folderBox(page, 'Folder 9', 1).scrollIntoViewIfNeeded();
+  await folderBox(page, 'Folder 9', 1).check();
+  await expect(page.getByRole('button', { name: 'Add to watchlist' })).toBeInViewport();
+  await expect(page.getByRole('button', { name: 'Add to watchlist' })).toBeEnabled();
+  const hit = await page.getByRole('button', { name: 'Add to watchlist' }).evaluate((button) => {
+    const { x, y, width, height } = button.getBoundingClientRect();
+    return document.elementFromPoint(x + width / 2, y + height / 2) === button;
+  });
+  expect(hit).toBe(true);
+});
+
+test('a failed save shows a toast, keeps the ticks and is not slow', async ({ page }) => {
+  await openWatchlist(page);
+  await makeFolders(page, ['Offline']);
+  await openMovies(page);
+  await addButton(page).click();
+  await folderBox(page, 'Offline', 1).check();
+
+  await page.route(/documents:(commit|batchGet)/, (route) => route.abort());
+  const start = Date.now();
+  await page.getByRole('button', { name: 'Add to watchlist' }).click();
+  await expect(page.getByText('Could not reach the server. Check your connection.')).toBeVisible({
+    timeout: 20_000,
+  });
+  expect(Date.now() - start).toBeLessThan(4_000);
+  await expect(folderBox(page, 'Offline', 1)).toBeChecked();
+  await expect(page.getByRole('button', { name: 'Add to watchlist' })).toBeFocused();
+});
+
+test('the button shows progress while its dialog downloads, and one dialog opens', async ({
+  page,
+}) => {
+  let release = () => {};
+  const released = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route('**/pages-mfe/assets/watchlist-dialog-*.js', async (route) => {
+    await released;
+    await route.continue();
+  });
+  await page.goto('/');
+
+  await addButton(page, 'Row movie').click();
+  await expect(addButton(page, 'Row movie').locator('svg.animate-spin')).toBeVisible();
+  await addButton(page, 'Hero movie').click();
+  release();
+  await expect(page.getByRole('dialog', { name: 'Sign in to save Row movie' })).toBeVisible();
+  await expect(page.locator('[data-slot="dialog-content"]')).toHaveCount(1);
+});
+
+test('a dialog chunk that will not load leaves the page working', async ({ page }) => {
+  await page.route('**/pages-mfe/assets/watchlist-dialog-*.js', (route) => route.abort());
+  await page.goto('/movies');
+
+  // The first failure is the stale-deploy reload; the one after it reaches the button.
+  await Promise.all([page.waitForEvent('load'), addButton(page).click()]);
+  await addButton(page).click();
+
+  await expect(
+    page.getByText('The watchlist could not be opened. Reload the page and try again.')
+  ).toBeVisible();
+  await expect(page.getByRole('link', { name: MOVIE })).toBeVisible();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+});
+
+test('a press with no network keeps the page and shows a toast', async ({ page, context }) => {
+  await page.goto('/movies');
+  await expect(addButton(page)).toBeVisible();
+
+  await context.setOffline(true);
+  await addButton(page).click();
+
+  await expect(
+    page.getByText('The watchlist could not be opened. Reload the page and try again.')
+  ).toBeVisible();
+  await expect(page.getByRole('link', { name: MOVIE })).toBeVisible();
+  await expect(page).toHaveURL(/\/movies$/);
+});
+
+test('a folder deleted elsewhere is not written, and a retry saves the rest', async ({
+  page,
+  request,
+}) => {
+  await openWatchlist(page);
+  const [goneId, keepId] = await makeFolders(page, ['Gone', 'Keep']);
+  const uid = await getUid(page);
+  await openMovies(page);
+  await addButton(page).click();
+  await folderBox(page, 'Gone', 1).check();
+  await folderBox(page, 'Keep', 1).check();
+
+  const deleted = await request.delete(`${FIRESTORE_DOCUMENTS}/users/${uid}/folders/${goneId}`, {
+    headers: { Authorization: 'Bearer owner' },
+  });
+  expect(deleted.ok()).toBe(true);
+  await page.getByRole('button', { name: 'Add to watchlist' }).click();
+
+  await expect(page.getByText('Something went wrong. Please try again.')).toBeVisible();
+  await expect(folderBox(page, 'Gone', 1)).toHaveCount(0);
+  await expect(folderBox(page, 'Keep', 1)).toBeChecked();
+
+  await page.getByRole('button', { name: 'Add to watchlist' }).click();
+  await expect(page.getByText(`${MOVIE} is in your watchlist`)).toBeVisible();
+  expect((await readTitle(request, uid, `movie_${MOVIE_ID}`)).folderIds).toEqual([keepId]);
+});
+
+test('Enter in the picker adds nothing, on a first open and a cached one', async ({
+  page,
+  request,
+}) => {
+  await openWatchlist(page);
+  await makeFolders(page, ['Tonight']);
+  const uid = await getUid(page);
+  await page.goto('/movies');
+  const dialog = page.getByRole('dialog');
+
+  await addButton(page).focus();
+  await page.keyboard.press('Enter');
+  await expect(folderBox(page, 'Tonight', 1)).toBeVisible();
+  await expect(dialog).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(dialog).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(addButton(page)).toBeFocused();
+
+  await page.keyboard.press('Enter');
+  await expect(dialog).toBeFocused();
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Tab');
+  await expect(folderBox(page, 'Tonight', 1)).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(dialog).toBeVisible();
+
+  const stored = await request.get(`${FIRESTORE_DOCUMENTS}/users/${uid}/items/movie_${MOVIE_ID}`, {
+    headers: { Authorization: 'Bearer owner' },
+  });
+  expect(stored.status()).toBe(404);
+});
+
+test('sign-out with the picker open turns it into the offer', async ({ page }) => {
+  await openWatchlist(page);
+  await openMovies(page);
+  await addButton(page).click();
+  await expect(page.getByRole('button', { name: 'Add to watchlist' })).toBeVisible();
+  await page.evaluate(() => window.__CINEPULSE_STORE__?.getState().setUser(null));
+  await expect(page.getByRole('dialog', { name: `Sign in to save ${MOVIE}` })).toBeVisible();
+  await expect(page.getByRole('dialog').getByRole('link', { name: 'Sign in' })).toBeVisible();
+});
+
+const CARDS = Array.from({ length: 24 }, (_, index) => `Card ${index + 1}`);
+
+test('keyboard focus on the movies grid stays clear of the sticky filters', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.route('**/api/tmdb/discover/movie**', (route) =>
+    route.fulfill({ json: paginated(CARDS) })
+  );
+  await page.goto('/movies');
+  await page.getByRole('link', { name: 'Card 1', exact: true }).focus();
+
+  for (const key of ['Tab', 'Shift+Tab']) {
+    for (let stop = 0; stop < 30; stop += 1) {
+      await page.keyboard.press(key);
+      const [focusedTop, filtersBottom] = await page.evaluate(() => [
+        document.activeElement?.getBoundingClientRect().top ?? 0,
+        document.querySelector('.sticky')?.getBoundingClientRect().bottom ?? 0,
+      ]);
+      expect(focusedTop).toBeGreaterThanOrEqual(filtersBottom);
+    }
+  }
+});
+
+test('a card of a Home row stays on screen as focus moves back along it', async ({ page }) => {
+  await page.route('**/api/tmdb/movie/*', (route) => route.fulfill({ json: paginated(CARDS) }));
+  await page.goto('/');
+  const row = page.getByRole('region', { name: 'Popular' });
+  await addButton(row, 'Card 24').focus();
+
+  for (let stop = 0; stop < 30; stop += 1) {
+    await page.keyboard.press('Shift+Tab');
+    const visibleShare = await page.evaluate(() => {
+      const card = document.activeElement?.closest('li')?.getBoundingClientRect();
+      const list = document.activeElement?.closest('ul')?.getBoundingClientRect();
+      if (!card || !list) return 0;
+      return (Math.min(card.right, list.right) - Math.max(card.left, list.left)) / card.width;
+    });
+    expect(visibleShare).toBeGreaterThan(0.5);
+  }
+});
+
+test('closing the dialog leaves a row where it was', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.route('**/api/tmdb/movie/*', (route) => route.fulfill({ json: paginated(CARDS) }));
+  await page.goto('/');
+  const row = page.getByRole('region', { name: 'Popular' });
+
+  await row.evaluate((element) => element.scrollIntoView({ block: 'center' }));
+
+  // The last card the row shows whole, which its `scroll-px-*` counts as out of view. A raw press,
+  // as `click()` would scroll the button first.
+  const spot = await addButton(row, 'Card 6').boundingBox();
+  if (!spot) throw new Error('No button');
+  await page.mouse.click(spot.x + spot.width / 2, spot.y + spot.height / 2);
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.getByRole('button', { name: 'Close' }).click();
+
+  await expect(addButton(row, 'Card 6')).toBeFocused();
+  expect(await row.getByRole('list').evaluate((list) => list.scrollLeft)).toBe(0);
+});
+
+test('a long unbroken title stays inside the dialog on a phone', async ({ page, request }) => {
+  const title = 'Llanfairpwllgwyngyllgogerychwyrndrobwllllantysiliogogogoch';
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.route('**/api/tmdb/discover/movie**', (route) =>
+    route.fulfill({ json: paginated([title]) })
+  );
+  await openWatchlist(page);
+  await seedTitle(request, await getUid(page), MOVIE_ID, title, []);
+
+  await page.goto('/movies');
+  await addButton(page, title).click();
+  await expect(page.getByText(`${title} is already in your watchlist.`)).toBeVisible();
+
+  const dialog = page.getByRole('dialog');
+  expect(await dialog.evaluate((element) => element.scrollWidth - element.clientWidth)).toBe(0);
+});
+
+test('a page lost with the connection loads on Try again once it returns', async ({
+  page,
+  context,
+}) => {
+  await page.goto('/');
+  await expect(addButton(page, 'Row movie')).toBeVisible();
+
+  await context.setOffline(true);
+  await openMovies(page);
+  await expect(page.getByRole('heading', { level: 1, name: 'Something went wrong' })).toBeVisible();
+
+  await context.setOffline(false);
+  await page.getByRole('button', { name: 'Try again' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Movies' })).toBeVisible();
+});
+
+test.describe('on a touch screen', () => {
+  test.use({ hasTouch: true, viewport: { width: 390, height: 844 } });
+
+  test('a double tap on a card button opens the dialog and does nothing more', async ({ page }) => {
+    await page.route('**/api/tmdb/discover/movie**', (route) =>
+      route.fulfill({ json: paginated(CARDS) })
+    );
+    await openWatchlist(page);
+    await makeFolders(page, ['Tonight', 'Classics', 'Later']);
+    await page.goto('/movies');
+
+    // Opened once, so the chunk is cached and the dialog is up before the second tap.
+    const button = addButton(page, 'Card 9');
+    await button.tap();
+    const folder = folderBox(page, 'Classics', 1);
+    const folderSpot = await folder.boundingBox();
+    if (!folderSpot) throw new Error('No folder');
+    await page.getByRole('button', { name: 'Close' }).tap();
+
+    await button.evaluate(
+      (element, y) => window.scrollBy(0, element.getBoundingClientRect().y - y),
+      folderSpot.y
+    );
+    const spot = await button.boundingBox();
+    if (!spot) throw new Error('No button');
+    await page.touchscreen.tap(spot.x + spot.width / 2, spot.y + spot.height / 2);
+    await page.waitForTimeout(120);
+    await page.touchscreen.tap(spot.x + spot.width / 2, spot.y + spot.height / 2);
+
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(folder).not.toBeChecked();
+    await expect(page).toHaveURL(/\/movies$/);
+
+    await folder.tap();
+    await expect(folder).toBeChecked();
+  });
 });

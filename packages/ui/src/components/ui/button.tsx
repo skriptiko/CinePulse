@@ -36,6 +36,7 @@ export type ButtonProps = Pick<
   ComponentProps<'button'>,
   | 'aria-controls'
   | 'aria-expanded'
+  | 'aria-haspopup'
   | 'aria-hidden'
   | 'aria-label'
   | 'aria-pressed'
@@ -58,6 +59,7 @@ export function Button({
   ref,
   'aria-controls': ariaControls,
   'aria-expanded': ariaExpanded,
+  'aria-haspopup': ariaHasPopup,
   'aria-hidden': ariaHidden,
   'aria-label': ariaLabel,
   'aria-pressed': ariaPressed,
@@ -75,6 +77,7 @@ export function Button({
       tabIndex={tabIndex}
       aria-controls={ariaControls}
       aria-expanded={ariaExpanded}
+      aria-haspopup={ariaHasPopup}
       aria-hidden={ariaHidden}
       aria-label={ariaLabel}
       aria-pressed={ariaPressed}
