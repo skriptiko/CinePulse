@@ -1,4 +1,4 @@
-import { getErrorMessage, isNotFound } from '@repo/api';
+import { getErrorMessage, isApiError, isNotFound } from '@repo/api';
 import type { FallbackProps } from 'react-error-boundary';
 import { usePageMeta } from '../hooks/use-page-meta';
 import { NotFound } from './not-found';
@@ -8,7 +8,14 @@ import { Button } from './ui/button';
 export function PageErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
   if (isNotFound(error)) return <NotFound />;
 
-  return <PageError error={error} onRetry={resetErrorBoundary} />;
+  // `lazy` keeps a failed chunk, so only a reload fetches it again. Offline, a reload could only
+  // reach the browser's error page, so it waits for a press with the network back.
+  const handleRetry = (): void => {
+    if (isApiError(error) || !navigator.onLine) resetErrorBoundary();
+    else window.location.reload();
+  };
+
+  return <PageError error={error} onRetry={handleRetry} />;
 }
 
 type PageErrorProps = {

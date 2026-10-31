@@ -36,6 +36,8 @@ export function MoviesGrid({
       <ul
         className={cn(
           'grid gap-3 sm:gap-4 lg:gap-6',
+          // The sticky filters reach below `scroll-padding-top`; 52 clears them on every width.
+          '[&_a]:scroll-mt-52 [&_button]:scroll-mt-52',
           viewMode === 'grid'
             ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6'
             : 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8'

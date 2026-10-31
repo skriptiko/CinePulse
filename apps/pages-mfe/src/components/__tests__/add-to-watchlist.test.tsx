@@ -1,16 +1,21 @@
 import { createTypedListener, globalStore, type NotificationPayload } from '@repo/events';
 import {
+  buildMovie,
   expectNoA11yViolations,
   renderWithProviders,
   screen,
   server,
   waitFor,
+  within,
 } from '@repo/test-utils';
+import { toMovieCardData } from '@repo/ui';
+import { onlineManager } from '@tanstack/react-query';
 import { getDoc, getDocs, setDoc, writeBatch } from 'firebase/firestore/lite';
 import { HttpResponse, http } from 'msw';
-import { useLocation } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AddToWatchlist } from '../add-to-watchlist';
+import { MovieDetail } from '../../pages/movie-detail/movie-detail-page';
+import { AddToWatchlist, renderAddToWatchlist } from '../add-to-watchlist';
 
 vi.mock('firebase/app', async (importOriginal) => ({
   ...(await importOriginal<typeof import('firebase/app')>()),
@@ -84,6 +89,7 @@ describe('AddToWatchlist', () => {
   });
 
   afterEach(() => {
+    onlineManager.setOnline(true);
     globalStore.getState().setUser(null);
   });
 
@@ -165,6 +171,82 @@ describe('AddToWatchlist', () => {
     await expectNoA11yViolations(screen.getByRole('dialog'));
   });
 
+  it('says that a stored title is already there', async () => {
+    mockReads(FOLDERS, [STORED]);
+    const { user } = renderButton();
+
+    await user.click(trigger());
+
+    expect(await screen.findByText('Dune is already in your watchlist.')).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Choose folders for Dune' })).toBeInTheDocument();
+  });
+
+  it('offers no save for a stored title when there are no folders', async () => {
+    mockReads([], [{ ...STORED, folderIds: [] }]);
+    const { user } = renderButton();
+
+    await user.click(trigger());
+
+    expect(await screen.findByText('Dune is already in your watchlist.')).toBeInTheDocument();
+    expect(screen.getByText(/No folders yet/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Open watchlist' })).toBeInTheDocument();
+  });
+
+  it('does not take a show with the same TMDB id for this movie', async () => {
+    mockReads(FOLDERS, [{ ...STORED, id: 'tv_1', mediaType: 'tv' }] as never);
+    const { user } = renderButton();
+
+    await user.click(trigger());
+
+    expect(await screen.findByRole('checkbox', { name: 'Top, level 1' })).not.toBeChecked();
+    expect(screen.getByRole('button', { name: 'Add to watchlist' })).toBeEnabled();
+  });
+
+  it('stores a card under the TMDB path of its poster', async () => {
+    const card = toMovieCardData(buildMovie({ id: 7, title: 'Dune', poster_path: '/p.jpg' }));
+    const { user } = renderWithProviders(renderAddToWatchlist(card));
+
+    await user.click(trigger());
+    await screen.findByRole('checkbox', { name: 'Top, level 1' });
+    await user.click(screen.getByRole('button', { name: 'Add to watchlist' }));
+
+    await waitFor(() => expect(setDoc).toHaveBeenCalledOnce());
+    const [ref, data] = vi.mocked(setDoc).mock.calls[0] as unknown as [{ path: string }, object];
+    expect(ref.path).toBe('users/u/items/movie_7');
+    expect(data).toMatchObject({ mediaType: 'movie', tmdbId: 7, posterPath: '/p.jpg' });
+  });
+
+  it('stores the movie of a details page under its own identity', async () => {
+    server.use(
+      http.get('*/api/tmdb/movie/:id', () =>
+        HttpResponse.json({
+          ...buildMovie({ id: 7, title: 'Dune', poster_path: '/p.jpg', backdrop_path: '/b.jpg' }),
+          genres: [],
+          runtime: 100,
+          tagline: null,
+        })
+      )
+    );
+    const { user } = renderWithProviders(
+      <Routes>
+        <Route path="/movies/:id" element={<MovieDetail />} />
+      </Routes>,
+      { route: '/movies/7' }
+    );
+
+    await user.click(await screen.findByRole('button', { name: 'Add to watchlist' }));
+    await screen.findByRole('checkbox', { name: 'Top, level 1' });
+    await user.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Add to watchlist' })
+    );
+
+    await waitFor(() => expect(setDoc).toHaveBeenCalledOnce());
+    const [ref, data] = vi.mocked(setDoc).mock.calls[0] as unknown as [{ path: string }, object];
+    expect(ref.path).toBe('users/u/items/movie_7');
+    expect(data).toMatchObject({ mediaType: 'movie', tmdbId: 7, posterPath: '/p.jpg' });
+  });
+
   it('adds a new title to several folders and confirms it', async () => {
     const shown: NotificationPayload[] = [];
     const stopListening = createTypedListener('notification:show')((payload) => {
@@ -213,6 +295,20 @@ describe('AddToWatchlist', () => {
     expect(batch.update.mock.calls.map(([, data]) => data)).toEqual([
       { folderIds: { arrayUnion: ['child'] } },
       { folderIds: { arrayRemove: ['top'] } },
+    ]);
+  });
+
+  it('sends only what changed, so a row left alone is not reasserted', async () => {
+    mockReads(FOLDERS, [{ ...STORED, folderIds: ['top'] }]);
+    const { user } = renderButton();
+
+    await user.click(trigger());
+    await user.click(await screen.findByRole('checkbox', { name: 'Child, level 2' }));
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(batch.commit).toHaveBeenCalledOnce());
+    expect(batch.update.mock.calls.map(([, data]) => data)).toEqual([
+      { folderIds: { arrayUnion: ['child'] } },
     ]);
   });
 
@@ -275,6 +371,52 @@ describe('AddToWatchlist', () => {
     );
     expect(screen.getByRole('checkbox', { name: 'Top, level 1' })).toBeChecked();
     expect(screen.getByRole('dialog')).toBeInTheDocument();
+  });
+
+  it('tries a save at once while the browser reports no network', async () => {
+    vi.mocked(setDoc).mockRejectedValue(
+      Object.assign(new Error('failed'), { code: 'unavailable' })
+    );
+    const { user } = renderButton();
+
+    await user.click(trigger());
+    const folder = await screen.findByRole('checkbox', { name: 'Top, level 1' });
+    await user.click(folder);
+    onlineManager.setOnline(false);
+    await user.click(screen.getByRole('button', { name: 'Add to watchlist' }));
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Add to watchlist' })).toBeEnabled()
+    );
+    expect(setDoc).toHaveBeenCalledOnce();
+    expect(folder).toBeChecked();
+  });
+
+  it('still confirms and refreshes both lists when the dialog closes during a write', async () => {
+    const shown: NotificationPayload[] = [];
+    const stopListening = createTypedListener('notification:show')((payload) => {
+      shown.push(payload);
+    });
+    let land = () => {};
+    vi.mocked(setDoc).mockReturnValue(
+      new Promise<void>((resolve) => {
+        land = resolve;
+      })
+    );
+    const { user } = renderButton();
+
+    await user.click(trigger());
+    await screen.findByRole('checkbox', { name: 'Top, level 1' });
+    await user.click(screen.getByRole('button', { name: 'Add to watchlist' }));
+    await waitFor(() => expect(setDoc).toHaveBeenCalledOnce());
+    await user.click(screen.getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    vi.mocked(getDocs).mockClear();
+    land();
+
+    await waitFor(() => expect(shown).toHaveLength(1));
+    await waitFor(() => expect(getDocs).toHaveBeenCalledTimes(2));
+    stopListening();
   });
 
   it('writes once for two clicks in one tick', async () => {

@@ -48,7 +48,8 @@ export function DialogContent({
         onCloseAutoFocus={onCloseAutoFocus}
         onPointerDownOutside={keepOpen}
         className={cn(
-          'bg-popover text-popover-foreground fixed top-1/2 left-1/2 z-50 flex max-h-[85svh] w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 flex-col gap-4 overflow-y-auto rounded-lg border p-6 shadow-md outline-hidden',
+          // `ignore-early-press`: the second press of a double tap lands on whatever opened under it.
+          'bg-popover text-popover-foreground ignore-early-press fixed top-1/2 left-1/2 z-50 flex max-h-[85svh] w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 flex-col gap-4 overflow-y-auto rounded-lg border p-6 shadow-md outline-hidden',
           className
         )}
       >

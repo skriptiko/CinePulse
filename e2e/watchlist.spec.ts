@@ -1,6 +1,6 @@
-import { type APIRequestContext, expect, type Page, test } from '@playwright/test';
+import { type APIRequestContext, expect, type Locator, type Page, test } from '@playwright/test';
 import { signIn } from './sign-in';
-import { mockTmdb } from './tmdb-mock';
+import { mockTmdb, paginated } from './tmdb-mock';
 
 const FIRESTORE_DOCUMENTS =
   'http://127.0.0.1:5012/v1/projects/demo-cinepulse/databases/(default)/documents';
@@ -271,8 +271,8 @@ test('Firestore runs from the host singleton with the signed-in user', async ({ 
 const MOVIE = 'Any movie 1';
 const MOVIE_ID = 100;
 
-function addButton(page: Page, title = MOVIE) {
-  return page.getByRole('button', { name: `Add ${title} to your watchlist` }).first();
+function addButton(scope: Page | Locator, title = MOVIE) {
+  return scope.getByRole('button', { name: `Add ${title} to your watchlist` }).first();
 }
 
 function folderBox(page: Page, name: string, level: number) {
@@ -786,4 +786,98 @@ test('sign-out with the picker open turns it into the offer', async ({ page }) =
   await page.evaluate(() => window.__CINEPULSE_STORE__?.getState().setUser(null));
   await expect(page.getByRole('dialog', { name: `Sign in to save ${MOVIE}` })).toBeVisible();
   await expect(page.getByRole('dialog').getByRole('link', { name: 'Sign in' })).toBeVisible();
+});
+
+const CARDS = Array.from({ length: 24 }, (_, index) => `Card ${index + 1}`);
+
+test('keyboard focus on the movies grid stays clear of the sticky filters', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.route('**/api/tmdb/discover/movie**', (route) =>
+    route.fulfill({ json: paginated(CARDS) })
+  );
+  await page.goto('/movies');
+  await page.getByRole('link', { name: 'Card 1', exact: true }).focus();
+
+  for (const key of ['Tab', 'Shift+Tab']) {
+    for (let stop = 0; stop < 30; stop += 1) {
+      await page.keyboard.press(key);
+      const [focusedTop, filtersBottom] = await page.evaluate(() => [
+        document.activeElement?.getBoundingClientRect().top ?? 0,
+        document.querySelector('.sticky')?.getBoundingClientRect().bottom ?? 0,
+      ]);
+      expect(focusedTop).toBeGreaterThanOrEqual(filtersBottom);
+    }
+  }
+});
+
+test('a card of a Home row stays on screen as focus moves back along it', async ({ page }) => {
+  await page.route('**/api/tmdb/movie/*', (route) => route.fulfill({ json: paginated(CARDS) }));
+  await page.goto('/');
+  const row = page.getByRole('region', { name: 'Popular' });
+  await addButton(row, 'Card 24').focus();
+
+  for (let stop = 0; stop < 30; stop += 1) {
+    await page.keyboard.press('Shift+Tab');
+    const visibleShare = await page.evaluate(() => {
+      const card = document.activeElement?.closest('li')?.getBoundingClientRect();
+      const list = document.activeElement?.closest('ul')?.getBoundingClientRect();
+      if (!card || !list) return 0;
+      return (Math.min(card.right, list.right) - Math.max(card.left, list.left)) / card.width;
+    });
+    expect(visibleShare).toBeGreaterThan(0.5);
+  }
+});
+
+test('a page lost with the connection loads on Try again once it returns', async ({
+  page,
+  context,
+}) => {
+  await page.goto('/');
+  await expect(addButton(page, 'Row movie')).toBeVisible();
+
+  await context.setOffline(true);
+  await openMovies(page);
+  await expect(page.getByRole('heading', { level: 1, name: 'Something went wrong' })).toBeVisible();
+
+  await context.setOffline(false);
+  await page.getByRole('button', { name: 'Try again' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Movies' })).toBeVisible();
+});
+
+test.describe('on a touch screen', () => {
+  test.use({ hasTouch: true, viewport: { width: 390, height: 844 } });
+
+  test('a double tap on a card button opens the dialog and does nothing more', async ({ page }) => {
+    await page.route('**/api/tmdb/discover/movie**', (route) =>
+      route.fulfill({ json: paginated(CARDS) })
+    );
+    await openWatchlist(page);
+    await makeFolders(page, ['Tonight', 'Classics', 'Later']);
+    await page.goto('/movies');
+
+    // Opened once, so the chunk is cached and the dialog is up before the second tap.
+    const button = addButton(page, 'Card 9');
+    await button.tap();
+    const folder = folderBox(page, 'Classics', 1);
+    const folderSpot = await folder.boundingBox();
+    if (!folderSpot) throw new Error('No folder');
+    await page.getByRole('button', { name: 'Close' }).tap();
+
+    await button.evaluate(
+      (element, y) => window.scrollBy(0, element.getBoundingClientRect().y - y),
+      folderSpot.y
+    );
+    const spot = await button.boundingBox();
+    if (!spot) throw new Error('No button');
+    await page.touchscreen.tap(spot.x + spot.width / 2, spot.y + spot.height / 2);
+    await page.waitForTimeout(120);
+    await page.touchscreen.tap(spot.x + spot.width / 2, spot.y + spot.height / 2);
+
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(folder).not.toBeChecked();
+    await expect(page).toHaveURL(/\/movies$/);
+
+    await folder.tap();
+    await expect(folder).toBeChecked();
+  });
 });

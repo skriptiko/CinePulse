@@ -29,13 +29,11 @@ export function WatchlistDialog({ title, onClose, onCloseAutoFocus }: WatchlistD
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent
-        title={
-          isAnonymous ? `Sign in to save ${title.title}` : `Add ${title.title} to your watchlist`
-        }
+        title={isAnonymous ? `Sign in to save ${title.title}` : `Choose folders for ${title.title}`}
         description={
           isAnonymous
             ? 'Your watchlist keeps titles in your own folders.'
-            : 'Pick folders, or none to keep it under All titles.'
+            : 'With no folder, it stays under All titles.'
         }
         onCloseAutoFocus={onCloseAutoFocus}
       >
@@ -151,6 +149,9 @@ function FolderPicker({ uid, title, onClose }: FolderPickerProps) {
   return (
     // No `<form>`: Enter on a checkbox would submit it, adding the title with what is ticked so far.
     <div className="flex flex-col gap-4">
+      {saved !== undefined && (
+        <p className="text-muted-foreground text-sm">{title.title} is already in your watchlist.</p>
+      )}
       {rows.length === 0 ? (
         <p className="text-muted-foreground text-sm">
           No folders yet. Create them in your watchlist.
@@ -182,15 +183,17 @@ function FolderPicker({ uid, title, onClose }: FolderPickerProps) {
         </fieldset>
       )}
       <div className="flex flex-wrap items-center gap-2">
-        <Button
-          ref={submitRef}
-          size="sm"
-          disabled={!hasWrite || isPending}
-          className="touch-target"
-          onClick={handleSave}
-        >
-          {getSubmitLabel(isPending, saved !== undefined)}
-        </Button>
+        {(rows.length > 0 || saved === undefined) && (
+          <Button
+            ref={submitRef}
+            size="sm"
+            disabled={!hasWrite || isPending}
+            className="touch-target"
+            onClick={handleSave}
+          >
+            {getSubmitLabel(isPending, saved !== undefined)}
+          </Button>
+        )}
         <Link
           to={ROUTE_PATHS.USER_WATCHLIST}
           className={buttonVariants({

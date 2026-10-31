@@ -20,7 +20,7 @@ function movie(id: number, title: string) {
   };
 }
 
-function paginated(titles: string[], page = 1) {
+export function paginated(titles: string[], page = 1) {
   return {
     page,
     results: titles.map((title, index) => movie(page * 100 + index, title)),

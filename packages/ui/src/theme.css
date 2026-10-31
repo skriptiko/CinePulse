@@ -160,6 +160,17 @@
   }
 }
 
+/* Held by the delay, because reduced motion shortens every duration to nothing. */
+@utility ignore-early-press {
+  animation: ignore-early-press 1ms 350ms backwards;
+}
+
+@keyframes ignore-early-press {
+  from {
+    pointer-events: none;
+  }
+}
+
 @utility glass {
   background: var(--glass);
   backdrop-filter: blur(20px);
