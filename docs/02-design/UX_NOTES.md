@@ -80,6 +80,10 @@ In the integration the host builds one stylesheet for every remote, so MFE style
 - The counts use the queries of the watchlist page, so visiting both reads every title once within the stale time.
 - With no titles, the section says so and links to Movies instead of showing zeros.
 
+## Settings
+
+- A theme applies at once and stays between sessions, with no Save button. `System` follows the device, and the header toggle changes the same value.
+
 ## Accessibility
 
 > ⬜ No formal a11y audit has been carried out.

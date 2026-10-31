@@ -111,9 +111,7 @@ Implemented and working:
 - **Home** (`/`) — the main page with Hero, categories, the Trending / New Releases / Top Rated / Popular rows and the "Editor's Picks" block. Real TMDB data. ✅
 - **Movies** (`/movies`) — a catalog with search, genre filter, sorting (Popular / Newest / Rating), a grid/compact toggle and incremental loading ("Load More"). ✅
 - **Profile** (`/user/profile`) — the account (name, email, the date it was created), watchlist counts, and links to the watchlist and Settings. ✅
-
-Stubs (a route exists, but no functionality) — per the scope, they are to become part of the personal account with the watchlist:
-- **Settings** (`/user/settings`) — a heading only. 🟡
+- **Settings** (`/user/settings`) — the theme (Light, Dark, System) and sign-out. There is no password to change, as sign-in is through Google only (ADR-0010). ✅
 
 In progress:
 - **Watchlist** (`/user/watchlist`) — the folder tree and the titles of a folder, each with a Watched or Planned switch, and a filter by status. Titles are added from catalog cards and the movie details page, and the links to the page are "Open watchlist" in that dialog and on Profile. 🟡
