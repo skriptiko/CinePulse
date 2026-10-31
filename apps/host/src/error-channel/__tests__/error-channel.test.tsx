@@ -1,5 +1,5 @@
 import { ApiError } from '@repo/api';
-import { createTypedEmitter } from '@repo/events';
+import { createTypedEmitter, globalStore } from '@repo/events';
 import { renderWithProviders, screen } from '@repo/test-utils';
 import { onlineManager } from '@tanstack/react-query';
 import { act } from 'react';
@@ -42,7 +42,49 @@ describe('startErrorReporting', () => {
   });
 });
 
+/** A device colour scheme that can change: the returned function changes it. */
+function mockDeviceScheme(startsDark: boolean) {
+  const listeners = new Set<(event: { matches: boolean }) => void>();
+  let isDark = startsDark;
+  vi.stubGlobal('matchMedia', () => ({
+    get matches() {
+      return isDark;
+    },
+    addEventListener: (_type: string, listener: (event: { matches: boolean }) => void) =>
+      listeners.add(listener),
+    removeEventListener: (_type: string, listener: (event: { matches: boolean }) => void) =>
+      listeners.delete(listener),
+  }));
+  return (next: boolean) => {
+    isDark = next;
+    for (const listener of listeners) listener({ matches: next });
+  };
+}
+
 describe('notification toasts', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    act(() => globalStore.getState().setTheme('dark'));
+  });
+
+  it('keeps a chosen theme when the device changes after System', async () => {
+    const setDeviceDark = mockDeviceScheme(true);
+    const unsubscribe = subscribeToNotifications();
+    globalStore.getState().setTheme('system');
+    const { container } = renderWithProviders(<Toaster />);
+
+    act(() => globalStore.getState().setTheme('dark'));
+    act(() => setDeviceDark(false));
+    act(() => createTypedEmitter('notification:show')({ type: 'error', message: 'Seen' }));
+    await screen.findByText('Seen');
+
+    expect(container.ownerDocument.querySelector('[data-sonner-theme]')).toHaveAttribute(
+      'data-sonner-theme',
+      'dark'
+    );
+    unsubscribe();
+  });
+
   it('shows notification:show as a toast', async () => {
     const unsubscribe = subscribeToNotifications();
     renderWithProviders(<Toaster />);
