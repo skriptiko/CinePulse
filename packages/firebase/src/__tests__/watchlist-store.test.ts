@@ -1,8 +1,8 @@
 import { server } from '@repo/test-utils';
-import { getDocs, setDoc, writeBatch } from 'firebase/firestore/lite';
+import { getDoc, getDocs, setDoc, writeBatch } from 'firebase/firestore/lite';
 import { HttpResponse, http } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createFolder, deleteFolder, getFolders, moveFolder } from '../watchlist-store';
+import { createFolder, deleteFolder, getFolders, moveFolder, saveTitle } from '../watchlist-store';
 
 vi.mock('firebase/app', async (importOriginal) => ({
   ...(await importOriginal<typeof import('firebase/app')>()),
@@ -11,10 +11,12 @@ vi.mock('firebase/app', async (importOriginal) => ({
 
 vi.mock('firebase/firestore/lite', () => ({
   arrayRemove: (...ids: string[]) => ({ arrayRemove: ids }),
+  arrayUnion: (...ids: string[]) => ({ arrayUnion: ids }),
   collection: (_db: unknown, ...path: string[]) => ({ path: path.join('/') }),
   connectFirestoreEmulator: vi.fn(),
   doc: (first: { path?: string }, ...path: string[]) =>
     path.length > 0 ? { path: path.join('/') } : { path: `${first.path}/new` },
+  getDoc: vi.fn(),
   getDocs: vi.fn(),
   getFirestore: () => ({}),
   orderBy: vi.fn(),
@@ -117,6 +119,90 @@ describe('watchlist store', () => {
     await expect(moveFolder('u', 'a', 'b')).rejects.toMatchObject({ kind: 'client' });
 
     expect(batch.commit).not.toHaveBeenCalled();
+  });
+
+  describe('saveTitle', () => {
+    const TITLE = { mediaType: 'tv', tmdbId: 9, title: 'Dark', posterPath: '/dark.jpg' } as const;
+    const REF = 'users/u/items/tv_9';
+
+    function mockStored(exists: boolean): void {
+      vi.mocked(getDoc).mockResolvedValue({ exists: () => exists } as never);
+    }
+
+    function getBatchWrites() {
+      return batch.update.mock.calls.map(([ref, data]) => [ref.path, data]);
+    }
+
+    beforeEach(() => mockReads());
+
+    it('creates a missing title with every field the rules require', async () => {
+      mockStored(false);
+
+      await saveTitle('u', TITLE, { added: ['a', 'd'], removed: [] });
+
+      expect(vi.mocked(setDoc).mock.calls[0]).toEqual([
+        { path: REF },
+        { ...TITLE, status: 'planned', folderIds: ['a', 'd'], addedAt: 'now' },
+      ]);
+      expect(batch.commit).not.toHaveBeenCalled();
+    });
+
+    it('creates a title with no folder', async () => {
+      mockStored(false);
+
+      await saveTitle('u', TITLE, { added: [], removed: [] });
+
+      expect(vi.mocked(setDoc).mock.calls[0]?.[1]).toMatchObject({ folderIds: [] });
+    });
+
+    it('changes a stored title with transforms and touches nothing else', async () => {
+      mockStored(true);
+
+      await saveTitle('u', TITLE, { added: ['a'], removed: ['b'] });
+
+      expect(getBatchWrites()).toEqual([
+        [REF, { folderIds: { arrayUnion: ['a'] } }],
+        [REF, { folderIds: { arrayRemove: ['b'] } }],
+      ]);
+      expect(batch.commit).toHaveBeenCalledOnce();
+      expect(setDoc).not.toHaveBeenCalled();
+    });
+
+    it('writes only the side that changed', async () => {
+      mockStored(true);
+
+      await saveTitle('u', TITLE, { added: [], removed: ['b'] });
+
+      expect(getBatchWrites()).toEqual([[REF, { folderIds: { arrayRemove: ['b'] } }]]);
+    });
+
+    it('refuses a folder deleted since the picker read it, and writes nothing', async () => {
+      mockStored(true);
+
+      await expect(
+        saveTitle('u', TITLE, { added: ['a', 'gone'], removed: [] })
+      ).rejects.toMatchObject({ kind: 'client' });
+
+      expect(setDoc).not.toHaveBeenCalled();
+      expect(batch.commit).not.toHaveBeenCalled();
+    });
+
+    it('reads no folders for a save that adds none', async () => {
+      mockStored(true);
+
+      await saveTitle('u', TITLE, { added: [], removed: ['b'] });
+
+      expect(getDocs).not.toHaveBeenCalled();
+    });
+
+    it('reads the title fresh on every save', async () => {
+      mockStored(true);
+
+      await saveTitle('u', TITLE, { added: ['a'], removed: [] });
+      await saveTitle('u', TITLE, { added: ['a'], removed: [] });
+
+      expect(getDoc).toHaveBeenCalledTimes(2);
+    });
   });
 
   it.each([

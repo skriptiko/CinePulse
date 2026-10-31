@@ -7,6 +7,7 @@ import {
 } from '@firebase/rules-unit-testing';
 import {
   arrayRemove,
+  arrayUnion,
   deleteDoc,
   doc,
   type Firestore,
@@ -211,6 +212,29 @@ describe('items', () => {
     await assertSucceeds(
       updateDoc(doc(db, itemPath), { folderIds: ['f1', 'f2'], status: 'watched' })
     );
+  });
+
+  it('never lets a second create overwrite a title', async () => {
+    const db = asUser('alice');
+    await setDoc(doc(db, itemPath), item({ status: 'watched', folderIds: ['f1'] }));
+
+    await assertFails(setDoc(doc(db, itemPath), item()));
+
+    const stored = await getDoc(doc(db, itemPath));
+    expect(stored.data()).toMatchObject({ status: 'watched', folderIds: ['f1'] });
+  });
+
+  it('adds and removes folders of a title in one batch', async () => {
+    const db = asUser('alice');
+    await setDoc(doc(db, itemPath), item({ status: 'watched', folderIds: ['f1', 'f2'] }));
+
+    const batch = writeBatch(db);
+    batch.update(doc(db, itemPath), { folderIds: arrayUnion('f3') });
+    batch.update(doc(db, itemPath), { folderIds: arrayRemove('f1') });
+    await assertSucceeds(batch.commit());
+
+    const stored = await getDoc(doc(db, itemPath));
+    expect(stored.data()).toMatchObject({ status: 'watched', folderIds: ['f2', 'f3'] });
   });
 
   it('keeps the identity of a title unchanged', async () => {
