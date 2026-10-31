@@ -74,6 +74,12 @@ In the integration the host builds one stylesheet for every remote, so MFE style
 - `<output>` above the list always holds the count or the empty message, and is the live region for a filter press.
 - In forced colours, a chosen segment or pill takes the system highlight, as the fill and the ring are removed there.
 
+## Profile
+
+- The account comes from `globalStore` and shows at once. The watchlist counts load and fail on their own, with a section error and `Try again`, so a Firestore failure leaves the account and the links working.
+- The counts use the queries of the watchlist page, so visiting both reads every title once within the stale time.
+- With no titles, the section says so and links to Movies instead of showing zeros.
+
 ## Accessibility
 
 > ⬜ No formal a11y audit has been carried out.

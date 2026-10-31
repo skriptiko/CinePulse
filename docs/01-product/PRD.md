@@ -110,9 +110,9 @@ The data model for this feature (Firestore structure for the folder tree) — se
 Implemented and working:
 - **Home** (`/`) — the main page with Hero, categories, the Trending / New Releases / Top Rated / Popular rows and the "Editor's Picks" block. Real TMDB data. ✅
 - **Movies** (`/movies`) — a catalog with search, genre filter, sorting (Popular / Newest / Rating), a grid/compact toggle and incremental loading ("Load More"). ✅
+- **Profile** (`/user/profile`) — the account (name, email, the date it was created), watchlist counts, and links to the watchlist and Settings. ✅
 
 Stubs (a route exists, but no functionality) — per the scope, they are to become part of the personal account with the watchlist:
-- **Profile** (`/user/profile`) — a heading only. 🟡
 - **Settings** (`/user/settings`) — a heading only. 🟡
 
 In progress:
