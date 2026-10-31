@@ -9,8 +9,8 @@ The only importer of the `firebase` SDK, always behind a lazy load, so anonymous
 - `signInWithGoogle`, `signOutUser`.
 - `getSignInErrorMessage`.
 - `watchlistQueries`: `queryOptions` factories `folders(uid)` and `items(uid)`, plus `all(uid)`, their key prefix.
-- `loadWatchlistStore`: loads Firestore Lite and the store, which writes through `createFolder`, `renameFolder`, `moveFolder` and `deleteFolder`.
-- Types `WatchlistItem`, `WatchStatus`.
+- `loadWatchlistStore`: loads Firestore Lite and the store, which writes through `createFolder`, `renameFolder`, `moveFolder`, `deleteFolder` and `saveTitle`.
+- Types `FolderChanges`, `WatchlistItem`, `WatchlistTitle`, `WatchStatus`.
 
 Auth state reaches the app through `globalStore` and the `user:login` / `user:logout` events of `@repo/events`.
 

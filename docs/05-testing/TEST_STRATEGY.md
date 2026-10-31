@@ -95,9 +95,16 @@ Add Playwright (chromium) on the merged `dist/` served by `firebase emulators:st
 7. The selected folder stays in view in the short tree of a phone.
 8. A whole title row opens the title.
 9. A long unbroken name does not widen the page on a phone.
-10. Firestore runs from the host's singleton with the signed-in user. This is the only automated check for a second `firebase/app`.
+10. Firestore runs from the host's singleton with the signed-in user, on the watchlist page and from the catalog's picker. These are the only automated checks for a second `firebase/app`.
+11. A title goes into several folders and shows in the watchlist at once. A details page does the same, a person with no folders keeps the title under All titles, and a show is stored as TV.
+12. Saving folders leaves `status` and `addedAt` alone.
+13. Two tabs keep both folders, a tab that lost the race to create overwrites nothing, and a folder deleted elsewhere is not written.
+14. A signed-out visitor gets the offer with no Firebase and comes back. A signed-in catalog page reads nothing until the picker opens.
+15. A whole card, its metadata included, opens the title, and its button does not.
+16. The dialog survives a second press outside, a long list on a phone, Enter in the picker, a second card pressed during the download, and sign-out.
+17. A failed save keeps the ticks. A dialog chunk that will not load, online or offline, leaves the page working.
 
-Titles are seeded through the emulator's REST API until CIN-26 adds a way to add them. `pnpm test:e2e` needs Java as well as `firebase-tools`.
+Titles are seeded through the emulator's REST API only for states the UI cannot produce on demand. `pnpm test:e2e` needs Java as well as `firebase-tools`.
 
 e2e runs on PRs into `main` only, so run it locally before merging a change to the watchlist or to `@repo/firebase`.
 

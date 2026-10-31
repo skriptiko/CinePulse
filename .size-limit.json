@@ -16,7 +16,7 @@
     "limit": "55 kB"
   },
   {
-    "name": "Firestore Lite and the watchlist store (gzip, watchlist page only)",
+    "name": "Firestore Lite and the watchlist store (gzip, signed-in watchlist use only)",
     "path": "apps/host/dist/assets/watchlist-store-*.js",
     "gzip": true,
     "limit": "38 kB"
