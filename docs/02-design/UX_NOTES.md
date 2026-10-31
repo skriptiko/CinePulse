@@ -72,7 +72,7 @@ In the integration the host builds one stylesheet for every remote, so MFE style
 - The filter uses pills, so it does not look like the switch.
 - A row changed under a filter stays until the folder or the filter changes, as a free undo and so that a double tap cannot reach the next row.
 - `<output>` above the list always holds the count or the empty message, and is the live region for a filter press.
-- In forced colours, a chosen segment or pill takes the system highlight, as the fill and the ring are removed there.
+- In forced colours, a chosen segment or pill takes the system highlight, as forced colours would remove its fill and ring.
 
 ## Profile
 
