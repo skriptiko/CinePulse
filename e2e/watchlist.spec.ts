@@ -1093,6 +1093,32 @@ test('Back that takes away the focused row moves focus to the heading', async ({
   await expect(page.getByRole('heading', { level: 2, name: 'All titles' })).toBeFocused();
 });
 
+test.describe('in forced colours', () => {
+  test.use({ forcedColors: 'active' });
+
+  test('the chosen status and the chosen filter still stand out', async ({ page, request }) => {
+    await openWatchlist(page);
+    await seedTitle(request, await getUid(page), MOVIE_ID, MOVIE, []);
+    await page.reload();
+    const background = (control: Locator) =>
+      control.evaluate((element) => getComputedStyle(element).backgroundColor);
+    const chosen = statusBox(page, MOVIE, 'Planned');
+    const track = page.getByRole('radiogroup', { name: `Status of ${MOVIE}` });
+
+    expect(await background(chosen)).not.toBe(await background(track));
+    expect(await background(filterPill(page, 'All'))).not.toBe(
+      await background(filterPill(page, 'Planned'))
+    );
+
+    await statusBox(page, MOVIE, 'Watched').focus();
+    await page.keyboard.press('ArrowLeft');
+    await expect(chosen).toBeFocused();
+    expect(await chosen.evaluate((element) => getComputedStyle(element).outlineStyle)).not.toBe(
+      'none'
+    );
+  });
+});
+
 test.describe('the status on a phone', () => {
   test.use({ hasTouch: true, viewport: { width: 320, height: 640 } });
 

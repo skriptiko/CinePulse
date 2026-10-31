@@ -8,7 +8,7 @@ const pillVariants = cva(
   {
     variants: {
       selected: {
-        true: 'bg-foreground text-background',
+        true: 'bg-foreground text-background forced-chosen',
         false: 'bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground',
       },
     },

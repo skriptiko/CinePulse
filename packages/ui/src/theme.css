@@ -123,6 +123,16 @@
   }
 }
 
+/* Forced colours remove fills and shadows, the only marks of a chosen control. An outline would
+   look like focus, and without `forced-color-adjust` a backplate hides the highlighted text. */
+@utility forced-chosen {
+  @media (forced-colors: active) {
+    forced-color-adjust: none;
+    background-color: Highlight !important;
+    color: HighlightText !important;
+  }
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
