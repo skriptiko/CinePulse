@@ -368,6 +368,26 @@ describe('WatchlistPage', () => {
     expect(statusOf('Alien', 'Watched')).toBeChecked();
   });
 
+  it('does not let a read from before the commit win after the page is left', async () => {
+    const land = holdWrite();
+    const { user, queryClient, unmount } = renderPage();
+    await screen.findByRole('link', { name: 'Alien' });
+    const finishRead = holdRead([ALIEN, LOST]);
+    void queryClient.refetchQueries({ queryKey: watchlistQueries.items('u').queryKey });
+
+    await user.click(statusOf('Alien', 'Watched'));
+    await waitFor(() => expect(updateDoc).toHaveBeenCalledOnce());
+    unmount();
+    land();
+    await waitFor(() => expect(cachedStatus(queryClient, ALIEN.id)).toBe('watched'));
+    finishRead();
+
+    await waitFor(() =>
+      expect(queryClient.isFetching({ queryKey: watchlistQueries.items('u').queryKey })).toBe(0)
+    );
+    expect(cachedStatus(queryClient, ALIEN.id)).toBe('watched');
+  });
+
   it('repeats a read that a write cancelled, as it can carry another change', async () => {
     vi.mocked(updateDoc).mockResolvedValue(undefined);
     const { user, queryClient } = renderPage();
