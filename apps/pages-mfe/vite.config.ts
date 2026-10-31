@@ -18,11 +18,19 @@ export default defineConfig(({ mode }) => {
         exposes: {
           './routes': './src/routes.tsx',
         },
-        shared: createMfShared({ without: ['@repo/firebase'] }),
+        shared: createMfShared(),
         // The default, 'version-first', downloads every remote at startup (ADR-0011).
         shareStrategy: 'loaded-first',
       }),
     ],
+    // Found late, these would be re-bundled with a second `firebase/app` until Vite reloads.
+    optimizeDeps: {
+      include: [
+        '@repo/firebase > firebase/app',
+        '@repo/firebase > firebase/auth',
+        '@repo/firebase > firebase/firestore/lite',
+      ],
+    },
     resolve: {
       alias: {
         '@': resolve(__dirname, './src'),
