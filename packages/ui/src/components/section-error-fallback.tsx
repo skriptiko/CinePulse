@@ -6,10 +6,10 @@ export function SectionErrorFallback({ resetErrorBoundary }: FallbackProps) {
   return (
     <div
       role="alert"
-      className="border-border bg-secondary/40 mx-4 flex flex-col items-start gap-3 rounded-lg border p-6 sm:mx-6 lg:mx-12"
+      className="border-border bg-secondary/40 flex flex-col items-start gap-3 rounded-lg border p-6"
     >
       <p className="text-muted-foreground text-sm">This section could not be loaded.</p>
-      <Button variant="outline" size="sm" onClick={resetErrorBoundary}>
+      <Button variant="outline" size="sm" className="touch-target" onClick={resetErrorBoundary}>
         Try again
       </Button>
     </div>
