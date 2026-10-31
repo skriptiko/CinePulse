@@ -4,7 +4,7 @@
 
 ## Status
 
-Accepted (2026-10-30). Builds on [ADR-0010](./ADR-0010-firebase-auth-firestore-watchlist.md). [ADR-0014](./ADR-0014-add-to-watchlist-dialog.md) adds the catalog's write.
+Accepted (2026-10-30). Builds on [ADR-0010](./ADR-0010-firebase-auth-firestore-watchlist.md). [ADR-0014](./ADR-0014-add-to-watchlist-dialog.md) adds the catalog's write, and [ADR-0015](./ADR-0015-title-status-write.md) the write of a status.
 
 ## Context
 

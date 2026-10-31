@@ -156,7 +156,7 @@ Pipeline details: [CI_CD.md](../06-deployment/CI_CD.md); environments: [ENVIRONM
 - ✅ **Firebase Auth** — authentication (Google sign-in, ADR-0010). `@repo/firebase` writes the user to `globalStore` and emits `user:login`/`user:logout`; `RequireAuth` gates protected pages in `user-mfe`.
 - ✅ **Firestore** — persistent watchlist storage (a folder tree up to 6 levels deep, many-to-many title membership, watched/planned status) + security rules (per-user data isolation). This is the project's **first own database**; see [DATA_MODEL](./DATA_MODEL.md). The client is Firestore Lite behind a lazily loaded store ([ADR-0013](./decisions/ADR-0013-firestore-lite-watchlist-store.md)).
 - **Impact on data flow:** next to "read-only TMDB through the proxy" comes "read/write user data through the Firestore SDK"; `user-mfe` must keep these two paths separate.
-- **Decisions:** [ADR-0010](./decisions/ADR-0010-firebase-auth-firestore-watchlist.md) fixes the storage shape and the integration, [ADR-0013](./decisions/ADR-0013-firestore-lite-watchlist-store.md) the Firestore client. [ADR-0014](./decisions/ADR-0014-add-to-watchlist-dialog.md) covers adding a title from the catalog.
+- **Decisions:** [ADR-0010](./decisions/ADR-0010-firebase-auth-firestore-watchlist.md) fixes the storage shape and the integration, [ADR-0013](./decisions/ADR-0013-firestore-lite-watchlist-store.md) the Firestore client. [ADR-0014](./decisions/ADR-0014-add-to-watchlist-dialog.md) covers adding a title from the catalog, and [ADR-0015](./decisions/ADR-0015-title-status-write.md) changing its status.
 
 ## Diagrams
 

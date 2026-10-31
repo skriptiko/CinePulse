@@ -58,7 +58,7 @@ export function ToggleGroupItem({
       data-slot="toggle-group-item"
       className={cn(
         'text-muted-foreground hover:text-foreground rounded-md p-2 transition-colors',
-        'data-[state=on]:bg-background data-[state=on]:text-foreground',
+        'data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:forced-chosen',
         className
       )}
     >

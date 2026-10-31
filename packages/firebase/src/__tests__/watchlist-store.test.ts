@@ -1,8 +1,15 @@
 import { server } from '@repo/test-utils';
-import { getDoc, getDocs, setDoc, writeBatch } from 'firebase/firestore/lite';
+import { getDoc, getDocs, setDoc, updateDoc, writeBatch } from 'firebase/firestore/lite';
 import { HttpResponse, http } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createFolder, deleteFolder, getFolders, moveFolder, saveTitle } from '../watchlist-store';
+import {
+  createFolder,
+  deleteFolder,
+  getFolders,
+  moveFolder,
+  saveTitle,
+  setTitleStatus,
+} from '../watchlist-store';
 
 vi.mock('firebase/app', async (importOriginal) => ({
   ...(await importOriginal<typeof import('firebase/app')>()),
@@ -119,6 +126,17 @@ describe('watchlist store', () => {
     await expect(moveFolder('u', 'a', 'b')).rejects.toMatchObject({ kind: 'client' });
 
     expect(batch.commit).not.toHaveBeenCalled();
+  });
+
+  it('writes only the status of a title, with no read', async () => {
+    await setTitleStatus('u', 'movie_1', 'watched');
+
+    expect(updateDoc).toHaveBeenCalledExactlyOnceWith(
+      { path: 'users/u/items/movie_1' },
+      { status: 'watched' }
+    );
+    expect(getDoc).not.toHaveBeenCalled();
+    expect(getDocs).not.toHaveBeenCalled();
   });
 
   describe('saveTitle', () => {

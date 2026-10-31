@@ -50,7 +50,7 @@ In the integration the host builds one stylesheet for every remote, so MFE style
 
 🟡 Partially unified:
 - **Loading:** every page or Home section suspends into a skeleton shaped like it. The layout is reserved at once and the skeleton appears after 300 ms, so fast loads do not flicker.
-- **Empty:** implemented in **Movies**: `No movies found for “…”` names the search query, with **Clear search** and **Reset filters**. Other pages have no empty states.
+- **Empty:** implemented in **Movies**: `No movies found for “…”` names the search query, with **Clear search** and **Reset filters**. The watchlist says `No titles here yet.`, or `No watched titles here.` under a filter, which the All pill right above it clears. Other pages have no empty states.
 - **Error:** without data, the page boundary shows a plain message with **Try again** (404 → `NotFound`); the host's `ShellBoundary` catches the rest and keeps the header; a failed background refetch keeps the data and shows one toast (bottom right).
 - **Offline:** one global banner at the bottom, "You are offline. Showing saved results."
 
@@ -65,6 +65,14 @@ In the integration the host builds one stylesheet for every remote, so MFE style
 - TMDB search has no genre or sort: while a query is typed, the genre pills and the sort menu are disabled, with a one-line hint. The genre and sort stay in the URL and apply again once the search is cleared.
 - "Rating" needs at least 200 votes; "Newest" lists films released by today, not announced ones.
 - While new results load, the current ones stay on screen dimmed (`aria-busy`); the counter is a persistent `role="status"` (`<output>`) region.
+
+## Watchlist: status
+
+- A row has a two-segment switch under its title, which writes at once. It has no spinner and is never disabled, so focus stays on it (ADR-0015).
+- The filter uses pills, so it does not look like the switch.
+- A row changed under a filter stays until the folder or the filter changes, as a free undo and so that a double tap cannot reach the next row.
+- `<output>` above the list always holds the count or the empty message, and is the live region for a filter press.
+- In forced colours, a chosen segment or pill takes the system highlight, as the fill and the ring are removed there.
 
 ## Accessibility
 

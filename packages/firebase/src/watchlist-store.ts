@@ -193,3 +193,8 @@ export function saveTitle(
     await batch.commit();
   });
 }
+
+/** Only the status: a title deleted elsewhere is refused here, not brought back. */
+export function setTitleStatus(uid: string, titleId: string, status: WatchStatus): Promise<void> {
+  return run((db) => updateDoc(doc(db, 'users', uid, 'items', titleId), { status }));
+}

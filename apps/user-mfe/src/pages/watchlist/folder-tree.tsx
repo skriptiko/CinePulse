@@ -1,7 +1,7 @@
 import { getFolderRows, type WatchlistFolder } from '@repo/firebase/watchlist-tree';
 import { cn } from '@repo/ui';
 import { useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { getFolderSearch } from './use-selected-folder';
 
 const ROW_CLASS_NAME =
@@ -14,6 +14,7 @@ export type FolderTreeProps = {
 
 export function FolderTree({ folders, selectedId }: FolderTreeProps) {
   const navRef = useRef<HTMLElement>(null);
+  const [searchParams] = useSearchParams();
 
   // The tree scrolls by itself on a phone, and a link or Back can select a row below its edge.
   // Not `scrollIntoView`, which would move the page too.
@@ -33,7 +34,7 @@ export function FolderTree({ folders, selectedId }: FolderTreeProps) {
       <ul>
         <li>
           <Link
-            to={{ search: getFolderSearch(null) }}
+            to={{ search: getFolderSearch(null, searchParams) }}
             aria-current={selectedId === null ? 'page' : undefined}
             className={cn(ROW_CLASS_NAME, 'pl-3')}
           >
@@ -43,7 +44,7 @@ export function FolderTree({ folders, selectedId }: FolderTreeProps) {
         {getFolderRows(folders).map(({ folder, level }) => (
           <li key={folder.id}>
             <Link
-              to={{ search: getFolderSearch(folder.id) }}
+              to={{ search: getFolderSearch(folder.id, searchParams) }}
               aria-label={`${folder.name}, level ${level + 1}`}
               aria-current={folder.id === selectedId ? 'page' : undefined}
               className={ROW_CLASS_NAME}
