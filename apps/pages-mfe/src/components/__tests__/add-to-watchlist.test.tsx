@@ -43,7 +43,7 @@ const FOLDERS = [
   { id: 'child', name: 'Child', parentId: 'top', depth: 2 },
 ];
 const STORED = { id: 'movie_1', ...TITLE, status: 'watched', folderIds: ['top', 'elsewhere'] };
-const ACCOUNT = { uid: 'u', displayName: null, email: null, photoUrl: null };
+const ACCOUNT = { uid: 'u', displayName: null, email: null, photoUrl: null, createdAt: null };
 
 const batch = { commit: vi.fn(), update: vi.fn() };
 

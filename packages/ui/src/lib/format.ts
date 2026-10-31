@@ -48,6 +48,12 @@ export function formatDate(date: string | null | undefined): string | null {
   return parsed ? dateFormatter.format(parsed) : null;
 }
 
+/** `'Sat, 31 Oct 2026 08:00:00 GMT'` → `'Oct 31, 2026'`; `null` when missing or invalid. */
+export function formatTimestamp(timestamp: string | null | undefined): string | null {
+  const parsed = timestamp ? new Date(timestamp) : null;
+  return parsed && Number.isFinite(parsed.getTime()) ? dateFormatter.format(parsed) : null;
+}
+
 /**
  * `7.456` → `'7.5'`. `0` is a real rating and formats as `'0.0'`;
  * only a missing (or non-finite) value returns `null`.

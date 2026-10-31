@@ -101,7 +101,13 @@ const THEMES = ['light', 'dark', 'system'] as const;
 type Theme = (typeof THEMES)[number];
 
 type AuthStatus = 'loading' | 'authenticated' | 'anonymous';
-type AuthUser = { uid: string; displayName: string | null; email: string | null; photoUrl: string | null };
+type AuthUser = {
+  uid: string;
+  displayName: string | null;
+  email: string | null;
+  photoUrl: string | null;
+  createdAt: string | null; // Firebase metadata.creationTime, a UTC timestamp string
+};
 
 type GlobalState = { theme: Theme; user: AuthUser | null; authStatus: AuthStatus }; // defaults: 'dark', null, 'anonymous'
 type GlobalActions = { setTheme: (theme: Theme) => void; setUser: (user: AuthUser | null) => void };

@@ -45,6 +45,7 @@ describe('Header', () => {
       displayName: 'Ada',
       email: null,
       photoUrl: 'https://example.com/ada.png',
+      createdAt: null,
     });
     const { container } = renderWithProviders(<Header />);
 

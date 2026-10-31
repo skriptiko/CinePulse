@@ -66,6 +66,7 @@ export { Skeleton } from './components/ui/skeleton';
 export type { ToggleGroupItemProps, ToggleGroupProps } from './components/ui/toggle-group';
 export { ToggleGroup, ToggleGroupItem } from './components/ui/toggle-group';
 export { usePageMeta } from './hooks/use-page-meta';
+export { formatTimestamp } from './lib/format';
 export { toFeaturedItemData } from './lib/mappers/featured-item';
 export { toHeroData } from './lib/mappers/hero';
 export { toMovieCardData, toTrendingCardData, toTvCardData } from './lib/mappers/movie-card';

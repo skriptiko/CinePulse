@@ -94,8 +94,8 @@ function handleAuthState(firebaseUser: User | null): void {
   if (!user && previous) emitLogout({ uid: previous.uid });
 }
 
-function toAuthUser({ uid, displayName, email, photoURL }: User): AuthUser {
-  return { uid, displayName, email, photoUrl: photoURL };
+function toAuthUser({ uid, displayName, email, photoURL, metadata }: User): AuthUser {
+  return { uid, displayName, email, photoUrl: photoURL, createdAt: metadata.creationTime ?? null };
 }
 
 // Storage throws when the browser blocks it: the session then lasts until the page closes.
