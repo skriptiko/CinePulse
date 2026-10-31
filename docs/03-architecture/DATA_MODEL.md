@@ -153,6 +153,7 @@ interface WatchlistItem {
 - **Deleting a branch:** one batch deletes its folders and removes their ids from `folderIds` with `arrayRemove`. Item documents stay; `folderIds: []` is valid, and such a title shows under All titles.
 - **Adding a title:** `saveTitle` reads the item fresh. A missing title is created with `status: 'planned'` and `addedAt` from the server; a stored one gets `arrayUnion` and `arrayRemove` on `folderIds` only, so `status`, `addedAt` and a folder added elsewhere survive. An added folder is checked against a fresh read of the folders, so a stale picker cannot write a dangling id. Rules refuse a second create, so two tabs can never overwrite a title ([ADR-0014](./decisions/ADR-0014-add-to-watchlist-dialog.md)).
 - **Changing a status:** `setTitleStatus` updates `status` alone and reads nothing, so a title deleted elsewhere is refused, not recreated. The page patches `items` from the write instead of rereading every title (ADR-0015).
+- **Removing a title:** `removeTitle` deletes the item document, so the title leaves every folder. It reads nothing itself; the page rereads `items` afterwards.
 - **Access:** only the signed-in owner reads and writes `users/{uid}/**`; everything else is denied.
 
 ## Event contract: `EventMap`

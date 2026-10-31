@@ -114,7 +114,7 @@ Implemented and working:
 - **Settings** (`/user/settings`) — the theme (Light, Dark, System) and sign-out. There is no password to change, as sign-in is through Google only (ADR-0010). ✅
 
 In progress:
-- **Watchlist** (`/user/watchlist`) — the folder tree and the titles of a folder, each with a Watched or Planned switch, and a filter by status. Titles are added from catalog cards and the movie details page, and the links to the page are "Open watchlist" in that dialog and on Profile. 🟡
+- **Watchlist** (`/user/watchlist`) — the folder tree and the titles of a folder, each with a Watched or Planned switch, and a filter by status. Titles are added from catalog cards and the movie details page and removed on this page, and the links to the page are "Open watchlist" in that dialog and on Profile. 🟡
 
 The full list of pages and their state is in the [roadmap page catalog (Notion)](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb).
 

@@ -110,6 +110,7 @@ Add Playwright (chromium) on the merged `dist/` served by `firebase emulators:st
 22. Under a filter, a double tap leaves the next title alone, the keyboard keeps its focus, and Back that takes the focused row moves focus to the heading. At 320 px the switch and the pills fit, with 44 px to press.
 23. The profile shows the account and the watchlist counts and leads to the watchlist and Settings. A failed read of the watchlist leaves the account, and `Try again` brings the counts.
 24. A theme chosen in Settings reaches a page of another remote, survives a new load and a sign-out, and `System` follows the device.
+25. A removed title leaves every folder and the profile, also after a reload, and a removal in a long list keeps the page where it is.
 
 Titles are seeded through the emulator's REST API only for states the UI cannot produce on demand. `pnpm test:e2e` needs Java as well as `firebase-tools`.
 
