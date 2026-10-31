@@ -150,7 +150,9 @@ function FolderPicker({ uid, title, onClose }: FolderPickerProps) {
     // No `<form>`: Enter on a checkbox would submit it, adding the title with what is ticked so far.
     <div className="flex flex-col gap-4">
       {saved !== undefined && (
-        <p className="text-muted-foreground text-sm">{title.title} is already in your watchlist.</p>
+        <p className="text-muted-foreground text-sm break-words">
+          {title.title} is already in your watchlist.
+        </p>
       )}
       {rows.length === 0 ? (
         <p className="text-muted-foreground text-sm">

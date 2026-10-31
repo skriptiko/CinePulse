@@ -828,6 +828,43 @@ test('a card of a Home row stays on screen as focus moves back along it', async 
   }
 });
 
+test('closing the dialog leaves a row where it was', async ({ page }) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.route('**/api/tmdb/movie/*', (route) => route.fulfill({ json: paginated(CARDS) }));
+  await page.goto('/');
+  const row = page.getByRole('region', { name: 'Popular' });
+
+  await row.evaluate((element) => element.scrollIntoView({ block: 'center' }));
+
+  // The last card the row shows whole, which its `scroll-px-*` counts as out of view. A raw press,
+  // as `click()` would scroll the button first.
+  const spot = await addButton(row, 'Card 6').boundingBox();
+  if (!spot) throw new Error('No button');
+  await page.mouse.click(spot.x + spot.width / 2, spot.y + spot.height / 2);
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.getByRole('button', { name: 'Close' }).click();
+
+  await expect(addButton(row, 'Card 6')).toBeFocused();
+  expect(await row.getByRole('list').evaluate((list) => list.scrollLeft)).toBe(0);
+});
+
+test('a long unbroken title stays inside the dialog on a phone', async ({ page, request }) => {
+  const title = 'Llanfairpwllgwyngyllgogerychwyrndrobwllllantysiliogogogoch';
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.route('**/api/tmdb/discover/movie**', (route) =>
+    route.fulfill({ json: paginated([title]) })
+  );
+  await openWatchlist(page);
+  await seedTitle(request, await getUid(page), MOVIE_ID, title, []);
+
+  await page.goto('/movies');
+  await addButton(page, title).click();
+  await expect(page.getByText(`${title} is already in your watchlist.`)).toBeVisible();
+
+  const dialog = page.getByRole('dialog');
+  expect(await dialog.evaluate((element) => element.scrollWidth - element.clientWidth)).toBe(0);
+});
+
 test('a page lost with the connection loads on Try again once it returns', async ({
   page,
   context,

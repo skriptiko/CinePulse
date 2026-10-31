@@ -201,6 +201,7 @@ describe('AddToWatchlist', () => {
 
     expect(await screen.findByRole('checkbox', { name: 'Top, level 1' })).not.toBeChecked();
     expect(screen.getByRole('button', { name: 'Add to watchlist' })).toBeEnabled();
+    expect(screen.queryByText(/already in your watchlist/)).not.toBeInTheDocument();
   });
 
   it('stores a card under the TMDB path of its poster', async () => {

@@ -49,4 +49,5 @@ A saved title has two write shapes under rules: a create needs `addedAt == reque
 - `Try again` on a page reloads when the failure is no `ApiError` and the browser reports a network, because `lazy` keeps a failed chunk. The offline guard made that failure the first outcome of opening a page offline. Offline, the press stays on the page.
 - Movies gives its links and buttons `scroll-mt-52`, because the sticky filters reach below `scroll-padding-top` and a bookmark sits at the very top of a card. The value is fixed, so a taller filter bar needs it raised.
 - Home rows use `scroll-px-*` the width of a card, so focus moving back along a row cannot stop on a card cut off at the edge.
+- `AddToWatchlist` returns focus with `preventScroll`, because that margin and padding would otherwise move the page under a mouse user each time the dialog closes.
 - `e2e` covers the singleton and the chunk order, and it runs only on PRs into `main`, so run `pnpm test:e2e` locally before merging.

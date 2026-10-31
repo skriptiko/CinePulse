@@ -62,7 +62,8 @@ export function AddToWatchlist({ title, showLabel = false }: AddToWatchlistProps
         <Dialog
           title={title}
           onClose={() => setDialog(null)}
-          onCloseAutoFocus={() => triggerRef.current?.focus()}
+          // The page was locked, so the button is where it was: no scrolling, for a mouse above all.
+          onCloseAutoFocus={() => triggerRef.current?.focus({ preventScroll: true })}
         />
       )}
     </>
