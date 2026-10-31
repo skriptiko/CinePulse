@@ -143,6 +143,33 @@ describe('WatchlistPage', () => {
     expect(await screen.findByText('No titles here yet.')).toBeInTheDocument();
   });
 
+  it('keeps the other search params when a folder is chosen', async () => {
+    renderPage('/user/watchlist?folder=top&status=watched');
+
+    expect(await screen.findByRole('link', { name: 'Other, level 1' })).toHaveAttribute(
+      'href',
+      '/user/watchlist?folder=other&status=watched'
+    );
+    expect(screen.getByRole('link', { name: 'All titles' })).toHaveAttribute(
+      'href',
+      '/user/watchlist?status=watched'
+    );
+  });
+
+  it('keeps the other search params when a folder goes', async () => {
+    const { user } = renderPage('/user/watchlist?folder=child&status=watched');
+
+    await user.click(await screen.findByRole('button', { name: 'Delete' }));
+    vi.mocked(batch.commit).mockResolvedValue(undefined);
+    await user.click(await screen.findByRole('button', { name: 'Delete folder' }));
+
+    await screen.findByRole('heading', { level: 2, name: 'Top' });
+    expect(screen.getByRole('link', { name: 'All titles' })).toHaveAttribute(
+      'href',
+      '/user/watchlist?status=watched'
+    );
+  });
+
   it('treats an unknown folder as All titles', async () => {
     renderPage('/user/watchlist?folder=gone');
 
