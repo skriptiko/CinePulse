@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useId } from 'react';
+import { type ReactNode, useId } from 'react';
 import { type ScrollDirection, useHorizontalScroll } from '../hooks/use-horizontal-scroll';
 import { cn } from '../lib/utils';
 import { MovieCard, type MovieCardData } from './movie-card';
@@ -8,10 +8,12 @@ import { Button } from './ui/button';
 export type ContentRowProps = {
   title: string;
   movies: MovieCardData[];
+  /** Builds each card's `action`. */
+  renderCardAction?: (movie: MovieCardData) => ReactNode;
   className?: string;
 };
 
-export function ContentRow({ title, movies, className }: ContentRowProps) {
+export function ContentRow({ title, movies, renderCardAction, className }: ContentRowProps) {
   const { ref, canScrollLeft, canScrollRight, scroll } = useHorizontalScroll<HTMLUListElement>();
   const titleId = useId();
 
@@ -35,7 +37,7 @@ export function ContentRow({ title, movies, className }: ContentRowProps) {
         >
           {movies.map((movie) => (
             <li key={movie.id} className="w-36 shrink-0 sm:w-40 md:w-44 lg:w-48">
-              <MovieCard movie={movie} />
+              <MovieCard movie={movie} action={renderCardAction?.(movie)} />
             </li>
           ))}
         </ul>

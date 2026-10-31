@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { ImagePlaceholder } from './image-placeholder';
@@ -6,6 +7,9 @@ import { ImagePlaceholder } from './image-placeholder';
 export type MovieCardData = {
   id: number;
   title: string;
+  mediaType: 'movie' | 'tv';
+  /** The TMDB path behind `imageUrl`, for whoever stores the title. */
+  posterPath: string | null;
   /** `null` → placeholder. */
   imageUrl: string | null;
   year: string | null;
@@ -17,56 +21,72 @@ export type MovieCardData = {
 
 export type MovieCardProps = {
   movie: MovieCardData;
+  /** A control over the poster, outside the link. */
+  action?: ReactNode;
   className?: string;
 };
 
-// The "add to list" toggle is hidden until a watchlist exists: a local-only toggle
-// would pretend to save something.
-export function MovieCard({ movie, className }: MovieCardProps) {
+export function MovieCard({ movie, action, className }: MovieCardProps) {
   const { title, imageUrl, year, rating, href } = movie;
-  const cardClassName = cn(
-    'group @container relative block overflow-hidden rounded-lg transition-transform duration-300',
-    'hover:z-10 motion-safe:hover:scale-105',
-    'focus-visible:ring-ring outline-hidden focus-visible:ring-[3px]',
-    className
+  const revealClassName = cn(
+    'opacity-0 group-focus-within:opacity-100 group-hover:opacity-100',
+    'translate-y-2 group-focus-within:translate-y-0 group-hover:translate-y-0',
+    'transition duration-300 motion-reduce:transition-none'
   );
+  const titleText = <span className={cn('block truncate', revealClassName)}>{title}</span>;
 
-  const content = (
-    <div className="relative aspect-[2/3]">
-      {imageUrl ? (
-        <img
-          src={imageUrl}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          className="size-full object-cover transition-transform duration-500 motion-safe:group-hover:scale-110"
-        />
-      ) : (
-        <ImagePlaceholder />
+  return (
+    <div
+      className={cn(
+        'group @container relative grid overflow-hidden rounded-lg transition-transform duration-300',
+        'hover:z-10 motion-safe:hover:scale-105',
+        'has-[a:focus-visible]:ring-ring has-[a:focus-visible]:ring-[3px]',
+        className
       )}
-
-      {/* Hover Overlay */}
-      <div
-        className={cn(
-          'from-background via-background/60 absolute inset-0 bg-linear-to-t to-transparent',
-          'opacity-0 group-focus-within:opacity-100 group-hover:opacity-100',
-          'transition-opacity duration-300'
+    >
+      <div className="relative col-start-1 row-start-1 aspect-[2/3]">
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="size-full object-cover transition-transform duration-500 motion-safe:group-hover:scale-110"
+          />
+        ) : (
+          <ImagePlaceholder />
         )}
-      />
 
-      {/* Bottom Content */}
-      <div
-        className={cn(
-          'absolute right-0 bottom-0 left-0 p-3',
-          'translate-y-full group-focus-within:translate-y-0 group-hover:translate-y-0',
-          'transition-transform duration-300 motion-reduce:transition-none'
-        )}
-      >
-        <h3 className="text-foreground mb-1 truncate text-sm font-medium @max-[160px]:text-xs @min-[301px]:text-base">
-          {title}
+        {/* Hover Overlay */}
+        <div
+          className={cn(
+            'from-background via-background/60 absolute inset-0 bg-linear-to-t to-transparent',
+            'opacity-0 group-focus-within:opacity-100 group-hover:opacity-100',
+            'transition-opacity duration-300'
+          )}
+        />
+      </div>
+
+      {/* Bottom Content. Not positioned or transformed, so the link's `::after` fills the card;
+          `z-1` works on a grid item as it is, and lifts the text over the gradient. */}
+      <div className="z-1 col-start-1 row-start-1 min-w-0 self-end p-3">
+        <h3 className="text-foreground mb-1 text-sm font-medium @max-[160px]:text-xs @min-[301px]:text-base">
+          {href === null ? (
+            titleText
+          ) : (
+            <Link to={href} className="outline-hidden after:absolute after:inset-0">
+              {titleText}
+            </Link>
+          )}
         </h3>
         {(year !== null || rating !== null) && (
-          <div className="text-muted-foreground flex items-center gap-2 text-xs @max-[160px]:hidden">
+          <div
+            className={cn(
+              // `pointer-events-none`: `revealClassName` lifts this over the link's `::after`.
+              'text-muted-foreground pointer-events-none flex items-center gap-2 text-xs @max-[160px]:hidden',
+              revealClassName
+            )}
+          >
             {rating !== null && (
               <span className="bg-foreground/10 text-foreground rounded px-1.5 py-0.5 text-xs font-medium">
                 {rating}
@@ -76,13 +96,8 @@ export function MovieCard({ movie, className }: MovieCardProps) {
           </div>
         )}
       </div>
-    </div>
-  );
 
-  if (href === null) return <div className={cardClassName}>{content}</div>;
-  return (
-    <Link to={href} className={cardClassName}>
-      {content}
-    </Link>
+      {action !== undefined && <div className="absolute top-2 right-2 z-10">{action}</div>}
+    </div>
   );
 }

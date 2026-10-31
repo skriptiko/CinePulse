@@ -8,6 +8,8 @@ export function toMovieCardData(movie: Movie): MovieCardData {
   return {
     id: movie.id,
     title: movie.title,
+    mediaType: 'movie',
+    posterPath: movie.poster_path,
     imageUrl: getImageUrl(movie.poster_path, POSTER_SIZE_CARD),
     year: formatYear(movie.release_date),
     rating: formatRating(movie.vote_average),
@@ -19,6 +21,8 @@ export function toTvCardData(tv: TV): MovieCardData {
   return {
     id: tv.id,
     title: tv.name,
+    mediaType: 'tv',
+    posterPath: tv.poster_path,
     imageUrl: getImageUrl(tv.poster_path, POSTER_SIZE_CARD),
     year: formatYear(tv.first_air_date),
     rating: formatRating(tv.vote_average),

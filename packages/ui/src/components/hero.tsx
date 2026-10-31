@@ -86,7 +86,6 @@ export function Hero({ movie, className }: HeroProps) {
             <p className="text-muted-foreground fluid-body mb-6 max-w-lg sm:mb-8">{description}</p>
           )}
 
-          {/* "My List" comes back with a watchlist, as on `MovieCard`. */}
           <Link
             to={href}
             className={cn(
