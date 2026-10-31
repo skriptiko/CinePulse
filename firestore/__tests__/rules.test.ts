@@ -214,6 +214,34 @@ describe('items', () => {
     );
   });
 
+  it('changes only the status of a title', async () => {
+    const db = asUser('alice');
+    await setDoc(doc(db, itemPath), item({ folderIds: ['f1'] }));
+    const { addedAt } = (await getDoc(doc(db, itemPath))).data() ?? {};
+
+    await assertSucceeds(updateDoc(doc(db, itemPath), { status: 'watched' }));
+
+    const stored = (await getDoc(doc(db, itemPath))).data();
+    expect(stored).toMatchObject({ status: 'watched', folderIds: ['f1'] });
+    expect(stored?.addedAt).toEqual(addedAt);
+  });
+
+  it('refuses a status outside the two, and any status from another user', async () => {
+    const db = asUser('alice');
+    await setDoc(doc(db, itemPath), item());
+
+    await assertFails(updateDoc(doc(db, itemPath), { status: 'dropped' }));
+    await assertFails(updateDoc(doc(db, itemPath), { status: null }));
+    await assertFails(updateDoc(doc(asUser('bob'), itemPath), { status: 'watched' }));
+  });
+
+  it('does not bring back a title that is gone', async () => {
+    const db = asUser('alice');
+
+    await expect(updateDoc(doc(db, itemPath), { status: 'watched' })).rejects.toThrow();
+    expect((await getDoc(doc(db, itemPath))).exists()).toBe(false);
+  });
+
   it('never lets a second create overwrite a title', async () => {
     const db = asUser('alice');
     await setDoc(doc(db, itemPath), item({ status: 'watched', folderIds: ['f1'] }));
