@@ -19,13 +19,15 @@ export function useTitleStatus(uid: string, titleId: string) {
     networkMode: 'always',
     onSuccess: async (_result, status) => {
       // A read from before the commit must not bring the old status back, but it can carry
-      // another change, such as a title just added, so it runs again.
-      const wasReading = queryClient.isFetching({ queryKey }) > 0;
+      // another change, such as a title just added. The patch also marks `items` fresh, so a read
+      // that is running, paused or owed runs again.
+      const query = queryClient.getQueryState(queryKey);
+      const owesRead = query !== undefined && (query.fetchStatus !== 'idle' || query.isInvalidated);
       await queryClient.cancelQueries({ queryKey });
       queryClient.setQueryData(queryKey, (items) =>
         items?.map((item) => (item.id === titleId ? { ...item, status } : item))
       );
-      if (wasReading) void queryClient.invalidateQueries({ queryKey });
+      if (owesRead) void queryClient.invalidateQueries({ queryKey });
     },
     // The title may be gone, or changed elsewhere.
     onError: () => {

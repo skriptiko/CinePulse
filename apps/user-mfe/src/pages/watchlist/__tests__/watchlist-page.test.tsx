@@ -388,6 +388,28 @@ describe('WatchlistPage', () => {
     expect(cachedStatus(queryClient, ALIEN.id)).toBe('watched');
   });
 
+  it('keeps a reread that a failed press still owes when another press lands', async () => {
+    const failAlien = holdWrite(() =>
+      Promise.reject(Object.assign(new Error('failed'), { code: 'not-found' }))
+    );
+    const landLost = holdWrite();
+    const { user, queryClient, unmount } = renderPage();
+    await screen.findByRole('link', { name: 'Alien' });
+    const { queryKey } = watchlistQueries.items('u');
+
+    await user.click(statusOf('Alien', 'Watched'));
+    await waitFor(() => expect(updateDoc).toHaveBeenCalledOnce());
+    await user.click(statusOf('Lost', 'Planned'));
+    await waitFor(() => expect(updateDoc).toHaveBeenCalledTimes(2));
+    unmount();
+    failAlien();
+    await waitFor(() => expect(queryClient.getQueryState(queryKey)?.isInvalidated).toBe(true));
+    landLost();
+
+    await waitFor(() => expect(cachedStatus(queryClient, LOST.id)).toBe('planned'));
+    expect(queryClient.getQueryState(queryKey)?.isInvalidated).toBe(true);
+  });
+
   it('repeats a read that a write cancelled, as it can carry another change', async () => {
     vi.mocked(updateDoc).mockResolvedValue(undefined);
     const { user, queryClient } = renderPage();
