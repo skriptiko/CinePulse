@@ -51,3 +51,31 @@ test('the session survives a reload and ends with sign-out', async ({ page }) =>
   await expect(page.getByRole('heading', { level: 1, name: 'Sign in' })).toBeVisible();
   await expect(page.getByRole('banner').getByRole('link', { name: 'Sign in' })).toBeVisible();
 });
+
+test('the theme chosen in Settings reaches every page and stays', async ({ page }) => {
+  const root = page.locator('html');
+  await page.goto('/user/settings');
+  await signIn(page);
+  await expect(root).toHaveClass(/dark/);
+
+  await page.getByRole('radio', { name: 'Light' }).click();
+  await expect(root).not.toHaveClass(/dark/);
+
+  await page.getByRole('banner').getByRole('link', { name: 'Home' }).click();
+  await expect(page.getByRole('region', { name: 'Popular' })).toBeVisible();
+  await expect(root).not.toHaveClass(/dark/);
+
+  await page.goto('/user/settings');
+  await expect(page.getByRole('radio', { name: 'Light' })).toBeChecked();
+  await expect(root).not.toHaveClass(/dark/);
+
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.getByRole('radio', { name: 'System' }).click();
+  await expect(root).toHaveClass(/dark/);
+  await page.emulateMedia({ colorScheme: 'light' });
+  await expect(root).not.toHaveClass(/dark/);
+
+  await page.getByRole('button', { name: 'Sign out' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Sign in' })).toBeVisible();
+  await expect(root).not.toHaveClass(/dark/);
+});
