@@ -256,9 +256,13 @@ test('the chosen theme applies before the app loads', async ({ page }) => {
   await page.getByRole('button', { name: 'Dark theme' }).click();
   await expect(page.locator('html')).not.toHaveClass(/dark/);
 
+  // The app has to go first: a page chunk it is still loading would fail below, and the reload
+  // of `vite:preloadError` would abort the navigation of this test.
+  await page.goto('about:blank');
+
   // Without the app bundle only the blocking theme script can set the class.
   await page.route('**/assets/**', (route) => route.abort());
-  await page.reload();
+  await page.goto('/');
 
   await expect(page.locator('html')).not.toHaveClass(/dark/);
 });
