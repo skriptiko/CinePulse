@@ -56,12 +56,12 @@ Each package/app extends the relevant config in its own `tsconfig.json`. `*.d.ts
 The single source of truth for paths is `ROUTE_PATHS` in `@repo/routes`:
 
 ```ts
-HOME '/', MOVIES '/movies', USER '/user', USER_PROFILE '/user/profile', USER_SETTINGS '/user/settings', USER_WATCHLIST '/user/watchlist'
+HOME '/', MOVIES '/movies', MOVIE_DETAIL '/movies/:id', TV_DETAIL '/tv/:id', PERSON_DETAIL '/person/:id', AUTH_LOGIN '/auth/login', USER '/user', USER_PROFILE '/user/profile', USER_SETTINGS '/user/settings', USER_WATCHLIST '/user/watchlist'
 ```
 
 Each MFE exposes a `routes` array (`RouteObject[]`) through Module Federation (`exposes: { './routes': './src/routes.tsx' }`); the host collects them and renders them via `useRoutes`.
 
-> ⬜ **There are no dynamic routes (`:id`) yet.** Future pages (Movie Detail `/movies/:id`, TV, Person) need parameterized paths in `ROUTE_PATHS` and a pattern for reading the parameter. The query factories for them already exist (`movieQueries.detail`, `tvQueries.detail`, `personQueries.detail`).
+Dynamic routes are linked with `buildPath.movie(id)` and friends, never by hand. Movie Detail `/movies/:id` is the first page behind one; it reads the parameter with `useParams`. TV Detail and Person have their paths and query factories (`tvQueries.detail`, `personQueries.detail`), but no page yet, so a link to `/person/:id` reaches `NotFound` until CIN-19.
 
 ## MFE pattern (Module Federation)
 
