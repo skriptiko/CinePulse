@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  // Relative: e2e/ is not a workspace package. Run by `pnpm typecheck`, outside Turbo.
+  "extends": "../packages/typescript-config/base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    // Borrowed: @types/node in the root node_modules would reach the browser packages as well.
+    "typeRoots": ["../functions/node_modules/@types"],
+    "types": ["node"]
+  },
+  // The store is here for its `declare global`, which types `window.__CINEPULSE_STORE__`.
+  "include": ["**/*.ts", "../playwright.config.ts", "../packages/events/src/store.ts"]
+}

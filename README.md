@@ -112,7 +112,7 @@ Each MFE uses Tailwind scoping with unique ID prefixes to avoid style conflicts.
 - `pnpm check` — run Biome checks and apply fixes automatically
 - `pnpm typecheck` — TypeScript type checking
 - `pnpm sync-types` — sync remote module types into the host
-- `pnpm build:deploy` — build all applications and merge their `dist/` for Firebase Hosting
+- `pnpm build:deploy` — empty the `dist/` folders, build all applications and merge their `dist/` for Firebase Hosting
 - `pnpm deploy` — build, merge and deploy to Firebase Hosting (production target)
 
 ## License

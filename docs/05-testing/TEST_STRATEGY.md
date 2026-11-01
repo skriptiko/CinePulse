@@ -37,6 +37,7 @@ e2e/                             # <scenario>.spec.ts
 ```
 
 - Run everything with `pnpm test` from the root (one Vitest run over all projects). `pnpm test:coverage` gives a merged v8 report in `coverage/`.
+- `e2e/` and `playwright.config.ts` are not a workspace package, so the root scripts add them to `pnpm typecheck` (`e2e/tsconfig.json`) and `pnpm lint`, after Turbo.
 - jsdom projects point `environment` at `scripts/vitest-jsdom-environment.ts` (jsdom plus Node's fetch globals, see ADR-0006).
 - `@repo/api` tests create their own MSW server: `@repo/test-utils` depends on `@repo/api`, so using it back would be a cycle.
 - Each project's `vitest.config.ts` only sets its environment and setup files.

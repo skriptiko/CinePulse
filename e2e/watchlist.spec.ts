@@ -294,14 +294,15 @@ async function readTitle(request: APIRequestContext, uid: string, id: string) {
   };
 }
 
-async function makeFolders(page: Page, names: string[]) {
+/** One id per name, in order, so a caller destructures them without checking for a missing one. */
+async function makeFolders<const Names extends readonly string[]>(page: Page, names: Names) {
   const ids: string[] = [];
   for (const name of names) {
     await createFolder(page, 'New folder', name, 1);
     await selectFolder(page, name, 1);
     ids.push(getFolderId(page));
   }
-  return ids;
+  return ids as { -readonly [Index in keyof Names]: string };
 }
 
 function openMovies(page: Page) {
