@@ -19,6 +19,7 @@ Pipeline: [`.github/workflows/firebase-deploy.yml`](../../.github/workflows/fire
 - **Job `size`** (on every trigger, not required for merge): `pnpm turbo build --filter=@repo/host` → `pnpm size` (budget in `.size-limit.json`).
 - **Job `rules`** (on every trigger): sets up Java 21 and runs the Firestore rules tests on the emulator.
 - **Job `e2e`** (PRs into `main` only): `pnpm build:deploy`, then Playwright on the merged `dist/` with the Hosting, Auth and Firestore emulators. Sets up Java 21 for Firestore.
+- **Job `preview`** (`needs: [quality, rules]`, PRs by a person from this repository only; a new push cancels the deploy of the one before it): `pnpm build:deploy`, then `FirebaseExtended/action-hosting-deploy@v0` with no `channelId` and `expires: 7d`. The action names the channel after the PR and comments its link there. See [ENVIRONMENTS.md](./ENVIRONMENTS.md#pr-previews). It leaves out forks, which get no secrets, and bots: a Renovate PR would run dependency code nobody has read in the job that holds the deploy key. It is not a required check.
 - **Job `build-and-deploy`** (`needs: [quality, rules]`, push to `main` only, no concurrent deploys):
   1. The same checkout / pnpm / Node / install.
   2. `pnpm build:deploy` — `scripts/clean-dist.js` empties the build folders (see below), Turbo builds all apps and packages except the `apps/design` sandbox (it does not go to production), and `scripts/merge-dist.js` merges `dist/` (see below). Locally it is the same command.

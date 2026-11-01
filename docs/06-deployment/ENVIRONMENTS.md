@@ -2,13 +2,14 @@
 
 # Environments
 
-Status: **🟡** — local dev and production exist; there is no separate staging / preview.
+Status: **🟡** — local dev, PR previews and production exist; there is no separate staging.
 
 ## Overview
 
 | Environment | Where | Hosting | TMDB access | Status |
 |-----------|-----|---------|-------------|:---:|
 | **Local dev** | local machine | Vite dev servers (5000/5001/5002) | Vite proxy + `.env` | ✅ |
+| **PR preview** | Firebase | A Hosting channel of `cinepulse-eec15`, for 7 days | The production `tmdbProxy` | ✅ |
 | **Production** | Firebase | Firebase Hosting `cinepulse-eec15` | Cloud Function `tmdbProxy` + Secret | ✅ |
 | **Staging / Preview** | — | — | — | ⬜ none |
 
@@ -55,16 +56,16 @@ Three Vite servers (Module Federation), started together via `pnpm dev` (Turbo):
 
 > `.env` is not committed. An example/instructions are in the root `.env` (a template with a comment).
 
+## PR previews
+
+Every PR that a person opens from this repository gets a Firebase Hosting preview channel, built by the job `preview`, with the link in a comment on the PR. A new push replaces it, and the channel expires after 7 days.
+
+A preview replaces only the Hosting content. Everything behind it is production:
+
+- **Firestore and Auth are the real ones.** The channel domain is added to the authorized domains by the deploy, so Google sign-in works, and a watchlist change on a preview writes to the real data with the code of the PR.
+- **`tmdbProxy` is the deployed one.** A PR that adds a proxy endpoint gets a 400 or a 404 on its preview until that function reaches production.
+- **`firestore.rules` are the deployed ones.** A PR that changes them is not covered.
+
 ## staging
 
-⬜ **There is no separate staging environment or PR preview.** Deployment goes straight to production on `push` to `main`.
-
-**Recommendation:** use **Firebase Hosting preview channels**:
-- A temporary channel per PR:
-  ```bash
-  firebase hosting:channel:deploy pr-<N> --expires 7d
-  ```
-- Or a separate permanent `staging` channel for integration testing before promotion to `live`.
-- Integrate into CI via `FirebaseExtended/action-hosting-deploy` with a `channelId` instead of `live` for non-`main` branches.
-
-**TODO:** define the branch → environment model (e.g. `develop` → staging channel, `main` → production).
+⬜ **There is no separate staging environment.** Production deploys on `push` to `main`. A permanent `staging` channel would share the production data in the same way as a preview.
