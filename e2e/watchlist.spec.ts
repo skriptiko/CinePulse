@@ -1155,6 +1155,20 @@ test.describe('in forced colours', () => {
     expect(ring).toEqual({ onFill: true, outlineOffset: '-4px', outlineStyle: 'solid' });
   });
 
+  test('the heading has no outline, at rest or when focus moves to it', async ({ page }) => {
+    await openWatchlist(page);
+    const heading = page.getByRole('heading', { level: 2, name: 'All titles' });
+    await expect(heading).toHaveCSS('outline-style', 'none');
+
+    await createFolder(page, 'New folder', 'Gone', 1);
+    await selectFolder(page, 'Gone', 1);
+    await page.getByRole('button', { name: 'Delete' }).click();
+    await page.getByRole('button', { name: 'Delete folder' }).click();
+
+    await expect(heading).toBeFocused();
+    await expect(heading).toHaveCSS('outline-style', 'none');
+  });
+
   test('a filled button and an outline one keep a border, with no outline at rest', async ({
     page,
     request,

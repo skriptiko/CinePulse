@@ -134,4 +134,28 @@ test.describe('in forced colours', () => {
     );
     await expect(focused).toHaveCSS('outline-style', 'solid');
   });
+
+  test('main has no outline, at rest or after a navigation by keyboard', async ({ page }) => {
+    await page.goto('/');
+    const main = page.getByRole('main');
+    await expect(main).toHaveCSS('outline-style', 'none');
+
+    await page.getByRole('banner').getByRole('link', { name: 'Movies' }).focus();
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/\/movies$/);
+    await expect(main).toBeFocused();
+    await expect(main).toHaveCSS('outline-style', 'none');
+  });
+
+  test('a dialog has no outline, focused or with focus inside it', async ({ page }) => {
+    await page.goto('/movies');
+    await page.getByRole('button', { name: 'Add Any movie 1 to your watchlist' }).click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeFocused();
+    await expect(dialog).toHaveCSS('outline-style', 'none');
+
+    await page.keyboard.press('Tab');
+    await expect(dialog).not.toBeFocused();
+    await expect(dialog).toHaveCSS('outline-style', 'none');
+  });
 });
