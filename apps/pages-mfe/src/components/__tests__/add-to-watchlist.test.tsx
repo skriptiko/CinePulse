@@ -1,6 +1,7 @@
 import { createTypedListener, globalStore, type NotificationPayload } from '@repo/events';
 import {
   buildMovie,
+  buildTvDetails,
   expectNoA11yViolations,
   renderWithProviders,
   screen,
@@ -15,6 +16,7 @@ import { HttpResponse, http } from 'msw';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MovieDetail } from '../../pages/movie-detail/movie-detail-page';
+import { TVDetail } from '../../pages/tv-detail/tv-detail-page';
 import { AddToWatchlist, renderAddToWatchlist } from '../add-to-watchlist';
 
 vi.mock('firebase/app', async (importOriginal) => ({
@@ -246,6 +248,36 @@ describe('AddToWatchlist', () => {
     const [ref, data] = vi.mocked(setDoc).mock.calls[0] as unknown as [{ path: string }, object];
     expect(ref.path).toBe('users/u/items/movie_7');
     expect(data).toMatchObject({ mediaType: 'movie', tmdbId: 7, posterPath: '/p.jpg' });
+  });
+
+  it('stores the show of a details page as a show', async () => {
+    server.use(
+      http.get('*/api/tmdb/tv/:id', () =>
+        HttpResponse.json(buildTvDetails({ id: 7, name: 'Severance', poster_path: '/p.jpg' }))
+      )
+    );
+    const { user } = renderWithProviders(
+      <Routes>
+        <Route path="/tv/:id" element={<TVDetail />} />
+      </Routes>,
+      { route: '/tv/7' }
+    );
+
+    await user.click(await screen.findByRole('button', { name: 'Add to watchlist' }));
+    await screen.findByRole('checkbox', { name: 'Top, level 1' });
+    await user.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Add to watchlist' })
+    );
+
+    await waitFor(() => expect(setDoc).toHaveBeenCalledOnce());
+    const [ref, data] = vi.mocked(setDoc).mock.calls[0] as unknown as [{ path: string }, object];
+    expect(ref.path).toBe('users/u/items/tv_7');
+    expect(data).toMatchObject({
+      mediaType: 'tv',
+      tmdbId: 7,
+      title: 'Severance',
+      posterPath: '/p.jpg',
+    });
   });
 
   it('adds a new title to several folders and confirms it', async () => {

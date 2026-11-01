@@ -20,8 +20,8 @@ export type TitleListProps = {
   onStatusChange: (titleId: string) => void;
 };
 
-// Rows, not `MovieCard`: its title shows only on hover or focus, an inert TV card takes no focus,
-// and a watchlist item has no year or rating to fill the card.
+// Rows, not `MovieCard`: its title shows only on hover or focus, and a watchlist item has no year
+// or rating to fill the card.
 export function TitleList({ uid, titles, onStatusChange }: TitleListProps) {
   const [askingId, setAskingId] = useState<string | null>(null);
   const [isHolding, setIsHolding] = useState(false);
@@ -113,16 +113,12 @@ function TitleRow({
         )}
       </div>
       <div className="min-w-0">
-        {href ? (
-          <Link
-            to={href}
-            className="block truncate font-medium after:absolute after:inset-0 hover:underline"
-          >
-            {title}
-          </Link>
-        ) : (
-          <p className="truncate font-medium">{title}</p>
-        )}
+        <Link
+          to={href}
+          className="block truncate font-medium after:absolute after:inset-0 hover:underline"
+        >
+          {title}
+        </Link>
         {/* Over the stretched link as one block: a disabled button lets a press through to what
             lies under it. The rest of the row opens the title. */}
         <div className="relative z-10 mt-1 flex w-fit flex-wrap items-center gap-x-2">
@@ -173,7 +169,6 @@ function toTitleRowData({ mediaType, tmdbId, title, posterPath }: WatchlistItem)
   return {
     title,
     imageUrl: getImageUrl(posterPath, POSTER_SIZE_ROW),
-    // No TV details page yet.
-    href: mediaType === 'movie' ? buildPath.movie(tmdbId) : null,
+    href: mediaType === 'movie' ? buildPath.movie(tmdbId) : buildPath.tv(tmdbId),
   };
 }

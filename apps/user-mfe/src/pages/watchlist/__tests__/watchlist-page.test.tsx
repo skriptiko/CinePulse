@@ -232,11 +232,10 @@ describe('WatchlistPage', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders a TV title as text until its details page exists', async () => {
+  it('links a TV title to its details page', async () => {
     renderPage();
 
-    await screen.findByText('Lost');
-    expect(screen.queryByRole('link', { name: 'Lost' })).not.toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: 'Lost' })).toHaveAttribute('href', '/tv/2');
   });
 
   it('shows the stored status of each title, on a show too', async () => {
