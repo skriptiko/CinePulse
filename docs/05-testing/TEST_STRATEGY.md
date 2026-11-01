@@ -123,7 +123,7 @@ Two mutants proved the check, each on a new `pnpm build:deploy` and the whole su
 1. The page opens from the cast of Movie Detail, from far down the page too, and starts at the top.
 2. The facts and sections stand in order, and the photo loads under the enforced CSP.
 3. Known for stops at 12 and leaves the talk show out, its cards open a movie, and its button offers the watchlist.
-4. The filmography shows 30 rows, then all of them on a press, with focus on the first new row. A press on the bottom edge of the screen works and leaves the reader there.
+4. The filmography shows 30 rows, then all of them on a press, with focus on the first new row. A press on the bottom edge of the screen works and leaves the reader there. The press adds no history entry and does not move the page. Back from a title shorter than the reader's position finds the list open, at the same row and with no focus on it, and a second Back leaves the page. A shared link opens the whole list at the top, and a person reached from the open list starts with the short one.
 5. A row merges the roles on one title and links to its page, and a credit with no date, title or poster takes the last row.
 6. A long biography opens and closes, and a short one has no toggle.
 7. A person with nothing to show keeps every heading and says so.
