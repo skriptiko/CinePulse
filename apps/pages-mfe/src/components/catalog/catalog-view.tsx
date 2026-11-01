@@ -2,13 +2,13 @@ import type { genreQueries, PaginatedResponse } from '@repo/api';
 import { cn, type MovieCardData } from '@repo/ui';
 import type { InfiniteData, UseSuspenseInfiniteQueryResult } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
+import { uniqueById } from '../../lib/unique-by-id';
+import { CatalogCount } from './catalog-count';
 import { CatalogEmptyState } from './catalog-empty-state';
 import { CatalogFilters, type ViewMode } from './catalog-filters';
-import { CatalogGrid } from './catalog-grid';
+import { CatalogGrid, renderTitleCard } from './catalog-grid';
 import { CatalogHeader } from './catalog-header';
 import { type CatalogFiltersState, DEFAULT_SORT, normalizeQuery } from './use-catalog-filters';
-
-const countFormat = new Intl.NumberFormat('en-US');
 
 export type CatalogLabels = {
   title: string;
@@ -53,7 +53,6 @@ export function CatalogView<T extends { id: number }>({
   const { query, genreId, sort } = deferredFilters;
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
-  // TMDB pages can overlap when the ranking shifts between requests; keep the first copy.
   const cards = useMemo(
     () => uniqueById(data.pages.flatMap((page) => page.results)).map(toCard),
     [data, toCard]
@@ -83,10 +82,7 @@ export function CatalogView<T extends { id: number }>({
       />
 
       <div className="px-4 py-4 sm:px-6 lg:px-12">
-        <output className="text-muted-foreground block text-sm">
-          {countFormat.format(totalResults)} {totalResults === 1 ? labels.singular : labels.plural}{' '}
-          found
-        </output>
+        <CatalogCount total={totalResults} singular={labels.singular} plural={labels.plural} />
       </div>
 
       <div
@@ -96,7 +92,8 @@ export function CatalogView<T extends { id: number }>({
         {cards.length > 0 ? (
           <CatalogGrid
             noun={labels.plural}
-            cards={cards}
+            items={cards}
+            renderItem={renderTitleCard}
             viewMode={viewMode}
             hasNextPage={hasNextPage}
             isFetching={isFetching}
@@ -116,13 +113,4 @@ export function CatalogView<T extends { id: number }>({
       </div>
     </div>
   );
-}
-
-function uniqueById<T extends { id: number }>(items: T[]): T[] {
-  const seen = new Set<number>();
-  return items.filter((item) => {
-    if (seen.has(item.id)) return false;
-    seen.add(item.id);
-    return true;
-  });
 }
