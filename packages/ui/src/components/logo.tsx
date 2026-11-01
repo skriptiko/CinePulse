@@ -1,6 +1,7 @@
 import { ROUTE_PATHS } from '@repo/routes';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
+import { LINK_ON_IMAGE_CLASS } from './ui/button';
 
 export type LogoProps = {
   className?: string;
@@ -11,7 +12,10 @@ export type LogoProps = {
 /** "CP" badge plus wordmark, linking home. */
 export function Logo({ className, labelClassName }: LogoProps) {
   return (
-    <Link to={ROUTE_PATHS.HOME} className={cn('flex items-center gap-2', className)}>
+    <Link
+      to={ROUTE_PATHS.HOME}
+      className={cn('flex items-center gap-2 rounded-lg', LINK_ON_IMAGE_CLASS, className)}
+    >
       <div className="bg-foreground flex size-8 items-center justify-center rounded-lg">
         <span className="text-background text-sm font-bold">CP</span>
       </div>

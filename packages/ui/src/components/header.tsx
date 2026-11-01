@@ -17,7 +17,7 @@ import { useIsScrolled } from '../hooks/use-is-scrolled';
 import { useResolvedTheme } from '../hooks/use-resolved-theme';
 import { cn } from '../lib/utils';
 import { Logo } from './logo';
-import { BUTTON_ON_IMAGE_CLASS, Button, buttonVariants } from './ui/button';
+import { BUTTON_ON_IMAGE_CLASS, Button, buttonVariants, LINK_ON_IMAGE_CLASS } from './ui/button';
 
 // Only routes that exist: New & Popular and My List come back with their pages.
 const NAV_ITEMS = [
@@ -34,16 +34,10 @@ const TOOLBAR_BUTTON_CLASS = cn(
   'text-muted-foreground hover:text-foreground rounded-lg'
 );
 
-// The Logo and the nav links are not `Button`, so they bring the width of its ring.
-const LINK_ON_IMAGE_CLASS = cn(
-  BUTTON_ON_IMAGE_CLASS,
-  'rounded-lg outline-hidden focus-visible:ring-[3px]'
-);
-
 /** Scroll offset after which the header gets its glass background. */
 const SCROLLED_THRESHOLD_PX = 20;
 
-const navLinkVariants = cva(cn(LINK_ON_IMAGE_CLASS, 'px-4 text-sm transition-colors'), {
+const navLinkVariants = cva(['rounded-lg px-4 text-sm transition-colors', LINK_ON_IMAGE_CLASS], {
   variants: {
     layout: {
       desktop: 'py-2',
@@ -93,7 +87,7 @@ export function Header({ className }: HeaderProps) {
       <div className="max-w-page mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between gap-8">
           <div className="flex items-center gap-8">
-            <Logo className={LINK_ON_IMAGE_CLASS} labelClassName="text-xl hidden sm:block" />
+            <Logo labelClassName="text-xl hidden sm:block" />
             <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">
               <NavLinks layout="desktop" />
             </nav>

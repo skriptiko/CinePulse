@@ -1,5 +1,11 @@
 import { type APIRequestContext, expect, type Locator, type Page, test } from '@playwright/test';
-import { expectRingToStandOut, expectTwoColoursOnImage } from './painted-pixels';
+import {
+  expectInsetRingToStandOut,
+  expectRingToStandOut,
+  expectTwoColoursOnImage,
+  getEdgeContrast,
+  getRingContrast,
+} from './painted-pixels';
 import { signIn } from './sign-in';
 import { FULL_MOVIE_ID, mockTmdb, paginated } from './tmdb-mock';
 
@@ -1148,6 +1154,31 @@ test.describe('in forced colours', () => {
     });
     expect(ring).toEqual({ onFill: true, outlineOffset: '-4px', outlineStyle: 'solid' });
   });
+
+  test('a filled button and an outline one keep a border, with no outline at rest', async ({
+    page,
+    request,
+  }) => {
+    await openWatchlist(page);
+    await seedTitle(request, await getUid(page), MOVIE_ID, MOVIE, []);
+    await page.reload();
+    await page.getByRole('button', { name: `Remove ${MOVIE}` }).click();
+
+    const destructive = page.getByRole('button', { name: 'Remove title' });
+    await page.evaluate(() => {
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    });
+    await expect(getEdgeContrast(page, destructive, 0, 7)).resolves.toBeGreaterThanOrEqual(3);
+    expect(await getEdgeContrast(page, destructive, 3, 7)).toBeCloseTo(1);
+    await expect(getRingContrast(page, destructive, 3, 7)).resolves.toBeGreaterThanOrEqual(3);
+
+    await page.goto('/user/profile');
+    // The counts load on their own, and push the link down when they come.
+    await expect(page.getByText('Titles')).toBeVisible();
+    const outline = page.getByRole('main').getByRole('link', { name: 'Settings' });
+    await expect(getEdgeContrast(page, outline, 0, 7)).resolves.toBeGreaterThanOrEqual(3);
+    expect(await getEdgeContrast(page, outline, 3, 7)).toBeCloseTo(1);
+  });
 });
 
 for (const theme of ['dark', 'light']) {
@@ -1180,6 +1211,51 @@ for (const theme of ['dark', 'light']) {
     const header = page.getByRole('banner');
     await expectTwoColoursOnImage(page, header.getByRole('button', { name: 'Dark theme' }));
     await expectTwoColoursOnImage(page, header.getByRole('link', { name: 'Profile' }));
+  });
+}
+
+for (const theme of ['dark', 'light']) {
+  test(`the focus of the other controls stands out on the ${theme} theme`, async ({
+    page,
+    request,
+  }) => {
+    test.slow();
+    await page.addInitScript((value) => localStorage.setItem('cinepulse-theme', value), theme);
+    await openWatchlist(page);
+    await seedTitle(request, await getUid(page), MOVIE_ID, MOVIE, []);
+    await page.reload();
+    await expect(statusBox(page, MOVIE, 'Planned')).toBeVisible();
+
+    await createFolder(page, 'New folder', 'First', 1);
+    await createFolder(page, 'New folder', 'Second', 1);
+    await selectFolder(page, 'Second', 1);
+    await expectInsetRingToStandOut(page, folderLink(page, 'First', 1));
+    await expectInsetRingToStandOut(page, folderLink(page, 'Second', 1));
+
+    await page.getByRole('button', { name: 'Rename' }).click();
+    const name = page.getByRole('textbox');
+    await expectRingToStandOut(page, name);
+    // Nothing in the app sets it yet, and `Input` does not take it as a prop.
+    await name.evaluate((element) => element.setAttribute('aria-invalid', 'true'));
+    await expectRingToStandOut(page, name);
+    await page.getByRole('button', { name: 'Cancel' }).click();
+
+    await page.getByRole('button', { name: 'Move' }).click();
+    // Its ring covers the border and goes 1 px past it, in a colour of the browser.
+    await expect(
+      getRingContrast(page, page.getByRole('combobox'), 0, 6)
+    ).resolves.toBeGreaterThanOrEqual(3);
+    await page.getByRole('button', { name: 'Cancel' }).click();
+
+    await page.goto('/user/watchlist');
+    await expectInsetRingToStandOut(page, filterPill(page, 'All'));
+    await expectInsetRingToStandOut(page, filterPill(page, 'Watched'));
+    await expectInsetRingToStandOut(page, statusBox(page, MOVIE, 'Planned'));
+    await expectInsetRingToStandOut(page, statusBox(page, MOVIE, 'Watched'));
+
+    await page.goto(`/movies/${FULL_MOVIE_ID}`);
+    await page.getByRole('button', { name: 'Add to watchlist' }).click();
+    await expectRingToStandOut(page, folderBox(page, 'First', 1));
   });
 }
 

@@ -41,10 +41,18 @@ export async function readPixels(page: Page, spots: Spot[]): Promise<Rgb[]> {
 
 /** Focuses `target` as a keyboard does, in the middle of the screen, and returns its box. */
 export async function focusByKeyboard(page: Page, target: Locator) {
-  // A key first: `focus()` shows the ring only to someone using the keyboard.
+  // A blur and a key first: `focus()` shows the ring only to someone using the keyboard, and does
+  // nothing on a target that a press has already focused.
+  await target.evaluate((element) => {
+    if (element instanceof HTMLElement) element.blur();
+  });
   await page.keyboard.press('Shift');
   await target.focus();
-  // Focus alone can leave the target at the edge of the screen, with its ring past it.
+  return centerOnScreen(target);
+}
+
+/** Focus alone can leave the target at the edge of the screen, with its ring past it. */
+async function centerOnScreen(target: Locator) {
   await target.evaluate((element) => element.scrollIntoView({ block: 'center' }));
   const box = await target.boundingBox();
   if (!box) throw new Error('No target');
@@ -52,11 +60,12 @@ export async function focusByKeyboard(page: Page, target: Locator) {
 }
 
 /**
- * The lowest contrast between the pixels `near` and `far` px outside `target`, focused as by a
- * keyboard. Painted pixels, not styles: a ring on a gradient has no one colour to compute with.
+ * The lowest contrast between the pixels `near` and `far` px outside the box of `target`, a negative
+ * distance being inside it. Painted pixels, not styles: a ring on a gradient has no one colour to
+ * compute with.
  */
-export async function getRingContrast(page: Page, target: Locator, near: number, far: number) {
-  const { x, y, width, height } = await focusByKeyboard(page, target);
+export async function getEdgeContrast(page: Page, target: Locator, near: number, far: number) {
+  const { x, y, width, height } = await centerOnScreen(target);
   const [middleX, middleY, right, bottom] = [x + width / 2, y + height / 2, x + width, y + height];
   const spots = [near, far].flatMap((distance) => [
     { x: middleX, y: y - distance },
@@ -77,8 +86,25 @@ export async function getRingContrast(page: Page, target: Locator, near: number,
   );
 }
 
+/** `getEdgeContrast` with `target` focused as by a keyboard, around `ringHolder` if not itself. */
+export async function getRingContrast(
+  page: Page,
+  target: Locator,
+  near: number,
+  far: number,
+  ringHolder = target
+) {
+  await focusByKeyboard(page, target);
+  return getEdgeContrast(page, ringHolder, near, far);
+}
+
 export function expectRingToStandOut(page: Page, target: Locator) {
   return expect(getRingContrast(page, target, 2, 6)).resolves.toBeGreaterThanOrEqual(3);
+}
+
+/** For a ring inside the target: the control sits in a scroller, or against a neighbour. */
+export function expectInsetRingToStandOut(page: Page, target: Locator) {
+  return expect(getRingContrast(page, target, 0, -4)).resolves.toBeGreaterThanOrEqual(3);
 }
 
 /** 9:1 between the ring and its band leaves one of them at 3:1 on any colour of an image. */

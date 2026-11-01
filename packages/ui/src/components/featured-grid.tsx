@@ -69,7 +69,7 @@ function FeaturedTile({ item, featured }: FeaturedTileProps) {
     <li className={tileVariants({ featured })}>
       <Link
         to={href}
-        className="group focus-visible:ring-ring relative block overflow-hidden rounded-lg outline-hidden focus-visible:ring-[3px]"
+        className="group focus-visible:ring-ring relative block overflow-hidden rounded-lg focus-visible:ring-[3px] focus-visible:outline-hidden"
       >
         <div className={tileImageVariants({ featured })}>
           {imageUrl ? (

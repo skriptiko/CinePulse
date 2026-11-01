@@ -123,10 +123,19 @@
   }
 }
 
+/* For a control in a scroller that clips what lies outside it, or against a neighbour. An outline,
+   not a shadow, as forced colours keep it. */
+@utility focus-ring-inset {
+  &:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: -2px;
+  }
+}
+
 /* Forced colours remove fills and shadows, the only marks of a chosen control. An outline would
    look like focus, and without `forced-color-adjust` a backplate hides the highlighted text. That
    property also frees the focus ring from the system colours, so the control draws its own, inset
-   because pills sit in a scroller that clips them. */
+   because pills sit in a scroller that clips them, and over `focus-ring-inset`. */
 @utility forced-chosen {
   @media (forced-colors: active) {
     forced-color-adjust: none;
@@ -134,8 +143,8 @@
     color: HighlightText !important;
 
     &:focus-visible {
-      outline: 2px solid HighlightText;
-      outline-offset: -4px;
+      outline: 2px solid HighlightText !important;
+      outline-offset: -4px !important;
     }
   }
 }
