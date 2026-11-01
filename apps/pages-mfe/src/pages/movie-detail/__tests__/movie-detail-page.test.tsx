@@ -278,6 +278,32 @@ describe('Movie Detail page', () => {
     await expectEverySectionEmpty();
   });
 
+  it('opens another movie at the top of the page', async () => {
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    mockDetails(FULL_DETAILS);
+    server.use(
+      http.get('*/api/tmdb/movie/11', () =>
+        HttpResponse.json(buildMovieDetails({ id: 11, title: 'Arrival' }))
+      )
+    );
+    const { user } = renderPage('/movies/42');
+
+    await user.click(await screen.findByRole('link', { name: 'Arrival' }));
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Arrival' })).toBeInTheDocument();
+    expect(scrollTo).toHaveBeenCalledWith(0, 0);
+  });
+
+  it('leaves the scroll position to the browser on a direct visit', async () => {
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+    mockDetails(FULL_DETAILS);
+    renderPage('/movies/42');
+
+    await screen.findByRole('heading', { level: 1, name: 'Dune' });
+
+    expect(scrollTo).not.toHaveBeenCalled();
+  });
+
   it('offers a retry when the request fails', async () => {
     server.use(http.get('*/api/tmdb/movie/42', () => new HttpResponse(null, { status: 500 })));
     renderPage('/movies/42');
