@@ -4,8 +4,9 @@ import { useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { getFolderSearch } from './use-selected-folder';
 
+// `focus-ring-inset`: the tree scrolls by itself, so it clips what lies past the sides of a row.
 const ROW_CLASS_NAME =
-  'touch-target text-muted-foreground hover:text-foreground hover:bg-secondary aria-[current=page]:text-foreground aria-[current=page]:bg-secondary flex items-center rounded-md py-1.5 pr-3 text-sm aria-[current=page]:font-medium';
+  'focus-ring-inset touch-target text-muted-foreground hover:text-foreground hover:bg-secondary aria-[current=page]:text-foreground aria-[current=page]:bg-secondary flex items-center rounded-md py-1.5 pr-3 text-sm aria-[current=page]:font-medium';
 
 export type FolderTreeProps = {
   folders: WatchlistFolder[];

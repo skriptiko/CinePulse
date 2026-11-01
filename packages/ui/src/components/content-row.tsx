@@ -39,11 +39,12 @@ export function ContentRow({
         <CarouselArrow direction="left" hidden={!canScrollLeft} onScroll={scroll} />
         <CarouselArrow direction="right" hidden={!canScrollRight} onScroll={scroll} />
 
-        {/* `scroll-px-*` matches a card, so focus never stops on a card cut off at the edge. */}
+        {/* `scroll-px-*` matches a card, so focus never stops on a card cut off at the edge.
+            `-mt-1 pt-1` leaves room for the ring of a card, which the scroller would clip. */}
         <ul
           ref={ref}
           className={cn(
-            'scrollbar-hide flex scroll-px-36 gap-3 overflow-x-auto pb-4 sm:scroll-px-40 md:scroll-px-44 md:gap-4 lg:scroll-px-48',
+            'scrollbar-hide -mt-1 flex scroll-px-36 gap-3 overflow-x-auto pt-1 pb-4 sm:scroll-px-40 md:scroll-px-44 md:gap-4 lg:scroll-px-48',
             gutterClassName
           )}
         >

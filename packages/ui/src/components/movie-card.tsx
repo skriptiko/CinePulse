@@ -70,7 +70,7 @@ export function MovieCard({ movie, action, className }: MovieCardProps) {
           `z-1` works on a grid item as it is, and lifts the text over the gradient. */}
       <div className="z-1 col-start-1 row-start-1 min-w-0 self-end p-3">
         <h3 className="text-foreground mb-1 text-sm font-medium @max-[160px]:text-xs @min-[301px]:text-base">
-          <Link to={href} className="outline-hidden after:absolute after:inset-0">
+          <Link to={href} className="after:absolute after:inset-0 focus-visible:outline-hidden">
             <span className={cn('block truncate', revealClassName)}>{title}</span>
           </Link>
         </h3>

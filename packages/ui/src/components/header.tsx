@@ -17,7 +17,7 @@ import { useIsScrolled } from '../hooks/use-is-scrolled';
 import { useResolvedTheme } from '../hooks/use-resolved-theme';
 import { cn } from '../lib/utils';
 import { Logo } from './logo';
-import { BUTTON_ON_IMAGE_CLASS, Button, buttonVariants } from './ui/button';
+import { BUTTON_ON_IMAGE_CLASS, Button, buttonVariants, LINK_ON_IMAGE_CLASS } from './ui/button';
 
 // Only routes that exist: New & Popular and My List come back with their pages.
 const NAV_ITEMS = [
@@ -37,7 +37,7 @@ const TOOLBAR_BUTTON_CLASS = cn(
 /** Scroll offset after which the header gets its glass background. */
 const SCROLLED_THRESHOLD_PX = 20;
 
-const navLinkVariants = cva('rounded-lg px-4 text-sm transition-colors', {
+const navLinkVariants = cva(['rounded-lg px-4 text-sm transition-colors', LINK_ON_IMAGE_CLASS], {
   variants: {
     layout: {
       desktop: 'py-2',

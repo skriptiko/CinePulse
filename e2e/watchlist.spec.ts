@@ -1,4 +1,11 @@
 import { type APIRequestContext, expect, type Locator, type Page, test } from '@playwright/test';
+import {
+  expectInsetRingToStandOut,
+  expectRingToStandOut,
+  expectTwoColoursOnImage,
+  getEdgeContrast,
+  getRingContrast,
+} from './focus-ring';
 import { signIn } from './sign-in';
 import { FULL_MOVIE_ID, mockTmdb, paginated } from './tmdb-mock';
 
@@ -1147,81 +1154,32 @@ test.describe('in forced colours', () => {
     });
     expect(ring).toEqual({ onFill: true, outlineOffset: '-4px', outlineStyle: 'solid' });
   });
+
+  test('a filled button and an outline one keep a border, with no outline at rest', async ({
+    page,
+    request,
+  }) => {
+    await openWatchlist(page);
+    await seedTitle(request, await getUid(page), MOVIE_ID, MOVIE, []);
+    await page.reload();
+    await page.getByRole('button', { name: `Remove ${MOVIE}` }).click();
+
+    const destructive = page.getByRole('button', { name: 'Remove title' });
+    await page.evaluate(() => {
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    });
+    await expect(getEdgeContrast(page, destructive, 0, 7)).resolves.toBeGreaterThanOrEqual(3);
+    expect(await getEdgeContrast(page, destructive, 3, 7)).toBeCloseTo(1);
+    await expect(getRingContrast(page, destructive, 3, 7)).resolves.toBeGreaterThanOrEqual(3);
+
+    await page.goto('/user/profile');
+    // The counts load on their own, and push the link down when they come.
+    await expect(page.getByText('Titles')).toBeVisible();
+    const outline = page.getByRole('link', { name: 'Settings' });
+    await expect(getEdgeContrast(page, outline, 0, 7)).resolves.toBeGreaterThanOrEqual(3);
+    expect(await getEdgeContrast(page, outline, 3, 7)).toBeCloseTo(1);
+  });
 });
-
-type Rgb = [red: number, green: number, blue: number];
-
-function toLinear(value: number): number {
-  const channel = value / 255;
-  return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
-}
-
-function getLuminance([red, green, blue]: Rgb): number {
-  return 0.2126 * toLinear(red) + 0.7152 * toLinear(green) + 0.0722 * toLinear(blue);
-}
-
-function getContrast(first: Rgb, second: Rgb): number {
-  const luminances = [getLuminance(first), getLuminance(second)];
-  return (Math.max(...luminances) + 0.05) / (Math.min(...luminances) + 0.05);
-}
-
-/**
- * The lowest contrast between the pixels `near` and `far` px outside `target`, focused as by a
- * keyboard. Painted pixels, not styles: a ring on a gradient has no one colour to compute with.
- */
-async function getRingContrast(page: Page, target: Locator, near: number, far: number) {
-  // A key first: `focus()` shows the ring only to someone using the keyboard.
-  await page.keyboard.press('Shift');
-  await target.focus();
-  // Focus alone can leave the target at the edge of the screen, with its ring past it.
-  await target.evaluate((element) => element.scrollIntoView({ block: 'center' }));
-  const box = await target.boundingBox();
-  if (!box) throw new Error('No target');
-  const { x, y, width, height } = box;
-  const [middleX, middleY, right, bottom] = [x + width / 2, y + height / 2, x + width, y + height];
-  const spots = [near, far].flatMap((distance) => [
-    { x: middleX, y: y - distance },
-    { x: middleX, y: bottom + distance - 1 },
-    { x: x - distance, y: middleY },
-    { x: right + distance - 1, y: middleY },
-  ]);
-
-  const screenshot = await page.screenshot({ animations: 'disabled' });
-  const pixels = await page.evaluate(
-    async ({ src, spots }) => {
-      const image = new Image();
-      image.src = src;
-      await image.decode();
-      const canvas = new OffscreenCanvas(image.width, image.height);
-      const context = canvas.getContext('2d');
-      context?.drawImage(image, 0, 0);
-      return spots.map(({ x, y }): Rgb => {
-        const [red = 0, green = 0, blue = 0] =
-          context?.getImageData(Math.round(x), Math.round(y), 1, 1).data ?? [];
-        return [red, green, blue];
-      });
-    },
-    { src: `data:image/png;base64,${screenshot.toString('base64')}`, spots }
-  );
-
-  const sides = pixels.length / 2;
-  return Math.min(
-    ...pixels.slice(0, sides).map((pixel, side) => {
-      const farPixel = pixels[sides + side];
-      if (!farPixel) throw new Error('No pixel');
-      return getContrast(pixel, farPixel);
-    })
-  );
-}
-
-function expectRingToStandOut(page: Page, target: Locator) {
-  return expect(getRingContrast(page, target, 2, 6)).resolves.toBeGreaterThanOrEqual(3);
-}
-
-/** 9:1 between the ring and its band leaves one of them at 3:1 on any colour of an image. */
-function expectTwoColoursOnImage(page: Page, target: Locator) {
-  return expect(getRingContrast(page, target, 1, 4)).resolves.toBeGreaterThanOrEqual(9);
-}
 
 for (const theme of ['dark', 'light']) {
   test(`the focus ring of every Button variant stands out on the ${theme} theme`, async ({
@@ -1253,6 +1211,51 @@ for (const theme of ['dark', 'light']) {
     const header = page.getByRole('banner');
     await expectTwoColoursOnImage(page, header.getByRole('button', { name: 'Dark theme' }));
     await expectTwoColoursOnImage(page, header.getByRole('link', { name: 'Profile' }));
+  });
+}
+
+for (const theme of ['dark', 'light']) {
+  test(`the focus of the other controls stands out on the ${theme} theme`, async ({
+    page,
+    request,
+  }) => {
+    test.slow();
+    await page.addInitScript((value) => localStorage.setItem('cinepulse-theme', value), theme);
+    await openWatchlist(page);
+    await seedTitle(request, await getUid(page), MOVIE_ID, MOVIE, []);
+    await page.reload();
+    await expect(statusBox(page, MOVIE, 'Planned')).toBeVisible();
+
+    await createFolder(page, 'New folder', 'First', 1);
+    await createFolder(page, 'New folder', 'Second', 1);
+    await selectFolder(page, 'Second', 1);
+    await expectInsetRingToStandOut(page, folderLink(page, 'First', 1));
+    await expectInsetRingToStandOut(page, folderLink(page, 'Second', 1));
+
+    await page.getByRole('button', { name: 'Rename' }).click();
+    const name = page.getByRole('textbox');
+    await expectRingToStandOut(page, name);
+    // Nothing in the app sets it yet, and `Input` does not take it as a prop.
+    await name.evaluate((element) => element.setAttribute('aria-invalid', 'true'));
+    await expectRingToStandOut(page, name);
+    await page.getByRole('button', { name: 'Cancel' }).click();
+
+    await page.getByRole('button', { name: 'Move' }).click();
+    // Its ring covers the border and goes 1 px past it, in a colour of the browser.
+    await expect(
+      getRingContrast(page, page.getByRole('combobox'), 0, 6)
+    ).resolves.toBeGreaterThanOrEqual(3);
+    await page.getByRole('button', { name: 'Cancel' }).click();
+
+    await page.goto('/user/watchlist');
+    await expectInsetRingToStandOut(page, filterPill(page, 'All'));
+    await expectInsetRingToStandOut(page, filterPill(page, 'Watched'));
+    await expectInsetRingToStandOut(page, statusBox(page, MOVIE, 'Planned'));
+    await expectInsetRingToStandOut(page, statusBox(page, MOVIE, 'Watched'));
+
+    await page.goto(`/movies/${FULL_MOVIE_ID}`);
+    await page.getByRole('button', { name: 'Add to watchlist' }).click();
+    await expectRingToStandOut(page, folderBox(page, 'First', 1));
   });
 }
 
