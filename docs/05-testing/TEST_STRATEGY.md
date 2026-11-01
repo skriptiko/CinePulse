@@ -102,6 +102,11 @@ The check does not see three things:
 - A request sent as the test ends: Playwright stops calling route handlers once the page or its context closes. Home starts all its requests up front, so its rows do reach the check.
 - The method: `tmdbProxy` answers 405 to anything but GET and HEAD in `index.ts`, which needs Firebase and cannot be imported here. `apiGet` only sends GET.
 
+Two mutants proved the check, each on a new `pnpm build:deploy` and the whole suite of 151 tests, and neither was committed:
+
+- A `region` param on `/movie/upcoming` alone, in `getMovies`, failed 14 tests. No spec asserts on that row, New Releases, so each of them had one error and no other: `tmdbProxy refuses /api/tmdb/movie/upcoming?page=1&region=US: 400 Invalid query parameters`.
+- `,keywords` added to `DETAIL_APPEND` in `packages/api/src/core/config.ts` alone failed 31 tests on the details pages and the links into them, with `tmdbProxy refuses /api/tmdb/movie/7?append_to_response=credits%2C…%2Ckeywords: 400 Invalid query parameters` and its `/tv/` twin.
+
 `e2e/movie-detail.spec.ts` runs on fixtures from `e2e/tmdb-mock.ts`, which also answers `image.tmdb.org` and `i.ytimg.com`, so no test reaches a real image host:
 
 1. The five sections stand in order below the hero, and every list stops at its limit.
