@@ -11,8 +11,9 @@ import {
   waitFor,
   within,
 } from '@repo/test-utils';
+import { AppLayout } from '@repo/ui';
 import { delay, HttpResponse, http } from 'msw';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 import { Search } from '../search-page';
 
@@ -143,6 +144,21 @@ describe('Search page', () => {
 
     it('takes focus, so a press on the icon can be followed by typing', async () => {
       renderSearch();
+
+      await waitFor(() => expect(searchInput()).toHaveFocus());
+    });
+
+    it('takes focus after the shell has moved it to main on a new page', async () => {
+      const { user } = renderWithProviders(
+        <AppLayout>
+          <Routes>
+            <Route path={ROUTE_PATHS.HOME} element={<p>Home</p>} />
+            <Route path={ROUTE_PATHS.SEARCH} element={<Search />} />
+          </Routes>
+        </AppLayout>
+      );
+
+      await user.click(screen.getByRole('link', { name: 'Search' }));
 
       await waitFor(() => expect(searchInput()).toHaveFocus());
     });

@@ -34,7 +34,8 @@ export function SearchForm({ query, onSubmit }: SearchFormProps) {
   };
 
   return (
-    <search className="px-4 pb-4 sm:px-6 lg:px-12">
+    // `block`: the browsers of the build target do not know `<search>`, so it would be inline.
+    <search className="block px-4 pb-4 sm:px-6 lg:px-12">
       <form onSubmit={handleSubmit} className="max-w-xl">
         <label htmlFor={inputId} className="mb-2 block text-sm font-medium">
           Search by title or name
