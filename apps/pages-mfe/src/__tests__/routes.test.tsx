@@ -141,6 +141,20 @@ describe('routes', () => {
     expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
   });
 
+  it('loads the Search page on demand', async () => {
+    renderWithProviders(<App />, { route: ROUTE_PATHS.SEARCH });
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Search' })).toBeInTheDocument();
+  });
+
+  it('keeps the heading of Search through a failed search', async () => {
+    server.use(http.get('*/api/tmdb/search/movie', () => new HttpResponse(null, { status: 500 })));
+    renderWithProviders(<App />, { route: `${ROUTE_PATHS.SEARCH}?q=dune` });
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('could not be loaded');
+    expect(screen.getByRole('heading', { level: 1, name: 'Search' })).toBeInTheDocument();
+  });
+
   it('leaves no search text behind between Movies and TV Shows', async () => {
     const { user } = renderWithProviders(<AppWithLinks />, { route: ROUTE_PATHS.MOVIES });
 
