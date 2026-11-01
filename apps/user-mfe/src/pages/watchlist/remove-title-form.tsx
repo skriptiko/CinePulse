@@ -8,19 +8,28 @@ export type RemoveTitleFormProps = {
   uid: string;
   titleId: string;
   title: string;
-  onClose: () => void;
+  onCancel: () => void;
+  onRemoved: () => void;
 };
 
 /** The removal rereads `items`, which is rare enough to cost a read of every title (ADR-0015). */
-export function RemoveTitleForm({ uid, titleId, title, onClose }: RemoveTitleFormProps) {
+export function RemoveTitleForm({
+  uid,
+  titleId,
+  title,
+  onCancel,
+  onRemoved,
+}: RemoveTitleFormProps) {
   const queryClient = useQueryClient();
   const { queryKey } = watchlistQueries.items(uid);
   const remove = useFolderWrite({
     write: (store, _: undefined) => store.removeTitle(uid, titleId),
     invalidate: queryKey,
     // At once: the row must not wait for that read, which is slow on a long list.
-    onDone: () =>
-      queryClient.setQueryData(queryKey, (items) => items?.filter(({ id }) => id !== titleId)),
+    onDone: () => {
+      queryClient.setQueryData(queryKey, (items) => items?.filter(({ id }) => id !== titleId));
+      onRemoved();
+    },
   });
 
   return (
@@ -46,7 +55,7 @@ export function RemoveTitleForm({ uid, titleId, title, onClose }: RemoveTitleFor
           variant="ghost"
           disabled={remove.isPending}
           className="touch-target"
-          onClick={onClose}
+          onClick={onCancel}
         >
           Cancel
         </Button>

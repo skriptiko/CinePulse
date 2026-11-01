@@ -661,6 +661,61 @@ describe('WatchlistPage', () => {
     expect(statusOf('Lost', 'Watched')).toHaveFocus();
   });
 
+  it('keeps one question open: asking about another title closes the first', async () => {
+    const { user } = renderPage();
+    await screen.findByRole('link', { name: 'Alien' });
+
+    await user.click(screen.getByRole('button', { name: 'Remove Alien' }));
+    await user.click(screen.getByRole('button', { name: 'Remove Lost' }));
+
+    expect(screen.queryByRole('group', { name: /^Remove Alien/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('group', { name: /^Remove Lost/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Remove Alien' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus();
+  });
+
+  it('holds the rows against a second press for a moment after a removal', async () => {
+    vi.mocked(deleteDoc).mockResolvedValue(undefined);
+    const { user } = renderPage();
+    await screen.findByRole('link', { name: 'Alien' });
+    await user.click(screen.getByRole('button', { name: 'Remove Alien' }));
+    mockItems([LOST]);
+
+    await user.click(screen.getByRole('button', { name: 'Remove title' }));
+
+    await waitFor(() => expect(screen.queryByRole('link', { name: 'Alien' })).toBeNull());
+    const list = screen.getByRole('radiogroup', { name: 'Status of Lost' }).closest('ul');
+    expect(list).toHaveClass('pointer-events-none');
+    await waitFor(() => expect(list).not.toHaveClass('pointer-events-none'));
+  });
+
+  it('drops a read from before the removal when the person left during it', async () => {
+    let finishDelete = () => {};
+    vi.mocked(deleteDoc).mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          finishDelete = resolve;
+        })
+    );
+    const { user, queryClient, unmount } = renderPage();
+    await screen.findByRole('link', { name: 'Alien' });
+    await user.click(screen.getByRole('button', { name: 'Remove Alien' }));
+    await user.click(screen.getByRole('button', { name: 'Remove title' }));
+    await waitFor(() => expect(deleteDoc).toHaveBeenCalled());
+
+    const { queryKey } = watchlistQueries.items('u');
+    const finishOldRead = holdRead([ALIEN, LOST]);
+    void queryClient.refetchQueries({ queryKey });
+    unmount();
+    mockItems([LOST]);
+    finishDelete();
+    await waitFor(() => expect(queryClient.isMutating()).toBe(0));
+    finishOldRead();
+
+    await waitFor(() => expect(queryClient.isFetching({ queryKey })).toBe(0));
+    expect(queryClient.getQueryData(queryKey)?.map(({ id }) => id)).toEqual([LOST.id]);
+  });
+
   it('keeps the row and the question when a removal fails', async () => {
     vi.mocked(deleteDoc).mockRejectedValueOnce(
       Object.assign(new Error('failed'), { code: 'permission-denied' })

@@ -1,8 +1,8 @@
 import { getImageUrl } from '@repo/api';
 import type { WatchlistItem } from '@repo/firebase';
 import { buildPath } from '@repo/routes';
-import { Button, ImagePlaceholder, ToggleGroup, ToggleGroupItem } from '@repo/ui';
-import { useState } from 'react';
+import { Button, cn, ImagePlaceholder, ToggleGroup, ToggleGroupItem } from '@repo/ui';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { focusOnMount } from './focus-on-mount';
 import { RemoveTitleForm } from './remove-title-form';
@@ -10,6 +10,8 @@ import { isWatchStatus, STATUS_LABELS, WATCH_STATUSES } from './use-status-filte
 import { useTitleStatus } from './use-title-status';
 
 const POSTER_SIZE_ROW = 'w92';
+/** Longer than the pause within a double press. */
+const REMOVAL_HOLD_MS = 400;
 
 export type TitleListProps = {
   uid: string;
@@ -21,12 +23,36 @@ export type TitleListProps = {
 // Rows, not `MovieCard`: its title shows only on hover or focus, an inert TV card takes no focus,
 // and a watchlist item has no year or rating to fill the card.
 export function TitleList({ uid, titles, onStatusChange }: TitleListProps) {
+  const [askingId, setAskingId] = useState<string | null>(null);
+  const [isHolding, setIsHolding] = useState(false);
+
+  useEffect(() => {
+    if (!isHolding) return;
+    const timer = setTimeout(() => setIsHolding(false), REMOVAL_HOLD_MS);
+    return () => clearTimeout(timer);
+  }, [isHolding]);
+
+  const handleRemoved = () => {
+    setAskingId(null);
+    setIsHolding(true);
+  };
+
   if (titles.length === 0) return null;
 
   return (
-    <ul className="flex flex-col gap-3">
+    // The rows below a removed one move up under the finger, and a second press would reach them.
+    <ul className={cn('flex flex-col gap-3', isHolding && 'pointer-events-none')}>
       {titles.map((item) => (
-        <TitleRow key={item.id} uid={uid} item={item} onStatusChange={onStatusChange} />
+        <TitleRow
+          key={item.id}
+          uid={uid}
+          item={item}
+          isAsking={askingId === item.id}
+          onAsk={() => setAskingId(item.id)}
+          onCancel={() => setAskingId(null)}
+          onRemoved={handleRemoved}
+          onStatusChange={onStatusChange}
+        />
       ))}
     </ul>
   );
@@ -35,13 +61,24 @@ export function TitleList({ uid, titles, onStatusChange }: TitleListProps) {
 type TitleRowProps = {
   uid: string;
   item: WatchlistItem;
+  isAsking: boolean;
+  onAsk: () => void;
+  onCancel: () => void;
+  onRemoved: () => void;
   onStatusChange: (titleId: string) => void;
 };
 
-function TitleRow({ uid, item, onStatusChange }: TitleRowProps) {
+function TitleRow({
+  uid,
+  item,
+  isAsking,
+  onAsk,
+  onCancel,
+  onRemoved,
+  onStatusChange,
+}: TitleRowProps) {
   const { title, imageUrl, href } = toTitleRowData(item);
   const { mutate, isPending, variables } = useTitleStatus(uid, item.id);
-  const [isAsking, setIsAsking] = useState(false);
   const [isReturningFocus, setIsReturningFocus] = useState(false);
 
   const handleStatusChange = (status: string) => {
@@ -51,12 +88,12 @@ function TitleRow({ uid, item, onStatusChange }: TitleRowProps) {
   };
 
   const handleAsk = () => {
-    setIsAsking(true);
+    onAsk();
     setIsReturningFocus(false);
   };
 
   const handleCancel = () => {
-    setIsAsking(false);
+    onCancel();
     setIsReturningFocus(true);
   };
 
@@ -86,13 +123,13 @@ function TitleRow({ uid, item, onStatusChange }: TitleRowProps) {
         ) : (
           <p className="truncate font-medium">{title}</p>
         )}
-        {/* The controls sit over the stretched link: the rest of the row opens the title. */}
-        <div className="mt-1 flex flex-wrap items-center gap-x-2">
+        {/* Over the stretched link as one block: a disabled button lets a press through to what
+            lies under it. The rest of the row opens the title. */}
+        <div className="relative z-10 mt-1 flex w-fit flex-wrap items-center gap-x-2">
           <ToggleGroup
             aria-label={`Status of ${title}`}
             value={isPending ? variables : item.status}
             onValueChange={handleStatusChange}
-            className="relative z-10"
           >
             {WATCH_STATUSES.map((status) => (
               <ToggleGroupItem
@@ -111,7 +148,7 @@ function TitleRow({ uid, item, onStatusChange }: TitleRowProps) {
             variant="ghost"
             aria-label={`Remove ${title}`}
             disabled={isAsking}
-            className="touch-target relative z-10"
+            className="touch-target"
             onClick={handleAsk}
           >
             Remove
@@ -119,7 +156,13 @@ function TitleRow({ uid, item, onStatusChange }: TitleRowProps) {
         </div>
         {/* Below the controls, not in their place: a double tap must not reach the confirming button. */}
         {isAsking && (
-          <RemoveTitleForm uid={uid} titleId={item.id} title={title} onClose={handleCancel} />
+          <RemoveTitleForm
+            uid={uid}
+            titleId={item.id}
+            title={title}
+            onCancel={handleCancel}
+            onRemoved={onRemoved}
+          />
         )}
       </div>
     </li>

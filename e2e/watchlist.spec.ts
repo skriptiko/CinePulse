@@ -999,9 +999,21 @@ test('the row controls open nothing, and the rest of the row opens the title', a
   await expect(statusBox(page, title, 'Watched')).toBeChecked();
   await expect(page).toHaveURL(/\/user\/watchlist$/);
 
-  const remove = await page.getByRole('button', { name: `Remove ${title}` }).boundingBox();
+  const removeButton = page.getByRole('button', { name: `Remove ${title}` });
+  const remove = await removeButton.boundingBox();
   if (!remove) throw new Error('No Remove');
-  await page.mouse.click(remove.x + remove.width + 40, remove.y + remove.height / 2);
+  const middle = remove.y + remove.height / 2;
+  // Between the controls: a near miss must not leave the page.
+  await page.mouse.click(remove.x - 4, middle);
+  await expect(page).toHaveURL(/\/user\/watchlist$/);
+  // A disabled button lets a press through, as on the second press of a double one.
+  await page.mouse.click(remove.x + remove.width / 2, middle);
+  await expect(removeButton).toBeDisabled();
+  await page.mouse.click(remove.x + remove.width / 2, middle);
+  await expect(page).toHaveURL(/\/user\/watchlist$/);
+  await page.getByRole('button', { name: 'Cancel' }).click();
+
+  await page.mouse.click(remove.x + remove.width + 40, middle);
   await expect(page).toHaveURL(new RegExp(`/movies/${MOVIE_ID}$`));
 });
 
@@ -1269,6 +1281,37 @@ test('a removed title leaves every folder and the profile', async ({ page, reque
 
   await page.goto('/user/profile');
   await expect(page.locator('dt', { hasText: 'Titles' }).locator('+ dd')).toHaveText('1');
+});
+
+test('the second press of a double press on Remove title lands on nothing', async ({
+  page,
+  request,
+}) => {
+  await openWatchlist(page);
+  const uid = await getUid(page);
+  for (let id = 1; id <= 4; id += 1) await seedTitle(request, uid, id, `Row ${id}`, []);
+  await page.reload();
+  const topRemove = page.getByRole('button', { name: /^Remove Row/ }).first();
+  const label = await topRemove.getAttribute('aria-label');
+  await topRemove.click();
+  const confirm = await page.getByRole('button', { name: 'Remove title' }).boundingBox();
+  if (!confirm) throw new Error('No Remove title');
+  // Near its corner: once the rows move up, the Watched segment of another title lies here.
+  const spot = { x: confirm.x + confirm.width - 6, y: confirm.y + confirm.height - 4 };
+
+  await page.mouse.click(spot.x, spot.y);
+  await page.waitForFunction((name) => !document.querySelector(`[aria-label="${name}"]`), label);
+  await page.mouse.click(spot.x, spot.y);
+
+  // The rows moved up under that point, and the press reaches none of them.
+  await page.waitForTimeout(100);
+  await expect(page).toHaveURL(/\/user\/watchlist$/);
+  await expect(page.getByRole('radio', { name: 'Planned', checked: true })).toHaveCount(3);
+
+  // The hold passes: this waits for the switch to take a press.
+  const next = page.getByRole('radiogroup').first().getByRole('radio', { name: 'Watched' });
+  await next.click();
+  await expect(next).toBeChecked();
 });
 
 test('a removal in a long list keeps the page where it is', async ({ page, request }) => {
