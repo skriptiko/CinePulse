@@ -149,6 +149,8 @@ test.describe('from far down the page', () => {
 
   test('a footer link opens its page at the top', async ({ page }) => {
     await page.goto(`/movies/${FULL_MOVIE_ID}`);
+    // The footer is there before the sections, which then push it down from under the press.
+    await expect(section(page, 'Reviews')).toBeVisible();
 
     await scrollToAndPress(
       page,
