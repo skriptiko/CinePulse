@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { expect, type Page } from '@playwright/test';
 
 export async function signIn(page: Page) {
@@ -10,5 +11,8 @@ export async function signIn(page: Page) {
     await expect(popup.locator('#autogen-button')).toBeVisible({ timeout: 1000 });
   }).toPass();
   await popup.locator('#autogen-button').click();
+  // The button draws from 100,000 emails, and a repeated one signs in to the same account, with
+  // the data of the test that made it.
+  await popup.locator('#email-input').fill(`${randomUUID()}@example.com`);
   await popup.locator('#sign-in').click();
 }
