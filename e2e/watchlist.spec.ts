@@ -1175,7 +1175,7 @@ test.describe('in forced colours', () => {
     await page.goto('/user/profile');
     // The counts load on their own, and push the link down when they come.
     await expect(page.getByText('Titles')).toBeVisible();
-    const outline = page.getByRole('link', { name: 'Settings' });
+    const outline = page.getByRole('main').getByRole('link', { name: 'Settings' });
     await expect(getEdgeContrast(page, outline, 0, 7)).resolves.toBeGreaterThanOrEqual(3);
     expect(await getEdgeContrast(page, outline, 3, 7)).toBeCloseTo(1);
   });

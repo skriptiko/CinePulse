@@ -71,14 +71,19 @@ test.describe('the header icon', () => {
     await page.goto('/');
     await expect(page.getByRole('region', { name: 'Popular' })).toBeVisible();
 
-    // Slow enough that `AppLayout` has moved focus to `main` long before the page arrives.
+    // Held until `AppLayout` has moved focus to `main`, as a delay would race the assertion below.
+    let releaseChunk = () => {};
+    const isReleased = new Promise<void>((resolve) => {
+      releaseChunk = resolve;
+    });
     await page.route('**/pages-mfe/assets/search-page-*.js', async (route) => {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await isReleased;
       await route.fallback();
     });
     await headerIcon(page).click();
 
     await expect(page.locator('main')).toBeFocused();
+    releaseChunk();
     await expect(searchInput(page)).toBeFocused();
     await expect(page).toHaveURL(/\/search$/);
     await expect(page).toHaveTitle('Search · CinePulse');
