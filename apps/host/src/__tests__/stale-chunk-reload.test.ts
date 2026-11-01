@@ -53,4 +53,36 @@ describe('handlePreloadError', () => {
 
     expect(reload).toHaveBeenCalledTimes(2);
   });
+
+  it.each([
+    [
+      'throws',
+      () => {
+        throw new DOMException('Access denied', 'SecurityError');
+      },
+    ],
+    ['does nothing', () => {}],
+  ])('leaves a failure to its caller when the write %s, as a reload could loop', (_, setItem) => {
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(setItem);
+    const reload = vi.fn();
+    const event = new Event('vite:preloadError', { cancelable: true });
+
+    handlePreloadError(event, reload);
+
+    expect(reload).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it('does not take the time of an earlier reload for a refused write', () => {
+    const reload = vi.fn();
+    handlePreloadError(new Event('vite:preloadError', { cancelable: true }), reload);
+
+    vi.advanceTimersByTime(RELOAD_COOLDOWN_MS);
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {});
+    const secondEvent = new Event('vite:preloadError', { cancelable: true });
+    handlePreloadError(secondEvent, reload);
+
+    expect(reload).toHaveBeenCalledTimes(1);
+    expect(secondEvent.defaultPrevented).toBe(false);
+  });
 });

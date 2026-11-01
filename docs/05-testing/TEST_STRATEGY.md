@@ -89,6 +89,7 @@ Add Playwright (chromium) on the merged `dist/` served by `firebase emulators:st
 4. With `remoteEntry.js` of one remote aborted, its section shows the "unavailable" placeholder and the other sections keep working.
 5. An unknown URL shows NotFound.
 6. TV Shows opens from the header, the mobile menu and a direct URL, shows its empty and error states, and has no horizontal page scroll at 320 px, with a 100-character search too.
+7. With `sessionStorage` blocked, a chunk that keeps failing loads the document once and shows the page's error state.
 
 `e2e/movie-detail.spec.ts` runs on fixtures from `e2e/tmdb-mock.ts`, which also answers `image.tmdb.org` and `i.ytimg.com`, so no test reaches a real image host:
 
