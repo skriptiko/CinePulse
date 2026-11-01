@@ -47,6 +47,12 @@ describe('Header', () => {
     expect(links.map((link) => link.getAttribute('href'))).toEqual(['/', '/movies', '/tv']);
   });
 
+  it('leads the search icon to the Search page', () => {
+    renderWithProviders(<Header />);
+
+    expect(screen.getByRole('link', { name: 'Search' })).toHaveAttribute('href', '/search');
+  });
+
   it('offers sign-in to an anonymous visitor', () => {
     renderWithProviders(<Header />);
 

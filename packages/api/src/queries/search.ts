@@ -40,5 +40,7 @@ export const searchQueries = {
       queryFn: ({ pageParam, signal }) => searchPerson({ query, page: pageParam }, { signal }),
       initialPageParam: 1,
       getNextPageParam,
+      // The Search page shows a next-page failure inline.
+      meta: { inlineErrors: true },
     }),
 };

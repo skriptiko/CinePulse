@@ -12,6 +12,7 @@ export const REMOTES: readonly RemoteDefinition[] = [
       ROUTE_PATHS.TV,
       ROUTE_PATHS.TV_DETAIL,
       ROUTE_PATHS.PERSON_DETAIL,
+      ROUTE_PATHS.SEARCH,
     ],
   },
   {

@@ -6,6 +6,7 @@ export const ROUTE_PATHS = {
   TV: '/tv',
   TV_DETAIL: '/tv/:id',
   PERSON_DETAIL: '/person/:id',
+  SEARCH: '/search',
   AUTH_LOGIN: '/auth/login',
   USER: '/user',
   USER_PROFILE: '/user/profile',

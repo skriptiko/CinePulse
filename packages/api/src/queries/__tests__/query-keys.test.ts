@@ -65,6 +65,10 @@ describe('query keys', () => {
     expect(searchQueries.tv('severance').meta).toEqual({ inlineErrors: true });
   });
 
+  it('marks the people search as showing its errors inline', () => {
+    expect(searchQueries.person('zendaya').meta).toEqual({ inlineErrors: true });
+  });
+
   it('puts the query text, not the page, in the search key', () => {
     expect(searchQueries.movies('dune').queryKey).toEqual(['search', 'movies', 'dune']);
   });

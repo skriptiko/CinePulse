@@ -54,6 +54,7 @@ export type { PageBoundaryProps } from './components/page-boundary';
 export { PageBoundary } from './components/page-boundary';
 export { PageErrorFallback } from './components/page-error-fallback';
 export {
+  CardGridSkeleton,
   ContentRowSkeleton,
   FeaturedGridSkeleton,
   HeroSkeleton,
@@ -64,6 +65,8 @@ export {
   SKELETON_DELAY_MS,
   SkeletonFrame,
 } from './components/page-skeletons';
+export type { PersonCardData, PersonCardProps } from './components/person-card';
+export { PersonCard } from './components/person-card';
 export type { PersonDetailData, PersonDetailViewProps } from './components/person-detail-view';
 export { PersonDetailView } from './components/person-detail-view';
 export type { ReviewData, ReviewsSectionProps } from './components/reviews-section';
@@ -113,6 +116,7 @@ export { toMediaData } from './lib/mappers/media';
 export { toMoreLikeThisData } from './lib/mappers/more-like-this';
 export { toMovieCardData, toTrendingCardData, toTvCardData } from './lib/mappers/movie-card';
 export { toMovieDetailData, toTvDetailData } from './lib/mappers/movie-detail';
+export { toPersonCardData } from './lib/mappers/person-card';
 export { toFilmographyData, toKnownForData } from './lib/mappers/person-credits';
 export { toPersonDetailData } from './lib/mappers/person-detail';
 export { toReviewsData } from './lib/mappers/reviews';
