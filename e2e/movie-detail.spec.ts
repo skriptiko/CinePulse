@@ -1,4 +1,5 @@
 import { expect, type Locator, type Page, test } from '@playwright/test';
+import { scrollToAndPress } from './scroll-to-press';
 import {
   EMPTY_MOVIE_ID,
   FULL_MOVIE_ID,
@@ -19,24 +20,6 @@ function section(page: Page, name: string): Locator {
 
 function moreLikeThisCard(page: Page, title: string): Locator {
   return section(page, 'More like this').getByRole('link', { name: title, exact: true });
-}
-
-/** A real wheel and a real press: Playwright's `click()` would scroll the page by itself. */
-async function scrollToAndPress(page: Page, target: Locator): Promise<void> {
-  await page.mouse.move(640, 300);
-  await expect(async () => {
-    await page.mouse.wheel(0, 200);
-    expect(await target.evaluate(isInViewport)).toBe(true);
-  }).toPass();
-
-  const box = await target.boundingBox();
-  if (!box) throw new Error('No target');
-  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-}
-
-function isInViewport(element: Element): boolean {
-  const { top, bottom } = element.getBoundingClientRect();
-  return top >= 0 && bottom <= window.innerHeight;
 }
 
 test('Movie Detail shows its five sections in order, below the hero', async ({ page }) => {
@@ -97,15 +80,6 @@ test('a section with nothing to show keeps its heading and says so', async ({ pa
   await expect(section(page, 'Videos and images')).toContainText('No videos or images yet.');
   await expect(section(page, 'More like this')).toContainText('No similar titles yet.');
   await expect(section(page, 'Reviews')).toContainText('No reviews yet.');
-});
-
-test('a person link reaches NotFound until the Person page lands', async ({ page }) => {
-  await page.goto(`/movies/${FULL_MOVIE_ID}`);
-
-  await section(page, 'Cast').getByRole('link', { name: 'Some Director' }).click();
-
-  await expect(page).toHaveURL(/\/person\/2000$/);
-  await expect(page.getByRole('heading', { name: 'Page not found' })).toBeVisible();
 });
 
 test.describe('in another country', () => {

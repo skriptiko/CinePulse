@@ -60,6 +60,15 @@ export const EMPTY_MOVIE_ID = 9;
 /** A movie whose every external string is one long word. */
 export const LONG_TEXT_MOVIE_ID = 10;
 
+/** The director of the full movies, so the cast leads to a full page. */
+export const FULL_PERSON_ID = 2000;
+/** A person TMDB knows little about: no photo, dates, biography or credits. */
+export const EMPTY_PERSON_ID = 2001;
+/** A person whose every external string is one long word. */
+export const LONG_TEXT_PERSON_ID = 2002;
+/** TMDB answers 404. */
+export const UNKNOWN_PERSON_ID = 2003;
+
 const ONE_PIXEL_PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
   'base64'
@@ -173,6 +182,80 @@ function detailSections(id: number) {
   return {};
 }
 
+/**
+ * Forty titles, one a year, half of them shows and the newest with the most votes; a talk show
+ * with more votes than any; and a credit with nothing but its id.
+ */
+function personCredits(text = (value: string) => value) {
+  const cast = Array.from({ length: 40 }, (_, index) => {
+    const date = `${1980 + index}-01-01`;
+    const role = {
+      credit_id: `person-cast-${index}`,
+      character: text(`Role ${index}`),
+      vote_count: index,
+    };
+
+    return index % 2 === 0
+      ? { ...movie(3000 + index, text(`Film ${index}`)), ...role, release_date: date }
+      : {
+          ...show(3000 + index, text(`Series ${index}`)),
+          ...role,
+          media_type: 'tv',
+          first_air_date: date,
+        };
+  });
+  const talkShow = {
+    ...show(4000, text('Talk show')),
+    media_type: 'tv',
+    credit_id: 'person-talk-show',
+    character: text('Self - Guest'),
+    first_air_date: '2024-01-01',
+    genre_ids: [10767],
+    vote_count: 9000,
+  };
+  const crew = {
+    ...show(3039, text('Series 39')),
+    media_type: 'tv',
+    credit_id: 'person-crew',
+    department: 'Directing',
+    job: text('Director'),
+    first_air_date: '2019-01-01',
+    vote_count: 39,
+  };
+  const bare = { id: 4001, media_type: 'movie', credit_id: 'person-bare' };
+
+  return { cast: [...cast, talkShow, bare], crew: [crew] };
+}
+
+function personDetails(id: number) {
+  const empty = {
+    id,
+    name: 'New face',
+    biography: '',
+    birthday: null,
+    deathday: null,
+    known_for_department: '',
+    place_of_birth: null,
+    profile_path: null,
+    combined_credits: { cast: [], crew: [] },
+  };
+  const full = (text = (value: string) => value) => ({
+    ...empty,
+    name: text('Some Person'),
+    biography: `${text('A long life. ').repeat(30)}\n\n${text('A second paragraph. ').repeat(30)}`,
+    birthday: '1960-02-01',
+    deathday: '2020-03-04',
+    known_for_department: text('Directing'),
+    place_of_birth: text('Kyiv, Ukraine'),
+    profile_path: '/person.jpg',
+    combined_credits: personCredits(text),
+  });
+
+  if (id === EMPTY_PERSON_ID) return empty;
+  if (id === LONG_TEXT_PERSON_ID) return full(() => 'x'.repeat(200));
+  return full();
+}
+
 function paginatedShows(names: string[], page = 1) {
   return {
     page,
@@ -213,6 +296,11 @@ function respond(route: Route, url: URL) {
         ...detailSections(Number(path.split('/').pop())),
       },
     });
+  }
+  if (/^\/person\/\d+$/.test(path)) {
+    const id = Number(path.split('/').pop());
+    if (id === UNKNOWN_PERSON_ID) return route.fulfill({ status: 404 });
+    return route.fulfill({ json: personDetails(id) });
   }
   return route.fulfill({ json: paginated(['Row movie', 'Hero movie']) });
 }
