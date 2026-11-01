@@ -7,8 +7,8 @@ import {
   toTvCardData,
 } from '@repo/ui';
 import { useSuspenseInfiniteQuery } from '@tanstack/react-query';
-import { type ReactNode, useMemo } from 'react';
-import { CatalogCount } from '../../components/catalog/catalog-count';
+import { type ReactNode, useEffect, useMemo } from 'react';
+import { CatalogCount, catalogCountText } from '../../components/catalog/catalog-count';
 import { CatalogEmptyState } from '../../components/catalog/catalog-empty-state';
 import { CatalogGrid, renderTitleCard } from '../../components/catalog/catalog-grid';
 import type { CatalogResults } from '../../components/catalog/catalog-view';
@@ -17,9 +17,14 @@ import { SEARCH_LABELS, type SearchLabels, type SearchType } from './use-search-
 
 const PERSON_SEARCH_HINT = 'Check the spelling or try a different name.';
 
+/** How long the live region stays empty. Screen readers miss a region that refills at once. */
+const LIVE_COUNT_DELAY_MS = 100;
+
 type TabResultsProps = {
   query: string;
   onClear: () => void;
+  /** Stable, as it is a dependency of an effect. Gets `''` when there is no count to tell. */
+  onCountChange: (text: string) => void;
 };
 
 export type SearchResultsProps = TabResultsProps & {
@@ -27,14 +32,14 @@ export type SearchResultsProps = TabResultsProps & {
 };
 
 /** Each tab is a component of its own: a Suspense query cannot be picked by a condition. */
-export function SearchResults({ type, query, onClear }: SearchResultsProps) {
+export function SearchResults({ type, query, onClear, onCountChange }: SearchResultsProps) {
   switch (type) {
     case 'movie':
-      return <MovieResults query={query} onClear={onClear} />;
+      return <MovieResults query={query} onClear={onClear} onCountChange={onCountChange} />;
     case 'tv':
-      return <TvResults query={query} onClear={onClear} />;
+      return <TvResults query={query} onClear={onClear} onCountChange={onCountChange} />;
     case 'person':
-      return <PersonResults query={query} onClear={onClear} />;
+      return <PersonResults query={query} onClear={onClear} onCountChange={onCountChange} />;
     default: {
       const unhandled: never = type;
       return unhandled;
@@ -42,7 +47,7 @@ export function SearchResults({ type, query, onClear }: SearchResultsProps) {
   }
 }
 
-function MovieResults({ query, onClear }: TabResultsProps) {
+function MovieResults({ query, onClear, onCountChange }: TabResultsProps) {
   const results = useSuspenseInfiniteQuery(searchQueries.movies(query));
 
   return (
@@ -53,11 +58,12 @@ function MovieResults({ query, onClear }: TabResultsProps) {
       toItem={toMovieCardData}
       renderItem={renderTitleCard}
       onClear={onClear}
+      onCountChange={onCountChange}
     />
   );
 }
 
-function TvResults({ query, onClear }: TabResultsProps) {
+function TvResults({ query, onClear, onCountChange }: TabResultsProps) {
   const results = useSuspenseInfiniteQuery(searchQueries.tv(query));
 
   return (
@@ -68,11 +74,12 @@ function TvResults({ query, onClear }: TabResultsProps) {
       toItem={toTvCardData}
       renderItem={renderTitleCard}
       onClear={onClear}
+      onCountChange={onCountChange}
     />
   );
 }
 
-function PersonResults({ query, onClear }: TabResultsProps) {
+function PersonResults({ query, onClear, onCountChange }: TabResultsProps) {
   const results = useSuspenseInfiniteQuery(searchQueries.person(query));
 
   return (
@@ -84,6 +91,7 @@ function PersonResults({ query, onClear }: TabResultsProps) {
       renderItem={renderPersonCard}
       searchHint={PERSON_SEARCH_HINT}
       onClear={onClear}
+      onCountChange={onCountChange}
     />
   );
 }
@@ -109,13 +117,17 @@ function ResultList<T extends { id: number }, Item extends { id: number }>({
   renderItem,
   searchHint,
   onClear,
+  onCountChange,
 }: ResultListProps<T, Item>) {
   const { data, fetchNextPage, hasNextPage, isFetching } = results;
+  const total = data.pages[0]?.total_results ?? 0;
 
   const items = useMemo(
     () => uniqueById(data.pages.flatMap((page) => page.results)).map(toItem),
     [data, toItem]
   );
+
+  useLiveCount(catalogCountText(total, labels.singular, labels.plural), onCountChange);
 
   const handleLoadMore = () => {
     if (hasNextPage && !isFetching) void fetchNextPage();
@@ -125,9 +137,10 @@ function ResultList<T extends { id: number }, Item extends { id: number }>({
     <>
       <div className="mb-4">
         <CatalogCount
-          total={data.pages[0]?.total_results ?? 0}
+          total={total}
           singular={labels.singular}
           plural={labels.plural}
+          isLive={false}
         />
       </div>
 
@@ -152,4 +165,20 @@ function ResultList<T extends { id: number }, Item extends { id: number }>({
       )}
     </>
   );
+}
+
+/**
+ * Holds the count in the live region of the page for as long as these results are on screen, so
+ * it is empty while the next ones load and when they fail. It refills after a delay, or a search
+ * with the same count would change nothing a screen reader can see, and nothing would be said.
+ */
+function useLiveCount(text: string, onChange: (text: string) => void): void {
+  useEffect(() => {
+    const timer = setTimeout(() => onChange(text), LIVE_COUNT_DELAY_MS);
+
+    return () => {
+      clearTimeout(timer);
+      onChange('');
+    };
+  }, [text, onChange]);
 }

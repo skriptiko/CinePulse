@@ -47,6 +47,11 @@ function resultCount(page: Page): Locator {
   return page.getByRole('status').filter({ hasText: 'found' });
 }
 
+/** The one region that says the count: the skeleton and the offline banner are status too. */
+function liveRegion(page: Page): Locator {
+  return page.getByRole('main').locator('output.sr-only');
+}
+
 /** A query over the limit, which the test means the proxy to refuse. */
 function refusedQuery(page: Page): string {
   const query = 'x'.repeat(MAX_QUERY_LENGTH + 1);
@@ -220,6 +225,61 @@ test('a tab that loads shows the skeleton beside the form and the tabs', async (
   release();
   await expect(page.getByRole('link', { name: 'Found: dune' })).toBeVisible();
   await expect(page.getByTestId('page-skeleton')).toHaveCount(0);
+});
+
+test('a new search and a tab tell one region, empty while they load', async ({ page }) => {
+  await page.goto('/search?q=dune');
+  const region = await liveRegion(page).elementHandle();
+  await expect(liveRegion(page)).toHaveText('2 movies found');
+
+  let release = () => {};
+  const held = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route('**/api/tmdb/search/movie?query=dark**', async (route) => {
+    await held;
+    await route.fallback();
+  });
+  await searchInput(page).fill('dark');
+  await searchInput(page).press('Enter');
+
+  await expect(page.getByTestId('page-skeleton')).toBeVisible();
+  await expect(liveRegion(page)).toBeEmpty();
+
+  release();
+  await expect(page.getByText('Found: dark')).toBeVisible();
+  await expect(liveRegion(page)).toHaveText('2 movies found');
+
+  await tab(page, 'TV Shows').click();
+  await expect(liveRegion(page)).toHaveText('2 TV shows found');
+  expect(await region?.evaluate((node) => node.isConnected)).toBe(true);
+  await expect(resultCount(page)).toHaveCount(1);
+});
+
+test('a search in the cache empties the region for longer than a frame', async ({ page }) => {
+  await page.goto('/search?q=dune');
+  await expect(liveRegion(page)).toHaveText('2 movies found');
+  await searchInput(page).fill('dark');
+  await searchInput(page).press('Enter');
+  await expect(page.getByText('Found: dark')).toBeVisible();
+  await expect(liveRegion(page)).toHaveText('2 movies found');
+
+  const said = await liveRegion(page).evaluateHandle((node) => {
+    const texts: { text: string | null; at: number }[] = [];
+    new MutationObserver(() =>
+      texts.push({ text: node.textContent, at: performance.now() })
+    ).observe(node, { childList: true, characterData: true, subtree: true });
+    return texts;
+  });
+
+  await page.goBack();
+
+  await expect(page.getByText('Found: dune')).toBeVisible();
+  await expect
+    .poll(async () => (await said.jsonValue()).map(({ text }) => text))
+    .toEqual(['', '2 movies found']);
+  const [emptied, filled] = await said.jsonValue();
+  expect((filled?.at ?? 0) - (emptied?.at ?? 0)).toBeGreaterThan(1000 / 60);
 });
 
 test.describe('every result leads to its details page', () => {
