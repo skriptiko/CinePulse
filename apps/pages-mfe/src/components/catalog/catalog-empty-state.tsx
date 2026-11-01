@@ -24,7 +24,7 @@ export function CatalogEmptyState({
       <div className="bg-secondary mb-4 flex size-16 items-center justify-center rounded-full">
         <Search className="text-muted-foreground size-8" aria-hidden="true" />
       </div>
-      <h2 className="mb-2 text-lg font-medium">
+      <h2 className="mb-2 max-w-full text-lg font-medium break-words">
         {query ? `No ${noun} found for “${query}”` : `No ${noun} found`}
       </h2>
       <p className="text-muted-foreground max-w-md text-sm">

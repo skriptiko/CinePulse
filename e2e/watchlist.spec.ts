@@ -506,6 +506,17 @@ test('a show on a catalog card is stored as TV', async ({ page, request }) => {
   await expect(page.getByText('A show')).toBeVisible();
 });
 
+test('a show on TV Shows is stored as TV', async ({ page, request }) => {
+  await openWatchlist(page);
+  const uid = await getUid(page);
+  await page.goto('/tv');
+  await addButton(page, 'Any show 1').click();
+  await page.getByRole('button', { name: 'Add to watchlist' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+
+  expect((await readTitle(request, uid, 'tv_100')).status).toBe('planned');
+});
+
 test('a signed-out visitor gets the offer with no Firebase, and comes back', async ({ page }) => {
   const chunks: string[] = [];
   page.on('request', (request) => {
