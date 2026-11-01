@@ -9,6 +9,10 @@ export async function scrollToAndPress(page: Page, target: Locator): Promise<voi
     expect(await target.evaluate(isInViewport)).toBe(true);
   }).toPass();
 
+  await press(page, target);
+}
+
+export async function press(page: Page, target: Locator): Promise<void> {
   const box = await target.boundingBox();
   if (!box) throw new Error('No target');
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);

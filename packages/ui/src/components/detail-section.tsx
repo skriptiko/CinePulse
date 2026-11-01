@@ -6,14 +6,20 @@ export const DETAIL_SECTION_GUTTER = 'px-4 sm:px-6 lg:px-12';
 export type DetailSectionProps = {
   title: string;
   children: ReactNode;
+  /** Side padding; a section inside the column of the hero has none of its own. */
+  gutterClassName?: string;
 };
 
-/** One section of a details page, under `MovieDetailView`. */
-export function DetailSection({ title, children }: DetailSectionProps) {
+/** One section of a details page, under `MovieDetailView` or `PersonDetailView`. */
+export function DetailSection({
+  title,
+  children,
+  gutterClassName = DETAIL_SECTION_GUTTER,
+}: DetailSectionProps) {
   const titleId = useId();
 
   return (
-    <section aria-labelledby={titleId} className={DETAIL_SECTION_GUTTER}>
+    <section aria-labelledby={titleId} className={gutterClassName}>
       <h2 id={titleId} className="mb-4 text-xl font-semibold tracking-tight md:text-2xl">
         {title}
       </h2>

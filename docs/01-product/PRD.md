@@ -83,7 +83,7 @@ The project author as a **learner** is the real "customer" of the value: the end
 
 **In scope (from the [page catalog (Notion)](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb)):**
 
-- **Public catalog:** Home ✅, Movies ✅, Movie Detail ✅, TV Shows ✅, TV Detail ✅, Search, Person, 404.
+- **Public catalog:** Home ✅, Movies ✅, Movie Detail ✅, TV Shows ✅, TV Detail ✅, Search, Person ✅, 404.
 - **Personal account:** Auth (Google sign-in), Watchlist (folders), Profile, Settings.
 - **Detail pages ("IMDb-like" scope):** basics (overview, genres, TMDB rating, date, runtime) + cast and crew + media (trailers/videos, gallery) + similar/recommendations + TMDB ratings/reviews + "where to watch" providers.
 

@@ -43,3 +43,4 @@ TV Detail `/tv/:id` (CIN-17) is the same page with one section more.
 - Changing the sections means changing both copies of the string in one commit, and every cached response under the old URL ages out on its own.
 - The two pages must ask for the same blocks: a block only a show needs would go to every movie too, or split `DETAIL_APPEND` in two.
 - A long-running show lists the cast of its latest season, not everyone who was ever in it.
+- The Person page follows this decision: `GET /person/{id}?append_to_response=combined_credits`, through `personQueries.detail`, with `PERSON_DETAIL_APPEND` kept in the same two files under the same drift test, and with the same consequences. A failure takes down the whole page, and a response without the block degrades to empty sections.

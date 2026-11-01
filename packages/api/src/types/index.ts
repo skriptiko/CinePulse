@@ -23,7 +23,17 @@ export type {
   ProductionCountry,
   SpokenLanguage,
 } from './movie';
-export type { KnownFor, Person, PersonDetails } from './person';
+export type {
+  CastCredit,
+  CombinedCredits,
+  CreditedMovie,
+  CreditedTitle,
+  CreditedTV,
+  CrewCredit,
+  KnownFor,
+  Person,
+  PersonDetails,
+} from './person';
 export type { MultiSearchResult, SearchMovie, SearchPerson, SearchTV } from './search';
 export type {
   MediaType,

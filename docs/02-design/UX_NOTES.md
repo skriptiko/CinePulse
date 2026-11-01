@@ -21,6 +21,7 @@ The design system lives in `@repo/ui` (`packages/ui/src`). Stack: **Shadcn UI + 
 - `FeaturedGrid` — grid of curated picks ("Editor's Picks")
 - `CategoryPills` — selectable genre pills (Movies, TV Shows); `CategoryLinks` — the same pills as links (Home: each genre opens `/movies?genre=<id>`)
 - `MovieDetailView` — the hero of a details page, with a slot below it for sections
+- `PersonDetailView` — the same hero for a person, with `BiographySection` in its column; `KnownForSection` and `FilmographySection` go below it
 - `WatchProvidersSection`, `SeasonsSection`, `CastSection`, `MediaSection`, `MoreLikeThisSection`, `ReviewsSection` — the sections of a details page, built on `DetailSection`, with neutral names: Movie Detail and TV Detail share them, and `SeasonsSection` is on TV Detail only
 - `ExternalLink` — opens in a new tab with `rel="noopener noreferrer"` and says so to a screen reader
 
@@ -53,9 +54,9 @@ In the integration the host builds one stylesheet for every remote, so MFE style
 
 🟡 Partially unified:
 - **Loading:** every page or Home section suspends into a skeleton shaped like it. The layout is reserved at once and the skeleton appears after 300 ms, so fast loads do not flicker.
-- **Empty:** implemented in **Movies** and **TV Shows**: `No movies found for “…”` names the search query, with **Clear search** and **Reset filters**, and a long query wraps. The watchlist says `No titles here yet.`, or `No watched titles here.` under a filter, which the All pill right above it clears. Each section of **Movie Detail** and **TV Detail** keeps its heading over one muted line. Other pages have no empty states.
+- **Empty:** implemented in **Movies** and **TV Shows**: `No movies found for “…”` names the search query, with **Clear search** and **Reset filters**, and a long query wraps. The watchlist says `No titles here yet.`, or `No watched titles here.` under a filter, which the All pill right above it clears. Each section of **Movie Detail**, **TV Detail** and **Person** keeps its heading over one muted line. Other pages have no empty states.
 - **Error:** without data, the page boundary shows a plain message with **Try again** (404 → `NotFound`); the host's `ShellBoundary` catches the rest and keeps the header; a failed background refetch keeps the data and shows one toast (bottom right).
-- **Offline:** one global banner at the bottom, "You are offline. Showing saved results."
+- **Offline:** one global banner at the bottom, "You are offline. Showing saved results." It stays mounted as an empty live region while online, so it takes no pointer events: a press at the bottom edge of the screen reaches the page.
 
 - **Load more** (Movies, TV Shows): the button is disabled with a spinner while a page loads; a failed next page keeps the loaded titles and shows an inline error with **Try again** (no toast); at the end of the list the button gives way to "That's all".
 
@@ -91,6 +92,15 @@ Everything under Movie Detail holds here too, with TV cards in More like this. W
 - **Hero:** the year is of the first air date. Where a movie has its runtime, a show has its seasons and episodes, such as `3 seasons, 24 episodes`, with correct singulars. A count TMDB does not know, or sends as 0, is left out.
 - **Seasons:** poster, name, air year, episode count and an overview clamped to three lines, in the order of TMDB with season 0 (Specials) last. Empty: `No seasons listed.`
 - **Cast:** each creator stands first in the line of directors and writers, as `Creator`, because a show usually lists no director. A person who also directs or writes shows once, with both jobs.
+
+## Person
+
+- Reached from the cast of Movie Detail and TV Detail. The person and every credit come from one request, so the page shares one skeleton and one **Try again**, with the skeleton of Movie Detail, as the hero has the same shape ([ADR-0017](../03-architecture/decisions/ADR-0017-detail-page-sections.md)).
+- **Hero:** the photo, or a placeholder, then the name, what the person is known for, and the born, died and place of birth lines, each only when TMDB has it.
+- **Biography:** plain text that keeps the paragraph breaks of TMDB, in the column of the hero. Over 600 characters it is clamped to six lines with **Show more**, a length that runs past six lines at the full width of the column, so the toggle always adds text. With none, `No biography yet.`
+- **Known for:** the 12 titles with the most votes, across movies and shows, cast and crew, each once. A cast credit on a talk show or the news does not count, nor does a crew credit with the job `Self`, as those say little about what someone is known for. A crew credit on a talk show still counts: that person made it. A credit with no title at all is left out, as a card could not name it. It is a Home row, on the gutter of this page. With none, `No titles to show yet.`
+- **Filmography:** a list of every credit, talk shows included, with one row per title and all its roles, newest first and undated last. A row shows the year, the title and the characters and jobs, and a title TMDB does not name reads `Untitled`. The first 30 show at once, and **Show all N credits** brings the rest and moves focus to the first new row, as the button goes away. A row of a show links to `/tv/:id`. With none, `No credits listed.`
+- A movie and a show can share an id, so a row and a card are told apart by media type and id.
 
 ## Watchlist: status
 

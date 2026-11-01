@@ -82,15 +82,6 @@ test('a section with nothing to show keeps its heading and says so', async ({ pa
   await expect(section(page, 'Reviews')).toContainText('No reviews yet.');
 });
 
-test('a person link reaches NotFound until the Person page lands', async ({ page }) => {
-  await page.goto(`/movies/${FULL_MOVIE_ID}`);
-
-  await section(page, 'Cast').getByRole('link', { name: 'Some Director' }).click();
-
-  await expect(page).toHaveURL(/\/person\/2000$/);
-  await expect(page.getByRole('heading', { name: 'Page not found' })).toBeVisible();
-});
-
 test.describe('in another country', () => {
   test.use({ locale: 'uk-UA' });
 

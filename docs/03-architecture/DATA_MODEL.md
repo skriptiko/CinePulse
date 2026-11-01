@@ -91,6 +91,14 @@ Helper types: `Creator`, `Episode`, `Network`, `Season`, `ProductionCompany`.
 
 `biography`, `birthday`, `deathday`, `homepage`, `imdb_id`, `place_of_birth`, `also_known_as: string[]`, `profile_path`, `gender`, `known_for_department`, etc.
 
+It also carries `combined_credits: CombinedCredits`, the block `append_to_response` adds.
+
+### `CombinedCredits` (`types/person.ts`)
+
+`cast: CastCredit[]`, `crew: CrewCredit[]`. Each credit is a `CreditedTitle`, `CreditedMovie` or `CreditedTV`: the list item of its media type with `media_type` beside it, and every field but `id` optional, as TMDB can leave out a date, a title or a poster. `CastCredit` adds `credit_id` and `character`, `CrewCredit` adds `credit_id`, `department` and `job`.
+
+One person can hold several credits on one title, so only `credit_id` is unique in a list. A movie and a show can share an `id`, so a title is identified by its media type and id together.
+
 ## Domain: Genres
 
 `Genre = { id: number; name: string }`; `GenresResponse = { genres: Genre[] }` (`types/genre.ts`). A list item contains only `genre_ids`, so the UI takes names from the genre list. Movies and TV have separate lists with different ids (`genreQueries.movie()`, `genreQueries.tv()`), as on the Movies and TV Shows pages.

@@ -13,7 +13,7 @@ CinePulse is a micro-frontend (MFE) web app: a movie catalog on top of the TMDB 
 | App | Role | Port (dev) | Module Federation |
 |------------|------|:---:|-------------------|
 | `apps/host` | Shell | 5000 | `remotes: pagesMfe, userMfe` |
-| `apps/pages-mfe` | Public catalog (Home, Movies, TV Shows, Movie Detail, TV Detail) | 5001 | `exposes: ./routes` |
+| `apps/pages-mfe` | Public catalog (Home, Movies, TV Shows, Movie Detail, TV Detail, Person) | 5001 | `exposes: ./routes` |
 | `apps/user-mfe` | User account (Profile, Settings, Watchlist) | 5002 | `exposes: ./routes` |
 
 The host has no pages of its own: it imports routes from the remote modules in `apps/host/src/App.tsx`:

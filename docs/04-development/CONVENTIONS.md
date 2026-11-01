@@ -61,7 +61,7 @@ HOME '/', MOVIES '/movies', TV '/tv', MOVIE_DETAIL '/movies/:id', TV_DETAIL '/tv
 
 Each MFE exposes a `routes` array (`RouteObject[]`) through Module Federation (`exposes: { './routes': './src/routes.tsx' }`); the host collects them and renders them via `useRoutes`.
 
-Dynamic routes are linked with `buildPath.movie(id)` and friends, never by hand. Movie Detail `/movies/:id` and TV Detail `/tv/:id` read the parameter with `useParams` and `parseRouteId` (`apps/pages-mfe/src/lib/`), and anything but a positive integer reaches `NotFound`. A new one also goes into the paths of its remote in `apps/host/src/remotes/remotes.ts`. Person has its path and query factory (`personQueries.detail`), but no page yet, so a link to `/person/:id` reaches `NotFound` until CIN-19.
+Dynamic routes are linked with `buildPath.movie(id)` and friends, never by hand. Movie Detail `/movies/:id`, TV Detail `/tv/:id` and Person `/person/:id` read the parameter with `useParams` and `parseRouteId` (`apps/pages-mfe/src/lib/`), and anything but a positive integer reaches `NotFound`. A new one also goes into the paths of its remote in `apps/host/src/remotes/remotes.ts`.
 
 ## MFE pattern (Module Federation)
 

@@ -37,10 +37,16 @@ export type { ApiQueryMeta } from './query-client';
 export { createQueryClient, MAX_RETRIES, shouldRetry } from './query-client';
 
 export type {
+  CastCredit,
   CastMember,
   Collection,
+  CombinedCredits,
   Creator,
+  CreditedMovie,
+  CreditedTitle,
+  CreditedTV,
   Credits,
+  CrewCredit,
   CrewMember,
   DetailSections,
   Episode,
