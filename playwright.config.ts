@@ -5,6 +5,8 @@ const PORT = 5010;
 // Runs on the merged dist/ (`pnpm build:deploy`), so rewrites and headers match production.
 export default defineConfig({
   testDir: './e2e',
+  // To catch a hang: a sign-in and a run of writes to the emulators can take 30 s on a busy machine.
+  timeout: 60_000,
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
