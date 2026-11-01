@@ -77,7 +77,7 @@ export { SectionErrorFallback } from './components/section-error-fallback';
 export type { ShellBoundaryProps } from './components/shell-boundary';
 export { ShellBoundary } from './components/shell-boundary';
 export type { ButtonProps } from './components/ui/button';
-export { Button, buttonVariants } from './components/ui/button';
+export { BUTTON_ON_IMAGE_CLASS, Button, buttonVariants } from './components/ui/button';
 export type { DialogContentProps, DialogProps } from './components/ui/dialog';
 export { Dialog, DialogContent } from './components/ui/dialog';
 export type {

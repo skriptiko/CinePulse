@@ -1,6 +1,6 @@
 import { createTypedEmitter } from '@repo/events';
 import type { WatchlistTitle } from '@repo/firebase';
-import { Button, type MovieCardData } from '@repo/ui';
+import { BUTTON_ON_IMAGE_CLASS, Button, cn, type MovieCardData } from '@repo/ui';
 import { Bookmark, Loader2 } from 'lucide-react';
 import { useRef, useState, useTransition } from 'react';
 import type { WatchlistDialog } from './watchlist-dialog';
@@ -52,7 +52,7 @@ export function AddToWatchlist({ title, showLabel = false }: AddToWatchlistProps
         aria-label={showLabel ? undefined : `Add ${title.title} to your watchlist`}
         variant={showLabel ? 'secondary' : 'ghost'}
         size={showLabel ? 'lg' : 'icon-sm'}
-        className={showLabel ? 'touch-target' : 'glass rounded-full'}
+        className={showLabel ? 'touch-target' : cn(BUTTON_ON_IMAGE_CLASS, 'glass rounded-full')}
         onClick={() => startOpening(open)}
       >
         <Icon aria-hidden="true" className={isOpening ? 'animate-spin' : undefined} />
