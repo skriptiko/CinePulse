@@ -133,6 +133,93 @@ jobs:
         env:
           FIREBASE_CLI: pnpm dlx firebase-tools@15.18.0 emulators:start --project demo --only hosting,auth,firestore
 
+  # Two jobs, so that the code of a PR, dependencies included, never shares a machine with the deploy
+  # key. A person's pushes only: a fork has no secrets, and nobody reads a bot's update first.
+  preview-build:
+    needs: [quality, rules]
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.type != 'Bot' &&
+      !endsWith(github.actor, '[bot]')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    # A new push must not lose the race to the deploy against the one before it.
+    concurrency:
+      group: preview-build-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build and merge dist
+        run: pnpm build:deploy
+
+      - name: Upload dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-dist
+          path: dist
+          if-no-files-found: error
+          retention-days: 1
+
+  # Runs nothing from the PR but the files it serves: firebase.json comes from the base branch, as
+  # a PR could otherwise put a predeploy command next to the key.
+  preview:
+    needs: preview-build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+    concurrency:
+      group: preview-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout the base branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download dist
+        uses: actions/download-artifact@v4
+        with:
+          name: preview-dist
+          path: dist
+
+      # With no channelId the action names the channel after the PR and comments its link there.
+      - name: Deploy preview channel
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          projectId: cinepulse-eec15
+          target: production
+          expires: 7d
+
   build-and-deploy:
     needs: [quality, rules]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
