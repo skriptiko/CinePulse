@@ -1,7 +1,7 @@
 import type { MovieDetails } from '@repo/api';
 import { BACKDROP_SIZE_HERO, getImageUrl, POSTER_SIZE_CARD } from '@repo/api';
 import type { MovieDetailData } from '../../components/movie-detail-view';
-import { formatRating, formatRuntime, formatYear } from '../format';
+import { formatRating, formatRuntime, formatYear, toOptionalText } from '../format';
 import { toBackdropSrcSet } from './hero';
 
 type MovieDetailFields = Pick<
@@ -30,9 +30,4 @@ export function toMovieDetailData(movie: MovieDetailFields): MovieDetailData {
     runtime: formatRuntime(movie.runtime),
     genres: movie.genres.map((genre) => genre.name),
   };
-}
-
-// TMDB sends '' for missing text.
-function toOptionalText(text: string | null): string | null {
-  return text === null || text.trim() === '' ? null : text;
 }

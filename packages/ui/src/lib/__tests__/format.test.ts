@@ -1,5 +1,30 @@
 import { describe, expect, it } from 'vitest';
-import { formatDate, formatRating, formatRuntime, formatTimestamp, formatYear } from '../format';
+import {
+  formatCountry,
+  formatDate,
+  formatRating,
+  formatRuntime,
+  formatTimestamp,
+  formatYear,
+  toOptionalText,
+} from '../format';
+
+describe('formatCountry', () => {
+  it('names a country in the language of the UI', () => {
+    expect(formatCountry('UA')).toBe('Ukraine');
+    expect(formatCountry('US')).toBe('United States');
+  });
+});
+
+describe('toOptionalText', () => {
+  it('keeps text', () => {
+    expect(toOptionalText('Chani')).toBe('Chani');
+  });
+
+  it.each(['', '   ', null, undefined])('turns %j into null', (text) => {
+    expect(toOptionalText(text)).toBeNull();
+  });
+});
 
 describe('formatRuntime', () => {
   it('splits minutes into hours and minutes', () => {

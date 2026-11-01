@@ -10,10 +10,18 @@ export type ContentRowProps = {
   movies: MovieCardData[];
   /** Builds each card's `action`. */
   renderCardAction?: (movie: MovieCardData) => ReactNode;
+  /** Side padding of the heading and the cards, so the row lines up with the page it sits on. */
+  gutterClassName?: string;
   className?: string;
 };
 
-export function ContentRow({ title, movies, renderCardAction, className }: ContentRowProps) {
+export function ContentRow({
+  title,
+  movies,
+  renderCardAction,
+  gutterClassName = 'px-4 md:px-8',
+  className,
+}: ContentRowProps) {
   const { ref, canScrollLeft, canScrollRight, scroll } = useHorizontalScroll<HTMLUListElement>();
   const titleId = useId();
 
@@ -22,7 +30,7 @@ export function ContentRow({ title, movies, renderCardAction, className }: Conte
       {/* "See all" comes back with a page to link to. */}
       <h2
         id={titleId}
-        className="mb-4 px-4 text-xl font-semibold tracking-tight md:px-8 md:text-2xl"
+        className={cn('mb-4 text-xl font-semibold tracking-tight md:text-2xl', gutterClassName)}
       >
         {title}
       </h2>
@@ -34,7 +42,10 @@ export function ContentRow({ title, movies, renderCardAction, className }: Conte
         {/* `scroll-px-*` matches a card, so focus never stops on a card cut off at the edge. */}
         <ul
           ref={ref}
-          className="scrollbar-hide flex scroll-px-36 gap-3 overflow-x-auto px-4 pb-4 sm:scroll-px-40 md:scroll-px-44 md:gap-4 md:px-8 lg:scroll-px-48"
+          className={cn(
+            'scrollbar-hide flex scroll-px-36 gap-3 overflow-x-auto pb-4 sm:scroll-px-40 md:scroll-px-44 md:gap-4 lg:scroll-px-48',
+            gutterClassName
+          )}
         >
           {movies.map((movie) => (
             <li key={movie.id} className="w-36 shrink-0 sm:w-40 md:w-44 lg:w-48">

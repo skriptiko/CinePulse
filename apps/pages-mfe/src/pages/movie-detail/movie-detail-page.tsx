@@ -1,8 +1,24 @@
 import { movieQueries } from '@repo/api';
-import { MovieDetailView, NotFound, toMovieDetailData, usePageMeta } from '@repo/ui';
+import {
+  CastSection,
+  getViewerRegion,
+  MediaSection,
+  MoreLikeThisSection,
+  MovieDetailView,
+  NotFound,
+  ReviewsSection,
+  toCreditsData,
+  toMediaData,
+  toMoreLikeThisData,
+  toMovieDetailData,
+  toReviewsData,
+  toWatchProvidersData,
+  usePageMeta,
+  WatchProvidersSection,
+} from '@repo/ui';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
-import { AddToWatchlist } from '../../components/add-to-watchlist';
+import { AddToWatchlist, renderAddToWatchlist } from '../../components/add-to-watchlist';
 
 /** An id TMDB does not know fails with a 404, which `PageBoundary` turns into `NotFound`. */
 export function MovieDetail() {
@@ -31,7 +47,18 @@ function MovieDetailContent({ id }: { id: number }) {
           }}
         />
       }
-    />
+    >
+      <WatchProvidersSection
+        providers={toWatchProvidersData(movie['watch/providers'], getViewerRegion())}
+      />
+      <CastSection credits={toCreditsData(movie.credits)} />
+      <MediaSection media={toMediaData(movie)} />
+      <MoreLikeThisSection
+        titles={toMoreLikeThisData(movie.recommendations, movie.similar)}
+        renderCardAction={renderAddToWatchlist}
+      />
+      <ReviewsSection reviews={toReviewsData(movie.reviews)} />
+    </MovieDetailView>
   );
 }
 

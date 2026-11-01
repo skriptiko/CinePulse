@@ -63,6 +63,16 @@ export function formatRating(rating: number | null | undefined): string | null {
   return ratingFormatter.format(rating);
 }
 
+/** `'UA'` → `'Ukraine'`; made on call, so a page that never shows a country pays nothing. */
+export function formatCountry(code: string): string {
+  return new Intl.DisplayNames(LOCALE, { type: 'region' }).of(code) ?? code;
+}
+
+/** TMDB sends `''` for missing text. */
+export function toOptionalText(text: string | null | undefined): string | null {
+  return !text || text.trim() === '' ? null : text;
+}
+
 /** `135` → `2h 15m`; `null` when TMDB does not know the runtime (it may also send 0). */
 export function formatRuntime(minutes: number | null | undefined): string | null {
   if (!minutes) return null;
