@@ -5,7 +5,7 @@ import {
   expectTwoColoursOnImage,
   getEdgeContrast,
   getRingContrast,
-} from './focus-ring';
+} from './painted-pixels';
 import { FULL_MOVIE_ID, mockTmdb } from './tmdb-mock';
 
 test.beforeEach(async ({ page }) => {
