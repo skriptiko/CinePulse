@@ -1,4 +1,4 @@
-import type { CastMember, CrewMember } from '@repo/api';
+import type { CastMember, Creator, CrewMember } from '@repo/api';
 import { describe, expect, it } from 'vitest';
 import { toCreditsData } from '../credits';
 
@@ -21,6 +21,17 @@ function crewMember(overrides: Partial<CrewMember> = {}): CrewMember {
     name: 'Denis Villeneuve',
     department: 'Directing',
     job: 'Director',
+    profile_path: null,
+    ...overrides,
+  };
+}
+
+function creator(overrides: Partial<Creator> = {}): Creator {
+  return {
+    id: 20,
+    credit_id: 'creator-20',
+    name: 'Dan Erickson',
+    gender: 2,
     profile_path: null,
     ...overrides,
   };
@@ -104,7 +115,29 @@ describe('toCreditsData', () => {
     ]);
   });
 
+  it('puts the creators of a show first, each linked to the person', () => {
+    const { crew } = toCreditsData({ cast: [], crew: [crewMember()] }, [creator()]);
+
+    expect(crew).toEqual([
+      { id: 20, name: 'Dan Erickson', jobs: 'Creator', href: '/person/20' },
+      { id: 10, name: 'Denis Villeneuve', jobs: 'Director', href: '/person/10' },
+    ]);
+  });
+
+  it('shows a creator who also directs once, with both jobs', () => {
+    const { crew } = toCreditsData({ cast: [], crew: [crewMember({ id: 20 })] }, [creator()]);
+
+    expect(crew).toEqual([
+      { id: 20, name: 'Dan Erickson', jobs: 'Creator, Director', href: '/person/20' },
+    ]);
+  });
+
+  it('keeps the creators when TMDB leaves the credits out', () => {
+    expect(toCreditsData(undefined, [creator()]).crew).toHaveLength(1);
+  });
+
   it('degrades to empty lists when TMDB leaves the block out', () => {
     expect(toCreditsData(undefined)).toEqual({ cast: [], crew: [] });
+    expect(toCreditsData(undefined, undefined)).toEqual({ cast: [], crew: [] });
   });
 });

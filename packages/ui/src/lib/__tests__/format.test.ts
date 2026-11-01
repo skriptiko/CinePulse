@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   formatCountry,
   formatDate,
+  formatEpisodeCount,
   formatRating,
   formatRuntime,
+  formatShowLength,
   formatTimestamp,
   formatYear,
   toOptionalText,
@@ -36,6 +38,34 @@ describe('formatRuntime', () => {
   it('hides an unknown runtime', () => {
     expect(formatRuntime(null)).toBeNull();
     expect(formatRuntime(0)).toBeNull();
+  });
+});
+
+describe('formatEpisodeCount', () => {
+  it('counts episodes, with a correct singular', () => {
+    expect(formatEpisodeCount(1)).toBe('1 episode');
+    expect(formatEpisodeCount(24)).toBe('24 episodes');
+    expect(formatEpisodeCount(10_500)).toBe('10,500 episodes');
+  });
+
+  it('hides an unknown count', () => {
+    expect(formatEpisodeCount(0)).toBeNull();
+    expect(formatEpisodeCount(undefined)).toBeNull();
+  });
+});
+
+describe('formatShowLength', () => {
+  it('counts seasons and episodes, with correct singulars', () => {
+    expect(formatShowLength(3, 24)).toBe('3 seasons, 24 episodes');
+    expect(formatShowLength(1, 8)).toBe('1 season, 8 episodes');
+    expect(formatShowLength(1, 1)).toBe('1 season, 1 episode');
+  });
+
+  it('leaves out a count TMDB does not know', () => {
+    expect(formatShowLength(2, 0)).toBe('2 seasons');
+    expect(formatShowLength(0, 6)).toBe('6 episodes');
+    expect(formatShowLength(0, 0)).toBeNull();
+    expect(formatShowLength(undefined, undefined)).toBeNull();
   });
 });
 

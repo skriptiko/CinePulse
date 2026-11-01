@@ -119,7 +119,7 @@ describe('TV Shows page', () => {
     expect(await screen.findByRole('status')).toHaveTextContent('1 TV show found');
   });
 
-  it('keeps a card without a link, with an action that names the show', async () => {
+  it('links a card to its show, with an action that names the show', async () => {
     mockTmdb({
       discover: () => HttpResponse.json(buildPaginated([buildTv({ id: 7, name: 'Severance' })])),
     });
@@ -127,8 +127,10 @@ describe('TV Shows page', () => {
 
     const add = await screen.findByRole('button', { name: 'Add Severance to your watchlist' });
 
-    expect(add.closest('li')).toHaveTextContent('Severance');
-    expect(within(add.closest('li') as HTMLElement).queryByRole('link')).not.toBeInTheDocument();
+    expect(within(add.closest('li') as HTMLElement).getByRole('link')).toHaveAttribute(
+      'href',
+      '/tv/7'
+    );
   });
 
   it('keeps the first copy of a show that two pages repeat', async () => {

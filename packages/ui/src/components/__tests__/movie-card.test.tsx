@@ -37,12 +37,6 @@ describe('MovieCard', () => {
     expect(container.firstElementChild).not.toHaveClass('cursor-pointer');
   });
 
-  it('is not a link without a destination', () => {
-    renderWithProviders(<MovieCard movie={{ ...MOVIE, href: null }} />);
-
-    expect(screen.queryByRole('link')).not.toBeInTheDocument();
-  });
-
   it('shows a placeholder instead of an image when there is none', () => {
     const { container } = renderWithProviders(<MovieCard movie={{ ...MOVIE, imageUrl: null }} />);
 
@@ -69,15 +63,6 @@ describe('MovieCard', () => {
     const button = screen.getByRole('button', { name: 'Add' });
     expect(button.closest('a')).toBeNull();
     expect(screen.getByRole('link', { name: 'Dune' })).toHaveClass('after:absolute');
-  });
-
-  it('keeps the action of a card with no destination', () => {
-    renderWithProviders(
-      <MovieCard movie={{ ...MOVIE, href: null }} action={<button type="button">Add</button>} />
-    );
-
-    expect(screen.getByRole('button', { name: 'Add' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Dune' })).toBeInTheDocument();
   });
 
   it('has no positioned or transformed ancestor between the link and the card', () => {

@@ -81,3 +81,22 @@ export function formatRuntime(minutes: number | null | undefined): string | null
   if (hours === 0) return `${rest}m`;
   return rest === 0 ? `${hours}h` : `${hours}h ${rest}m`;
 }
+
+/** `24` → `24 episodes`; `null` when TMDB does not know the count (it may also send 0). */
+function formatCount(count: number | null | undefined, noun: string): string | null {
+  if (!count) return null;
+  return `${count.toLocaleString(LOCALE)} ${noun}${count === 1 ? '' : 's'}`;
+}
+
+export function formatEpisodeCount(count: number | null | undefined): string | null {
+  return formatCount(count, 'episode');
+}
+
+/** `3, 24` → `3 seasons, 24 episodes`; `null` when TMDB knows neither count. */
+export function formatShowLength(
+  seasons: number | null | undefined,
+  episodes: number | null | undefined
+): string | null {
+  const counts = [formatCount(seasons, 'season'), formatEpisodeCount(episodes)];
+  return counts.filter((count) => count !== null).join(', ') || null;
+}

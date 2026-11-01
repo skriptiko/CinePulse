@@ -11,7 +11,7 @@ const MOVIE: MovieDetailData = {
   backdropSrcSet: null,
   year: '2021',
   rating: '7.8',
-  runtime: '2h 35m',
+  duration: '2h 35m',
   genres: ['Sci-Fi'],
 };
 

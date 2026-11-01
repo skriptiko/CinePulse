@@ -13,7 +13,8 @@ export type MovieDetailData = {
   backdropSrcSet: string | null;
   year: string | null;
   rating: string | null;
-  runtime: string | null;
+  /** The runtime of a movie, the seasons and episodes of a show. */
+  duration: string | null;
   genres: string[];
 };
 
@@ -27,7 +28,7 @@ export type MovieDetailViewProps = {
 
 export function MovieDetailView({ movie, action, children }: MovieDetailViewProps) {
   const { title, tagline, description, posterUrl, backdropUrl, backdropSrcSet } = movie;
-  const { year, rating, runtime, genres } = movie;
+  const { year, rating, duration, genres } = movie;
 
   return (
     <article className="relative">
@@ -66,7 +67,7 @@ export function MovieDetailView({ movie, action, children }: MovieDetailViewProp
               </span>
             )}
             {year !== null && <span>{year}</span>}
-            {runtime !== null && <span>{runtime}</span>}
+            {duration !== null && <span>{duration}</span>}
           </div>
 
           {genres.length > 0 && (
