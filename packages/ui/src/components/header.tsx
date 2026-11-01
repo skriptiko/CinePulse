@@ -71,7 +71,7 @@ export function Header({ className }: HeaderProps) {
     <header
       className={cn(
         'fixed top-0 right-0 left-0 z-50 transition-[padding,background-color] duration-300',
-        isScrolled ? 'glass py-3' : 'bg-transparent py-5',
+        isScrolled ? 'glass-bar py-3' : 'bg-transparent py-5',
         className
       )}
     >

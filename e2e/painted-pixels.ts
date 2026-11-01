@@ -39,6 +39,18 @@ export async function readPixels(page: Page, spots: Spot[]): Promise<Rgb[]> {
   );
 }
 
+/** The `color` of `target` in sRGB: text has anti-aliased edges, so no pixel gives a stable one. */
+export function readTextColour(target: Locator): Promise<Rgb> {
+  return target.evaluate((element): Rgb => {
+    const context = new OffscreenCanvas(1, 1).getContext('2d');
+    if (!context) throw new Error('No canvas');
+    context.fillStyle = getComputedStyle(element).color;
+    context.fillRect(0, 0, 1, 1);
+    const [red = 0, green = 0, blue = 0] = context.getImageData(0, 0, 1, 1).data;
+    return [red, green, blue];
+  });
+}
+
 /** Focuses `target` as a keyboard does, in the middle of the screen, and returns its box. */
 export async function focusByKeyboard(page: Page, target: Locator) {
   // A blur and a key first: `focus()` shows the ring only to someone using the keyboard, and does

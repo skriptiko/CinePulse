@@ -33,6 +33,7 @@
   --radius: 0.5rem;
 
   --glass: oklch(1 0 0 / 0.7);
+  --glass-bar: oklch(1 0 0 / 0.9);
   --glass-border: oklch(0 0 0 / 0.08);
   --surface: oklch(0.96 0 0);
   --surface-elevated: oklch(1 0 0);
@@ -61,6 +62,7 @@
   --ring: oklch(0.6 0.18 250);
 
   --glass: oklch(0.15 0.01 250 / 0.6);
+  --glass-bar: oklch(0.15 0.01 250 / 0.9);
   --glass-border: oklch(1 0 0 / 0.08);
   --surface: oklch(0.13 0.008 250);
   --surface-elevated: oklch(0.16 0.01 250);
@@ -199,6 +201,15 @@
 
 @utility glass {
   background: var(--glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+}
+
+/* More opaque than `glass`: the Header holds muted text, which has to stay legible over a white or
+   a black image with or without the blur. */
+@utility glass-bar {
+  background: var(--glass-bar);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
