@@ -1,9 +1,10 @@
 import { expect, type Locator, type Page, test } from '@playwright/test';
+import { MAX_QUERY_LENGTH } from '../functions/src/proxy-rules';
 import {
   EMPTY_PERSON_ID,
+  expectRefusal,
   FULL_PERSON_ID,
   LONG_TEXT_QUERY,
-  MAX_QUERY_LENGTH,
   mockTmdb,
   NOTHING_QUERY,
 } from './tmdb-mock';
@@ -44,6 +45,13 @@ function recordSearches(page: Page): string[] {
 /** The offline banner is a status region too, and an empty one. */
 function resultCount(page: Page): Locator {
   return page.getByRole('status').filter({ hasText: 'found' });
+}
+
+/** A query over the limit, which the test means the proxy to refuse. */
+function refusedQuery(page: Page): string {
+  const query = 'x'.repeat(MAX_QUERY_LENGTH + 1);
+  expectRefusal(page, (url) => url.searchParams.get('query') === query);
+  return query;
 }
 
 function overflow(page: Page): Promise<number> {
@@ -328,7 +336,7 @@ test('a failed search offers a retry and leaves the form usable', async ({ page 
 });
 
 test('a hand-typed q over the limit reaches the error, and a submit gets out', async ({ page }) => {
-  const query = 'x'.repeat(MAX_QUERY_LENGTH + 1);
+  const query = refusedQuery(page);
   await page.goto(`/search?q=${query}`);
 
   await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
@@ -388,7 +396,7 @@ test.describe('on a phone', () => {
   }
 
   test('the error of a q over the limit stays inside', async ({ page }) => {
-    await page.goto(`/search?q=${'x'.repeat(MAX_QUERY_LENGTH + 1)}`);
+    await page.goto(`/search?q=${refusedQuery(page)}`);
 
     await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
     expect(await overflow(page)).toBe(0);
