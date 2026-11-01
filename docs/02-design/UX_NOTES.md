@@ -16,10 +16,11 @@ The design system lives in `@repo/ui` (`packages/ui/src`). Stack: **Shadcn UI + 
 
 **Domain components (movies):**
 - `MovieCard` — movie card (UI model `MovieCardData` from `toMovieCardData` / `toTvCardData`)
+- `PersonCard` — a person in a grid: photo, name and department (UI model `PersonCardData` from `toPersonCardData`)
 - `Hero` — main banner
 - `ContentRow` — horizontal row of cards
 - `FeaturedGrid` — grid of curated picks ("Editor's Picks")
-- `CategoryPills` — selectable genre pills (Movies, TV Shows); `CategoryLinks` — the same pills as links (Home: each genre opens `/movies?genre=<id>`)
+- `CategoryPills` — selectable genre pills (Movies, TV Shows); `CategoryLinks` — the same pills as links (Home: each genre opens `/movies?genre=<id>`; Search: each tab is a link, and the current one has `aria-current`)
 - `MovieDetailView` — the hero of a details page, with a slot below it for sections
 - `PersonDetailView` — the same hero for a person, with `BiographySection` in its column; `KnownForSection` and `FilmographySection` go below it
 - `WatchProvidersSection`, `SeasonsSection`, `CastSection`, `MediaSection`, `MoreLikeThisSection`, `ReviewsSection` — the sections of a details page, built on `DetailSection`, with neutral names: Movie Detail and TV Detail share them, and `SeasonsSection` is on TV Detail only
@@ -28,7 +29,7 @@ The design system lives in `@repo/ui` (`packages/ui/src`). Stack: **Shadcn UI + 
 **Application frame:**
 - `Header`, `Footer`, `AppLayout` — page shell
 - `PageBoundary` / `AsyncBoundary` (page and section loading + errors), `ShellBoundary` (host), `PageErrorFallback`, `NotFound`
-- `PageSkeleton`, `MovieGridSkeleton` (pages) and `HeroSkeleton`, `ContentRowSkeleton`, `FeaturedGridSkeleton` (Home sections) — shown after 300 ms; `SectionErrorFallback` — inline error of one section
+- `PageSkeleton`, `MovieGridSkeleton` (pages), `CardGridSkeleton` (the results of Search) and `HeroSkeleton`, `ContentRowSkeleton`, `FeaturedGridSkeleton` (Home sections) — shown after 300 ms; `SectionErrorFallback` — inline error of one section
 
 Utilities: `cn` (class merging), the `to…Data` mappers in `lib/mappers/` (TMDB → UI models).
 
@@ -54,11 +55,11 @@ In the integration the host builds one stylesheet for every remote, so MFE style
 
 🟡 Partially unified:
 - **Loading:** every page or Home section suspends into a skeleton shaped like it. The layout is reserved at once and the skeleton appears after 300 ms, so fast loads do not flicker.
-- **Empty:** implemented in **Movies** and **TV Shows**: `No movies found for “…”` names the search query, with **Clear search** and **Reset filters**, and a long query wraps. The watchlist says `No titles here yet.`, or `No watched titles here.` under a filter, which the All pill right above it clears. Each section of **Movie Detail**, **TV Detail** and **Person** keeps its heading over one muted line. Other pages have no empty states.
+- **Empty:** implemented in **Movies** and **TV Shows**: `No movies found for “…”` names the search query, with **Clear search** and **Reset filters**, and a long query wraps. **Search** has the same line for each tab, with **Clear search** alone, and asks what to look for before there is a query. The watchlist says `No titles here yet.`, or `No watched titles here.` under a filter, which the All pill right above it clears. Each section of **Movie Detail**, **TV Detail** and **Person** keeps its heading over one muted line. Other pages have no empty states.
 - **Error:** without data, the page boundary shows a plain message with **Try again** (404 → `NotFound`); the host's `ShellBoundary` catches the rest and keeps the header; a failed background refetch keeps the data and shows one toast (bottom right).
 - **Offline:** one global banner at the bottom, "You are offline. Showing saved results." It stays mounted as an empty live region while online, so it takes no pointer events: a press at the bottom edge of the screen reaches the page.
 
-- **Load more** (Movies, TV Shows): the button is disabled with a spinner while a page loads; a failed next page keeps the loaded titles and shows an inline error with **Try again** (no toast); at the end of the list the button gives way to "That's all".
+- **Load more** (Movies, TV Shows, Search): the button is disabled with a spinner while a page loads; a failed next page keeps the loaded titles and shows an inline error with **Try again** (no toast); at the end of the list the button gives way to "That's all".
 
 - **Home sections** load and fail independently: each has its own skeleton (`HeroSkeleton`, `ContentRowSkeleton`, `FeaturedGridSkeleton`) and an inline `SectionErrorFallback` with **Try again**; one failed row never blanks the page. All requests start together (`usePrefetchQuery` in the page).
 
@@ -71,6 +72,17 @@ Both pages are built from `apps/pages-mfe/src/components/catalog/`, so they diff
 - TMDB search has no genre or sort: while a query is typed, the genre pills and the sort menu are disabled, with a one-line hint. The genre and sort stay in the URL and apply again once the search is cleared.
 - "Rating" needs at least 200 votes; "Newest" lists films released by today and shows first aired by today, not announced ones.
 - While new results load, the current ones stay on screen dimmed (`aria-busy`); the counter is a persistent `role="status"` (`<output>`) region.
+
+## Search
+
+Reached from the search icon of the header, which stays a link, as a form there would add to the host chunk.
+
+- The state lives in the URL: `q` and `type` (`movie`, the default, `tv` or `person`). An unknown `type` counts as `movie`, so a shared link always opens.
+- A search runs on submit, by Enter or the **Search** button, and not on each keystroke. A submit pushes `?q=<trimmed query>` and keeps `type`, an empty submit clears `q`, and the same query again adds no history entry.
+- The input holds at most 100 characters and takes the value of `q` on any change of the URL, as on Back, so a tab press drops a draft that was not submitted. With no `q` it takes focus, when the page opens and when the query goes away, as with a press on the icon on the open page. A press on a tab never moves focus.
+- **Tabs** are links with `aria-current`, not ARIA tabs, as each is a URL that can be shared. Only the active tab loads. Movies and TV Shows use the card grid of the catalog with the watchlist button, and People use `PersonCard`. All three have **Load more**, as a mixed list of `/search/multi` could not page by type.
+- **States:** with no query, one line asks what to look for and no request is sent. While a tab loads, a grid skeleton takes the place of the results and the form and the tabs stay. An empty result names the query and the tab, such as `No TV shows found for “dune”`. An error stays in the place of the results, with **Try again**, and the form and the tabs keep working.
+- A `q` over the limit, typed into the URL by hand, is not cut: the proxy refuses it with 400 and the results show their error. A submit cuts it to the limit, which is the way out of that error.
 
 ## Movie Detail: sections
 
@@ -125,6 +137,6 @@ Everything under Movie Detail holds here too, with TV cards in More like this. W
 
 > ⬜ No formal a11y audit has been carried out.
 - Semantic elements (`<main>`, `<h1>`, `<button type="button">`) and Radix components (with built-in a11y support) are used.
-- A navigation to another page moves focus to `main` and starts that page at the top. Back keeps the position the browser restores, and a change of the query alone moves neither.
+- A navigation to another page moves focus to `main` and starts that page at the top. Back keeps the position the browser restores, and a change of the query alone moves neither. Search with no query then moves focus on to its input, from a passive effect, which runs after the layout effect that moves it to `main`.
 - Not verified: contrast in the dark theme, keyboard navigation across the whole application, focus management. The grid/compact switch of Movies and TV Shows is a radio group with an `aria-label`.
 - TODO: run axe / Lighthouse, define the target WCAG level.

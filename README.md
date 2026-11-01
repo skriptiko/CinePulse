@@ -15,7 +15,7 @@ A micro-frontend (MFE) application built with Turborepo, Vite and React.
 ```
 ├── apps/
 │   ├── host/           # Host application (shell) — port 5000
-│   ├── pages-mfe/      # Public catalog MFE: Home, Movies, TV Shows, ... (remote) — port 5001
+│   ├── pages-mfe/      # Public catalog MFE: Home, Movies, TV Shows, Search, ... (remote) — port 5001
 │   └── user-mfe/       # Personal account MFE: Profile, Settings, ... (remote) — port 5002
 ├── packages/
 │   ├── api/             # TMDB API client + React Query hooks
