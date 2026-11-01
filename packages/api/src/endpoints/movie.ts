@@ -1,4 +1,4 @@
-import { apiGet, type EndpointOptions } from '../core';
+import { apiGet, type EndpointOptions, toIsoDate } from '../core';
 import type { Movie, MovieDetails, PageParams, PaginatedResponse } from '../types';
 
 export type MovieCategory = 'popular' | 'top_rated' | 'upcoming' | 'now_playing';
@@ -50,9 +50,4 @@ export async function discoverMovies(
     },
     signal,
   });
-}
-
-/** `YYYY-MM-DD` in UTC, the format TMDB date filters take. */
-function toIsoDate(date: Date): string {
-  return date.toISOString().slice(0, 10);
 }

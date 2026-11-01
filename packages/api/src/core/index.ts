@@ -13,4 +13,4 @@ export type { ApiErrorKind, ApiErrorOptions } from './errors';
 export { ApiError, isAbortError, isApiError, isNotFound, toHttpError } from './errors';
 export { getNextPageParam, TMDB_MAX_PAGES } from './pagination';
 export type { QueryParams } from './utils';
-export { buildQueryString, getImageUrl } from './utils';
+export { buildQueryString, getImageUrl, toIsoDate } from './utils';

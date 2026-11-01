@@ -5,5 +5,6 @@ export { personQueries } from './person';
 export { searchQueries } from './search';
 export { STALE_TIME_DEFAULT_MS, STALE_TIME_REFERENCE } from './stale-time';
 export { trendingQueries } from './trending';
-export { tvQueries } from './tv';
+export type { DiscoverTVFilters } from './tv';
+export { DEFAULT_DISCOVER_TV_FILTERS, tvQueries } from './tv';
 export { watchlistKey } from './watchlist-key';
