@@ -17,7 +17,7 @@ import { useIsScrolled } from '../hooks/use-is-scrolled';
 import { useResolvedTheme } from '../hooks/use-resolved-theme';
 import { cn } from '../lib/utils';
 import { Logo } from './logo';
-import { Button, buttonVariants } from './ui/button';
+import { BUTTON_ON_IMAGE_CLASS, Button, buttonVariants } from './ui/button';
 
 // Only routes that exist: New & Popular and My List come back with their pages.
 const NAV_ITEMS = [
@@ -28,7 +28,11 @@ const NAV_ITEMS = [
 
 const MOBILE_NAV_ID = 'mobile-nav';
 
-const TOOLBAR_BUTTON_CLASS = 'rounded-lg text-muted-foreground hover:text-foreground';
+// At the top of a page the transparent header lies on the hero image.
+const TOOLBAR_BUTTON_CLASS = cn(
+  BUTTON_ON_IMAGE_CLASS,
+  'text-muted-foreground hover:text-foreground rounded-lg'
+);
 
 /** Scroll offset after which the header gets its glass background. */
 const SCROLLED_THRESHOLD_PX = 20;
@@ -106,6 +110,7 @@ export function Header({ className }: HeaderProps) {
               aria-label={isAnonymous ? 'Sign in' : 'Profile'}
               className={cn(
                 buttonVariants({ variant: 'ghost', size: 'icon' }),
+                BUTTON_ON_IMAGE_CLASS,
                 'overflow-hidden rounded-lg'
               )}
             >

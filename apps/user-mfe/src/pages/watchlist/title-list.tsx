@@ -25,7 +25,7 @@ export function TitleList({ uid, titles, onStatusChange }: TitleListProps) {
   const [askingId, setAskingId] = useState<string | null>(null);
   const { isHolding, hold } = useDoublePressHold();
 
-  const handleRemoved = () => {
+  const handleQuestionClosed = () => {
     setAskingId(null);
     hold();
   };
@@ -33,7 +33,8 @@ export function TitleList({ uid, titles, onStatusChange }: TitleListProps) {
   if (titles.length === 0) return null;
 
   return (
-    // The rows below a removed one move up under the finger, and a second press would reach them.
+    // The rows below a closed question move up under the finger, whether its title was removed or
+    // kept, and a second press would reach them.
     <ul className={cn('flex flex-col gap-3', isHolding && 'pointer-events-none')}>
       {titles.map((item) => (
         <TitleRow
@@ -42,8 +43,8 @@ export function TitleList({ uid, titles, onStatusChange }: TitleListProps) {
           item={item}
           isAsking={askingId === item.id}
           onAsk={() => setAskingId(item.id)}
-          onCancel={() => setAskingId(null)}
-          onRemoved={handleRemoved}
+          onCancel={handleQuestionClosed}
+          onRemoved={handleQuestionClosed}
           onStatusChange={onStatusChange}
         />
       ))}

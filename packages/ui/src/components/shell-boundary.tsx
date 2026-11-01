@@ -41,6 +41,8 @@ function ShellErrorFallback(_props: FallbackProps) {
   );
 }
 
+// Offline, a reload could only reach the browser's error page, so it waits for a press with the
+// network back.
 function handleReload(): void {
-  window.location.reload();
+  if (navigator.onLine) window.location.reload();
 }
