@@ -1318,6 +1318,7 @@ test('the second press of a double press on Remove title lands on nothing', asyn
   await page.waitForTimeout(100);
   await expect(page).toHaveURL(/\/user\/watchlist$/);
   await expect(page.getByRole('radio', { name: 'Planned', checked: true })).toHaveCount(3);
+  await expect(page.getByRole('heading', { level: 2, name: 'All titles' })).toBeFocused();
 
   // The hold passes: this waits for the switch to take a press.
   const next = page.getByRole('radiogroup').first().getByRole('radio', { name: 'Watched' });
@@ -1340,4 +1341,133 @@ test('a removal in a long list keeps the page where it is', async ({ page, reque
 
   await expect(page.getByRole('link', { name: 'Row 1', exact: true })).toHaveCount(0);
   expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(scrollY - 200);
+});
+
+type Spot = { x: number; y: number };
+type Box = Spot & { width: number; height: number };
+
+function tap(page: Page, { x, y }: Spot) {
+  return page.touchscreen.tap(x, y);
+}
+
+function click(page: Page, { x, y }: Spot) {
+  return page.mouse.click(x, y);
+}
+
+/** The middle of where two boxes overlap. */
+function getOverlap(first: Box | null, second: Box | null): Spot {
+  if (!first || !second) throw new Error('No box');
+  const left = Math.max(first.x, second.x);
+  const right = Math.min(first.x + first.width, second.x + second.width);
+  const top = Math.max(first.y, second.y);
+  const bottom = Math.min(first.y + first.height, second.y + second.height);
+  if (left >= right || top >= bottom) throw new Error('The boxes do not overlap');
+  return { x: (left + right) / 2, y: (top + bottom) / 2 };
+}
+
+/** A folder with a title in it, and another folder for Move to offer. */
+async function openFolderWithTitle(page: Page, request: APIRequestContext, name: string) {
+  await openWatchlist(page);
+  const [, folderId] = await makeFolders(page, ['Other', name]);
+  await seedTitle(request, await getUid(page), 1, 'Row', [folderId]);
+  await page.reload();
+  await expect(page.getByRole('link', { name: 'Row', exact: true })).toBeVisible();
+}
+
+/**
+ * Both presses go to one point of Cancel, which `under` covers once the form is gone. Checked
+ * before pressing: a point that falls between two controls would pass on broken code.
+ */
+async function expectDoublePressToReachNothing(
+  page: Page,
+  form: string,
+  under: Locator,
+  press: typeof tap
+) {
+  const url = page.url();
+  const toolbarButton = page.getByRole('button', { name: form, exact: true });
+  const cancel = page.getByRole('button', { name: 'Cancel' });
+  // Polled, as a hold hides `under` from this check. It also waits the hold out: a `click()` that
+  // meets one retries at other scroll positions, which would take the page off these boxes.
+  const expectUnderAt = (spot: Spot) =>
+    expect
+      .poll(() =>
+        under.evaluate(
+          (element, { x, y }) => element.contains(document.elementFromPoint(x, y)),
+          spot
+        )
+      )
+      .toBe(true);
+
+  const underBox = await under.boundingBox();
+  await toolbarButton.click();
+  const spot = getOverlap(await cancel.boundingBox(), underBox);
+  await cancel.click();
+  await expectUnderAt(spot);
+
+  await toolbarButton.click();
+  await press(page, spot);
+  await expect(cancel).toHaveCount(0);
+  await page.waitForTimeout(120);
+  await press(page, spot);
+
+  await page.waitForTimeout(100);
+  await expect(page).toHaveURL(url);
+  await expect(cancel).toHaveCount(0);
+  await expect(toolbarButton).toBeFocused();
+  await expectUnderAt(spot);
+}
+
+for (const { input, press } of [
+  { input: 'touch', press: tap },
+  { input: 'mouse', press: click },
+]) {
+  test.describe(`a double press on Cancel by ${input}`, () => {
+    test.use({ hasTouch: input === 'touch' });
+
+    for (const form of ['New folder', 'New subfolder', 'Rename', 'Move', 'Delete']) {
+      test(`in ${form} leaves the filter alone`, async ({ page, request }) => {
+        await openFolderWithTitle(page, request, 'Keep');
+
+        for (const width of [320, 430, 820]) {
+          await page.setViewportSize({ width, height: 800 });
+          await expectDoublePressToReachNothing(page, form, filterPill(page, 'Planned'), press);
+        }
+
+        // The hold passes: the same pill takes a press again.
+        await filterPill(page, 'Planned').click();
+        await expect(filterPill(page, 'Planned')).toHaveAttribute('aria-pressed', 'true');
+      });
+    }
+
+    test('under a long folder name opens no title', async ({ page, request }) => {
+      await page.setViewportSize({ width: 320, height: 800 });
+      await openFolderWithTitle(page, request, 'x'.repeat(100));
+      const link = page.getByRole('link', { name: 'Row', exact: true });
+
+      // The question wraps here, and takes its Cancel down to the row.
+      await expectDoublePressToReachNothing(page, 'Delete', link, press);
+    });
+  });
+}
+
+test.describe('a double tap on Cancel', () => {
+  test.use({ hasTouch: true });
+
+  // With 44 px targets the toolbar wraps, and it comes back over the top of Cancel.
+  for (const { width, button } of [
+    { width: 320, button: 'Move' },
+    { width: 390, button: 'Delete' },
+    { width: 768, button: 'Delete' },
+  ]) {
+    test(`at ${width} px does not press ${button} in the toolbar`, async ({ page, request }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await openFolderWithTitle(page, request, 'Keep');
+      const under = page.getByRole('button', { name: button, exact: true });
+
+      for (const form of ['New folder', 'Rename', 'Move']) {
+        await expectDoublePressToReachNothing(page, form, under, tap);
+      }
+    });
+  }
 });
