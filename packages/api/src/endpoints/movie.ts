@@ -1,4 +1,4 @@
-import { apiGet, type EndpointOptions, MOVIE_DETAIL_APPEND, toIsoDate } from '../core';
+import { apiGet, DETAIL_APPEND, type EndpointOptions, toIsoDate } from '../core';
 import type { Movie, MovieDetails, PageParams, PaginatedResponse } from '../types';
 
 export type MovieCategory = 'popular' | 'top_rated' | 'upcoming' | 'now_playing';
@@ -28,7 +28,7 @@ export async function getMovieDetails(
   { signal }: EndpointOptions = {}
 ): Promise<MovieDetails> {
   return apiGet<MovieDetails>(`/movie/${id}`, {
-    params: { append_to_response: MOVIE_DETAIL_APPEND },
+    params: { append_to_response: DETAIL_APPEND },
     signal,
   });
 }

@@ -1,4 +1,4 @@
-import type { ProductionCompany } from './common';
+import type { DetailSections, ProductionCompany } from './common';
 import type { Genre } from './genre';
 
 export type TV = {
@@ -18,25 +18,26 @@ export type TV = {
   origin_country: string[];
 };
 
-export type TVDetails = Omit<TV, 'genre_ids'> & {
-  genres: Genre[];
-  created_by: Creator[];
-  episode_run_time: number[];
-  homepage: string | null;
-  in_production: boolean;
-  languages: string[];
-  last_air_date: string | null;
-  last_episode_to_air: Episode | null;
-  next_episode_to_air: Episode | null;
-  networks: Network[];
-  number_of_episodes: number;
-  number_of_seasons: number;
-  production_companies: ProductionCompany[];
-  seasons: Season[];
-  status: string;
-  tagline: string | null;
-  type: string;
-};
+export type TVDetails = Omit<TV, 'genre_ids'> &
+  DetailSections<TV> & {
+    genres: Genre[];
+    created_by: Creator[];
+    episode_run_time: number[];
+    homepage: string | null;
+    in_production: boolean;
+    languages: string[];
+    last_air_date: string | null;
+    last_episode_to_air: Episode | null;
+    next_episode_to_air: Episode | null;
+    networks: Network[];
+    number_of_episodes: number;
+    number_of_seasons: number;
+    production_companies: ProductionCompany[];
+    seasons: Season[];
+    status: string;
+    tagline: string | null;
+    type: string;
+  };
 
 export type Creator = {
   id: number;

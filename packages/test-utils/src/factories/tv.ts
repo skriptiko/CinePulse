@@ -1,4 +1,5 @@
-import type { TV } from '@repo/api';
+import type { TV, TVDetails } from '@repo/api';
+import { buildPaginated } from './movie';
 
 let nextId = 1;
 
@@ -21,6 +22,40 @@ export function buildTv(overrides: Partial<TV> = {}): TV {
     genre_ids: [18],
     original_language: 'en',
     origin_country: ['US'],
+    ...overrides,
+  };
+}
+
+/** A valid `/tv/{id}` response with every section empty; pass only what the test shows. */
+export function buildTvDetails(overrides: Partial<TVDetails> = {}): TVDetails {
+  const { genre_ids: _genreIds, ...tv } = buildTv();
+
+  return {
+    ...tv,
+    genres: [],
+    created_by: [],
+    episode_run_time: [],
+    homepage: null,
+    in_production: false,
+    languages: [],
+    last_air_date: null,
+    last_episode_to_air: null,
+    next_episode_to_air: null,
+    networks: [],
+    number_of_episodes: 0,
+    number_of_seasons: 0,
+    production_companies: [],
+    seasons: [],
+    status: 'Ended',
+    tagline: null,
+    type: 'Scripted',
+    credits: { cast: [], crew: [] },
+    videos: { results: [] },
+    images: { backdrops: [], posters: [], logos: [] },
+    recommendations: buildPaginated([]),
+    similar: buildPaginated([]),
+    reviews: buildPaginated([]),
+    'watch/providers': { results: {} },
     ...overrides,
   };
 }
