@@ -3,6 +3,7 @@ export const ROUTE_PATHS = {
   HOME: '/',
   MOVIES: '/movies',
   MOVIE_DETAIL: '/movies/:id',
+  TV: '/tv',
   TV_DETAIL: '/tv/:id',
   PERSON_DETAIL: '/person/:id',
   AUTH_LOGIN: '/auth/login',

@@ -5,7 +5,7 @@ export const REMOTES: readonly RemoteDefinition[] = [
   {
     name: 'pagesMfe',
     load: () => import('pagesMfe/routes'),
-    paths: [ROUTE_PATHS.HOME, ROUTE_PATHS.MOVIES, ROUTE_PATHS.MOVIE_DETAIL],
+    paths: [ROUTE_PATHS.HOME, ROUTE_PATHS.MOVIES, ROUTE_PATHS.MOVIE_DETAIL, ROUTE_PATHS.TV],
   },
   {
     name: 'userMfe',
