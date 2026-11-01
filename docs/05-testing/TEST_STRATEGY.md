@@ -86,7 +86,7 @@ Add Playwright (chromium) on the merged `dist/` served by `firebase emulators:st
 1. Home shows the hero and content rows.
 2. Navigation Home → Movies → Profile across MFEs.
 3. Search and filters on Movies and TV Shows are reflected in the URL and survive Back/Forward, and a shared TV Shows link opens the same view.
-4. With `remoteEntry.js` of one remote aborted, its section shows the "unavailable" placeholder and the other sections keep working.
+4. With `remoteEntry.js` of one remote aborted, its section shows the "unavailable" placeholder and the other sections keep working. A remote lost with the connection stays in the app on Try again, and loads on a press once the connection returns.
 5. An unknown URL shows NotFound.
 6. TV Shows opens from the header, the mobile menu and a direct URL, shows its empty and error states, and has no horizontal page scroll at 320 px, with a 100-character search too.
 7. With `sessionStorage` blocked, a chunk that keeps failing loads the document once and shows the page's error state.

@@ -18,7 +18,8 @@ export function RemoteUnavailable() {
   );
 }
 
-// A failed remote import is cached by the module system, so retrying means reloading.
+// A failed remote import is cached by the module system, so retrying means reloading. Offline, a
+// reload could only reach the browser's error page, so it waits for a press with the network back.
 function handleRetry(): void {
-  window.location.reload();
+  if (navigator.onLine) window.location.reload();
 }

@@ -199,6 +199,28 @@ test('a remote that fails to load leaves the rest of the app working', async ({ 
   await expect(page.getByRole('heading', { level: 1, name: 'Movies' })).toBeVisible();
 });
 
+test('a remote lost with the connection waits for it on Try again, and then loads', async ({
+  page,
+  context,
+}) => {
+  await page.goto('/');
+  await expect(page.getByRole('region', { name: 'Popular' })).toBeVisible();
+
+  await context.setOffline(true);
+  await page.getByRole('banner').getByRole('link', { name: 'Sign in' }).click();
+  const unavailable = page.getByRole('heading', { name: 'This section is unavailable' });
+  await expect(unavailable).toBeVisible();
+
+  // A reload would land on chrome-error://chromewebdata/ soon after the press.
+  await page.getByRole('button', { name: 'Try again' }).click();
+  await page.waitForTimeout(1_000);
+  await expect(unavailable).toBeVisible();
+
+  await context.setOffline(false);
+  await page.getByRole('button', { name: 'Try again' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Sign in' })).toBeVisible();
+});
+
 test('a chunk that keeps failing does not loop the page when sessionStorage is blocked', async ({
   page,
 }) => {
