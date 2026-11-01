@@ -1024,7 +1024,9 @@ test('the row controls open nothing, and the rest of the row opens the title', a
   await expect(page).toHaveURL(/\/user\/watchlist$/);
   await page.getByRole('button', { name: 'Cancel' }).click();
 
-  await page.mouse.click(remove.x + remove.width + 40, middle);
+  const pastControls = { x: remove.x + remove.width + 40, y: middle };
+  await expectToCover(page.getByRole('link', { name: title }), pastControls);
+  await click(page, pastControls);
   await expect(page).toHaveURL(new RegExp(`/movies/${MOVIE_ID}$`));
 });
 
@@ -1365,6 +1367,18 @@ function getOverlap(first: Box | null, second: Box | null): Spot {
   return { x: (left + right) / 2, y: (top + bottom) / 2 };
 }
 
+/**
+ * Polled, as a hold hides `under` from this check. It also waits the hold out: a `click()` that
+ * meets one retries at other scroll positions, which would take the page off the boxes it read.
+ */
+function expectToCover(under: Locator, spot: Spot) {
+  return expect
+    .poll(() =>
+      under.evaluate((element, { x, y }) => element.contains(document.elementFromPoint(x, y)), spot)
+    )
+    .toBe(true);
+}
+
 /** A folder with a title in it, and another folder for Move to offer. */
 async function openFolderWithTitle(page: Page, request: APIRequestContext, name: string) {
   await openWatchlist(page);
@@ -1387,23 +1401,12 @@ async function expectDoublePressToReachNothing(
   const url = page.url();
   const toolbarButton = page.getByRole('button', { name: form, exact: true });
   const cancel = page.getByRole('button', { name: 'Cancel' });
-  // Polled, as a hold hides `under` from this check. It also waits the hold out: a `click()` that
-  // meets one retries at other scroll positions, which would take the page off these boxes.
-  const expectUnderAt = (spot: Spot) =>
-    expect
-      .poll(() =>
-        under.evaluate(
-          (element, { x, y }) => element.contains(document.elementFromPoint(x, y)),
-          spot
-        )
-      )
-      .toBe(true);
 
   const underBox = await under.boundingBox();
   await toolbarButton.click();
   const spot = getOverlap(await cancel.boundingBox(), underBox);
   await cancel.click();
-  await expectUnderAt(spot);
+  await expectToCover(under, spot);
 
   await toolbarButton.click();
   await press(page, spot);
@@ -1415,7 +1418,7 @@ async function expectDoublePressToReachNothing(
   await expect(page).toHaveURL(url);
   await expect(cancel).toHaveCount(0);
   await expect(toolbarButton).toBeFocused();
-  await expectUnderAt(spot);
+  await expectToCover(under, spot);
 }
 
 for (const { input, press } of [
@@ -1447,6 +1450,89 @@ for (const { input, press } of [
 
       // The question wraps here, and takes its Cancel down to the row.
       await expectDoublePressToReachNothing(page, 'Delete', link, press);
+    });
+  });
+}
+
+/** Rows from the top down: the list shows the latest first. */
+async function openTitles(page: Page, request: APIRequestContext, titles: string[]) {
+  await openWatchlist(page);
+  const uid = await getUid(page);
+  for (const [index, title] of titles.entries()) {
+    const addedAt = new Date(Date.now() - index * 60_000).toISOString();
+    await seedTitle(request, uid, index + 1, title, [], { addedAt });
+  }
+  await page.reload();
+  await expect(page.getByRole('radiogroup')).toHaveCount(titles.length);
+  return uid;
+}
+
+/**
+ * Both presses go to one point of Cancel in the question of `title`, which `under` covers once the
+ * question is gone. Checked before pressing, as with the folder forms below.
+ */
+async function expectDoublePressOnQuestionToReachNothing(
+  page: Page,
+  title: string,
+  under: Locator,
+  press: typeof tap
+) {
+  const remove = page.getByRole('button', { name: `Remove ${title}`, exact: true });
+  const cancel = page.getByRole('button', { name: 'Cancel' });
+
+  const underBox = await under.boundingBox();
+  await remove.click();
+  const spot = getOverlap(await cancel.boundingBox(), underBox);
+  await cancel.click();
+  await expectToCover(under, spot);
+
+  await remove.click();
+  await press(page, spot);
+  await expect(cancel).toHaveCount(0);
+  await page.waitForTimeout(120);
+  await press(page, spot);
+
+  await page.waitForTimeout(100);
+  await expect(page).toHaveURL(/\/user\/watchlist$/);
+  await expect(cancel).toHaveCount(0);
+  await expect(remove).toBeFocused();
+  await expectToCover(under, spot);
+  return spot;
+}
+
+for (const { input, press } of [
+  { input: 'touch', press: tap },
+  { input: 'mouse', press: click },
+]) {
+  test.describe(`a double press on Cancel in the question by ${input}`, () => {
+    test.use({ hasTouch: input === 'touch' });
+
+    test('leaves the status of the next title alone', async ({ page, request }) => {
+      const uid = await openTitles(page, request, ['First', 'Second']);
+
+      for (const width of [320, 430, 820]) {
+        await page.setViewportSize({ width, height: 800 });
+        const watched = statusBox(page, 'Second', 'Watched');
+        const spot = await expectDoublePressOnQuestionToReachNothing(page, 'First', watched, press);
+        await expect(statusBox(page, 'Second', 'Planned')).toBeChecked();
+        expect((await readTitle(request, uid, 'movie_2')).status).toBe('planned');
+
+        // The hold passes: the same switch takes a press again.
+        await press(page, spot);
+        await expect(watched).toBeChecked();
+        await statusBox(page, 'Second', 'Planned').click();
+        await expect(statusBox(page, 'Second', 'Planned')).toBeChecked();
+      }
+    });
+
+    test('under a long title opens no title', async ({ page, request }) => {
+      await page.setViewportSize({ width: 320, height: 800 });
+      const long = 'x'.repeat(100);
+      await openTitles(page, request, [long, 'Second', 'Third']);
+      const link = page.getByRole('link', { name: 'Third', exact: true });
+
+      // The question wraps here, and takes its Cancel down to the row after the next.
+      await expectDoublePressOnQuestionToReachNothing(page, long, link, press);
     });
   });
 }

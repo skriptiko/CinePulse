@@ -181,6 +181,7 @@ Two mutants proved the check, each on a new `pnpm build:deploy` and the whole su
 24. A theme chosen in Settings reaches a page of another remote, survives a new load and a sign-out, and `System` follows the device.
 25. A removed title leaves every folder and the profile, also after a reload, and a removal in a long list keeps the page where it is.
 26. A double press on Cancel in a folder form, by touch or mouse, reaches no pill, title or toolbar button, and focus stays on the toolbar button. Each press point is first checked to lie on that control.
+27. A double press on Cancel in the Remove title question, by touch or mouse, changes no status and opens no title, and focus returns to Remove. Each press point is first checked to lie on that control.
 
 Titles are seeded through the emulator's REST API only for states the UI cannot produce on demand. `pnpm test:e2e` needs Java as well as `firebase-tools`.
 
