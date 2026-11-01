@@ -24,7 +24,8 @@ export function Home() {
     <div>
       <h1 className="sr-only">CinePulse: trending and popular movies</h1>
       <HeroSection />
-      <div className="relative z-10 -mt-16 space-y-12 pb-16">
+      {/* Pulled over the padding of the hero by less than it measures, to clear its button. */}
+      <div className="relative z-10 -mt-8 space-y-12 pb-16 sm:-mt-16">
         <GenresSection />
         <TrendingSection />
         <FeaturedSection />

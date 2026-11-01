@@ -63,6 +63,8 @@ In the integration the host builds one stylesheet for every remote, so MFE style
 
 - **Home sections** load and fail independently: each has its own skeleton (`HeroSkeleton`, `ContentRowSkeleton`, `FeaturedGridSkeleton`) and an inline `SectionErrorFallback` with **Try again**; one failed row never blanks the page. All requests start together (`usePrefetchQuery` in the page).
 
+- **Genre pills on Home** lie over the bottom of the hero, by 32 px below `sm` and by 64 px from it. On a phone that leaves 16 px under **More Info**. From `sm` to `md` the padding of the hero is those same 64 px, so the pills touch the button, which rises above them while it has focus to keep its ring whole.
+
 ## Movies and TV Shows: search, genre and sort
 
 Both pages are built from `apps/pages-mfe/src/components/catalog/`, so they differ only in their words, genre list and requests.
@@ -138,7 +140,8 @@ Everything under Movie Detail holds here too, with TV cards in More like this. W
 
 > ⬜ No formal a11y audit has been carried out.
 - Semantic elements (`<main>`, `<h1>`, `<button type="button">`) and Radix components (with built-in a11y support) are used.
-- The focus ring of a `Button` is solid `--ring`, 5.27:1 in the dark theme and 4.57:1 in the light one on the page background. A button laid straight on an image, as on a card or in the header over the hero, takes `BUTTON_ON_IMAGE_CLASS`: a ring of `--foreground` around a band of `--background`, about 18:1 apart, as one colour can match the image.
+- The focus ring of a `Button` is solid `--ring`, 5.27:1 in the dark theme and 4.57:1 in the light one on the page background. A button laid straight on an image, as on a card or in the header over the hero, takes `BUTTON_ON_IMAGE_CLASS`: a ring of `--foreground` around a band of `--background`, about 18:1 apart, as one colour can match the image. The Logo and the nav links of the header are not `Button`, so they add the width of its ring to the same class.
+- At the top of a page the header lies on a scrim of `--background` as tall as the header, so its controls do not depend on the image under them: it is solid down to the last line of text and fades over the 28 px below it. On painted pixels over white, mid grey and black images, at 1280 and 320 px, icons and nav text at rest read 6.38:1 in the dark theme and 7.02:1 in the light one, and the focus of the Logo and the nav links keeps 8.13:1 or more against the surface around it. On a page with no image, at the top, the scrim moves a pixel by at most 2 of 255 per channel; in the 20 px of scroll before the glass, a heading on a phone fades under its lower edge. It takes no presses and fades out once the header turns to glass, which has no such guarantee: over a white image in the dark theme the icons on glass read 2.89:1.
 - A navigation to another page moves focus to `main` and starts that page at the top. Back keeps the position the browser restores, and a change of the query alone moves neither. Search with no query then moves focus on to its input, from a passive effect, which runs after the layout effect that moves it to `main`.
 - Not verified: contrast in the dark theme, keyboard navigation across the whole application, focus management. The grid/compact switch of Movies and TV Shows is a radio group with an `aria-label`.
 - TODO: run axe / Lighthouse, define the target WCAG level.
