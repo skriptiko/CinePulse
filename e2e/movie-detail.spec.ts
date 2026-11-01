@@ -30,8 +30,8 @@ async function scrollToAndPress(page: Page, target: Locator): Promise<void> {
   }).toPass();
 
   const box = await target.boundingBox();
-  expect(box).not.toBeNull();
-  await page.mouse.click((box?.x ?? 0) + 20, (box?.y ?? 0) + 20);
+  if (!box) throw new Error('No target');
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
 }
 
 function isInViewport(element: Element): boolean {
@@ -170,6 +170,18 @@ test.describe('from far down the page', () => {
     await scrollToAndPress(page, moreLikeThisCard(page, 'More 0'));
 
     await expect(page).toHaveURL(new RegExp(`/movies/${FULL_MOVIE_ID}$`));
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+  });
+
+  test('a footer link opens its page at the top', async ({ page }) => {
+    await page.goto(`/movies/${FULL_MOVIE_ID}`);
+
+    await scrollToAndPress(
+      page,
+      page.getByRole('contentinfo').getByRole('link', { name: 'Movies' })
+    );
+
+    await expect(page).toHaveURL(/\/movies$/);
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
   });
 

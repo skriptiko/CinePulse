@@ -107,5 +107,6 @@ Both pages are built from `apps/pages-mfe/src/components/catalog/`, so they diff
 
 > ⬜ No formal a11y audit has been carried out.
 - Semantic elements (`<main>`, `<h1>`, `<button type="button">`) and Radix components (with built-in a11y support) are used.
-- Not verified: contrast in the dark theme, keyboard navigation across the whole application, focus management. The Movies grid/compact toggle has `aria-label` and `aria-pressed`.
+- A navigation to another page moves focus to `main` and starts that page at the top. Back keeps the position the browser restores, and a change of the query alone moves neither.
+- Not verified: contrast in the dark theme, keyboard navigation across the whole application, focus management. The grid/compact switch of Movies and TV Shows is a radio group with an `aria-label`.
 - TODO: run axe / Lighthouse, define the target WCAG level.
