@@ -31,8 +31,8 @@ function expectSameColour(actual: Rgb | undefined, expected: Rgb | undefined) {
   expect(getContrast(actual, expected)).toBeLessThan(1.02);
 }
 
-/** Scrolls Home with a sheet of the worst image between the page and the header. */
-async function scrollOverWorstImage(page: Page, image: string) {
+/** Scrolls Home with a sheet of solid `image` between the page and the header. */
+async function scrollOverImage(page: Page, image: string) {
   await page.goto('/');
   await expect(page.getByRole('link', { name: /^More Info/ })).toBeVisible();
 
@@ -134,7 +134,7 @@ for (const theme of ['dark', 'light'] as const) {
     });
 
     test('its text and icons stand out from the worst image', async ({ page }) => {
-      await scrollOverWorstImage(page, WORST_IMAGE[theme]);
+      await scrollOverImage(page, WORST_IMAGE[theme]);
       const surface = await readHeaderSurface(page);
 
       for (const name of INACTIVE_NAV_LINKS) {
@@ -145,24 +145,30 @@ for (const theme of ['dark', 'light'] as const) {
       await expectContrast(search.locator('svg'), surface, ICON_CONTRAST);
       const toggle = header(page).getByRole('button', { name: 'Dark theme' });
       await expectContrast(toggle.locator('svg'), surface, ICON_CONTRAST);
-
-      // This icon lies on a chip of its own, not on the surface. The chip fades along its diagonal,
-      // so the spots next to the two ends of the glyph on that diagonal hold its extremes.
-      const profileIcon = header(page).getByRole('link', { name: 'Sign in' }).locator('svg');
-      const box = await profileIcon.boundingBox();
-      if (!box) throw new Error('No target');
-      const chip = await readPixels(page, [
-        { x: box.x + 4, y: box.y + 1 },
-        { x: box.x + 14, y: box.y + 15 },
-      ]);
-      for (const pixel of chip) await expectContrast(profileIcon, pixel, ICON_CONTRAST);
     });
+
+    for (const image of ['white', 'black']) {
+      test(`its profile icon stands out from its chip over a ${image} image`, async ({ page }) => {
+        await scrollOverImage(page, image);
+
+        // The chip fades along its diagonal, so the spots next to the two ends of the glyph on that
+        // diagonal hold its extremes, and what shows through depends on the image.
+        const icon = header(page).getByRole('link', { name: 'Sign in' }).locator('svg');
+        const box = await icon.boundingBox();
+        if (!box) throw new Error('No target');
+        const chip = await readPixels(page, [
+          { x: box.x + 4, y: box.y + 1 },
+          { x: box.x + 14, y: box.y + 15 },
+        ]);
+        for (const pixel of chip) await expectContrast(icon, pixel, ICON_CONTRAST);
+      });
+    }
 
     test.describe('at 320 px', () => {
       test.use({ viewport: { width: 320, height: 640 } });
 
       test('its open menu stands out from the worst image', async ({ page }) => {
-        await scrollOverWorstImage(page, WORST_IMAGE[theme]);
+        await scrollOverImage(page, WORST_IMAGE[theme]);
         // By keyboard: a mouse left on the button would measure its hover colour.
         const menu = header(page).getByRole('button', { name: 'Menu' });
         await menu.press('Enter');

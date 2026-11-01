@@ -132,7 +132,7 @@ export function Header({ className }: HeaderProps) {
                   className="size-8 rounded-lg object-cover"
                 />
               ) : (
-                <span className="from-accent to-accent/60 flex size-8 items-center justify-center rounded-lg bg-linear-to-br">
+                <span className="from-accent to-accent/80 flex size-8 items-center justify-center rounded-lg bg-linear-to-br">
                   <User className="text-accent-foreground size-4" />
                 </span>
               )}
