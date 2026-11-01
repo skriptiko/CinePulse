@@ -75,7 +75,7 @@ function WatchlistContent({ uid }: WatchlistContentProps) {
             ref={headingRef}
             id={headingId}
             tabIndex={-1}
-            className="truncate text-lg font-semibold outline-hidden"
+            className="truncate text-lg font-semibold outline-none"
           >
             {selected?.name ?? 'All titles'}
           </h2>
