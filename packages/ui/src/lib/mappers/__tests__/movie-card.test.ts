@@ -14,6 +14,8 @@ describe('toMovieCardData', () => {
     expect(toMovieCardData(movie)).toEqual({
       id: movie.id,
       title: 'Dune',
+      mediaType: 'movie',
+      posterPath: '/dune.jpg',
       imageUrl: 'https://image.tmdb.org/t/p/w342/dune.jpg',
       year: '2021',
       rating: '7.8',
@@ -45,10 +47,12 @@ describe('toTvCardData', () => {
     expect(toTvCardData(tv)).toEqual({
       id: tv.id,
       title: 'Severance',
+      mediaType: 'tv',
+      posterPath: '/sev.jpg',
       imageUrl: 'https://image.tmdb.org/t/p/w342/sev.jpg',
       year: '2022',
       rating: '8.4',
-      href: null,
+      href: `/tv/${tv.id}`,
     });
   });
 
@@ -73,5 +77,9 @@ describe('toTrendingCardData', () => {
 describe('card links', () => {
   it('links a movie to its details page', () => {
     expect(toMovieCardData(buildMovie({ id: 7 })).href).toBe('/movies/7');
+  });
+
+  it('links a show to its details page', () => {
+    expect(toTvCardData(buildTv({ id: 7 })).href).toBe('/tv/7');
   });
 });

@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, type Page, test } from '@playwright/test';
 import { mockTmdb } from './tmdb-mock';
 
 test.beforeEach(async ({ page }) => {
@@ -59,6 +59,120 @@ test('Movies filters and search live in the URL and survive Back', async ({ page
   await page.goBack();
   await expect(page.getByText('Any movie 1')).toBeVisible();
   await expect(page).not.toHaveURL(/genre=/);
+});
+
+test('TV Shows opens from the header and by direct URL', async ({ page }) => {
+  await page.goto('/');
+
+  await page
+    .getByRole('navigation', { name: 'Main' })
+    .getByRole('link', { name: 'TV Shows' })
+    .click();
+  await expect(page.getByRole('heading', { level: 1, name: 'TV Shows' })).toBeVisible();
+  await expect(page).toHaveTitle('TV Shows · CinePulse');
+  await expect(page).toHaveURL(/\/tv$/);
+
+  await page.reload();
+  await expect(page.getByText('Any show 1')).toBeVisible();
+});
+
+test('TV Shows filters and search live in the URL and survive Back', async ({ page }) => {
+  await page.goto('/tv');
+  await expect(page.getByText('Any show 1')).toBeVisible();
+
+  await page
+    .getByRole('group', { name: 'Filter by genre' })
+    .getByRole('button', { name: 'Drama' })
+    .click();
+  await expect(page.getByText('Drama show 1')).toBeVisible();
+  await expect(page).toHaveURL(/genre=18/);
+
+  await page.getByRole('button', { name: 'Load more' }).click();
+  await expect(page.getByText('Drama show 2')).toBeVisible();
+
+  await page.getByRole('button', { name: /^Sort by/ }).click();
+  await page.getByRole('menuitemradio', { name: 'Newest' }).click();
+  await expect(page).toHaveURL(/sort=newest/);
+
+  await page.getByRole('searchbox', { name: 'Search TV shows' }).fill('dark');
+  await expect(page.getByText('Found: dark')).toBeVisible();
+
+  // Typing replaces the history entry, so Back undoes the sort step before it.
+  await page.goBack();
+  await expect(page.getByText('Drama show 1')).toBeVisible();
+  await expect(page).not.toHaveURL(/sort=/);
+  await expect(page).toHaveURL(/genre=18/);
+
+  // A shared link opens the same view.
+  await page.goto('/tv?genre=18&sort=rating');
+  await expect(page.getByRole('button', { name: 'Sort by: Rating' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Drama', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true'
+  );
+});
+
+test('TV Shows shows its empty and error states', async ({ page }) => {
+  await page.route('**/api/tmdb/search/tv**', (route) =>
+    route.fulfill({ json: { page: 1, results: [], total_pages: 1, total_results: 0 } })
+  );
+  await page.goto('/tv?q=nothing');
+  await expect(
+    page.getByRole('heading', { name: 'No TV shows found for “nothing”' })
+  ).toBeVisible();
+
+  await page.route('**/api/tmdb/discover/tv**', (route) =>
+    route.fulfill({ status: 500, json: {} })
+  );
+  await page.goto('/tv');
+  // A 5xx is retried twice first.
+  await expect(page.getByRole('alert')).toContainText('Something went wrong', { timeout: 10_000 });
+  await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
+});
+
+test.describe('TV Shows at 320 px', () => {
+  test.use({ viewport: { width: 320, height: 640 } });
+
+  async function expectNoHorizontalPageScroll(page: Page) {
+    const { scrollWidth, clientWidth } = await page.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+    }));
+    expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
+
+    // `wheel` does not wait for the scroll, so the position is read two frames later.
+    await page.mouse.move(160, 600);
+    await page.mouse.wheel(200, 0);
+    await page.evaluate(
+      () => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))
+    );
+    expect(await page.evaluate(() => window.scrollX)).toBe(0);
+  }
+
+  test('the mobile menu opens TV Shows, which does not scroll sideways', async ({ page }) => {
+    await page.goto('/');
+
+    await page.getByRole('button', { name: 'Menu' }).click();
+    await page
+      .getByRole('navigation', { name: 'Main' })
+      .getByRole('link', { name: 'TV Shows' })
+      .click();
+
+    await expect(page.getByText('Any show 1')).toBeVisible();
+    await expectNoHorizontalPageScroll(page);
+  });
+
+  test('a long search with no results does not scroll sideways', async ({ page }) => {
+    await page.route('**/api/tmdb/search/tv**', (route) =>
+      route.fulfill({ json: { page: 1, results: [], total_pages: 1, total_results: 0 } })
+    );
+    const query = 'x'.repeat(100);
+
+    await page.goto(`/tv?q=${query}`);
+
+    await expect(page.getByRole('heading', { name: /^No TV shows found for/ })).toBeVisible();
+    await expectNoHorizontalPageScroll(page);
+  });
 });
 
 test('a card opens the details page, also by direct URL', async ({ page }) => {

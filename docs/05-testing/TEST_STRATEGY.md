@@ -2,7 +2,7 @@
 
 # Test strategy
 
-> **Current state:** unit, component and integration tests run in job `quality`, Firestore rules in job `rules`, Playwright smoke and auth scenarios in job `e2e`. Tools and versions are fixed in [ADR-0006](../03-architecture/decisions/ADR-0006-testing-stack.md). The rules for writing tests (queries, mocking, states, timers, coverage) live in the engineering standards, §14 (Notion). Where this document and the standards disagree, the standards win.
+> **Current state:** unit, component and integration tests run in job `quality`, Firestore rules in job `rules`, Playwright smoke, auth and watchlist scenarios in job `e2e`. Tools and versions are fixed in [ADR-0006](../03-architecture/decisions/ADR-0006-testing-stack.md). The rules for writing tests (queries, mocking, states, timers, coverage) live in the engineering standards, §14 (Notion). Where this document and the standards disagree, the standards win.
 
 ## Pyramid
 
@@ -69,10 +69,15 @@ From here on, new or changed logic in `packages/*` and new UI states land with t
 2. `ApiError` classification, `shouldRetry`, `getRetryDelay`, `getNextPageParam` (including the 500-page cap).
 3. `queryOptions` factories: key shapes.
 4. `@repo/events`: event bus (`on` / `off` / `once` / `emit`) and the store.
-5. Components: `MovieCard`, `Hero`, `ContentRow`, `CategoryPills`, `AsyncBoundary` (fallback, Try again refetch, 404 → `NotFound`), `NotFound`, page skeletons.
+5. Components: `MovieCard`, `PersonCard`, `Hero`, `ContentRow`, `MovieDetailView`, `PersonDetailView` and the sections of a details page, `CategoryPills`, `CategoryLinks`, `AsyncBoundary` (fallback, Try again refetch, 404 → `NotFound`), `NotFound`, page skeletons.
 6. Pages:
    - ✅ **Movies** (`apps/pages-mfe/src/pages/movies/__tests__/`): search ↔ list switching (regression for the conditional-hook bug), genre filter, sort, empty state, "Load more" (next-page error, end of list), state in the URL, URL parsing;
-   - **Home**: rows render from MSW fixtures, and one failing row does not blank the page.
+   - ✅ **TV Shows** (`apps/pages-mfe/src/pages/tv/__tests__/`): the same flows on the shared catalog pieces, with TV genres, sort params and words, and cards that link to their show. `src/__tests__/routes.test.tsx` covers its skeleton, its error with a retry, and that no search text follows a move from Movies;
+   - **Home**: rows render from MSW fixtures, and one failing row does not blank the page;
+   - ✅ **Movie Detail** (`apps/pages-mfe/src/pages/movie-detail/__tests__/`): one request for every section, their order, the region from the browser language, each empty state, a response without the appended blocks, the error state, axe;
+   - ✅ **TV Detail** (`apps/pages-mfe/src/pages/tv-detail/__tests__/`): one request for every section, their order, each empty state, a response without the appended blocks, the error state and axe, as on Movie Detail, with seasons and episodes in the hero, the Seasons section with the specials last, the creator in the line of directors and writers, and TV cards in More like this. `parseRouteId` has its own test, and `src/__tests__/routes.test.tsx` covers the page on demand and its skeleton;
+   - ✅ **Person** (`apps/pages-mfe/src/pages/person/__tests__/`): one request, the order of the sections, the talk show left out of Known for and kept in the filmography, each empty state, a response without the appended block, credits that lack a date, a title or a poster, the error state, an unknown and an invalid id, axe. `src/__tests__/routes.test.tsx` covers its skeleton;
+   - ✅ **Search** (`apps/pages-mfe/src/pages/search/__tests__/`): no request and focus on the input with no query, a search on submit alone, the query trimmed and the type kept, an empty submit, the input following the URL on Back, tabs that are links and load one at a time, each result leading to its page, Load more with an inline failure, the empty line of each tab, the skeleton and the error beside a form that still works, a `q` over the limit, axe, and the URL parsing and links of `use-search-state.ts`.
 
 ### Step 3 — ✅ e2e
 
@@ -80,16 +85,91 @@ Add Playwright (chromium) on the merged `dist/` served by `firebase emulators:st
 
 1. Home shows the hero and content rows.
 2. Navigation Home → Movies → Profile across MFEs.
-3. Search and filters on Movies are reflected in the URL and survive Back/Forward.
+3. Search and filters on Movies and TV Shows are reflected in the URL and survive Back/Forward, and a shared TV Shows link opens the same view.
 4. With `remoteEntry.js` of one remote aborted, its section shows the "unavailable" placeholder and the other sections keep working.
 5. An unknown URL shows NotFound.
+6. TV Shows opens from the header, the mobile menu and a direct URL, shows its empty and error states, and has no horizontal page scroll at 320 px, with a 100-character search too.
 
-e2e runs on PRs into `main` only.
+`e2e/movie-detail.spec.ts` runs on fixtures from `e2e/tmdb-mock.ts`, which also answers `image.tmdb.org` and `i.ytimg.com`, so no test reaches a real image host:
+
+1. The five sections stand in order below the hero, and every list stops at its limit.
+2. Thumbnails and logos load under the enforced CSP.
+3. Videos stay links, with no iframe.
+4. A section with nothing to show keeps its heading and says so.
+5. The providers follow the browser language, and the empty line names that country.
+6. At 320 px, neither a full page, an empty page nor long unbroken text widens the page.
+7. From far down the page, a card opens the other movie at the top, cached or not, and Back returns to where the reader was.
+
+`e2e/person.spec.ts` runs on the same fixtures:
+
+1. The page opens from the cast of Movie Detail, from far down the page too, and starts at the top.
+2. The facts and sections stand in order, and the photo loads under the enforced CSP.
+3. Known for stops at 12 and leaves the talk show out, its cards open a movie, and its button offers the watchlist.
+4. The filmography shows 30 rows, then all of them on a press, with focus on the first new row. A press on the bottom edge of the screen works and leaves the reader there.
+5. A row merges the roles on one title and links to its page, and a credit with no date, title or poster takes the last row.
+6. A long biography opens and closes, and a short one has no toggle.
+7. A person with nothing to show keeps every heading and says so.
+8. An unknown id and an id that is not a positive integer reach NotFound, the second with no request. A failed request offers a retry that brings the person.
+9. At 320 px, with the biography and the filmography open, neither a full page, an empty page nor long unbroken text widens the page, and each external string stays inside the screen.
+
+`e2e/tv-detail.spec.ts` runs on the same fixtures:
+
+1. A card on TV Shows opens the show, and a direct URL does too.
+2. The six sections stand in order below the hero, which shows the seasons and episodes and the watchlist button.
+3. Seasons keep the order of TMDB with the specials last, and the creator stands first in the line of directors and writers.
+4. A section with nothing to show keeps its heading and says so.
+5. An id TMDB does not know and an id that is not a number reach NotFound, and a failed request offers a retry.
+6. At 320 px, neither a full page, an empty page nor long unbroken text in every external string widens the page.
+7. From far down the page, a card opens the other show at the top.
+
+`e2e/search.spec.ts` runs on the same fixtures, whose search stands in for the proxy with a 400 over 100 characters:
+
+1. The header icon leaves focus on the input, on a chunk that is new, delayed past the move to `main`, and on one already loaded, and on the open page it drops the search.
+2. With no query, nothing is sent. A link opens the same view and survives a reload.
+3. A search runs on submit alone, and Back and Forward bring each search and its text back. An empty submit keeps the type.
+4. Tabs are links, and only the active one loads, with the skeleton beside the form and the tabs.
+5. A movie, a show and a person each open their details page, and the photo loads under the enforced CSP.
+6. Load more adds a page, and a failed one shows inline with no toast.
+7. Nothing found names the query and the tab, and a failed search offers a retry with the form still usable.
+8. A `q` over the limit reaches the error, and a submit gets out of it.
+9. At 320 px, on each tab, neither a 100-character unbroken query, with results or none, nor a 200-character name widens the page.
+
+`e2e/watchlist.spec.ts` runs on the Firestore emulator with the real rules:
+
+1. Folders nest six levels deep, then rename and move.
+2. Deleting a folder keeps its titles and removes only that branch.
+3. A delete names and removes a subfolder made in another tab.
+4. A failed write shows a toast and keeps the form.
+5. A delete still running does not pull the person back after they navigate away.
+6. A double click on Delete still asks first.
+7. The selected folder stays in view in the short tree of a phone.
+8. A whole title row opens the title.
+9. A long unbroken name does not widen the page on a phone.
+10. Firestore runs from the host's singleton with the signed-in user, on the watchlist page and from the catalog's picker. These are the only automated checks for a second `firebase/app`.
+11. A title goes into several folders and shows in the watchlist at once. A details page adds a title too, a person with no folders keeps the title under All titles, and a show is stored as TV, from Home and from TV Shows.
+12. Saving folders leaves `status` and `addedAt` alone.
+13. Two tabs keep both folders, a tab that lost the race to create overwrites nothing, and a folder deleted elsewhere is not written.
+14. A signed-out visitor gets the offer with no Firebase and comes back. A signed-in catalog page reads nothing until the picker opens.
+15. A whole card, its metadata included, opens the title, and its button does not.
+16. The dialog survives a second press outside, a double tap on a touch screen, a long list on a phone, Enter in the picker, a second card pressed during the download, and sign-out.
+17. A failed save keeps the ticks. A dialog chunk that will not load, online or offline, leaves the page working, and a page lost with the connection loads on Try again once it returns.
+18. Keyboard focus stays clear of the sticky filters on Movies and of the edges of a Home row.
+19. A status belongs to the title: it shows in every folder and after a reload, and `folderIds` stay.
+20. The status filter survives a sign-in, a folder change, a reload and Back.
+21. The switch opens nothing, and the rest of the row opens the title. A correction during a slow write ends on the last press, and a failed write puts the stored status back.
+22. Under a filter, a double tap leaves the next title alone, the keyboard keeps its focus, and Back that takes the focused row moves focus to the heading. At 320 px the switch and the pills fit, with 44 px to press.
+23. The profile shows the account and the watchlist counts and leads to the watchlist and Settings. A failed read of the watchlist leaves the account, and `Try again` brings the counts.
+24. A theme chosen in Settings reaches a page of another remote, survives a new load and a sign-out, and `System` follows the device.
+25. A removed title leaves every folder and the profile, also after a reload, and a removal in a long list keeps the page where it is.
+
+Titles are seeded through the emulator's REST API only for states the UI cannot produce on demand. `pnpm test:e2e` needs Java as well as `firebase-tools`.
+
+e2e runs on PRs into `main` only, so run it locally before merging a change to the watchlist or to `@repo/firebase`.
 
 ## CI
 
 - `quality` job: `pnpm install --frozen-lockfile` → `pnpm lint` → `pnpm typecheck` → `pnpm test`.
-- ✅ e2e: a separate `e2e` job on PRs into `main`, after `build:deploy`. `FIREBASE_CLI` overrides the emulator command there, because CI has no global `firebase-tools`.
+- ✅ e2e: a separate `e2e` job on PRs into `main`, after `build:deploy`. `FIREBASE_CLI` overrides the emulator command there, because CI has no global `firebase-tools`; the job sets up Java 21 for the Firestore emulator.
 
 ## Coverage
 

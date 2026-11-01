@@ -1,8 +1,11 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   CACHE_CONTROL_DEFAULT,
   CACHE_CONTROL_LONG,
+  DETAIL_APPEND,
   mapUpstreamError,
+  PERSON_DETAIL_APPEND,
   resolveProxyRequest,
   toTmdbPath,
 } from '../proxy-rules.js';
@@ -68,7 +71,8 @@ describe('resolveProxyRequest: paths', () => {
     '/authentication/token/new',
     '/movie/550/../../account',
     '/MOVIE/popular',
-    '/discover/tv',
+    '/discover/tv/',
+    '/discover/person',
     '/discover/movie/',
   ])('rejects %s with 404', (path) => {
     expect(resolve(`/api/tmdb${path}`)).toEqual({
@@ -208,6 +212,214 @@ describe('resolveProxyRequest: discover', () => {
   it('rejects discover params on other routes', () => {
     expect(resolve('/api/tmdb/movie/popular', 'sort_by=popularity.desc')).toEqual(BAD_REQUEST);
     expect(resolve('/api/tmdb/search/movie', 'query=x&with_genres=28')).toEqual(BAD_REQUEST);
+  });
+
+  it('refuses what only TV sends', () => {
+    expect(discover('sort_by=first_air_date.desc')).toEqual(BAD_REQUEST);
+    expect(discover('sort_by=popularity.desc&first_air_date.lte=2026-10-30')).toEqual(BAD_REQUEST);
+  });
+});
+
+describe('resolveProxyRequest: discover TV', () => {
+  const BAD_REQUEST = { ok: false, error: { status: 400, error: 'Invalid query parameters' } };
+
+  function discover(query: string) {
+    return resolve('/api/tmdb/discover/tv', query);
+  }
+
+  it('forwards every param the client sends, in a fixed order', () => {
+    const result = discover(
+      'page=2&first_air_date.lte=2026-10-30&with_genres=18&sort_by=first_air_date.desc'
+    );
+    expect(result).toEqual({
+      ok: true,
+      target: {
+        path: '/discover/tv',
+        search: '?sort_by=first_air_date.desc&with_genres=18&first_air_date.lte=2026-10-30&page=2',
+        cacheControl: CACHE_CONTROL_DEFAULT,
+      },
+    });
+  });
+
+  it.each(['popularity.desc', 'first_air_date.desc', 'vote_average.desc'])(
+    'accepts sort_by=%s',
+    (sortBy) => {
+      expect(discover(`sort_by=${sortBy}`).ok).toBe(true);
+    }
+  );
+
+  it('accepts a vote floor for the rating sort', () => {
+    const result = discover('sort_by=vote_average.desc&vote_count.gte=200');
+    expect(result.ok && result.target.search).toBe('?sort_by=vote_average.desc&vote_count.gte=200');
+  });
+
+  it('requires a known sort_by', () => {
+    expect(discover('')).toEqual(BAD_REQUEST);
+    expect(discover('with_genres=18')).toEqual(BAD_REQUEST);
+    expect(discover('sort_by=first_air_date.asc')).toEqual(BAD_REQUEST);
+  });
+
+  it('refuses what only movies send', () => {
+    expect(discover('sort_by=primary_release_date.desc')).toEqual(BAD_REQUEST);
+    expect(discover('sort_by=popularity.desc&primary_release_date.lte=2026-10-30')).toEqual(
+      BAD_REQUEST
+    );
+  });
+
+  it.each(['0', 'abc', '18,35', '18|35', ''])('rejects with_genres=%s', (genre) => {
+    expect(discover(`sort_by=popularity.desc&with_genres=${encodeURIComponent(genre)}`)).toEqual(
+      BAD_REQUEST
+    );
+  });
+
+  it.each(['-1', 'abc', '10001', ''])('rejects vote_count.gte=%s', (count) => {
+    expect(discover(`sort_by=vote_average.desc&vote_count.gte=${count}`)).toEqual(BAD_REQUEST);
+  });
+
+  it.each(['2026-02-30', '26-10-30', 'today', ''])('rejects first_air_date.lte=%s', (date) => {
+    expect(discover(`sort_by=first_air_date.desc&first_air_date.lte=${date}`)).toEqual(BAD_REQUEST);
+  });
+
+  it('rejects unknown, repeated and invalid page params', () => {
+    expect(discover('sort_by=popularity.desc&with_networks=213')).toEqual(BAD_REQUEST);
+    expect(discover('sort_by=popularity.desc&with_genres=18&with_genres=35')).toEqual(BAD_REQUEST);
+    expect(discover('sort_by=popularity.desc&page=501')).toEqual(BAD_REQUEST);
+  });
+});
+
+describe('resolveProxyRequest: details', () => {
+  const BAD_REQUEST = { ok: false, error: { status: 400, error: 'Invalid query parameters' } };
+
+  function details(query: string, path = '/movie/550') {
+    return resolve(`/api/tmdb${path}`, query);
+  }
+
+  it('takes the sections of a details page in one request', () => {
+    expect(DETAIL_APPEND).toBe(
+      'credits,videos,images,recommendations,similar,reviews,watch/providers'
+    );
+  });
+
+  it('matches the copy @repo/api sends, or every details page would fail with 400', () => {
+    const config = readFileSync(
+      new URL('../../../packages/api/src/core/config.ts', import.meta.url),
+      'utf8'
+    );
+
+    expect(config).toContain(`'${DETAIL_APPEND}'`);
+  });
+
+  describe.each(['/movie/550', '/tv/1399'])('%s', (path) => {
+    it('forwards the exact value as TMDB documents it, with a literal comma and slash', () => {
+      const query = new URLSearchParams({ append_to_response: DETAIL_APPEND }).toString();
+
+      expect(details(query, path)).toEqual({
+        ok: true,
+        target: {
+          path,
+          search: `?append_to_response=${DETAIL_APPEND}`,
+          cacheControl: CACHE_CONTROL_DEFAULT,
+        },
+      });
+    });
+
+    it('still accepts no params, so a client from the previous release keeps working', () => {
+      const result = details('', path);
+      expect(result.ok && result.target.search).toBe('');
+    });
+
+    it.each([
+      ['empty', ''],
+      ['a subset', 'credits'],
+      ['aggregate credits', DETAIL_APPEND.replace('credits', 'aggregate_credits')],
+      ['another order', 'videos,credits,images,recommendations,similar,reviews,watch/providers'],
+      ['a trailing comma', `${DETAIL_APPEND},`],
+      ['an extra section', `${DETAIL_APPEND},keywords`],
+      ['another case', DETAIL_APPEND.toUpperCase()],
+    ])('rejects append_to_response with %s', (_label, value) => {
+      expect(details(`append_to_response=${encodeURIComponent(value)}`, path)).toEqual(BAD_REQUEST);
+    });
+
+    it('rejects a junk param beside the exact value', () => {
+      const value = encodeURIComponent(DETAIL_APPEND);
+
+      expect(details(`append_to_response=${value}&language=en-US`, path)).toEqual(BAD_REQUEST);
+      expect(details(`append_to_response=${value}&page=1`, path)).toEqual(BAD_REQUEST);
+      expect(details(`append_to_response=${value}&append_to_response=${value}`, path)).toEqual(
+        BAD_REQUEST
+      );
+    });
+  });
+
+  it('keeps append_to_response off every other route', () => {
+    const query = `append_to_response=${encodeURIComponent(DETAIL_APPEND)}`;
+
+    expect(resolve('/api/tmdb/person/287', query)).toEqual(BAD_REQUEST);
+    expect(resolve('/api/tmdb/movie/popular', query)).toEqual(BAD_REQUEST);
+  });
+});
+
+describe('resolveProxyRequest: person details', () => {
+  const BAD_REQUEST = { ok: false, error: { status: 400, error: 'Invalid query parameters' } };
+
+  function details(query: string) {
+    return resolve('/api/tmdb/person/287', query);
+  }
+
+  it('takes the credits of the person page in one request', () => {
+    expect(PERSON_DETAIL_APPEND).toBe('combined_credits');
+  });
+
+  it('matches the copy @repo/api sends, or every person page would fail with 400', () => {
+    const config = readFileSync(
+      new URL('../../../packages/api/src/core/config.ts', import.meta.url),
+      'utf8'
+    );
+
+    expect(config).toContain(`PERSON_DETAIL_APPEND = '${PERSON_DETAIL_APPEND}'`);
+  });
+
+  it('forwards the exact value', () => {
+    expect(details(`append_to_response=${PERSON_DETAIL_APPEND}`)).toEqual({
+      ok: true,
+      target: {
+        path: '/person/287',
+        search: `?append_to_response=${PERSON_DETAIL_APPEND}`,
+        cacheControl: CACHE_CONTROL_DEFAULT,
+      },
+    });
+  });
+
+  it('still accepts no params, so a client from the previous release keeps working', () => {
+    const result = details('');
+    expect(result.ok && result.target.search).toBe('');
+  });
+
+  it.each([
+    ['empty', ''],
+    ['another section', 'movie_credits'],
+    ['a trailing comma', `${PERSON_DETAIL_APPEND},`],
+    ['an extra section', `${PERSON_DETAIL_APPEND},images`],
+    ['another case', PERSON_DETAIL_APPEND.toUpperCase()],
+    ['the string of a title', DETAIL_APPEND],
+  ])('rejects append_to_response with %s', (_label, value) => {
+    expect(details(`append_to_response=${encodeURIComponent(value)}`)).toEqual(BAD_REQUEST);
+  });
+
+  it('rejects a junk param beside the exact value', () => {
+    const value = PERSON_DETAIL_APPEND;
+
+    expect(details(`append_to_response=${value}&language=en-US`)).toEqual(BAD_REQUEST);
+    expect(details(`append_to_response=${value}&page=1`)).toEqual(BAD_REQUEST);
+    expect(details(`append_to_response=${value}&append_to_response=${value}`)).toEqual(BAD_REQUEST);
+  });
+
+  it('keeps the value off every other route', () => {
+    const query = `append_to_response=${PERSON_DETAIL_APPEND}`;
+
+    expect(resolve('/api/tmdb/movie/550', query)).toEqual(BAD_REQUEST);
+    expect(resolve('/api/tmdb/tv/1399', query)).toEqual(BAD_REQUEST);
+    expect(resolve('/api/tmdb/trending/person/week', query)).toEqual(BAD_REQUEST);
   });
 });
 

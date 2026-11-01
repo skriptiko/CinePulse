@@ -7,6 +7,14 @@ export const PROXY_PREFIX = '/api/tmdb';
 
 export const MAX_PAGE = 500;
 export const MAX_QUERY_LENGTH = 100; // keep equal to SEARCH_QUERY_MAX_LENGTH in @repo/api
+/**
+ * The only `append_to_response` `/movie/{id}` and `/tv/{id}` take, so the CDN cache cannot be
+ * busted with it. Keep equal to `DETAIL_APPEND` in @repo/api.
+ */
+export const DETAIL_APPEND =
+  'credits,videos,images,recommendations,similar,reviews,watch/providers';
+/** The same for `/person/{id}`. Keep equal to `PERSON_DETAIL_APPEND` in @repo/api. */
+export const PERSON_DETAIL_APPEND = 'combined_credits';
 
 export const CACHE_CONTROL_DEFAULT = 'public, max-age=300, s-maxage=3600';
 /** Genre lists change rarely. */
@@ -19,16 +27,24 @@ export const DISCOVER_SORT_BY = [
   'primary_release_date.desc',
   'vote_average.desc',
 ] as const;
+/** `sort_by` values `discoverTV` sends. */
+export const DISCOVER_TV_SORT_BY = [
+  'popularity.desc',
+  'first_air_date.desc',
+  'vote_average.desc',
+] as const;
 export const MAX_VOTE_COUNT_FLOOR = 10_000;
 
-type QueryRule = 'page' | 'search' | 'discover';
+type QueryRule = 'page' | 'search' | 'discover' | 'discoverTv' | 'detail' | 'personDetail';
 
 type RouteRule = {
   pattern: RegExp;
   /**
    * `page`: optional `page`; `search`: required `query` + optional `page`; `discover`:
    * required `sort_by` + optional `page`, `with_genres`, `vote_count.gte`,
-   * `primary_release_date.lte`; none: no params.
+   * `primary_release_date.lte`; `discoverTv`: the same with `first_air_date.lte` as the date;
+   * `detail`: nothing, or `append_to_response` set to exactly `DETAIL_APPEND`;
+   * `personDetail`: the same with `PERSON_DETAIL_APPEND`; none: no params.
    */
   query?: QueryRule;
   cacheControl: string;
@@ -43,14 +59,19 @@ const ROUTES: readonly RouteRule[] = [
     query: 'page',
     cacheControl: CACHE_CONTROL_DEFAULT,
   },
-  { pattern: new RegExp(`^/movie/${ID}$`), cacheControl: CACHE_CONTROL_DEFAULT },
+  {
+    pattern: new RegExp(`^/movie/${ID}$`),
+    query: 'detail',
+    cacheControl: CACHE_CONTROL_DEFAULT,
+  },
   { pattern: /^\/discover\/movie$/, query: 'discover', cacheControl: CACHE_CONTROL_DEFAULT },
+  { pattern: /^\/discover\/tv$/, query: 'discoverTv', cacheControl: CACHE_CONTROL_DEFAULT },
   {
     pattern: /^\/tv\/(popular|top_rated|on_the_air|airing_today)$/,
     query: 'page',
     cacheControl: CACHE_CONTROL_DEFAULT,
   },
-  { pattern: new RegExp(`^/tv/${ID}$`), cacheControl: CACHE_CONTROL_DEFAULT },
+  { pattern: new RegExp(`^/tv/${ID}$`), query: 'detail', cacheControl: CACHE_CONTROL_DEFAULT },
   {
     pattern: /^\/trending\/(all|movie|tv|person)\/(day|week)$/,
     query: 'page',
@@ -62,7 +83,11 @@ const ROUTES: readonly RouteRule[] = [
     cacheControl: CACHE_CONTROL_DEFAULT,
   },
   { pattern: /^\/genre\/(movie|tv)\/list$/, cacheControl: CACHE_CONTROL_LONG },
-  { pattern: new RegExp(`^/person/${ID}$`), cacheControl: CACHE_CONTROL_DEFAULT },
+  {
+    pattern: new RegExp(`^/person/${ID}$`),
+    query: 'personDetail',
+    cacheControl: CACHE_CONTROL_DEFAULT,
+  },
 ];
 
 export type ProxyError = {
@@ -112,6 +137,23 @@ const ALLOWED_PARAMS: Record<QueryRule, readonly string[]> = {
   page: ['page'],
   search: ['query', 'page'],
   discover: ['sort_by', 'with_genres', 'vote_count.gte', 'primary_release_date.lte', 'page'],
+  detail: ['append_to_response'],
+  personDetail: ['append_to_response'],
+  discoverTv: ['sort_by', 'with_genres', 'vote_count.gte', 'first_air_date.lte', 'page'],
+};
+
+/** The one `append_to_response` each details route takes. */
+const APPEND_VALUES: Partial<Record<QueryRule, string>> = {
+  detail: DETAIL_APPEND,
+  personDetail: PERSON_DETAIL_APPEND,
+};
+
+/** What the discover routes do not share: neither takes the other's sort or date. */
+type DiscoverRule = { sortValues: readonly string[]; dateParam: string };
+
+const DISCOVER_RULES: Partial<Record<QueryRule, DiscoverRule>> = {
+  discover: { sortValues: DISCOVER_SORT_BY, dateParam: 'primary_release_date.lte' },
+  discoverTv: { sortValues: DISCOVER_TV_SORT_BY, dateParam: 'first_air_date.lte' },
 };
 
 function sanitizeQuery(params: URLSearchParams, rule: QueryRule | undefined): string | null {
@@ -121,6 +163,14 @@ function sanitizeQuery(params: URLSearchParams, rule: QueryRule | undefined): st
     keys.some((key) => !allowed.includes(key)) || new Set(keys).size !== keys.length;
   if (hasUnknownOrRepeated) return null;
 
+  const detailAppend = rule && APPEND_VALUES[rule];
+  if (detailAppend) {
+    const append = params.get('append_to_response');
+    if (append === null) return '';
+    // Not rebuilt with `URLSearchParams`: TMDB documents this value with a literal comma and slash.
+    return append === detailAppend ? `?append_to_response=${append}` : null;
+  }
+
   const result = new URLSearchParams();
 
   if (rule === 'search') {
@@ -129,7 +179,8 @@ function sanitizeQuery(params: URLSearchParams, rule: QueryRule | undefined): st
     result.set('query', query);
   }
 
-  if (rule === 'discover' && !copyDiscoverParams(params, result)) return null;
+  const discoverRule = rule && DISCOVER_RULES[rule];
+  if (discoverRule && !copyDiscoverParams(params, result, discoverRule)) return null;
 
   const page = params.get('page');
   if (page !== null) {
@@ -142,9 +193,12 @@ function sanitizeQuery(params: URLSearchParams, rule: QueryRule | undefined): st
 }
 
 /** Validates the discover params and copies them in a fixed order; `false` if any is invalid. */
-function copyDiscoverParams(params: URLSearchParams, result: URLSearchParams): boolean {
+function copyDiscoverParams(
+  params: URLSearchParams,
+  result: URLSearchParams,
+  { sortValues, dateParam }: DiscoverRule
+): boolean {
   const sortBy = params.get('sort_by');
-  const sortValues: readonly string[] = DISCOVER_SORT_BY;
   if (sortBy === null || !sortValues.includes(sortBy)) return false;
   result.set('sort_by', sortBy);
 
@@ -162,10 +216,10 @@ function copyDiscoverParams(params: URLSearchParams, result: URLSearchParams): b
     result.set('vote_count.gte', voteCount);
   }
 
-  const releasedBy = params.get('primary_release_date.lte');
+  const releasedBy = params.get(dateParam);
   if (releasedBy !== null) {
     if (!isValidIsoDate(releasedBy)) return false;
-    result.set('primary_release_date.lte', releasedBy);
+    result.set(dateParam, releasedBy);
   }
 
   return true;

@@ -3,12 +3,15 @@ export const ROUTE_PATHS = {
   HOME: '/',
   MOVIES: '/movies',
   MOVIE_DETAIL: '/movies/:id',
+  TV: '/tv',
   TV_DETAIL: '/tv/:id',
   PERSON_DETAIL: '/person/:id',
+  SEARCH: '/search',
   AUTH_LOGIN: '/auth/login',
   USER: '/user',
   USER_PROFILE: '/user/profile',
   USER_SETTINGS: '/user/settings',
+  USER_WATCHLIST: '/user/watchlist',
 } as const satisfies Record<string, `/${string}`>;
 
 export type RoutePath = (typeof ROUTE_PATHS)[keyof typeof ROUTE_PATHS];

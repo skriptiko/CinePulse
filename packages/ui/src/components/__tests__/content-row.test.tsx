@@ -1,11 +1,29 @@
 import { renderWithProviders, screen, within } from '@repo/test-utils';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { ContentRow } from '../content-row';
 import type { MovieCardData } from '../movie-card';
 
 const MOVIES: MovieCardData[] = [
-  { id: 1, title: 'Dune', imageUrl: null, year: '2021', rating: '7.8', href: null },
-  { id: 2, title: 'Arrival', imageUrl: null, year: '2016', rating: '7.6', href: null },
+  {
+    id: 1,
+    title: 'Dune',
+    mediaType: 'movie',
+    posterPath: null,
+    imageUrl: null,
+    year: '2021',
+    rating: '7.8',
+    href: '/movies/1',
+  },
+  {
+    id: 2,
+    title: 'Arrival',
+    mediaType: 'movie',
+    posterPath: null,
+    imageUrl: null,
+    year: '2016',
+    rating: '7.6',
+    href: '/movies/2',
+  },
 ];
 
 describe('ContentRow', () => {
@@ -16,6 +34,39 @@ describe('ContentRow', () => {
     expect(
       screen.getAllByRole('heading', { level: 3 }).map((heading) => heading.textContent)
     ).toEqual(['Dune', 'Arrival']);
+  });
+
+  it('puts its heading and cards on the gutter of the page it sits on', () => {
+    renderWithProviders(
+      <ContentRow title="Trending Now" movies={MOVIES} gutterClassName="px-4 lg:px-12" />
+    );
+
+    expect(screen.getByRole('heading', { level: 2 })).toHaveClass('px-4', 'lg:px-12');
+    expect(screen.getByRole('list')).toHaveClass('px-4', 'lg:px-12');
+    expect(screen.getByRole('list')).not.toHaveClass('md:px-8');
+  });
+
+  it('keeps a movie and a show that share an id apart', () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const title = {
+      id: 1,
+      title: 'Dune',
+      posterPath: null,
+      imageUrl: null,
+      year: null,
+      rating: null,
+      href: '/titles/1',
+    };
+    const titles: MovieCardData[] = [
+      { ...title, mediaType: 'movie' },
+      { ...title, mediaType: 'tv' },
+    ];
+
+    renderWithProviders(<ContentRow title="Known for" movies={titles} />);
+
+    expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(2);
+    expect(consoleError).not.toHaveBeenCalled();
+    consoleError.mockRestore();
   });
 
   it('offers no action without a destination', () => {

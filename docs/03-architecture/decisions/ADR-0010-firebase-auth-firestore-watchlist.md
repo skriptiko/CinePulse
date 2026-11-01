@@ -4,7 +4,7 @@
 
 ## Status
 
-Accepted (2026-10-30). Replaces the "email + password, no social login" scope of the PRD.
+Accepted (2026-10-30). Replaces the "email + password, no social login" scope of the PRD. The Firestore entry point and its size budget are set by [ADR-0013](./ADR-0013-firestore-lite-watchlist-store.md).
 
 ## Context
 

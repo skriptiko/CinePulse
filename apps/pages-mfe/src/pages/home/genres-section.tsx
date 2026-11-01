@@ -2,7 +2,7 @@ import { genreQueries } from '@repo/api';
 import { ROUTE_PATHS } from '@repo/routes';
 import { CategoryLinks } from '@repo/ui';
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { moviesHrefForGenre } from '../movies/use-movie-filters';
+import { moviesHrefForGenre } from '../movies/movie-filters';
 import { SectionBoundary } from './section-boundary';
 
 export function GenresSection() {

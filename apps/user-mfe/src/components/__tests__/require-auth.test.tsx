@@ -10,7 +10,7 @@ function LoginProbe() {
   return <p>login, back to {state?.from}</p>;
 }
 
-function renderProtected(authStatus: AuthStatus) {
+function renderProtected(authStatus: AuthStatus, route: string = ROUTE_PATHS.USER_PROFILE) {
   globalStore.setState({ authStatus });
   return renderWithProviders(
     <Routes>
@@ -24,7 +24,7 @@ function renderProtected(authStatus: AuthStatus) {
       />
       <Route path={ROUTE_PATHS.AUTH_LOGIN} element={<LoginProbe />} />
     </Routes>,
-    { route: ROUTE_PATHS.USER_PROFILE }
+    { route }
   );
 }
 
@@ -42,6 +42,12 @@ describe('RequireAuth', () => {
 
     expect(screen.getByText('login, back to /user/profile')).toBeInTheDocument();
     expect(screen.queryByText('secret')).not.toBeInTheDocument();
+  });
+
+  it('remembers the query string of the target', () => {
+    renderProtected('anonymous', `${ROUTE_PATHS.USER_PROFILE}?folder=top`);
+
+    expect(screen.getByText('login, back to /user/profile?folder=top')).toBeInTheDocument();
   });
 
   it('waits while the session is being restored', () => {

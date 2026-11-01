@@ -6,6 +6,8 @@ import {
   type RulesTestEnvironment,
 } from '@firebase/rules-unit-testing';
 import {
+  arrayRemove,
+  arrayUnion,
   deleteDoc,
   doc,
   type Firestore,
@@ -212,6 +214,57 @@ describe('items', () => {
     );
   });
 
+  it('changes only the status of a title', async () => {
+    const db = asUser('alice');
+    await setDoc(doc(db, itemPath), item({ folderIds: ['f1'] }));
+    const { addedAt } = (await getDoc(doc(db, itemPath))).data() ?? {};
+
+    await assertSucceeds(updateDoc(doc(db, itemPath), { status: 'watched' }));
+
+    const stored = (await getDoc(doc(db, itemPath))).data();
+    expect(stored).toMatchObject({ status: 'watched', folderIds: ['f1'] });
+    expect(stored?.addedAt).toEqual(addedAt);
+  });
+
+  it('refuses a status outside the two, and any status from another user', async () => {
+    const db = asUser('alice');
+    await setDoc(doc(db, itemPath), item());
+
+    await assertFails(updateDoc(doc(db, itemPath), { status: 'dropped' }));
+    await assertFails(updateDoc(doc(db, itemPath), { status: null }));
+    await assertFails(updateDoc(doc(asUser('bob'), itemPath), { status: 'watched' }));
+  });
+
+  it('does not bring back a title that is gone', async () => {
+    const db = asUser('alice');
+
+    await expect(updateDoc(doc(db, itemPath), { status: 'watched' })).rejects.toThrow();
+    expect((await getDoc(doc(db, itemPath))).exists()).toBe(false);
+  });
+
+  it('never lets a second create overwrite a title', async () => {
+    const db = asUser('alice');
+    await setDoc(doc(db, itemPath), item({ status: 'watched', folderIds: ['f1'] }));
+
+    await assertFails(setDoc(doc(db, itemPath), item()));
+
+    const stored = await getDoc(doc(db, itemPath));
+    expect(stored.data()).toMatchObject({ status: 'watched', folderIds: ['f1'] });
+  });
+
+  it('adds and removes folders of a title in one batch', async () => {
+    const db = asUser('alice');
+    await setDoc(doc(db, itemPath), item({ status: 'watched', folderIds: ['f1', 'f2'] }));
+
+    const batch = writeBatch(db);
+    batch.update(doc(db, itemPath), { folderIds: arrayUnion('f3') });
+    batch.update(doc(db, itemPath), { folderIds: arrayRemove('f1') });
+    await assertSucceeds(batch.commit());
+
+    const stored = await getDoc(doc(db, itemPath));
+    expect(stored.data()).toMatchObject({ status: 'watched', folderIds: ['f2', 'f3'] });
+  });
+
   it('keeps the identity of a title unchanged', async () => {
     const db = asUser('alice');
     await setDoc(doc(db, itemPath), item());
@@ -223,6 +276,32 @@ describe('items', () => {
     const db = asUser('alice');
     await setDoc(doc(db, itemPath), item());
 
+    await assertFails(deleteDoc(doc(asUser('bob'), itemPath)));
     await assertSucceeds(deleteDoc(doc(db, itemPath)));
+  });
+});
+
+describe('deleting a branch', () => {
+  it('removes the folders and keeps the titles in one batch', async () => {
+    await seedChain('alice', 2);
+    const db = asUser('alice');
+    await setDoc(doc(db, 'users/alice/folders/other'), folder('Other', null, 1));
+    await setDoc(doc(db, 'users/alice/items/movie_550'), item({ folderIds: ['f2', 'other'] }));
+    await setDoc(
+      doc(db, 'users/alice/items/tv_1399'),
+      item({ mediaType: 'tv', tmdbId: 1399, folderIds: ['f2'] })
+    );
+
+    const batch = writeBatch(db);
+    batch.delete(doc(db, 'users/alice/folders/f1'));
+    batch.delete(doc(db, 'users/alice/folders/f2'));
+    batch.update(doc(db, 'users/alice/items/movie_550'), { folderIds: arrayRemove('f1', 'f2') });
+    batch.update(doc(db, 'users/alice/items/tv_1399'), { folderIds: arrayRemove('f1', 'f2') });
+    await assertSucceeds(batch.commit());
+
+    const kept = await getDoc(doc(db, 'users/alice/items/movie_550'));
+    const emptied = await getDoc(doc(db, 'users/alice/items/tv_1399'));
+    expect(kept.data()?.folderIds).toEqual(['other']);
+    expect(emptied.data()?.folderIds).toEqual([]);
   });
 });

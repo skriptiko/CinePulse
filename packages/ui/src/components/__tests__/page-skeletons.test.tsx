@@ -1,7 +1,16 @@
 import { renderWithProviders, screen } from '@repo/test-utils';
 import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { PageSkeleton, SKELETON_DELAY_MS } from '../page-skeletons';
+import { CardGridSkeleton, PageSkeleton, SKELETON_DELAY_MS } from '../page-skeletons';
+
+describe('CardGridSkeleton', () => {
+  it('shows only the cards of a grid, for a page that keeps its own heading', () => {
+    const { container } = renderWithProviders(<CardGridSkeleton />);
+
+    expect(screen.getByTestId('page-skeleton')).toHaveAttribute('aria-busy', 'true');
+    expect(container.querySelectorAll('[data-slot="skeleton"]')).toHaveLength(12);
+  });
+});
 
 describe('PageSkeleton', () => {
   beforeEach(() => vi.useFakeTimers());

@@ -11,11 +11,11 @@ export type RequireAuthProps = {
 /** Sends an anonymous visitor to the login page, which brings them back afterwards. */
 export function RequireAuth({ children }: RequireAuthProps) {
   const authStatus = useGlobalStore((state) => state.authStatus);
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
 
   if (authStatus === 'loading') return <PageSkeleton />;
   if (authStatus === 'anonymous') {
-    return <Navigate to={ROUTE_PATHS.AUTH_LOGIN} state={{ from: pathname }} replace />;
+    return <Navigate to={ROUTE_PATHS.AUTH_LOGIN} state={{ from: pathname + search }} replace />;
   }
   return children;
 }

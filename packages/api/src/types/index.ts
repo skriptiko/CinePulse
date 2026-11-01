@@ -1,4 +1,20 @@
-export type { PageParams, PaginatedResponse, ProductionCompany } from './common';
+export type {
+  CastMember,
+  Credits,
+  CrewMember,
+  DetailSections,
+  ImagesResponse,
+  MediaImage,
+  PageParams,
+  PaginatedResponse,
+  ProductionCompany,
+  RegionWatchProviders,
+  Review,
+  Video,
+  VideosResponse,
+  WatchProvider,
+  WatchProvidersResponse,
+} from './common';
 export type { Genre, GenresResponse } from './genre';
 export type {
   Collection,
@@ -7,7 +23,17 @@ export type {
   ProductionCountry,
   SpokenLanguage,
 } from './movie';
-export type { KnownFor, Person, PersonDetails } from './person';
+export type {
+  CastCredit,
+  CombinedCredits,
+  CreditedMovie,
+  CreditedTitle,
+  CreditedTV,
+  CrewCredit,
+  KnownFor,
+  Person,
+  PersonDetails,
+} from './person';
 export type { MultiSearchResult, SearchMovie, SearchPerson, SearchTV } from './search';
 export type {
   MediaType,

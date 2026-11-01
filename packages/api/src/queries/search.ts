@@ -2,7 +2,7 @@ import { infiniteQueryOptions } from '@tanstack/react-query';
 import { getNextPageParam } from '../core';
 import { searchMovies, searchMulti, searchPerson, searchTV } from '../endpoints';
 
-/** Query options for TMDB search. Share keys with `useMoviesOrSearch`. */
+/** Query options for TMDB search. Share keys with `useMoviesOrSearch` and `useTVOrSearch`. */
 export const searchQueries = {
   all: () => ['search'] as const,
 
@@ -30,6 +30,8 @@ export const searchQueries = {
       queryFn: ({ pageParam, signal }) => searchTV({ query, page: pageParam }, { signal }),
       initialPageParam: 1,
       getNextPageParam,
+      // The TV Shows page shows a next-page failure inline.
+      meta: { inlineErrors: true },
     }),
 
   person: (query: string) =>
@@ -38,5 +40,7 @@ export const searchQueries = {
       queryFn: ({ pageParam, signal }) => searchPerson({ query, page: pageParam }, { signal }),
       initialPageParam: 1,
       getNextPageParam,
+      // The Search page shows a next-page failure inline.
+      meta: { inlineErrors: true },
     }),
 };

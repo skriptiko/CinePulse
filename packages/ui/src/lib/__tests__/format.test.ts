@@ -1,5 +1,32 @@
 import { describe, expect, it } from 'vitest';
-import { formatDate, formatRating, formatRuntime, formatYear } from '../format';
+import {
+  formatCountry,
+  formatDate,
+  formatEpisodeCount,
+  formatRating,
+  formatRuntime,
+  formatShowLength,
+  formatTimestamp,
+  formatYear,
+  toOptionalText,
+} from '../format';
+
+describe('formatCountry', () => {
+  it('names a country in the language of the UI', () => {
+    expect(formatCountry('UA')).toBe('Ukraine');
+    expect(formatCountry('US')).toBe('United States');
+  });
+});
+
+describe('toOptionalText', () => {
+  it('keeps text', () => {
+    expect(toOptionalText('Chani')).toBe('Chani');
+  });
+
+  it.each(['', '   ', null, undefined])('turns %j into null', (text) => {
+    expect(toOptionalText(text)).toBeNull();
+  });
+});
 
 describe('formatRuntime', () => {
   it('splits minutes into hours and minutes', () => {
@@ -11,6 +38,34 @@ describe('formatRuntime', () => {
   it('hides an unknown runtime', () => {
     expect(formatRuntime(null)).toBeNull();
     expect(formatRuntime(0)).toBeNull();
+  });
+});
+
+describe('formatEpisodeCount', () => {
+  it('counts episodes, with a correct singular', () => {
+    expect(formatEpisodeCount(1)).toBe('1 episode');
+    expect(formatEpisodeCount(24)).toBe('24 episodes');
+    expect(formatEpisodeCount(10_500)).toBe('10,500 episodes');
+  });
+
+  it('hides an unknown count', () => {
+    expect(formatEpisodeCount(0)).toBeNull();
+    expect(formatEpisodeCount(undefined)).toBeNull();
+  });
+});
+
+describe('formatShowLength', () => {
+  it('counts seasons and episodes, with correct singulars', () => {
+    expect(formatShowLength(3, 24)).toBe('3 seasons, 24 episodes');
+    expect(formatShowLength(1, 8)).toBe('1 season, 8 episodes');
+    expect(formatShowLength(1, 1)).toBe('1 season, 1 episode');
+  });
+
+  it('leaves out a count TMDB does not know', () => {
+    expect(formatShowLength(2, 0)).toBe('2 seasons');
+    expect(formatShowLength(0, 6)).toBe('6 episodes');
+    expect(formatShowLength(0, 0)).toBeNull();
+    expect(formatShowLength(undefined, undefined)).toBeNull();
   });
 });
 
@@ -68,4 +123,16 @@ describe('formatRating', () => {
       expect(formatRating(value)).toBeNull();
     }
   );
+});
+
+describe('formatTimestamp', () => {
+  it('renders the day of the viewer, as a timestamp is a moment', () => {
+    expect(formatTimestamp('Sun, 01 Nov 2026 03:00:00 GMT')).toBe('Oct 31, 2026');
+  });
+
+  it('hides a missing or invalid timestamp', () => {
+    expect(formatTimestamp(null)).toBeNull();
+    expect(formatTimestamp('')).toBeNull();
+    expect(formatTimestamp('not a date')).toBeNull();
+  });
 });

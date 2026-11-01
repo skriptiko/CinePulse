@@ -29,7 +29,13 @@ vi.mock('firebase/auth', () => ({
   signOut: vi.fn(),
 }));
 
-const USER: AuthUser = { uid: 'uid-1', displayName: 'Ada', email: null, photoUrl: null };
+const USER: AuthUser = {
+  uid: 'uid-1',
+  displayName: 'Ada',
+  email: null,
+  photoUrl: null,
+  createdAt: null,
+};
 
 describe('Login', () => {
   beforeEach(() => {

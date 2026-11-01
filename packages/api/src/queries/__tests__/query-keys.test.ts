@@ -4,6 +4,7 @@ import { movieQueries } from '../movie';
 import { searchQueries } from '../search';
 import { STALE_TIME_REFERENCE } from '../stale-time';
 import { trendingQueries } from '../trending';
+import { DEFAULT_DISCOVER_TV_FILTERS, tvQueries } from '../tv';
 
 describe('query keys', () => {
   it('nests movie keys under one root so any level can be invalidated', () => {
@@ -40,11 +41,32 @@ describe('query keys', () => {
     expect(options.queryKey.slice(0, 2)).toEqual(movieQueries.lists());
   });
 
+  it('keys TV discover lists by genre and sort, under the TV lists', () => {
+    const options = tvQueries.discover({ genreId: 18, sortBy: 'first_air_date.desc' });
+
+    expect(options.queryKey).toEqual([
+      'tv',
+      'list',
+      'discover',
+      { genreId: 18, sortBy: 'first_air_date.desc' },
+    ]);
+    expect(options.queryKey.slice(0, 2)).toEqual(tvQueries.lists());
+  });
+
   it('marks the Movies page queries as showing their errors inline', () => {
     expect(movieQueries.discover({ genreId: null, sortBy: 'popularity.desc' }).meta).toEqual({
       inlineErrors: true,
     });
     expect(searchQueries.movies('dune').meta).toEqual({ inlineErrors: true });
+  });
+
+  it('marks the TV Shows page queries as showing their errors inline', () => {
+    expect(tvQueries.discover(DEFAULT_DISCOVER_TV_FILTERS).meta).toEqual({ inlineErrors: true });
+    expect(searchQueries.tv('severance').meta).toEqual({ inlineErrors: true });
+  });
+
+  it('marks the people search as showing its errors inline', () => {
+    expect(searchQueries.person('zendaya').meta).toEqual({ inlineErrors: true });
   });
 
   it('puts the query text, not the page, in the search key', () => {

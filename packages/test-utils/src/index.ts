@@ -1,9 +1,10 @@
 /// <reference types="@testing-library/jest-dom/vitest" />
 
-export { render, screen, waitFor, within } from '@testing-library/react';
+export { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 export { expectNoA11yViolations } from './axe';
-export { buildMovie, buildPaginated } from './factories/movie';
-export { buildTv } from './factories/tv';
+export { buildMovie, buildMovieDetails, buildPaginated } from './factories/movie';
+export { buildMovieCredit, buildPersonDetails, buildTvCredit } from './factories/person';
+export { buildTv, buildTvDetails } from './factories/tv';
 export { handlers } from './msw/handlers';
 export { server } from './msw/server';
 export type { RenderWithProvidersOptions } from './render';

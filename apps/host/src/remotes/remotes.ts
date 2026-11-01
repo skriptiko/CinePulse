@@ -5,11 +5,24 @@ export const REMOTES: readonly RemoteDefinition[] = [
   {
     name: 'pagesMfe',
     load: () => import('pagesMfe/routes'),
-    paths: [ROUTE_PATHS.HOME, ROUTE_PATHS.MOVIES, ROUTE_PATHS.MOVIE_DETAIL],
+    paths: [
+      ROUTE_PATHS.HOME,
+      ROUTE_PATHS.MOVIES,
+      ROUTE_PATHS.MOVIE_DETAIL,
+      ROUTE_PATHS.TV,
+      ROUTE_PATHS.TV_DETAIL,
+      ROUTE_PATHS.PERSON_DETAIL,
+      ROUTE_PATHS.SEARCH,
+    ],
   },
   {
     name: 'userMfe',
     load: () => import('userMfe/routes'),
-    paths: [ROUTE_PATHS.AUTH_LOGIN, ROUTE_PATHS.USER_PROFILE, ROUTE_PATHS.USER_SETTINGS],
+    paths: [
+      ROUTE_PATHS.AUTH_LOGIN,
+      ROUTE_PATHS.USER_PROFILE,
+      ROUTE_PATHS.USER_SETTINGS,
+      ROUTE_PATHS.USER_WATCHLIST,
+    ],
   },
 ];

@@ -5,7 +5,7 @@ The TMDB client and the app's `QueryClient`. Requests go to the relative `/api/t
 ## Public API
 
 - **Query factories:** `movieQueries`, `tvQueries`, `personQueries`, `genreQueries`, `searchQueries`, `trendingQueries`. Pass them to `useSuspenseQuery` and friends.
-- **Hook:** `useMoviesOrSearch`, for the one query that switches between discover and search.
+- **Hooks:** `useMoviesOrSearch` and `useTVOrSearch`, for the one query that switches between discover and search. The Search page has no such switch and calls `searchQueries.movies`, `.tv` and `.person` directly.
 - **Client:** `ApiProvider`, `createQueryClient`, `shouldRetry`.
 - **Errors:** `ApiError` with a `kind`, `isApiError`, `isNotFound`, `isAbortError`, `toHttpError`, `getErrorMessage`.
 - **Images:** `getImageUrl` and the size constants.
@@ -17,6 +17,8 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 
 const { data } = useSuspenseQuery(movieQueries.detail(id));
 ```
+
+`movieQueries.detail` and `tvQueries.detail` bring every section of the page in one request, through `append_to_response`. The proxy accepts only that exact string, so `DETAIL_APPEND` in `core/config.ts` and in `functions/src/proxy-rules.ts` change together (ADR-0017). `personQueries.detail` does the same with `combined_credits` and `PERSON_DETAIL_APPEND`.
 
 ## Dependencies
 

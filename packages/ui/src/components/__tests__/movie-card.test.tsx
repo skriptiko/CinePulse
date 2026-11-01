@@ -5,6 +5,8 @@ import { MovieCard, type MovieCardData } from '../movie-card';
 const MOVIE: MovieCardData = {
   id: 1,
   title: 'Dune',
+  mediaType: 'movie',
+  posterPath: '/dune.jpg',
   imageUrl: 'https://image.tmdb.org/t/p/w342/dune.jpg',
   year: '2021',
   rating: '7.8',
@@ -35,12 +37,6 @@ describe('MovieCard', () => {
     expect(container.firstElementChild).not.toHaveClass('cursor-pointer');
   });
 
-  it('is not a link without a destination', () => {
-    renderWithProviders(<MovieCard movie={{ ...MOVIE, href: null }} />);
-
-    expect(screen.queryByRole('link')).not.toBeInTheDocument();
-  });
-
   it('shows a placeholder instead of an image when there is none', () => {
     const { container } = renderWithProviders(<MovieCard movie={{ ...MOVIE, imageUrl: null }} />);
 
@@ -61,7 +57,32 @@ describe('MovieCard', () => {
     expect(screen.getByText('0.0')).toBeInTheDocument();
   });
 
-  it('has no "add to list" toggle until a watchlist exists', () => {
+  it('keeps an action outside the link, as interactive content cannot nest in one', () => {
+    renderWithProviders(<MovieCard movie={MOVIE} action={<button type="button">Add</button>} />);
+
+    const button = screen.getByRole('button', { name: 'Add' });
+    expect(button.closest('a')).toBeNull();
+    expect(screen.getByRole('link', { name: 'Dune' })).toHaveClass('after:absolute');
+  });
+
+  it('has no positioned or transformed ancestor between the link and the card', () => {
+    renderWithProviders(<MovieCard movie={MOVIE} />);
+
+    const link = screen.getByRole('link', { name: 'Dune' });
+    let element = link.parentElement;
+    while (element !== null && !element.classList.contains('group')) {
+      expect(element.className).not.toMatch(/\b(relative|absolute|translate|transform)/);
+      element = element.parentElement;
+    }
+  });
+
+  it('lets a press on the metadata through to the link', () => {
+    renderWithProviders(<MovieCard movie={MOVIE} />);
+
+    expect(screen.getByText('2021').closest('.pointer-events-none')).not.toBeNull();
+  });
+
+  it('renders no control without an action', () => {
     renderWithProviders(<MovieCard movie={MOVIE} />);
 
     expect(screen.queryByRole('button')).not.toBeInTheDocument();

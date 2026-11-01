@@ -6,13 +6,13 @@ const ratingFormatter = new Intl.NumberFormat(LOCALE, {
   maximumFractionDigits: 1,
 });
 
+const DATE_PARTS = { year: 'numeric', month: 'short', day: 'numeric' } as const;
+
 // Calendar dates are rendered in UTC so the day never shifts with the viewer's time zone.
-const dateFormatter = new Intl.DateTimeFormat(LOCALE, {
-  year: 'numeric',
-  month: 'short',
-  day: 'numeric',
-  timeZone: 'UTC',
-});
+const dateFormatter = new Intl.DateTimeFormat(LOCALE, { ...DATE_PARTS, timeZone: 'UTC' });
+
+// A timestamp is a moment, not a calendar date: it shows the day it was for the viewer.
+const timestampFormatter = new Intl.DateTimeFormat(LOCALE, DATE_PARTS);
 
 const TMDB_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
 
@@ -48,6 +48,12 @@ export function formatDate(date: string | null | undefined): string | null {
   return parsed ? dateFormatter.format(parsed) : null;
 }
 
+/** `'Sat, 31 Oct 2026 08:00:00 GMT'` → `'Oct 31, 2026'`; `null` when missing or invalid. */
+export function formatTimestamp(timestamp: string | null | undefined): string | null {
+  const parsed = timestamp ? new Date(timestamp) : null;
+  return parsed && Number.isFinite(parsed.getTime()) ? timestampFormatter.format(parsed) : null;
+}
+
 /**
  * `7.456` → `'7.5'`. `0` is a real rating and formats as `'0.0'`;
  * only a missing (or non-finite) value returns `null`.
@@ -57,6 +63,16 @@ export function formatRating(rating: number | null | undefined): string | null {
   return ratingFormatter.format(rating);
 }
 
+/** `'UA'` → `'Ukraine'`; made on call, so a page that never shows a country pays nothing. */
+export function formatCountry(code: string): string {
+  return new Intl.DisplayNames(LOCALE, { type: 'region' }).of(code) ?? code;
+}
+
+/** TMDB sends `''` for missing text. */
+export function toOptionalText(text: string | null | undefined): string | null {
+  return !text || text.trim() === '' ? null : text;
+}
+
 /** `135` → `2h 15m`; `null` when TMDB does not know the runtime (it may also send 0). */
 export function formatRuntime(minutes: number | null | undefined): string | null {
   if (!minutes) return null;
@@ -64,4 +80,23 @@ export function formatRuntime(minutes: number | null | undefined): string | null
   const rest = minutes % 60;
   if (hours === 0) return `${rest}m`;
   return rest === 0 ? `${hours}h` : `${hours}h ${rest}m`;
+}
+
+/** `24` → `24 episodes`; `null` when TMDB does not know the count (it may also send 0). */
+function formatCount(count: number | null | undefined, noun: string): string | null {
+  if (!count) return null;
+  return `${count.toLocaleString(LOCALE)} ${noun}${count === 1 ? '' : 's'}`;
+}
+
+export function formatEpisodeCount(count: number | null | undefined): string | null {
+  return formatCount(count, 'episode');
+}
+
+/** `3, 24` → `3 seasons, 24 episodes`; `null` when TMDB knows neither count. */
+export function formatShowLength(
+  seasons: number | null | undefined,
+  episodes: number | null | undefined
+): string | null {
+  const counts = [formatCount(seasons, 'season'), formatEpisodeCount(episodes)];
+  return counts.filter((count) => count !== null).join(', ') || null;
 }

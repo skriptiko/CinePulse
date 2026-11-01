@@ -80,12 +80,27 @@ export function MovieGridSkeleton() {
       <Skeleton className="mb-2 h-12 w-48" />
       <Skeleton className="mb-8 h-4 w-64" />
       <Skeleton className="mb-8 h-10 w-full max-w-md" />
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 lg:gap-6 xl:grid-cols-6">
-        {GRID_CARD_KEYS.map((key) => (
-          <Skeleton key={key} className="aspect-[2/3] w-full rounded-lg" />
-        ))}
-      </div>
+      <CardGrid />
     </SkeletonFrame>
+  );
+}
+
+/** The cards alone, for a page that keeps its heading and form while its results load. */
+export function CardGridSkeleton() {
+  return (
+    <SkeletonFrame>
+      <CardGrid />
+    </SkeletonFrame>
+  );
+}
+
+function CardGrid() {
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 lg:gap-6 xl:grid-cols-6">
+      {GRID_CARD_KEYS.map((key) => (
+        <Skeleton key={key} className="aspect-[2/3] w-full rounded-lg" />
+      ))}
+    </div>
   );
 }
 
@@ -111,7 +126,7 @@ type SkeletonFrameProps = {
 };
 
 /** Reserves the page layout at once, but shows it (and announces loading) only after a delay. */
-function SkeletonFrame({ children, className }: SkeletonFrameProps) {
+export function SkeletonFrame({ children, className }: SkeletonFrameProps) {
   const isVisible = useDelayedFlag(SKELETON_DELAY_MS);
 
   return (

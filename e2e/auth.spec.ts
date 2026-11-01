@@ -1,4 +1,5 @@
 import { expect, type Page, test } from '@playwright/test';
+import { signIn } from './sign-in';
 import { mockTmdb } from './tmdb-mock';
 
 // The enforced CSP does not allow the local Auth emulator, which the demo project talks to.
@@ -7,19 +8,6 @@ test.use({ bypassCSP: true });
 test.beforeEach(async ({ page }) => {
   await mockTmdb(page);
 });
-
-async function signIn(page: Page) {
-  const popupPromise = page.waitForEvent('popup');
-  await page.getByRole('button', { name: 'Continue with Google' }).click();
-  const popup = await popupPromise;
-  // The emulator's widget ignores a click that lands before its script has run.
-  await expect(async () => {
-    await popup.locator('#add-account-button').click({ timeout: 1000 });
-    await expect(popup.locator('#autogen-button')).toBeVisible({ timeout: 1000 });
-  }).toPass();
-  await popup.locator('#autogen-button').click();
-  await popup.locator('#sign-in').click();
-}
 
 async function expectBelowHeader(page: Page, name: string) {
   const heading = await page.getByRole('heading', { level: 1, name }).boundingBox();
@@ -62,4 +50,32 @@ test('the session survives a reload and ends with sign-out', async ({ page }) =>
   await page.getByRole('button', { name: 'Sign out' }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Sign in' })).toBeVisible();
   await expect(page.getByRole('banner').getByRole('link', { name: 'Sign in' })).toBeVisible();
+});
+
+test('the theme chosen in Settings reaches every page and stays', async ({ page }) => {
+  const root = page.locator('html');
+  await page.goto('/user/settings');
+  await signIn(page);
+  await expect(root).toHaveClass(/dark/);
+
+  await page.getByRole('radio', { name: 'Light' }).click();
+  await expect(root).not.toHaveClass(/dark/);
+
+  await page.getByRole('banner').getByRole('link', { name: 'Home' }).click();
+  await expect(page.getByRole('region', { name: 'Popular' })).toBeVisible();
+  await expect(root).not.toHaveClass(/dark/);
+
+  await page.goto('/user/settings');
+  await expect(page.getByRole('radio', { name: 'Light' })).toBeChecked();
+  await expect(root).not.toHaveClass(/dark/);
+
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.getByRole('radio', { name: 'System' }).click();
+  await expect(root).toHaveClass(/dark/);
+  await page.emulateMedia({ colorScheme: 'light' });
+  await expect(root).not.toHaveClass(/dark/);
+
+  await page.getByRole('button', { name: 'Sign out' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Sign in' })).toBeVisible();
+  await expect(root).not.toHaveClass(/dark/);
 });

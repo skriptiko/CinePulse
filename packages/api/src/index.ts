@@ -15,13 +15,14 @@ export {
   toHttpError,
 } from './core';
 
-export type { DiscoverSortBy, MovieCategory, TVCategory } from './endpoints';
-export { useMoviesOrSearch } from './hooks';
+export type { DiscoverSortBy, DiscoverTVSortBy, MovieCategory, TVCategory } from './endpoints';
+export { useMoviesOrSearch, useTVOrSearch } from './hooks';
 export type { ApiProviderProps } from './provider/api-provider';
 export { ApiProvider } from './provider/api-provider';
-export type { DiscoverMovieFilters } from './queries';
+export type { DiscoverMovieFilters, DiscoverTVFilters } from './queries';
 export {
   DEFAULT_DISCOVER_FILTERS,
+  DEFAULT_DISCOVER_TV_FILTERS,
   genreQueries,
   movieQueries,
   personQueries,
@@ -30,17 +31,30 @@ export {
   searchQueries,
   trendingQueries,
   tvQueries,
+  watchlistKey,
 } from './queries';
 export type { ApiQueryMeta } from './query-client';
 export { createQueryClient, MAX_RETRIES, shouldRetry } from './query-client';
 
 export type {
+  CastCredit,
+  CastMember,
   Collection,
+  CombinedCredits,
   Creator,
+  CreditedMovie,
+  CreditedTitle,
+  CreditedTV,
+  Credits,
+  CrewCredit,
+  CrewMember,
+  DetailSections,
   Episode,
   Genre,
   GenresResponse,
+  ImagesResponse,
   KnownFor,
+  MediaImage,
   MediaType,
   Movie,
   MovieDetails,
@@ -52,6 +66,8 @@ export type {
   PersonDetails,
   ProductionCompany,
   ProductionCountry,
+  RegionWatchProviders,
+  Review,
   SearchMovie,
   SearchPerson,
   SearchTV,
@@ -64,4 +80,8 @@ export type {
   TrendingTV,
   TV,
   TVDetails,
+  Video,
+  VideosResponse,
+  WatchProvider,
+  WatchProvidersResponse,
 } from './types';

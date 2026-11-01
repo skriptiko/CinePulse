@@ -13,6 +13,7 @@
   "dependencies": {
     "@repo/api": "workspace:*",
     "@repo/events": "workspace:*",
+    "@repo/firebase": "workspace:*",
     "@repo/routes": "workspace:*",
     "@repo/ui": "workspace:*",
     "@tanstack/react-query": "catalog:",
@@ -33,6 +34,7 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
+    "firebase": "catalog:",
     "jsdom": "catalog:",
     "msw": "catalog:",
     "tailwindcss": "catalog:",

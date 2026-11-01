@@ -8,7 +8,7 @@ const pillVariants = cva(
   {
     variants: {
       selected: {
-        true: 'bg-foreground text-background',
+        true: 'bg-foreground text-background forced-chosen',
         false: 'bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground',
       },
     },
@@ -75,6 +75,8 @@ export function CategoryPills({
 export type CategoryLink = {
   label: string;
   href: string;
+  /** The view on screen: a tab of Search, say, which is a URL of its own. */
+  isCurrent?: boolean;
 };
 
 export type CategoryLinksProps = {
@@ -91,7 +93,11 @@ export function CategoryLinks({ links, label, className }: CategoryLinksProps) {
       <ul className={cn('scrollbar-hide flex gap-2 overflow-x-auto px-4 pb-2 md:px-8', className)}>
         {links.map((link) => (
           <li key={link.href}>
-            <Link to={link.href} className={cn(pillVariants({ selected: false }), 'inline-block')}>
+            <Link
+              to={link.href}
+              aria-current={link.isCurrent ? 'page' : undefined}
+              className={cn(pillVariants({ selected: link.isCurrent === true }), 'inline-block')}
+            >
               {link.label}
             </Link>
           </li>

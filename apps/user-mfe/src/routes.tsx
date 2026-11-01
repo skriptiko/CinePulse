@@ -6,10 +6,13 @@ import { RequireAuth } from './components/require-auth';
 
 const Login = lazy(() => import('./pages/login').then((module) => ({ default: module.Login })));
 const Profile = lazy(() =>
-  import('./pages/profile').then((module) => ({ default: module.Profile }))
+  import('./pages/profile/profile-page').then((module) => ({ default: module.ProfilePage }))
 );
 const Settings = lazy(() =>
   import('./pages/settings').then((module) => ({ default: module.Settings }))
+);
+const Watchlist = lazy(() =>
+  import('./pages/watchlist/watchlist-page').then((module) => ({ default: module.WatchlistPage }))
 );
 
 export const routes: RouteObject[] = [
@@ -37,6 +40,16 @@ export const routes: RouteObject[] = [
       <PageBoundary>
         <RequireAuth>
           <Settings />
+        </RequireAuth>
+      </PageBoundary>
+    ),
+  },
+  {
+    path: ROUTE_PATHS.USER_WATCHLIST,
+    element: (
+      <PageBoundary>
+        <RequireAuth>
+          <Watchlist />
         </RequireAuth>
       </PageBoundary>
     ),

@@ -58,7 +58,8 @@ export function ToggleGroupItem({
       data-slot="toggle-group-item"
       className={cn(
         'text-muted-foreground hover:text-foreground rounded-md p-2 transition-colors',
-        'data-[state=on]:bg-background data-[state=on]:text-foreground',
+        // The fill alone is 1.1:1 against the track, so the chosen item also takes a ring.
+        'data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:ring-foreground/60 data-[state=on]:forced-chosen data-[state=on]:ring-1',
         className
       )}
     >

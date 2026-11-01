@@ -9,7 +9,9 @@ export function Toaster() {
   const theme = useGlobalStore((state) => state.theme);
 
   return (
+    // A new instance per theme: sonner never drops its device listener once it saw `system`.
     <Sonner
+      key={theme}
       theme={theme}
       position="bottom-right"
       toastOptions={{

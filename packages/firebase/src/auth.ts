@@ -1,10 +1,8 @@
 import { type AuthUser, createTypedEmitter, globalStore } from '@repo/events';
 import type { Auth, User } from 'firebase/auth';
-import { getFirebaseApp } from './app';
+import { getFirebaseApp, isDemoProject } from './app';
 import { getFirebaseCode, toApiError } from './errors';
 
-/** Firebase's convention: a `demo-` project has no backend and only talks to emulators. */
-const DEMO_PROJECT_PREFIX = 'demo-';
 const AUTH_EMULATOR_URL = 'http://127.0.0.1:5013';
 
 const POPUP_DISMISSED_CODES = ['auth/popup-closed-by-user', 'auth/cancelled-popup-request'];
@@ -77,7 +75,7 @@ function getSession(): Promise<Session> {
 async function connect(): Promise<Session> {
   const [app, sdk] = await Promise.all([getFirebaseApp(), import('firebase/auth')]);
   const auth = sdk.getAuth(app);
-  if (app.options.projectId?.startsWith(DEMO_PROJECT_PREFIX)) {
+  if (isDemoProject(app)) {
     sdk.connectAuthEmulator(auth, AUTH_EMULATOR_URL, { disableWarnings: true });
   }
   sdk.onAuthStateChanged(auth, handleAuthState);
@@ -96,8 +94,8 @@ function handleAuthState(firebaseUser: User | null): void {
   if (!user && previous) emitLogout({ uid: previous.uid });
 }
 
-function toAuthUser({ uid, displayName, email, photoURL }: User): AuthUser {
-  return { uid, displayName, email, photoUrl: photoURL };
+function toAuthUser({ uid, displayName, email, photoURL, metadata }: User): AuthUser {
+  return { uid, displayName, email, photoUrl: photoURL, createdAt: metadata.creationTime ?? null };
 }
 
 // Storage throws when the browser blocks it: the session then lasts until the page closes.

@@ -24,6 +24,7 @@ const FIREBASE_USER = {
   displayName: 'Ada',
   email: 'ada@example.com',
   photoURL: 'https://example.com/ada.png',
+  metadata: { creationTime: 'Sat, 31 Oct 2026 08:00:00 GMT' },
 };
 const SESSION_KEY = 'cinepulse-signed-in';
 
@@ -79,6 +80,7 @@ describe('auth session', () => {
       displayName: 'Ada',
       email: 'ada@example.com',
       photoUrl: 'https://example.com/ada.png',
+      createdAt: 'Sat, 31 Oct 2026 08:00:00 GMT',
     };
     expect(globalStore.getState()).toMatchObject({ user, authStatus: 'authenticated' });
     expect(onLogin).toHaveBeenCalledExactlyOnceWith({ user });

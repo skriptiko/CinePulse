@@ -2,11 +2,11 @@
 
 # Data model
 
-> **Important:** CinePulse **has no database of its own**. It is a client app on top of the [TMDB API](https://developer.themoviedb.org/). The "data model" here means the TypeScript types that describe TMDB responses (`packages/api/src/types/*`) and the app's client state (`packages/events/src/types.ts`). The only persistent secret storage is `TMDB_API_READ_TOKEN` (Firebase Secret).
+> **Important:** CinePulse **has no catalog database of its own**. It is a client app on top of the [TMDB API](https://developer.themoviedb.org/). The "data model" here means the TypeScript types that describe TMDB responses (`packages/api/src/types/*`) and the app's client state (`packages/events/src/types.ts`). The only persistent secret storage is `TMDB_API_READ_TOKEN` (Firebase Secret).
 >
-> ➕ **Changing (requirements 2026-07-12):** the formalized scope adds a **watchlist**, which needs **its own database (Firestore)**; it will be the first persistent store of user data. The planned model is below, in [Planned model: Watchlist](#-planned-model-watchlist-firestore).
+> The **watchlist** is the exception: user data lives in **Firestore**, the first persistent store of the project. The model is below, in [Watchlist (Firestore)](#watchlist-firestore).
 
-All types are re-exported from `@repo/api` (`packages/api/src/index.ts`) and `@repo/events`.
+TMDB and client-state types are re-exported from `@repo/api` (`packages/api/src/index.ts`) and `@repo/events`. Watchlist types come from `@repo/firebase`, and `WatchlistFolder` from `@repo/firebase/watchlist-tree`.
 
 ## Pagination wrapper
 
@@ -46,7 +46,24 @@ The next page comes from the shared `getNextPageParam` (`core/pagination.ts`): `
 
 Extends `Movie` (without `genre_ids`) and adds: `genres: Genre[]`, `budget`, `revenue`, `runtime: number | null`, `status`, `tagline`, `homepage`, `imdb_id`, `production_companies: ProductionCompany[]`, `production_countries: ProductionCountry[]`, `spoken_languages: SpokenLanguage[]`, `belongs_to_collection: Collection | null`.
 
+It also carries `DetailSections<Movie>`, the blocks `append_to_response` adds ([ADR-0017](./decisions/ADR-0017-detail-page-sections.md)).
+
 Helper types: `ProductionCompany`, `ProductionCountry`, `SpokenLanguage`, `Collection`.
+
+### `DetailSections<Title>` (`types/common.ts`) — sections of a details page
+
+`Title` is the list item of the media type: `MovieDetails` carries `DetailSections<Movie>`, and `TVDetails` carries `DetailSections<TV>`.
+
+| Key | Type | Notes |
+|------|-----|---------|
+| `credits` | `Credits` | `cast: CastMember[]`, `crew: CrewMember[]`. A person can hold several credits, so `credit_id` is the unique key; `order` is the billing position |
+| `videos` | `VideosResponse` | `results: Video[]`, with `site`, `type`, `official` and `key`, the id on that site |
+| `images` | `ImagesResponse` | `backdrops`, `posters`, `logos`: `MediaImage[]` |
+| `recommendations` / `similar` | `PaginatedResponse<Title>` | |
+| `reviews` | `PaginatedResponse<Review>` | `author`, `author_details.rating: number \| null` (out of 10), `content` (plain text), `created_at` (ISO timestamp, not a calendar date), `url` |
+| `'watch/providers'` | `WatchProvidersResponse` | `results` by ISO 3166-1 country code. A country has `link` and optional `flatrate`, `rent`, `buy`: `WatchProvider[]`. TMDB also sends `ads` and `free`, which the page does not show |
+
+The key `'watch/providers'` has a slash because it repeats the name in `append_to_response`.
 
 ## Domain: TV shows
 
@@ -57,6 +74,8 @@ Same as `Movie`, with TV specifics: `name` / `original_name` instead of `title`,
 ### `TVDetails` (`types/tv.ts`)
 
 Extends `TV` (without `genre_ids`) and adds: `genres`, `created_by: Creator[]`, `episode_run_time: number[]`, `in_production`, `languages`, `last_air_date`, `last_episode_to_air` / `next_episode_to_air: Episode | null`, `networks: Network[]`, `number_of_episodes`, `number_of_seasons`, `seasons: Season[]`, `status`, `tagline`, `type`.
+
+It also carries `DetailSections<TV>`, from the same `append_to_response` as a movie. `seasons` and `created_by` are part of the base response, so they take no block of their own. A `Season` has `season_number`, which is 0 for Specials, and `air_date: string | null`.
 
 Helper types: `Creator`, `Episode`, `Network`, `Season`, `ProductionCompany`.
 
@@ -72,9 +91,17 @@ Helper types: `Creator`, `Episode`, `Network`, `Season`, `ProductionCompany`.
 
 `biography`, `birthday`, `deathday`, `homepage`, `imdb_id`, `place_of_birth`, `also_known_as: string[]`, `profile_path`, `gender`, `known_for_department`, etc.
 
+It also carries `combined_credits: CombinedCredits`, the block `append_to_response` adds.
+
+### `CombinedCredits` (`types/person.ts`)
+
+`cast: CastCredit[]`, `crew: CrewCredit[]`. Each credit is a `CreditedTitle`, `CreditedMovie` or `CreditedTV`: the list item of its media type with `media_type` beside it, and every field but `id` optional, as TMDB can leave out a date, a title or a poster. `CastCredit` adds `credit_id` and `character`, `CrewCredit` adds `credit_id`, `department` and `job`.
+
+One person can hold several credits on one title, so only `credit_id` is unique in a list. A movie and a show can share an `id`, so a title is identified by its media type and id together.
+
 ## Domain: Genres
 
-`Genre = { id: number; name: string }`; `GenresResponse = { genres: Genre[] }` (`types/genre.ts`). A movie list contains only `genre_ids`, so the UI maps them to names using the `getMovieGenres()` response (as `Home.tsx` and `Movies.tsx` do).
+`Genre = { id: number; name: string }`; `GenresResponse = { genres: Genre[] }` (`types/genre.ts`). A list item contains only `genre_ids`, so the UI takes names from the genre list. Movies and TV have separate lists with different ids (`genreQueries.movie()`, `genreQueries.tv()`), as on the Movies and TV Shows pages.
 
 ## Domain: Trending and Search (unified types)
 
@@ -101,7 +128,13 @@ const THEMES = ['light', 'dark', 'system'] as const;
 type Theme = (typeof THEMES)[number];
 
 type AuthStatus = 'loading' | 'authenticated' | 'anonymous';
-type AuthUser = { uid: string; displayName: string | null; email: string | null; photoUrl: string | null };
+type AuthUser = {
+  uid: string;
+  displayName: string | null;
+  email: string | null;
+  photoUrl: string | null;
+  createdAt: string | null; // Firebase metadata.creationTime, a UTC timestamp string
+};
 
 type GlobalState = { theme: Theme; user: AuthUser | null; authStatus: AuthStatus }; // defaults: 'dark', null, 'anonymous'
 type GlobalActions = { setTheme: (theme: Theme) => void; setUser: (user: AuthUser | null) => void };
@@ -118,7 +151,7 @@ type GlobalStore = GlobalState & GlobalActions;
 
 ## Watchlist (Firestore)
 
-> Rules are in `firestore/firestore.rules`, tested with `pnpm test:rules`. The UI is not implemented yet. Reasoning and trade-offs: [ADR-0010](./decisions/ADR-0010-firebase-auth-firestore-watchlist.md).
+> Rules are in `firestore/firestore.rules`, tested with `pnpm test:rules`. Reasoning and trade-offs: [ADR-0010](./decisions/ADR-0010-firebase-auth-firestore-watchlist.md), [ADR-0013](./decisions/ADR-0013-firestore-lite-watchlist-store.md).
 
 ```ts
 type WatchStatus = 'watched' | 'planned';
@@ -144,6 +177,10 @@ interface WatchlistItem {
 ```
 
 - **Moving a branch:** one batch updates `parentId` on its root and `depth` on every descendant. The client checks for moves into the folder's own branch and past level 6.
+- **Deleting a branch:** one batch deletes its folders and removes their ids from `folderIds` with `arrayRemove`. Item documents stay; `folderIds: []` is valid, and such a title shows under All titles.
+- **Adding a title:** `saveTitle` reads the item fresh. A missing title is created with `status: 'planned'` and `addedAt` from the server; a stored one gets `arrayUnion` and `arrayRemove` on `folderIds` only, so `status`, `addedAt` and a folder added elsewhere survive. An added folder is checked against a fresh read of the folders, so a stale picker cannot write a dangling id. Rules refuse a second create, so two tabs can never overwrite a title ([ADR-0014](./decisions/ADR-0014-add-to-watchlist-dialog.md)).
+- **Changing a status:** `setTitleStatus` updates `status` alone and reads nothing, so a title deleted elsewhere is refused, not recreated. The page patches `items` from the write instead of rereading every title (ADR-0015).
+- **Removing a title:** `removeTitle` deletes the item document, so the title leaves every folder. It reads nothing itself; the page rereads `items` afterwards.
 - **Access:** only the signed-in owner reads and writes `users/{uid}/**`; everything else is denied.
 
 ## Event contract: `EventMap`

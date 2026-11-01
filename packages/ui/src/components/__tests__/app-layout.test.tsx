@@ -1,18 +1,36 @@
 import { expectNoA11yViolations, renderWithProviders, screen } from '@repo/test-utils';
-import { Link } from 'react-router-dom';
-import { describe, expect, it } from 'vitest';
+import { Link, useNavigate } from 'react-router-dom';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppLayout } from '../app-layout';
+
+function BackButton() {
+  const navigate = useNavigate();
+
+  return (
+    <button type="button" onClick={() => navigate(-1)}>
+      Back
+    </button>
+  );
+}
 
 function renderLayout() {
   return renderWithProviders(
     <AppLayout>
       <Link to="/movies">Go to movies</Link>
-      <Link to="/?query=dune">Search</Link>
+      <Link to="/?query=dune">Change the query</Link>
+      <BackButton />
     </AppLayout>
   );
 }
 
 describe('AppLayout', () => {
+  const scrollTo = vi.spyOn(window, 'scrollTo');
+
+  beforeEach(() => {
+    scrollTo.mockReset();
+    scrollTo.mockImplementation(() => {});
+  });
+
   it('renders one focusable main landmark', () => {
     renderLayout();
 
@@ -52,11 +70,39 @@ describe('AppLayout', () => {
 
   it('keeps focus when only the query changes', async () => {
     const { user } = renderLayout();
-    const link = screen.getByRole('link', { name: 'Search' });
+    const link = screen.getByRole('link', { name: 'Change the query' });
 
     await user.click(link);
 
     expect(link).toHaveFocus();
+  });
+
+  it('starts a new page at the top', async () => {
+    const { user } = renderLayout();
+    expect(scrollTo).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole('link', { name: 'Go to movies' }));
+
+    expect(scrollTo).toHaveBeenCalledExactlyOnceWith(0, 0);
+  });
+
+  it('keeps the position when only the query changes', async () => {
+    const { user } = renderLayout();
+
+    await user.click(screen.getByRole('link', { name: 'Change the query' }));
+
+    expect(scrollTo).not.toHaveBeenCalled();
+  });
+
+  it('leaves the position to the browser on Back', async () => {
+    const { user } = renderLayout();
+    await user.click(screen.getByRole('link', { name: 'Go to movies' }));
+    scrollTo.mockClear();
+
+    await user.click(screen.getByRole('button', { name: 'Back' }));
+
+    expect(await screen.findByRole('main')).toHaveFocus();
+    expect(scrollTo).not.toHaveBeenCalled();
   });
 
   it('has no axe violations', async () => {

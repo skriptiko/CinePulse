@@ -1,4 +1,9 @@
-import { DEFAULT_DISCOVER_FILTERS, movieQueries } from '@repo/api';
+import {
+  DEFAULT_DISCOVER_FILTERS,
+  DEFAULT_DISCOVER_TV_FILTERS,
+  movieQueries,
+  tvQueries,
+} from '@repo/api';
 import { globalStore } from '@repo/events';
 import {
   buildPaginated,
@@ -26,11 +31,26 @@ describe('Header', () => {
     expect(within(nav).getByRole('link', { name: 'Home' })).not.toHaveAttribute('aria-current');
   });
 
+  it('marks TV Shows on its own route, after Movies', () => {
+    renderWithProviders(<Header />, { route: '/tv' });
+
+    const links = within(screen.getByRole('navigation')).getAllByRole('link');
+    expect(links.map((link) => link.textContent)).toEqual(['Home', 'Movies', 'TV Shows']);
+    expect(links[2]).toHaveAttribute('aria-current', 'page');
+    expect(links[1]).not.toHaveAttribute('aria-current');
+  });
+
   it('links only to routes that exist', () => {
     renderWithProviders(<Header />);
 
     const links = within(screen.getByRole('navigation')).getAllByRole('link');
-    expect(links.map((link) => link.getAttribute('href'))).toEqual(['/', '/movies']);
+    expect(links.map((link) => link.getAttribute('href'))).toEqual(['/', '/movies', '/tv']);
+  });
+
+  it('leads the search icon to the Search page', () => {
+    renderWithProviders(<Header />);
+
+    expect(screen.getByRole('link', { name: 'Search' })).toHaveAttribute('href', '/search');
   });
 
   it('offers sign-in to an anonymous visitor', () => {
@@ -45,6 +65,7 @@ describe('Header', () => {
       displayName: 'Ada',
       email: null,
       photoUrl: 'https://example.com/ada.png',
+      createdAt: null,
     });
     const { container } = renderWithProviders(<Header />);
 
@@ -62,6 +83,10 @@ describe('Header', () => {
     expect(menuButton).toHaveAttribute('aria-expanded', 'true');
     const mobileNav = document.getElementById(menuButton.getAttribute('aria-controls') ?? '');
     if (!mobileNav) throw new Error('Mobile navigation is not rendered');
+    expect(within(mobileNav).getByRole('link', { name: 'TV Shows' })).toHaveAttribute(
+      'href',
+      '/tv'
+    );
     await user.click(within(mobileNav).getByRole('link', { name: 'Movies' }));
 
     expect(screen.getAllByRole('navigation')).toHaveLength(1);
@@ -110,5 +135,22 @@ describe('Header prefetch', () => {
     await user.hover(within(screen.getByRole('navigation')).getByRole('link', { name: 'Movies' }));
 
     await waitFor(() => expect(queryClient.getQueryState(moviesKey)).toBeDefined());
+  });
+
+  it('prefetches the default TV list and the TV genres after hovering the link', async () => {
+    const genres = http.get('*/api/tmdb/genre/tv/list', () => HttpResponse.json({ genres: [] }));
+    server.use(
+      http.get('*/api/tmdb/discover/tv', () => HttpResponse.json(buildPaginated([]))),
+      genres
+    );
+    const { user, queryClient } = renderWithProviders(<Header />);
+    const tvKey = tvQueries.discover(DEFAULT_DISCOVER_TV_FILTERS).queryKey;
+
+    await user.hover(
+      within(screen.getByRole('navigation')).getByRole('link', { name: 'TV Shows' })
+    );
+
+    await waitFor(() => expect(queryClient.getQueryState(tvKey)).toBeDefined());
+    await waitFor(() => expect(queryClient.getQueryState(['genres', 'tv'])).toBeDefined());
   });
 });

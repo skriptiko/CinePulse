@@ -5,6 +5,8 @@ export {
   API_CONFIG,
   BACKDROP_SIZE_FEATURED,
   BACKDROP_SIZE_HERO,
+  DETAIL_APPEND,
+  PERSON_DETAIL_APPEND,
   POSTER_SIZE_CARD,
   SEARCH_QUERY_MAX_LENGTH,
 } from './config';
@@ -13,4 +15,4 @@ export type { ApiErrorKind, ApiErrorOptions } from './errors';
 export { ApiError, isAbortError, isApiError, isNotFound, toHttpError } from './errors';
 export { getNextPageParam, TMDB_MAX_PAGES } from './pagination';
 export type { QueryParams } from './utils';
-export { buildQueryString, getImageUrl } from './utils';
+export { buildQueryString, getImageUrl, toIsoDate } from './utils';

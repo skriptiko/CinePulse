@@ -3,14 +3,14 @@ import { builtinEnvironments, type Environment } from 'vitest/runtime';
 /**
  * Globals of Node's fetch stack (undici). jsdom replaces them with its own classes, which undici
  * rejects ("Expected signal to be an instance of AbortSignal"), so fetch and MSW break.
- * Same approach as `jest-fixed-jsdom`.
+ * Same approach as `jest-fixed-jsdom`, but `FormData` stays jsdom's: React builds one from a form
+ * whose submit starts a transition, and undici's rejects a form of another DOM.
  */
 const NODE_FETCH_GLOBALS = [
   'fetch',
   'Request',
   'Response',
   'Headers',
-  'FormData',
   'Blob',
   'File',
   'AbortController',

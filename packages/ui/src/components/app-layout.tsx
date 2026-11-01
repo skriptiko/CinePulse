@@ -1,5 +1,5 @@
-import { type ReactNode, type RefObject, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { type ReactNode, type RefObject, useEffect, useLayoutEffect, useRef } from 'react';
+import { NavigationType, useLocation, useNavigationType } from 'react-router-dom';
 import { useResolvedTheme } from '../hooks/use-resolved-theme';
 import { Footer } from './footer';
 import { Header } from './header';
@@ -13,7 +13,7 @@ export type AppLayoutProps = {
 export function AppLayout({ children }: AppLayoutProps) {
   const mainRef = useRef<HTMLElement>(null);
   useThemeClass();
-  useFocusOnNavigation(mainRef);
+  useResetOnNavigation(mainRef);
 
   return (
     <div className="bg-background text-foreground flex min-h-screen flex-col">
@@ -34,18 +34,22 @@ export function AppLayout({ children }: AppLayoutProps) {
 
 /**
  * A client-side navigation leaves focus on a link that may be gone, so it moves to `main`,
- * which exists while the next page suspends. Query changes stay put: they come from filters
- * the user is still typing in.
+ * which exists while the next page suspends. A new page starts at the top; on Back the browser
+ * restores the position itself. Query changes stay put: they come from filters the user is still
+ * typing in.
  */
-function useFocusOnNavigation(mainRef: RefObject<HTMLElement | null>): void {
+function useResetOnNavigation(mainRef: RefObject<HTMLElement | null>): void {
   const { pathname } = useLocation();
+  const navigationType = useNavigationType();
   const previousPathname = useRef(pathname);
 
-  useEffect(() => {
+  // Before the paint: a page in the cache would flash at the old position.
+  useLayoutEffect(() => {
     if (previousPathname.current === pathname) return;
     previousPathname.current = pathname;
     mainRef.current?.focus({ preventScroll: true });
-  }, [pathname, mainRef]);
+    if (navigationType !== NavigationType.Pop) window.scrollTo(0, 0);
+  }, [pathname, navigationType, mainRef]);
 }
 
 /**

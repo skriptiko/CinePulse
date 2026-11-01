@@ -4,7 +4,14 @@ import type { FirebaseApp, FirebaseOptions } from 'firebase/app';
 /** Served by Firebase Hosting for the project, so the repository holds no Firebase keys. */
 const CONFIG_URL = '/__/firebase/init.json';
 
+/** Firebase's convention: a `demo-` project has no backend and only talks to emulators. */
+const DEMO_PROJECT_PREFIX = 'demo-';
+
 let app: Promise<FirebaseApp> | undefined;
+
+export function isDemoProject({ options }: FirebaseApp): boolean {
+  return options.projectId?.startsWith(DEMO_PROJECT_PREFIX) ?? false;
+}
 
 /** One app per page. A failed start is forgotten, so the next call tries again. */
 export function getFirebaseApp(): Promise<FirebaseApp> {

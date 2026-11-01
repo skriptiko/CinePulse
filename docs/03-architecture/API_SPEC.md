@@ -59,24 +59,34 @@ Paths are relative to the proxy base `/api/tmdb`. Keys follow `all → lists / d
 | `movieQueries.list(category)` (infinite) | `['movies', 'list', category]` | `GET /movie/{category}` | `PaginatedResponse<Movie>` |
 | `movieQueries.discover({ genreId, sortBy })` (infinite) | `['movies', 'list', 'discover', { genreId, sortBy }]` | `GET /discover/movie?sort_by&with_genres&page` | `PaginatedResponse<Movie>` |
 | `movieQueries.row(category)` | `['movies', 'list', category, 'first-page']` | `GET /movie/{category}?page=1` | `PaginatedResponse<Movie>` |
-| `movieQueries.detail(id)` | `['movies', 'detail', id]` | `GET /movie/{id}` | `MovieDetails` |
-| `tvQueries.list(category)` / `.row(category)` / `.detail(id)` | `['tv', …]` | `GET /tv/{category}`, `GET /tv/{id}` | `PaginatedResponse<TV>`, `TVDetails` |
+| `movieQueries.detail(id)` | `['movies', 'detail', id]` | `GET /movie/{id}?append_to_response=…` | `MovieDetails`, with every section of the page |
+| `tvQueries.list(category)` / `.row(category)` | `['tv', …]` | `GET /tv/{category}` | `PaginatedResponse<TV>` |
+| `tvQueries.detail(id)` | `['tv', 'detail', id]` | `GET /tv/{id}?append_to_response=…` | `TVDetails`, with every section of the page |
+| `tvQueries.discover({ genreId, sortBy })` (infinite) | `['tv', 'list', 'discover', { genreId, sortBy }]` | `GET /discover/tv?sort_by&with_genres&page` | `PaginatedResponse<TV>` |
 | `trendingQueries.list(mediaType, timeWindow)` / `.row(…)` | `['trending', 'list', mediaType, timeWindow]` | `GET /trending/{mediaType}/{timeWindow}` | `PaginatedResponse<TrendingItem>` |
 | `searchQueries.multi/movies/tv/person(query)` (infinite) | `['search', type, query]` | `GET /search/{multi,movie,tv,person}` | `PaginatedResponse<…>` |
 | `genreQueries.movie()` / `.tv()` | `['genres', 'movie' \| 'tv']` | `GET /genre/{movie,tv}/list` | `GenresResponse`, `staleTime: Infinity` |
-| `personQueries.detail(id)` | `['person', 'detail', id]` | `GET /person/{id}` | `PersonDetails` |
+| `personQueries.detail(id)` | `['person', 'detail', id]` | `GET /person/{id}?append_to_response=combined_credits` | `PersonDetails`, with every credit |
 
 `DEFAULT_DISCOVER_FILTERS` (`{ genreId: null, sortBy: 'popularity.desc' }`) is the unfiltered Movies view; the header prefetches it (and the genres) after 200 ms of hover or focus on the Movies link. `sortBy` (`DiscoverSortBy`) is `popularity.desc | primary_release_date.desc | vote_average.desc`; `genreId: null` omits `with_genres`. `vote_average.desc` also sends `vote_count.gte=200` (`DISCOVER_MIN_VOTE_COUNT`) and `primary_release_date.desc` sends `primary_release_date.lte=<today, UTC>`, so both sorts skip unrated and unreleased films. The proxy allowlist (`functions/src/proxy-rules.ts`) accepts exactly these params on `/discover/movie` and rejects anything else with 400.
 
-`movieQueries.discover` and `searchQueries.movies` set `meta: { inlineErrors: true }`: the Movies page shows a failed next page inline, so `QueryCache.onError` shows no toast.
+`DEFAULT_DISCOVER_TV_FILTERS` is the same for TV Shows, and the header prefetches it (and the TV genres) the same way. `sortBy` (`DiscoverTVSortBy`) is `popularity.desc | first_air_date.desc | vote_average.desc`. `vote_average.desc` sends the same `vote_count.gte=200` and `first_air_date.desc` sends `first_air_date.lte=<today, UTC>`, so both sorts skip unrated and unaired shows. `/discover/tv` has its own allowlist rule: it refuses the movie sort and date param with 400, as `/discover/movie` refuses the TV ones.
+
+`movieQueries.detail` and `tvQueries.detail` ask for `credits,videos,images,recommendations,similar,reviews,watch/providers` in one request (`DETAIL_APPEND`, [ADR-0017](./decisions/ADR-0017-detail-page-sections.md)). The proxy accepts exactly that string or no params on `/movie/{id}` and `/tv/{id}` and rejects anything else with 400, so a change needs both copies, in `core/config.ts` and `functions/src/proxy-rules.ts`.
+
+`personQueries.detail` does the same with `combined_credits` (`PERSON_DETAIL_APPEND`), so Known for and the filmography come with the person. The rule on `/person/{id}` is its own exact string: the value of a movie is a 400 there, and this one is a 400 on `/movie/{id}`.
+
+`movieQueries.discover`, `tvQueries.discover`, `searchQueries.movies`, `searchQueries.tv` and `searchQueries.person` set `meta: { inlineErrors: true }`: Movies, TV Shows and Search show a failed next page inline, so `QueryCache.onError` shows no toast.
 
 `category` is `popular | top_rated | upcoming | now_playing` for movies and `popular | top_rated | on_the_air | airing_today` for TV; `mediaType` is `movie | tv | person | all`, `timeWindow` is `day | week`.
 
-`useMoviesOrSearch(query, { genreId, sortBy })` switches between `searchQueries.movies(query)` and `movieQueries.discover({ genreId, sortBy })` inside one infinite query, using their keys, so the cache is shared. A non-empty `query` wins and the filters are ignored: TMDB search has no genre or sort.
+`useMoviesOrSearch(query, { genreId, sortBy })` switches between `searchQueries.movies(query)` and `movieQueries.discover({ genreId, sortBy })` inside one infinite query, using their keys, so the cache is shared. A non-empty `query` wins and the filters are ignored: TMDB search has no genre or sort. `useTVOrSearch(query, { genreId, sortBy })` does the same with `searchQueries.tv(query)` and `tvQueries.discover({ genreId, sortBy })`.
+
+The Search page calls `searchQueries.movies`, `.tv` and `.person` directly, one for each tab, so it shares its cache with Movies and TV Shows. TMDB treats a query it cannot use as an empty result. The proxy refuses a query over `SEARCH_QUERY_MAX_LENGTH` with 400, which only a URL typed by hand can send, and Search shows that as its error.
 
 ## Images
 
-`getImageUrl(path, size)` (`core/utils.ts`) builds an absolute `image.tmdb.org` URL for an `ImageSize` / `BackdropSize` / `ProfileSize`. It returns `null` when the path is `null` or `undefined`. Card and backdrop sizes are the `POSTER_SIZE_CARD`, `BACKDROP_SIZE_FEATURED` and `BACKDROP_SIZE_HERO` constants.
+`getImageUrl(path, size)` (`core/utils.ts`) builds an absolute `image.tmdb.org` URL for an `ImageSize` / `BackdropSize` / `ProfileSize`. It returns `null` when the path is `null` or `undefined`. Card and backdrop sizes are the `POSTER_SIZE_CARD`, `BACKDROP_SIZE_FEATURED` and `BACKDROP_SIZE_HERO` constants. The sizes of the sections of a details page and of the Person photo stay in their mappers in `@repo/ui`, because `@repo/api` is a shared module that is not tree-shaken and its code reaches the host chunk.
 
 ## API coverage vs UI
 
@@ -87,7 +97,11 @@ Paths are relative to the proxy base `/api/tmdb`. Keys follow `all → lists / d
 | `movieQueries.list` | ⬜ | not used since Movies moved to `discover`; kept for category pages |
 | `trendingQueries.row` | ✅ | Home (Hero + Trending) |
 | `genreQueries.movie` | ✅ | Home, Movies (genre pills, prefetched next to the list) |
-| `movieQueries.detail` | ⬜ | **Movie Detail** `/movies/:id` |
-| `tvQueries.*`, `genreQueries.tv` | ⬜ | **TV** `/tv`, `/tv/:id` |
-| `searchQueries.multi/tv/person` | ⬜ | **Search** `/search` |
-| `personQueries.detail` | ⬜ | **Person** `/person/:id` |
+| `movieQueries.detail` | ✅ | **Movie Detail** `/movies/:id` (hero and all five sections) |
+| `tvQueries.discover`, `searchQueries.tv` | ✅ | TV Shows, through `useTVOrSearch` (genre, sort and search from the URL) |
+| `genreQueries.tv` | ✅ | TV Shows (genre pills, prefetched next to the list) |
+| `tvQueries.detail` | ✅ | **TV Detail** `/tv/:id` (hero and all six sections) |
+| `tvQueries.list`, `tvQueries.row` | ⬜ | kept for category pages and rows |
+| `searchQueries.movies`, `searchQueries.tv`, `searchQueries.person` | ✅ | **Search** `/search`, one query for the active tab, with Load more |
+| `searchQueries.multi` | ⬜ | not used: a mixed list cannot page by type, so Search has tabs |
+| `personQueries.detail` | ✅ | **Person** `/person/:id` (hero, Known for, filmography) |

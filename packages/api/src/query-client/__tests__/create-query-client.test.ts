@@ -1,11 +1,16 @@
-import { createTypedListener } from '@repo/events';
+import { createTypedEmitter, createTypedListener } from '@repo/events';
 import { type QueryClient, QueryObserver, type QueryObserverResult } from '@tanstack/react-query';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { ApiError, isApiError } from '../../core';
-import { movieQueries } from '../../queries';
-import { createQueryClient, MAX_RETRIES, shouldRetry } from '../create-query-client';
+import { movieQueries, watchlistKey } from '../../queries';
+import {
+  createQueryClient,
+  dropWatchlistOnLogout,
+  MAX_RETRIES,
+  shouldRetry,
+} from '../create-query-client';
 
 // @repo/api cannot use @repo/test-utils (that package depends on @repo/api), so it owns its server.
 const server = setupServer();
@@ -165,3 +170,33 @@ function settle(queryClient: QueryClient): Promise<QueryObserverResult<unknown, 
     });
   });
 }
+
+describe('dropWatchlistOnLogout', () => {
+  const emitLogout = createTypedEmitter('user:logout');
+
+  it('drops the watchlist of the user who left and nothing else', () => {
+    const queryClient = createQueryClient();
+    const unsubscribe = dropWatchlistOnLogout(queryClient);
+    queryClient.setQueryData([...watchlistKey('a'), 'folders'], []);
+    queryClient.setQueryData([...watchlistKey('b'), 'folders'], []);
+    queryClient.setQueryData(['movie', 1], {});
+
+    emitLogout({ uid: 'a' });
+    unsubscribe();
+
+    expect(queryClient.getQueryData([...watchlistKey('a'), 'folders'])).toBeUndefined();
+    expect(queryClient.getQueryData([...watchlistKey('b'), 'folders'])).toEqual([]);
+    expect(queryClient.getQueryData(['movie', 1])).toEqual({});
+  });
+
+  it('stops listening after unsubscribe', () => {
+    const queryClient = createQueryClient();
+    const unsubscribe = dropWatchlistOnLogout(queryClient);
+    queryClient.setQueryData([...watchlistKey('a'), 'folders'], []);
+
+    unsubscribe();
+    emitLogout({ uid: 'a' });
+
+    expect(queryClient.getQueryData([...watchlistKey('a'), 'folders'])).toEqual([]);
+  });
+});

@@ -36,6 +36,8 @@ export type AuthUser = {
   displayName: string | null;
   email: string | null;
   photoUrl: string | null;
+  /** When the account was created, as Firebase reports it (a UTC timestamp string). */
+  createdAt: string | null;
 };
 
 export type UserLoginPayload = {

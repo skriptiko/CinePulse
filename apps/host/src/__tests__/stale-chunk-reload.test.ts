@@ -7,7 +7,10 @@ describe('handlePreloadError', () => {
     window.sessionStorage.clear();
   });
 
-  afterEach(() => vi.useRealTimers());
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
 
   it('reloads once and stops Vite from throwing', () => {
     const reload = vi.fn();
@@ -17,6 +20,17 @@ describe('handlePreloadError', () => {
 
     expect(reload).toHaveBeenCalledTimes(1);
     expect(event.defaultPrevented).toBe(true);
+  });
+
+  it('leaves a failure to its caller while offline, as a reload would lose the page', () => {
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+    const reload = vi.fn();
+    const event = new Event('vite:preloadError', { cancelable: true });
+
+    handlePreloadError(event, reload);
+
+    expect(reload).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(false);
   });
 
   it('does not reload again within the cooldown', () => {
