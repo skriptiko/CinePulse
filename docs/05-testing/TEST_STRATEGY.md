@@ -154,6 +154,12 @@ Two mutants proved the check, each on a new `pnpm build:deploy` and the whole su
 8. A `q` over the limit reaches the error, and a submit gets out of it.
 9. At 320 px, on each tab, neither a 100-character unbroken query, with results or none, nor a 200-character name widens the page.
 
+`e2e/hero.spec.ts` runs on the same fixtures, at 320, 375, 480, 639 and 640 px:
+
+1. The boxes of the genre pills and of **More Info** do not meet, and below `sm` the pills leave room for its focus ring as well.
+2. The focus ring shows on all four sides, read from painted pixels, where the first pill would cover it.
+3. A real press on the bottom edge of **More Info** opens the title.
+
 `e2e/watchlist.spec.ts` runs on the Firestore emulator with the real rules:
 
 1. Folders nest six levels deep, then rename and move.
