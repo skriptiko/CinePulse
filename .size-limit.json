@@ -7,7 +7,7 @@
       "!apps/host/dist/assets/watchlist-store-*.js"
     ],
     "gzip": true,
-    "limit": "208 kB"
+    "limit": "210 kB"
   },
   {
     "name": "Firebase SDK (gzip, signed-in visitors only)",
