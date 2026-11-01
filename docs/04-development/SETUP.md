@@ -90,10 +90,10 @@ pnpm build:deploy   # build + merge the dist of all MFEs into a single folder fo
 
 | Command | Purpose |
 |---------|-------------|
-| `pnpm lint` | Linting via Biome (turbo) |
+| `pnpm lint` | Linting via Biome (turbo for the packages, then `e2e/` and `playwright.config.ts`) |
 | `pnpm format` | Formatting via Biome |
 | `pnpm check` | Biome check with fixes applied automatically |
-| `pnpm typecheck` | TypeScript type checking |
+| `pnpm typecheck` | TypeScript type checking (turbo for the packages, then `e2e/` and `playwright.config.ts`) |
 | `pnpm sync-types` | Sync remote module types into the host |
 | `pnpm build:deploy` | Build + merge the MFE `dist/` folders |
 | `pnpm deploy` | Build, merge and deploy to Firebase Hosting (production) |

@@ -13,8 +13,8 @@ Pipeline: [`.github/workflows/firebase-deploy.yml`](../../.github/workflows/fire
 - **Job `quality`** (on every trigger):
   1. checkout, pnpm, Node (`pnpm` cache).
   2. `pnpm install --frozen-lockfile` — fails if `pnpm-lock.yaml` is out of sync with `package.json`.
-  3. `pnpm lint` (Biome + JSX-spread ban).
-  4. `pnpm typecheck`.
+  3. `pnpm lint` (Biome, `e2e/` included, + JSX-spread ban).
+  4. `pnpm typecheck` (`e2e/` included).
   5. `pnpm test`.
 - **Job `size`** (on every trigger, not required for merge): `pnpm turbo build --filter=@repo/host` → `pnpm size` (budget in `.size-limit.json`).
 - **Job `rules`** (on every trigger): sets up Java 21 and runs the Firestore rules tests on the emulator.
