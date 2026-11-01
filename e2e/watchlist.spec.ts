@@ -1149,17 +1149,20 @@ test.describe('in forced colours', () => {
   });
 });
 
-function getLuminance(rgb: number[]): number {
-  const [red, green, blue] = rgb.map((value) => {
-    const channel = value / 255;
-    return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
-  });
-  return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+type Rgb = [red: number, green: number, blue: number];
+
+function toLinear(value: number): number {
+  const channel = value / 255;
+  return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
 }
 
-function getContrast(first: number[], second: number[]): number {
-  const [lighter, darker] = [getLuminance(first), getLuminance(second)].sort((a, b) => b - a);
-  return (lighter + 0.05) / (darker + 0.05);
+function getLuminance([red, green, blue]: Rgb): number {
+  return 0.2126 * toLinear(red) + 0.7152 * toLinear(green) + 0.0722 * toLinear(blue);
+}
+
+function getContrast(first: Rgb, second: Rgb): number {
+  const luminances = [getLuminance(first), getLuminance(second)];
+  return (Math.max(...luminances) + 0.05) / (Math.min(...luminances) + 0.05);
 }
 
 /**
@@ -1192,16 +1195,22 @@ async function getRingContrast(page: Page, target: Locator, near: number, far: n
       const canvas = new OffscreenCanvas(image.width, image.height);
       const context = canvas.getContext('2d');
       context?.drawImage(image, 0, 0);
-      return spots.map(({ x, y }) =>
-        Array.from(context?.getImageData(Math.round(x), Math.round(y), 1, 1).data ?? []).slice(0, 3)
-      );
+      return spots.map(({ x, y }): Rgb => {
+        const [red = 0, green = 0, blue = 0] =
+          context?.getImageData(Math.round(x), Math.round(y), 1, 1).data ?? [];
+        return [red, green, blue];
+      });
     },
     { src: `data:image/png;base64,${screenshot.toString('base64')}`, spots }
   );
 
   const sides = pixels.length / 2;
   return Math.min(
-    ...pixels.slice(0, sides).map((pixel, side) => getContrast(pixel, pixels[sides + side]))
+    ...pixels.slice(0, sides).map((pixel, side) => {
+      const farPixel = pixels[sides + side];
+      if (!farPixel) throw new Error('No pixel');
+      return getContrast(pixel, farPixel);
+    })
   );
 }
 
