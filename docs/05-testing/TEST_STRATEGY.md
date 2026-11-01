@@ -160,6 +160,15 @@ Two mutants proved the check, each on a new `pnpm build:deploy` and the whole su
 2. The focus ring shows on all four sides, read from painted pixels, where the first pill would cover it.
 3. A real press on the bottom edge of **More Info** opens the title.
 
+`e2e/header.spec.ts` runs on the same fixtures, in both themes:
+
+1. The focus of the Logo and of the nav links, in the menu at 320 px too, shows two colours at least 9:1 apart.
+2. Over the hero, the spots behind the controls paint the colour they have on a flat page.
+3. On Movies, Search, Sign in and a 404, the strip of the header below its controls keeps the colour of the page.
+4. The scrim takes no press, and a press on the bottom edge of a control reaches it.
+
+The fixtures have no backdrop, so the contrast over solid white, mid grey and black images was measured once with a temporary probe; the numbers are in `docs/02-design/UX_NOTES.md`.
+
 `e2e/watchlist.spec.ts` runs on the Firestore emulator with the real rules:
 
 1. Folders nest six levels deep, then rename and move.
