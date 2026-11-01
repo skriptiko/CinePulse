@@ -90,6 +90,18 @@ Add Playwright (chromium) on the merged `dist/` served by `firebase emulators:st
 5. An unknown URL shows NotFound.
 6. TV Shows opens from the header, the mobile menu and a direct URL, shows its empty and error states, and has no horizontal page scroll at 320 px, with a 100-character search too.
 
+The mock answers in the browser, so without a check a request the real `tmdbProxy` refuses would still pass e2e. Every request that reaches `e2e/tmdb-mock.ts` therefore goes through the real `resolveProxyRequest` from `functions/src/proxy-rules.ts`, with the path and params of the URL the browser sent, and `e2e/proxy-rules.spec.ts` covers the check:
+
+- A refused request gets the status, the `{ error }` body and the `Cache-Control: no-store` of the proxy, and it fails the test, even on a page that survives it, such as a Home row nobody asserts on.
+- The test fails through `expect.soft` in the route handler. A throw or a plain `expect` there fails it too, but leaves the request unanswered and ends the test on the spot.
+- A test that means to provoke a refusal says so with `expectRefusal(page, isProvoked)`, for the requests that match. Any other refusal still fails it. Today that is the `q` over the limit in `e2e/search.spec.ts`.
+
+The check does not see three things:
+
+- A request a spec fulfils with its own `page.route` never reaches the mock. One that goes on with `route.fallback()` does.
+- A request sent as the test ends: Playwright stops calling route handlers once the page or its context closes. Home starts all its requests up front, so its rows do reach the check.
+- The method: `tmdbProxy` answers 405 to anything but GET and HEAD in `index.ts`, which needs Firebase and cannot be imported here. `apiGet` only sends GET.
+
 `e2e/movie-detail.spec.ts` runs on fixtures from `e2e/tmdb-mock.ts`, which also answers `image.tmdb.org` and `i.ytimg.com`, so no test reaches a real image host:
 
 1. The five sections stand in order below the hero, and every list stops at its limit.
@@ -122,7 +134,7 @@ Add Playwright (chromium) on the merged `dist/` served by `firebase emulators:st
 6. At 320 px, neither a full page, an empty page nor long unbroken text in every external string widens the page.
 7. From far down the page, a card opens the other show at the top.
 
-`e2e/search.spec.ts` runs on the same fixtures, whose search stands in for the proxy with a 400 over 100 characters:
+`e2e/search.spec.ts` runs on the same fixtures:
 
 1. The header icon leaves focus on the input, on a chunk that is new, delayed past the move to `main`, and on one already loaded, and on the open page it drops the search.
 2. With no query, nothing is sent. A link opens the same view and survives a reload.
