@@ -71,7 +71,7 @@ export function Header({ className }: HeaderProps) {
     <header
       className={cn(
         'fixed top-0 right-0 left-0 z-50 transition-[padding,background-color] duration-300',
-        isScrolled ? 'glass py-3' : 'bg-transparent py-5',
+        isScrolled ? 'glass-bar py-3' : 'bg-transparent py-5',
         className
       )}
     >
@@ -132,7 +132,7 @@ export function Header({ className }: HeaderProps) {
                   className="size-8 rounded-lg object-cover"
                 />
               ) : (
-                <span className="from-accent to-accent/60 flex size-8 items-center justify-center rounded-lg bg-linear-to-br">
+                <span className="from-accent to-accent/80 flex size-8 items-center justify-center rounded-lg bg-linear-to-br">
                   <User className="text-accent-foreground size-4" />
                 </span>
               )}
