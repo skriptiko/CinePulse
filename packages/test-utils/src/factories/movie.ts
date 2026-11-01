@@ -1,4 +1,4 @@
-import type { Movie, PaginatedResponse } from '@repo/api';
+import type { Movie, MovieDetails, PaginatedResponse } from '@repo/api';
 
 let nextId = 1;
 
@@ -21,6 +21,35 @@ export function buildMovie(overrides: Partial<Movie> = {}): Movie {
     genre_ids: [28],
     original_language: 'en',
     video: false,
+    ...overrides,
+  };
+}
+
+/** A valid `/movie/{id}` response with every section empty; pass only what the test shows. */
+export function buildMovieDetails(overrides: Partial<MovieDetails> = {}): MovieDetails {
+  const { genre_ids: _genreIds, ...movie } = buildMovie();
+
+  return {
+    ...movie,
+    genres: [],
+    budget: 0,
+    revenue: 0,
+    runtime: null,
+    status: 'Released',
+    tagline: null,
+    homepage: null,
+    imdb_id: null,
+    production_companies: [],
+    production_countries: [],
+    spoken_languages: [],
+    belongs_to_collection: null,
+    credits: { cast: [], crew: [] },
+    videos: { results: [] },
+    images: { backdrops: [], posters: [], logos: [] },
+    recommendations: buildPaginated([]),
+    similar: buildPaginated([]),
+    reviews: buildPaginated([]),
+    'watch/providers': { results: {} },
     ...overrides,
   };
 }

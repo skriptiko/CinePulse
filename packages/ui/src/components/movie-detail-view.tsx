@@ -21,9 +21,11 @@ export type MovieDetailViewProps = {
   movie: MovieDetailData;
   /** A control under the metadata. */
   action?: ReactNode;
+  /** Sections below the hero block. */
+  children?: ReactNode;
 };
 
-export function MovieDetailView({ movie, action }: MovieDetailViewProps) {
+export function MovieDetailView({ movie, action, children }: MovieDetailViewProps) {
   const { title, tagline, description, posterUrl, backdropUrl, backdropSrcSet } = movie;
   const { year, rating, runtime, genres } = movie;
 
@@ -84,6 +86,10 @@ export function MovieDetailView({ movie, action }: MovieDetailViewProps) {
           )}
         </div>
       </div>
+
+      {children !== undefined && (
+        <div className="max-w-page relative mx-auto flex flex-col gap-12 pb-16">{children}</div>
+      )}
     </article>
   );
 }

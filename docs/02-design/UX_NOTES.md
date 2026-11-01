@@ -20,6 +20,9 @@ The design system lives in `@repo/ui` (`packages/ui/src`). Stack: **Shadcn UI + 
 - `ContentRow` — horizontal row of cards
 - `FeaturedGrid` — grid of curated picks ("Editor's Picks")
 - `CategoryPills` — selectable genre pills (Movies); `CategoryLinks` — the same pills as links (Home: each genre opens `/movies?genre=<id>`)
+- `MovieDetailView` — the hero of a details page, with a slot below it for sections
+- `WatchProvidersSection`, `CastSection`, `MediaSection`, `MoreLikeThisSection`, `ReviewsSection` — the sections of a details page, built on `DetailSection`, with neutral names so TV Detail can reuse them
+- `ExternalLink` — opens in a new tab with `rel="noopener noreferrer"` and says so to a screen reader
 
 **Application frame:**
 - `Header`, `Footer`, `AppLayout` — page shell
@@ -50,7 +53,7 @@ In the integration the host builds one stylesheet for every remote, so MFE style
 
 🟡 Partially unified:
 - **Loading:** every page or Home section suspends into a skeleton shaped like it. The layout is reserved at once and the skeleton appears after 300 ms, so fast loads do not flicker.
-- **Empty:** implemented in **Movies**: `No movies found for “…”` names the search query, with **Clear search** and **Reset filters**. The watchlist says `No titles here yet.`, or `No watched titles here.` under a filter, which the All pill right above it clears. Other pages have no empty states.
+- **Empty:** implemented in **Movies**: `No movies found for “…”` names the search query, with **Clear search** and **Reset filters**. The watchlist says `No titles here yet.`, or `No watched titles here.` under a filter, which the All pill right above it clears. Each section of **Movie Detail** keeps its heading over one muted line. Other pages have no empty states.
 - **Error:** without data, the page boundary shows a plain message with **Try again** (404 → `NotFound`); the host's `ShellBoundary` catches the rest and keeps the header; a failed background refetch keeps the data and shows one toast (bottom right).
 - **Offline:** one global banner at the bottom, "You are offline. Showing saved results."
 
@@ -65,6 +68,18 @@ In the integration the host builds one stylesheet for every remote, so MFE style
 - TMDB search has no genre or sort: while a query is typed, the genre pills and the sort menu are disabled, with a one-line hint. The genre and sort stay in the URL and apply again once the search is cleared.
 - "Rating" needs at least 200 votes; "Newest" lists films released by today, not announced ones.
 - While new results load, the current ones stay on screen dimmed (`aria-busy`); the counter is a persistent `role="status"` (`<output>`) region.
+
+## Movie Detail: sections
+
+- Under the hero, in this order: Where to watch, Cast, Videos and images, More like this, Reviews. They come from one request, so they arrive together with the hero and share its skeleton and its **Try again** ([ADR-0017](../03-architecture/decisions/ADR-0017-detail-page-sections.md)).
+- **Empty:** a section is never hidden. It keeps its heading and one muted line, so the page has the same shape for every title. The line of Where to watch names the country.
+- **Where to watch:** the region comes from the browser language, with the US as the fallback and no picker. It shows Stream, Rent and Buy, with logos and names, a link to the page on TMDB, and `Streaming data by JustWatch`, which the terms of TMDB require. A country with only ad-supported or free offers counts as empty.
+- **Cast:** the first 12 by billing order, each linking to the person. Above them, one line of directors and writers, with each person once and all their jobs. With crew but no cast, the crew stays and the empty line follows it.
+- **Videos and images:** YouTube trailers, then teasers, official first, at most 6, each a link that opens YouTube. No player runs on the page. The first 12 backdrops open the original image in a new tab.
+- **More like this:** recommendations, or similar titles when there are none, at most 12. It is a Home row, on the gutter of this page.
+- **Reviews:** the first 3, as plain text clamped to six lines. Markdown stays as the author typed it, and `Read the full review` opens the original.
+- External text is rendered as text, and a link from TMDB that is not https is left out.
+- A press on a card in More like this opens the other movie at the top of the page. Back returns to where the reader was.
 
 ## Watchlist: status
 

@@ -69,10 +69,11 @@ From here on, new or changed logic in `packages/*` and new UI states land with t
 2. `ApiError` classification, `shouldRetry`, `getRetryDelay`, `getNextPageParam` (including the 500-page cap).
 3. `queryOptions` factories: key shapes.
 4. `@repo/events`: event bus (`on` / `off` / `once` / `emit`) and the store.
-5. Components: `MovieCard`, `Hero`, `ContentRow`, `CategoryPills`, `AsyncBoundary` (fallback, Try again refetch, 404 → `NotFound`), `NotFound`, page skeletons.
+5. Components: `MovieCard`, `Hero`, `ContentRow`, `MovieDetailView` and the sections of a details page, `CategoryPills`, `AsyncBoundary` (fallback, Try again refetch, 404 → `NotFound`), `NotFound`, page skeletons.
 6. Pages:
    - ✅ **Movies** (`apps/pages-mfe/src/pages/movies/__tests__/`): search ↔ list switching (regression for the conditional-hook bug), genre filter, sort, empty state, "Load more" (next-page error, end of list), state in the URL, URL parsing;
-   - **Home**: rows render from MSW fixtures, and one failing row does not blank the page.
+   - **Home**: rows render from MSW fixtures, and one failing row does not blank the page;
+   - ✅ **Movie Detail** (`apps/pages-mfe/src/pages/movie-detail/__tests__/`): one request for every section, their order, the region from the browser language, each empty state, a response without the appended blocks, the error state, axe.
 
 ### Step 3 — ✅ e2e
 
@@ -83,6 +84,17 @@ Add Playwright (chromium) on the merged `dist/` served by `firebase emulators:st
 3. Search and filters on Movies are reflected in the URL and survive Back/Forward.
 4. With `remoteEntry.js` of one remote aborted, its section shows the "unavailable" placeholder and the other sections keep working.
 5. An unknown URL shows NotFound.
+
+`e2e/movie-detail.spec.ts` runs on fixtures from `e2e/tmdb-mock.ts`, which also answers `image.tmdb.org` and `i.ytimg.com`, so no test reaches a real image host:
+
+1. The five sections stand in order below the hero, and every list stops at its limit.
+2. Thumbnails and logos load under the enforced CSP.
+3. Videos stay links, with no iframe.
+4. A section with nothing to show keeps its heading and says so.
+5. A person link reaches NotFound until the Person page lands (CIN-19).
+6. The providers follow the browser language, and the empty line names that country.
+7. At 320 px, neither a full page, an empty page nor long unbroken text widens the page.
+8. From far down the page, a card opens the other movie at the top, cached or not, and Back returns to where the reader was.
 
 `e2e/watchlist.spec.ts` runs on the Firestore emulator with the real rules:
 

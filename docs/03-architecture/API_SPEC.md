@@ -59,7 +59,7 @@ Paths are relative to the proxy base `/api/tmdb`. Keys follow `all → lists / d
 | `movieQueries.list(category)` (infinite) | `['movies', 'list', category]` | `GET /movie/{category}` | `PaginatedResponse<Movie>` |
 | `movieQueries.discover({ genreId, sortBy })` (infinite) | `['movies', 'list', 'discover', { genreId, sortBy }]` | `GET /discover/movie?sort_by&with_genres&page` | `PaginatedResponse<Movie>` |
 | `movieQueries.row(category)` | `['movies', 'list', category, 'first-page']` | `GET /movie/{category}?page=1` | `PaginatedResponse<Movie>` |
-| `movieQueries.detail(id)` | `['movies', 'detail', id]` | `GET /movie/{id}` | `MovieDetails` |
+| `movieQueries.detail(id)` | `['movies', 'detail', id]` | `GET /movie/{id}?append_to_response=…` | `MovieDetails`, with every section of the page |
 | `tvQueries.list(category)` / `.row(category)` / `.detail(id)` | `['tv', …]` | `GET /tv/{category}`, `GET /tv/{id}` | `PaginatedResponse<TV>`, `TVDetails` |
 | `trendingQueries.list(mediaType, timeWindow)` / `.row(…)` | `['trending', 'list', mediaType, timeWindow]` | `GET /trending/{mediaType}/{timeWindow}` | `PaginatedResponse<TrendingItem>` |
 | `searchQueries.multi/movies/tv/person(query)` (infinite) | `['search', type, query]` | `GET /search/{multi,movie,tv,person}` | `PaginatedResponse<…>` |
@@ -67,6 +67,8 @@ Paths are relative to the proxy base `/api/tmdb`. Keys follow `all → lists / d
 | `personQueries.detail(id)` | `['person', 'detail', id]` | `GET /person/{id}` | `PersonDetails` |
 
 `DEFAULT_DISCOVER_FILTERS` (`{ genreId: null, sortBy: 'popularity.desc' }`) is the unfiltered Movies view; the header prefetches it (and the genres) after 200 ms of hover or focus on the Movies link. `sortBy` (`DiscoverSortBy`) is `popularity.desc | primary_release_date.desc | vote_average.desc`; `genreId: null` omits `with_genres`. `vote_average.desc` also sends `vote_count.gte=200` (`DISCOVER_MIN_VOTE_COUNT`) and `primary_release_date.desc` sends `primary_release_date.lte=<today, UTC>`, so both sorts skip unrated and unreleased films. The proxy allowlist (`functions/src/proxy-rules.ts`) accepts exactly these params on `/discover/movie` and rejects anything else with 400.
+
+`movieQueries.detail` asks for `credits,videos,images,recommendations,similar,reviews,watch/providers` in one request (`MOVIE_DETAIL_APPEND`, [ADR-0017](./decisions/ADR-0017-detail-page-sections.md)). The proxy accepts exactly that string or no params on `/movie/{id}` and rejects anything else with 400, so a change needs both copies, in `core/config.ts` and `functions/src/proxy-rules.ts`.
 
 `movieQueries.discover` and `searchQueries.movies` set `meta: { inlineErrors: true }`: the Movies page shows a failed next page inline, so `QueryCache.onError` shows no toast.
 
@@ -76,7 +78,7 @@ Paths are relative to the proxy base `/api/tmdb`. Keys follow `all → lists / d
 
 ## Images
 
-`getImageUrl(path, size)` (`core/utils.ts`) builds an absolute `image.tmdb.org` URL for an `ImageSize` / `BackdropSize` / `ProfileSize`. It returns `null` when the path is `null` or `undefined`. Card and backdrop sizes are the `POSTER_SIZE_CARD`, `BACKDROP_SIZE_FEATURED` and `BACKDROP_SIZE_HERO` constants.
+`getImageUrl(path, size)` (`core/utils.ts`) builds an absolute `image.tmdb.org` URL for an `ImageSize` / `BackdropSize` / `ProfileSize`. It returns `null` when the path is `null` or `undefined`. Card and backdrop sizes are the `POSTER_SIZE_CARD`, `BACKDROP_SIZE_FEATURED` and `BACKDROP_SIZE_HERO` constants. The sizes of the Movie Detail sections stay in their mappers in `@repo/ui`, because `@repo/api` is a shared module that is not tree-shaken and its code reaches the host chunk.
 
 ## API coverage vs UI
 
@@ -87,7 +89,7 @@ Paths are relative to the proxy base `/api/tmdb`. Keys follow `all → lists / d
 | `movieQueries.list` | ⬜ | not used since Movies moved to `discover`; kept for category pages |
 | `trendingQueries.row` | ✅ | Home (Hero + Trending) |
 | `genreQueries.movie` | ✅ | Home, Movies (genre pills, prefetched next to the list) |
-| `movieQueries.detail` | ⬜ | **Movie Detail** `/movies/:id` |
+| `movieQueries.detail` | ✅ | **Movie Detail** `/movies/:id` (hero and all five sections) |
 | `tvQueries.*`, `genreQueries.tv` | ⬜ | **TV** `/tv`, `/tv/:id` |
 | `searchQueries.multi/tv/person` | ⬜ | **Search** `/search` |
 | `personQueries.detail` | ⬜ | **Person** `/person/:id` |

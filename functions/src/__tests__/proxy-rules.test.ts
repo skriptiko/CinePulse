@@ -1,7 +1,9 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   CACHE_CONTROL_DEFAULT,
   CACHE_CONTROL_LONG,
+  MOVIE_DETAIL_APPEND,
   mapUpstreamError,
   resolveProxyRequest,
   toTmdbPath,
@@ -208,6 +210,74 @@ describe('resolveProxyRequest: discover', () => {
   it('rejects discover params on other routes', () => {
     expect(resolve('/api/tmdb/movie/popular', 'sort_by=popularity.desc')).toEqual(BAD_REQUEST);
     expect(resolve('/api/tmdb/search/movie', 'query=x&with_genres=28')).toEqual(BAD_REQUEST);
+  });
+});
+
+describe('resolveProxyRequest: movie details', () => {
+  const BAD_REQUEST = { ok: false, error: { status: 400, error: 'Invalid query parameters' } };
+
+  function details(query: string) {
+    return resolve('/api/tmdb/movie/550', query);
+  }
+
+  it('takes the sections of the details page in one request', () => {
+    expect(MOVIE_DETAIL_APPEND).toBe(
+      'credits,videos,images,recommendations,similar,reviews,watch/providers'
+    );
+  });
+
+  it('matches the copy @repo/api sends, or every details page would fail with 400', () => {
+    const config = readFileSync(
+      new URL('../../../packages/api/src/core/config.ts', import.meta.url),
+      'utf8'
+    );
+
+    expect(config).toContain(`'${MOVIE_DETAIL_APPEND}'`);
+  });
+
+  it('forwards the exact value as TMDB documents it, with a literal comma and slash', () => {
+    const query = new URLSearchParams({ append_to_response: MOVIE_DETAIL_APPEND }).toString();
+
+    expect(details(query)).toEqual({
+      ok: true,
+      target: {
+        path: '/movie/550',
+        search: `?append_to_response=${MOVIE_DETAIL_APPEND}`,
+        cacheControl: CACHE_CONTROL_DEFAULT,
+      },
+    });
+  });
+
+  it('still accepts no params, so a client from the previous release keeps working', () => {
+    const result = details('');
+    expect(result.ok && result.target.search).toBe('');
+  });
+
+  it.each([
+    ['empty', ''],
+    ['a subset', 'credits'],
+    ['another order', 'videos,credits,images,recommendations,similar,reviews,watch/providers'],
+    ['a trailing comma', `${MOVIE_DETAIL_APPEND},`],
+    ['an extra section', `${MOVIE_DETAIL_APPEND},keywords`],
+    ['another case', MOVIE_DETAIL_APPEND.toUpperCase()],
+  ])('rejects append_to_response with %s', (_label, value) => {
+    expect(details(`append_to_response=${encodeURIComponent(value)}`)).toEqual(BAD_REQUEST);
+  });
+
+  it('rejects a junk param beside the exact value', () => {
+    const value = encodeURIComponent(MOVIE_DETAIL_APPEND);
+
+    expect(details(`append_to_response=${value}&language=en-US`)).toEqual(BAD_REQUEST);
+    expect(details(`append_to_response=${value}&page=1`)).toEqual(BAD_REQUEST);
+    expect(details(`append_to_response=${value}&append_to_response=${value}`)).toEqual(BAD_REQUEST);
+  });
+
+  it('keeps append_to_response off every other route', () => {
+    const query = `append_to_response=${encodeURIComponent(MOVIE_DETAIL_APPEND)}`;
+
+    expect(resolve('/api/tmdb/tv/1399', query)).toEqual(BAD_REQUEST);
+    expect(resolve('/api/tmdb/person/287', query)).toEqual(BAD_REQUEST);
+    expect(resolve('/api/tmdb/movie/popular', query)).toEqual(BAD_REQUEST);
   });
 });
 

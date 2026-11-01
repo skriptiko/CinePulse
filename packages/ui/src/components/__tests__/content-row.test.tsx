@@ -36,6 +36,16 @@ describe('ContentRow', () => {
     ).toEqual(['Dune', 'Arrival']);
   });
 
+  it('puts its heading and cards on the gutter of the page it sits on', () => {
+    renderWithProviders(
+      <ContentRow title="Trending Now" movies={MOVIES} gutterClassName="px-4 lg:px-12" />
+    );
+
+    expect(screen.getByRole('heading', { level: 2 })).toHaveClass('px-4', 'lg:px-12');
+    expect(screen.getByRole('list')).toHaveClass('px-4', 'lg:px-12');
+    expect(screen.getByRole('list')).not.toHaveClass('md:px-8');
+  });
+
   it('offers no action without a destination', () => {
     renderWithProviders(<ContentRow title="Trending Now" movies={MOVIES} />);
 

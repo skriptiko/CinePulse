@@ -53,6 +53,15 @@ describe('firebase.json security headers', () => {
     expect(headers.map((h) => h.key)).toContain('Content-Security-Policy');
   });
 
+  it('lets images load only from the origins the app shows them from', () => {
+    const policy = headers.find((h) => h.key === 'Content-Security-Policy')?.value ?? '';
+    const imgSrc = policy.split('; ').find((directive) => directive.startsWith('img-src '));
+
+    expect(imgSrc).toBe(
+      "img-src 'self' https://image.tmdb.org https://i.ytimg.com https://lh3.googleusercontent.com data:"
+    );
+  });
+
   it('does not keep a Report-Only copy that could drift from the enforced policy', () => {
     expect(headers.map((h) => h.key)).not.toContain('Content-Security-Policy-Report-Only');
   });

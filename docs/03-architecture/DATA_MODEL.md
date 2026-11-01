@@ -46,7 +46,24 @@ The next page comes from the shared `getNextPageParam` (`core/pagination.ts`): `
 
 Extends `Movie` (without `genre_ids`) and adds: `genres: Genre[]`, `budget`, `revenue`, `runtime: number | null`, `status`, `tagline`, `homepage`, `imdb_id`, `production_companies: ProductionCompany[]`, `production_countries: ProductionCountry[]`, `spoken_languages: SpokenLanguage[]`, `belongs_to_collection: Collection | null`.
 
+It also carries `DetailSections<Movie>`, the blocks `append_to_response` adds ([ADR-0017](./decisions/ADR-0017-detail-page-sections.md)).
+
 Helper types: `ProductionCompany`, `ProductionCountry`, `SpokenLanguage`, `Collection`.
+
+### `DetailSections<Title>` (`types/common.ts`) — sections of a details page
+
+`Title` is the list item of the media type. The names are neutral, so TV details can take the same type.
+
+| Key | Type | Notes |
+|------|-----|---------|
+| `credits` | `Credits` | `cast: CastMember[]`, `crew: CrewMember[]`. A person can hold several credits, so `credit_id` is the unique key; `order` is the billing position |
+| `videos` | `VideosResponse` | `results: Video[]`, with `site`, `type`, `official` and `key`, the id on that site |
+| `images` | `ImagesResponse` | `backdrops`, `posters`, `logos`: `MediaImage[]` |
+| `recommendations` / `similar` | `PaginatedResponse<Title>` | |
+| `reviews` | `PaginatedResponse<Review>` | `author`, `author_details.rating: number \| null` (out of 10), `content` (plain text), `created_at` (ISO timestamp, not a calendar date), `url` |
+| `'watch/providers'` | `WatchProvidersResponse` | `results` by ISO 3166-1 country code. A country has `link` and optional `flatrate`, `rent`, `buy`: `WatchProvider[]`. TMDB also sends `ads` and `free`, which the page does not show |
+
+The key `'watch/providers'` has a slash because it repeats the name in `append_to_response`.
 
 ## Domain: TV shows
 
