@@ -28,6 +28,7 @@ Isolation relied on `important: '#mfe-…-root'`, which Tailwind 4 does not have
 ## Consequences
 
 - A remote deployed alone with classes the host has never seen renders unstyled. Host and remotes must deploy together, which CI already does in one job. If independent deploys become a goal, this ADR must be revisited.
+- The sources of the remotes are inputs of the host build (`apps/host/turbo.json`). Turbo hashes a package and its dependencies, and the host depends on neither remote, so a class new to a remote would otherwise replay the old CSS from the local cache.
 - Standalone remotes use the same theme and differ from the integration only in being built separately.
 - Tailwind 4 needs Chrome 111, Safari 16.4 or Firefox 128; older browsers lose the theme.
 - `tailwind-merge` moves to v3 to understand Tailwind 4 classes.

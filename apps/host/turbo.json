@@ -1,0 +1,12 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/apps/pages-mfe/src/**",
+        "$TURBO_ROOT$/apps/user-mfe/src/**"
+      ]
+    }
+  }
+}
