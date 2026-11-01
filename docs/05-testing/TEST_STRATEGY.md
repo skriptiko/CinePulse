@@ -72,6 +72,7 @@ From here on, new or changed logic in `packages/*` and new UI states land with t
 5. Components: `MovieCard`, `Hero`, `ContentRow`, `CategoryPills`, `AsyncBoundary` (fallback, Try again refetch, 404 → `NotFound`), `NotFound`, page skeletons.
 6. Pages:
    - ✅ **Movies** (`apps/pages-mfe/src/pages/movies/__tests__/`): search ↔ list switching (regression for the conditional-hook bug), genre filter, sort, empty state, "Load more" (next-page error, end of list), state in the URL, URL parsing;
+   - ✅ **TV Shows** (`apps/pages-mfe/src/pages/tv/__tests__/`): the same flows on the shared catalog pieces, with TV genres, sort params and words, and cards with no link. `src/__tests__/routes.test.tsx` covers its skeleton, its error with a retry, and that no search text follows a move from Movies;
    - **Home**: rows render from MSW fixtures, and one failing row does not blank the page.
 
 ### Step 3 — ✅ e2e
@@ -80,9 +81,10 @@ Add Playwright (chromium) on the merged `dist/` served by `firebase emulators:st
 
 1. Home shows the hero and content rows.
 2. Navigation Home → Movies → Profile across MFEs.
-3. Search and filters on Movies are reflected in the URL and survive Back/Forward.
+3. Search and filters on Movies and TV Shows are reflected in the URL and survive Back/Forward, and a shared TV Shows link opens the same view.
 4. With `remoteEntry.js` of one remote aborted, its section shows the "unavailable" placeholder and the other sections keep working.
 5. An unknown URL shows NotFound.
+6. TV Shows opens from the header, the mobile menu and a direct URL, shows its empty and error states, and has no horizontal page scroll at 320 px, with a 100-character search too.
 
 `e2e/watchlist.spec.ts` runs on the Firestore emulator with the real rules:
 
@@ -96,7 +98,7 @@ Add Playwright (chromium) on the merged `dist/` served by `firebase emulators:st
 8. A whole title row opens the title.
 9. A long unbroken name does not widen the page on a phone.
 10. Firestore runs from the host's singleton with the signed-in user, on the watchlist page and from the catalog's picker. These are the only automated checks for a second `firebase/app`.
-11. A title goes into several folders and shows in the watchlist at once. A details page adds a title too, a person with no folders keeps the title under All titles, and a show is stored as TV.
+11. A title goes into several folders and shows in the watchlist at once. A details page adds a title too, a person with no folders keeps the title under All titles, and a show is stored as TV, from Home and from TV Shows.
 12. Saving folders leaves `status` and `addedAt` alone.
 13. Two tabs keep both folders, a tab that lost the race to create overwrites nothing, and a folder deleted elsewhere is not written.
 14. A signed-out visitor gets the offer with no Firebase and comes back. A signed-in catalog page reads nothing until the picker opens.

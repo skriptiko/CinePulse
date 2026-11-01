@@ -16,7 +16,7 @@ Packages are consumed via `@repo/*` aliases (`@repo/api`, `@repo/ui`, `@repo/rou
 
 - Component files in `@repo/ui` are **kebab-case** (`movie-card.tsx`, `content-row.tsx`); the exported component is **PascalCase** (`MovieCard`).
 - Pages in apps are **PascalCase** (`Home.tsx`, `Movies.tsx`, `Profile.tsx`).
-- Hooks are `useXxx` (`useMoviesOrSearch`, `useMovieFilters`); query factories are `<domain>Queries` (`movieQueries`).
+- Hooks are `useXxx` (`useMoviesOrSearch`, `useCatalogFilters`); query factories are `<domain>Queries` (`movieQueries`).
 - Shared constants are `SCREAMING_SNAKE` (`ROUTE_PATHS`, `API_CONFIG`).
 
 ## Linting and formatting
@@ -56,12 +56,12 @@ Each package/app extends the relevant config in its own `tsconfig.json`. `*.d.ts
 The single source of truth for paths is `ROUTE_PATHS` in `@repo/routes`:
 
 ```ts
-HOME '/', MOVIES '/movies', USER '/user', USER_PROFILE '/user/profile', USER_SETTINGS '/user/settings', USER_WATCHLIST '/user/watchlist'
+HOME '/', MOVIES '/movies', TV '/tv', USER '/user', USER_PROFILE '/user/profile', USER_SETTINGS '/user/settings', USER_WATCHLIST '/user/watchlist'
 ```
 
 Each MFE exposes a `routes` array (`RouteObject[]`) through Module Federation (`exposes: { './routes': './src/routes.tsx' }`); the host collects them and renders them via `useRoutes`.
 
-> ⬜ **There are no dynamic routes (`:id`) yet.** Future pages (Movie Detail `/movies/:id`, TV, Person) need parameterized paths in `ROUTE_PATHS` and a pattern for reading the parameter. The query factories for them already exist (`movieQueries.detail`, `tvQueries.detail`, `personQueries.detail`).
+Dynamic routes (`MOVIE_DETAIL`, `TV_DETAIL`, `PERSON_DETAIL`) are in `ROUTE_PATHS` too, and links to them come from `buildPath`. Only Movie Detail has a page so far; a new one also goes into the paths of its remote in `apps/host/src/remotes/remotes.ts`. The query factories for the others already exist (`tvQueries.detail`, `personQueries.detail`).
 
 ## MFE pattern (Module Federation)
 

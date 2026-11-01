@@ -74,7 +74,7 @@ Helper types: `Creator`, `Episode`, `Network`, `Season`, `ProductionCompany`.
 
 ## Domain: Genres
 
-`Genre = { id: number; name: string }`; `GenresResponse = { genres: Genre[] }` (`types/genre.ts`). A movie list contains only `genre_ids`, so the UI maps them to names using the `getMovieGenres()` response (as `Home.tsx` and `Movies.tsx` do).
+`Genre = { id: number; name: string }`; `GenresResponse = { genres: Genre[] }` (`types/genre.ts`). A list item contains only `genre_ids`, so the UI takes names from the genre list. Movies and TV have separate lists with different ids (`genreQueries.movie()`, `genreQueries.tv()`), as on the Movies and TV Shows pages.
 
 ## Domain: Trending and Search (unified types)
 

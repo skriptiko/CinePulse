@@ -19,7 +19,7 @@ The design system lives in `@repo/ui` (`packages/ui/src`). Stack: **Shadcn UI + 
 - `Hero` — main banner
 - `ContentRow` — horizontal row of cards
 - `FeaturedGrid` — grid of curated picks ("Editor's Picks")
-- `CategoryPills` — selectable genre pills (Movies); `CategoryLinks` — the same pills as links (Home: each genre opens `/movies?genre=<id>`)
+- `CategoryPills` — selectable genre pills (Movies, TV Shows); `CategoryLinks` — the same pills as links (Home: each genre opens `/movies?genre=<id>`)
 
 **Application frame:**
 - `Header`, `Footer`, `AppLayout` — page shell
@@ -50,20 +50,23 @@ In the integration the host builds one stylesheet for every remote, so MFE style
 
 🟡 Partially unified:
 - **Loading:** every page or Home section suspends into a skeleton shaped like it. The layout is reserved at once and the skeleton appears after 300 ms, so fast loads do not flicker.
-- **Empty:** implemented in **Movies**: `No movies found for “…”` names the search query, with **Clear search** and **Reset filters**. The watchlist says `No titles here yet.`, or `No watched titles here.` under a filter, which the All pill right above it clears. Other pages have no empty states.
+- **Empty:** implemented in **Movies** and **TV Shows**: `No movies found for “…”` names the search query, with **Clear search** and **Reset filters**, and a long query wraps. The watchlist says `No titles here yet.`, or `No watched titles here.` under a filter, which the All pill right above it clears. Other pages have no empty states.
 - **Error:** without data, the page boundary shows a plain message with **Try again** (404 → `NotFound`); the host's `ShellBoundary` catches the rest and keeps the header; a failed background refetch keeps the data and shows one toast (bottom right).
 - **Offline:** one global banner at the bottom, "You are offline. Showing saved results."
 
-- **Load more** (Movies): the button is disabled with a spinner while a page loads; a failed next page keeps the loaded movies and shows an inline error with **Try again** (no toast); at the end of the list the button gives way to "That's all".
+- **Load more** (Movies, TV Shows): the button is disabled with a spinner while a page loads; a failed next page keeps the loaded titles and shows an inline error with **Try again** (no toast); at the end of the list the button gives way to "That's all".
 
 - **Home sections** load and fail independently: each has its own skeleton (`HeroSkeleton`, `ContentRowSkeleton`, `FeaturedGridSkeleton`) and an inline `SectionErrorFallback` with **Try again**; one failed row never blanks the page. All requests start together (`usePrefetchQuery` in the page).
 
-## Movies: search, genre and sort
+## Movies and TV Shows: search, genre and sort
 
-- Genre and sort are applied by TMDB (`/discover/movie`), not to the loaded pages, so the results and the "N movies found" counter (`total_results`) cover the whole catalog.
+Both pages are built from `apps/pages-mfe/src/components/catalog/`, so they differ only in their words, genre list and requests.
+
+- Genre and sort are applied by TMDB (`/discover/movie`, `/discover/tv`), not to the loaded pages, so the results and the "N movies found" counter (`total_results`) cover the whole catalog.
 - The state lives in the URL: `q` (search, debounced 300 ms, written with replace), `genre` (TMDB genre id) and `sort` (`popular` | `newest` | `rating`), both written with push, so Back/Forward and shared links restore the view. Missing or invalid values fall back to every genre / Popular.
 - TMDB search has no genre or sort: while a query is typed, the genre pills and the sort menu are disabled, with a one-line hint. The genre and sort stay in the URL and apply again once the search is cleared.
-- "Rating" needs at least 200 votes; "Newest" lists films released by today, not announced ones.
+- "Rating" needs at least 200 votes; "Newest" lists films released by today and shows first aired by today, not announced ones.
+- A TV Shows card has no link until TV Detail exists (CIN-17): it holds only the watchlist button.
 - While new results load, the current ones stay on screen dimmed (`aria-busy`); the counter is a persistent `role="status"` (`<output>`) region.
 
 ## Watchlist: status

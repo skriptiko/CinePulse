@@ -61,6 +61,7 @@ Paths are relative to the proxy base `/api/tmdb`. Keys follow `all → lists / d
 | `movieQueries.row(category)` | `['movies', 'list', category, 'first-page']` | `GET /movie/{category}?page=1` | `PaginatedResponse<Movie>` |
 | `movieQueries.detail(id)` | `['movies', 'detail', id]` | `GET /movie/{id}` | `MovieDetails` |
 | `tvQueries.list(category)` / `.row(category)` / `.detail(id)` | `['tv', …]` | `GET /tv/{category}`, `GET /tv/{id}` | `PaginatedResponse<TV>`, `TVDetails` |
+| `tvQueries.discover({ genreId, sortBy })` (infinite) | `['tv', 'list', 'discover', { genreId, sortBy }]` | `GET /discover/tv?sort_by&with_genres&page` | `PaginatedResponse<TV>` |
 | `trendingQueries.list(mediaType, timeWindow)` / `.row(…)` | `['trending', 'list', mediaType, timeWindow]` | `GET /trending/{mediaType}/{timeWindow}` | `PaginatedResponse<TrendingItem>` |
 | `searchQueries.multi/movies/tv/person(query)` (infinite) | `['search', type, query]` | `GET /search/{multi,movie,tv,person}` | `PaginatedResponse<…>` |
 | `genreQueries.movie()` / `.tv()` | `['genres', 'movie' \| 'tv']` | `GET /genre/{movie,tv}/list` | `GenresResponse`, `staleTime: Infinity` |
@@ -68,11 +69,13 @@ Paths are relative to the proxy base `/api/tmdb`. Keys follow `all → lists / d
 
 `DEFAULT_DISCOVER_FILTERS` (`{ genreId: null, sortBy: 'popularity.desc' }`) is the unfiltered Movies view; the header prefetches it (and the genres) after 200 ms of hover or focus on the Movies link. `sortBy` (`DiscoverSortBy`) is `popularity.desc | primary_release_date.desc | vote_average.desc`; `genreId: null` omits `with_genres`. `vote_average.desc` also sends `vote_count.gte=200` (`DISCOVER_MIN_VOTE_COUNT`) and `primary_release_date.desc` sends `primary_release_date.lte=<today, UTC>`, so both sorts skip unrated and unreleased films. The proxy allowlist (`functions/src/proxy-rules.ts`) accepts exactly these params on `/discover/movie` and rejects anything else with 400.
 
-`movieQueries.discover` and `searchQueries.movies` set `meta: { inlineErrors: true }`: the Movies page shows a failed next page inline, so `QueryCache.onError` shows no toast.
+`DEFAULT_DISCOVER_TV_FILTERS` is the same for TV Shows, and the header prefetches it (and the TV genres) the same way. `sortBy` (`DiscoverTVSortBy`) is `popularity.desc | first_air_date.desc | vote_average.desc`. `vote_average.desc` sends the same `vote_count.gte=200` and `first_air_date.desc` sends `first_air_date.lte=<today, UTC>`, so both sorts skip unrated and unaired shows. `/discover/tv` has its own allowlist rule: it refuses the movie sort and date param with 400, as `/discover/movie` refuses the TV ones.
+
+`movieQueries.discover`, `tvQueries.discover`, `searchQueries.movies` and `searchQueries.tv` set `meta: { inlineErrors: true }`: Movies and TV Shows show a failed next page inline, so `QueryCache.onError` shows no toast.
 
 `category` is `popular | top_rated | upcoming | now_playing` for movies and `popular | top_rated | on_the_air | airing_today` for TV; `mediaType` is `movie | tv | person | all`, `timeWindow` is `day | week`.
 
-`useMoviesOrSearch(query, { genreId, sortBy })` switches between `searchQueries.movies(query)` and `movieQueries.discover({ genreId, sortBy })` inside one infinite query, using their keys, so the cache is shared. A non-empty `query` wins and the filters are ignored: TMDB search has no genre or sort.
+`useMoviesOrSearch(query, { genreId, sortBy })` switches between `searchQueries.movies(query)` and `movieQueries.discover({ genreId, sortBy })` inside one infinite query, using their keys, so the cache is shared. A non-empty `query` wins and the filters are ignored: TMDB search has no genre or sort. `useTVOrSearch(query, { genreId, sortBy })` does the same with `searchQueries.tv(query)` and `tvQueries.discover({ genreId, sortBy })`.
 
 ## Images
 
@@ -88,6 +91,9 @@ Paths are relative to the proxy base `/api/tmdb`. Keys follow `all → lists / d
 | `trendingQueries.row` | ✅ | Home (Hero + Trending) |
 | `genreQueries.movie` | ✅ | Home, Movies (genre pills, prefetched next to the list) |
 | `movieQueries.detail` | ⬜ | **Movie Detail** `/movies/:id` |
-| `tvQueries.*`, `genreQueries.tv` | ⬜ | **TV** `/tv`, `/tv/:id` |
-| `searchQueries.multi/tv/person` | ⬜ | **Search** `/search` |
+| `tvQueries.discover`, `searchQueries.tv` | ✅ | TV Shows, through `useTVOrSearch` (genre, sort and search from the URL) |
+| `genreQueries.tv` | ✅ | TV Shows (genre pills, prefetched next to the list) |
+| `tvQueries.detail` | ⬜ | **TV Detail** `/tv/:id` |
+| `tvQueries.list`, `tvQueries.row` | ⬜ | kept for category pages and rows |
+| `searchQueries.multi/person` | ⬜ | **Search** `/search` |
 | `personQueries.detail` | ⬜ | **Person** `/person/:id` |
