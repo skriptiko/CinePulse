@@ -17,7 +17,7 @@ function renderLayout() {
   return renderWithProviders(
     <AppLayout>
       <Link to="/movies">Go to movies</Link>
-      <Link to="/?query=dune">Search</Link>
+      <Link to="/?query=dune">Change the query</Link>
       <BackButton />
     </AppLayout>
   );
@@ -70,7 +70,7 @@ describe('AppLayout', () => {
 
   it('keeps focus when only the query changes', async () => {
     const { user } = renderLayout();
-    const link = screen.getByRole('link', { name: 'Search' });
+    const link = screen.getByRole('link', { name: 'Change the query' });
 
     await user.click(link);
 
@@ -89,7 +89,7 @@ describe('AppLayout', () => {
   it('keeps the position when only the query changes', async () => {
     const { user } = renderLayout();
 
-    await user.click(screen.getByRole('link', { name: 'Search' }));
+    await user.click(screen.getByRole('link', { name: 'Change the query' }));
 
     expect(scrollTo).not.toHaveBeenCalled();
   });
