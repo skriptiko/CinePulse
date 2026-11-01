@@ -199,6 +199,83 @@ test('a remote that fails to load leaves the rest of the app working', async ({ 
   await expect(page.getByRole('heading', { level: 1, name: 'Movies' })).toBeVisible();
 });
 
+test('a remote lost with the connection waits for it on Try again, and then loads', async ({
+  page,
+  context,
+}) => {
+  await page.goto('/');
+  await expect(page.getByRole('region', { name: 'Popular' })).toBeVisible();
+
+  await context.setOffline(true);
+  await page.getByRole('banner').getByRole('link', { name: 'Sign in' }).click();
+  const unavailable = page.getByRole('heading', { name: 'This section is unavailable' });
+  await expect(unavailable).toBeVisible();
+
+  // A reload would land on chrome-error://chromewebdata/ soon after the press.
+  await page.getByRole('button', { name: 'Try again' }).click();
+  await page.waitForTimeout(1_000);
+  await expect(unavailable).toBeVisible();
+
+  await context.setOffline(false);
+  await page.getByRole('button', { name: 'Try again' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Sign in' })).toBeVisible();
+});
+
+test('Reload after a shell error waits for the connection, and then reloads', async ({
+  page,
+  context,
+}) => {
+  // The catch-all route has no `PageBoundary`, so this failure in its effect reaches `ShellBoundary`.
+  await page.addInitScript(() => {
+    const title = Object.getOwnPropertyDescriptor(Document.prototype, 'title');
+    Object.defineProperty(document, 'title', {
+      get: () => title?.get?.call(document),
+      set: (value: string) => {
+        if (value.startsWith('Page not found')) throw new Error('A failure outside any page');
+        title?.set?.call(document, value);
+      },
+    });
+  });
+  await page.goto('/no-such-page');
+  const fallback = page.getByRole('heading', { level: 1, name: 'Something went wrong' });
+  await expect(fallback).toBeVisible();
+
+  // A reload would land on chrome-error://chromewebdata/ soon after the press.
+  await context.setOffline(true);
+  await page.getByRole('button', { name: 'Reload' }).click();
+  await page.waitForTimeout(1_000);
+  await expect(fallback).toBeVisible();
+
+  await context.setOffline(false);
+  const reloaded = page.waitForEvent('load');
+  await page.getByRole('button', { name: 'Reload' }).click();
+  await reloaded;
+  await expect(fallback).toBeVisible();
+});
+
+test('a chunk that keeps failing does not loop the page when sessionStorage is blocked', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(window, 'sessionStorage', {
+      get() {
+        throw new DOMException('Access denied', 'SecurityError');
+      },
+    });
+  });
+  await page.route('**/pages-mfe/assets/movies-page-*.js', (route) => route.abort());
+  let documentLoads = 0;
+  page.on('request', (request) => {
+    if (request.isNavigationRequest() && request.frame() === page.mainFrame()) documentLoads += 1;
+  });
+
+  await page.goto('/movies');
+  await page.waitForTimeout(3_000);
+
+  expect(documentLoads).toBe(1);
+  await expect(page.getByRole('heading', { level: 1, name: 'Something went wrong' })).toBeVisible();
+});
+
 test('an unknown URL shows NotFound', async ({ page }) => {
   await page.goto('/no-such-page');
 
@@ -211,9 +288,13 @@ test('the chosen theme applies before the app loads', async ({ page }) => {
   await page.getByRole('button', { name: 'Dark theme' }).click();
   await expect(page.locator('html')).not.toHaveClass(/dark/);
 
+  // The app has to go first: a page chunk it is still loading would fail below, and the reload
+  // of `vite:preloadError` would abort the navigation of this test.
+  await page.goto('about:blank');
+
   // Without the app bundle only the blocking theme script can set the class.
   await page.route('**/assets/**', (route) => route.abort());
-  await page.reload();
+  await page.goto('/');
 
   await expect(page.locator('html')).not.toHaveClass(/dark/);
 });

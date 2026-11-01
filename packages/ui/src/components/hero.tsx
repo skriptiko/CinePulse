@@ -61,7 +61,7 @@ export function Hero({ movie, className }: HeroProps) {
       </div>
 
       {/* Content */}
-      <div className="max-w-page relative z-10 mx-auto w-full px-4 pt-24 pb-12 sm:px-6 sm:pt-32 sm:pb-16 md:px-8 md:pb-24">
+      <div className="max-w-page relative mx-auto w-full px-4 pt-24 pb-12 sm:px-6 sm:pt-32 sm:pb-16 md:px-8 md:pb-24">
         <div className="max-w-2xl">
           {/* Metadata */}
           <div className="mb-3 flex flex-wrap items-center gap-2 text-xs sm:mb-4 sm:gap-3 sm:text-sm">
@@ -86,11 +86,14 @@ export function Hero({ movie, className }: HeroProps) {
             <p className="text-muted-foreground fluid-body mb-6 max-w-lg sm:mb-8">{description}</p>
           )}
 
+          {/* On focus, above what a page lays over the hero, as the genre pills of Home touch the
+              button at `sm`. Only the button rises, so the padding around it still lets presses
+              through to them. */}
           <Link
             to={href}
             className={cn(
               buttonVariants({ size: 'lg' }),
-              'h-10 gap-2 rounded-lg px-5 text-sm font-medium sm:h-12 sm:px-8 sm:text-base'
+              'relative h-10 gap-2 rounded-lg px-5 text-sm font-medium focus-visible:z-20 sm:h-12 sm:px-8 sm:text-base'
             )}
           >
             <Info aria-hidden="true" />

@@ -1,9 +1,10 @@
 import { expect, type Locator, type Page, test } from '@playwright/test';
+import { MAX_QUERY_LENGTH } from '../functions/src/proxy-rules';
 import {
   EMPTY_PERSON_ID,
+  expectRefusal,
   FULL_PERSON_ID,
   LONG_TEXT_QUERY,
-  MAX_QUERY_LENGTH,
   mockTmdb,
   NOTHING_QUERY,
 } from './tmdb-mock';
@@ -46,6 +47,18 @@ function resultCount(page: Page): Locator {
   return page.getByRole('status').filter({ hasText: 'found' });
 }
 
+/** The one region that says the count: the skeleton and the offline banner are status too. */
+function liveRegion(page: Page): Locator {
+  return page.getByRole('main').locator('output.sr-only');
+}
+
+/** A query over the limit, which the test means the proxy to refuse. */
+function refusedQuery(page: Page): string {
+  const query = 'x'.repeat(MAX_QUERY_LENGTH + 1);
+  expectRefusal(page, (url) => url.searchParams.get('query') === query);
+  return query;
+}
+
 function overflow(page: Page): Promise<number> {
   return page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth
@@ -58,14 +71,19 @@ test.describe('the header icon', () => {
     await page.goto('/');
     await expect(page.getByRole('region', { name: 'Popular' })).toBeVisible();
 
-    // Slow enough that `AppLayout` has moved focus to `main` long before the page arrives.
+    // Held until `AppLayout` has moved focus to `main`, as a delay would race the assertion below.
+    let releaseChunk = () => {};
+    const isReleased = new Promise<void>((resolve) => {
+      releaseChunk = resolve;
+    });
     await page.route('**/pages-mfe/assets/search-page-*.js', async (route) => {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await isReleased;
       await route.fallback();
     });
     await headerIcon(page).click();
 
     await expect(page.locator('main')).toBeFocused();
+    releaseChunk();
     await expect(searchInput(page)).toBeFocused();
     await expect(page).toHaveURL(/\/search$/);
     await expect(page).toHaveTitle('Search · CinePulse');
@@ -214,6 +232,61 @@ test('a tab that loads shows the skeleton beside the form and the tabs', async (
   await expect(page.getByTestId('page-skeleton')).toHaveCount(0);
 });
 
+test('a new search and a tab tell one region, empty while they load', async ({ page }) => {
+  await page.goto('/search?q=dune');
+  const region = await liveRegion(page).elementHandle();
+  await expect(liveRegion(page)).toHaveText('2 movies found');
+
+  let release = () => {};
+  const held = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route('**/api/tmdb/search/movie?query=dark**', async (route) => {
+    await held;
+    await route.fallback();
+  });
+  await searchInput(page).fill('dark');
+  await searchInput(page).press('Enter');
+
+  await expect(page.getByTestId('page-skeleton')).toBeVisible();
+  await expect(liveRegion(page)).toBeEmpty();
+
+  release();
+  await expect(page.getByText('Found: dark')).toBeVisible();
+  await expect(liveRegion(page)).toHaveText('2 movies found');
+
+  await tab(page, 'TV Shows').click();
+  await expect(liveRegion(page)).toHaveText('2 TV shows found');
+  expect(await region?.evaluate((node) => node.isConnected)).toBe(true);
+  await expect(resultCount(page)).toHaveCount(1);
+});
+
+test('a search in the cache empties the region for longer than a frame', async ({ page }) => {
+  await page.goto('/search?q=dune');
+  await expect(liveRegion(page)).toHaveText('2 movies found');
+  await searchInput(page).fill('dark');
+  await searchInput(page).press('Enter');
+  await expect(page.getByText('Found: dark')).toBeVisible();
+  await expect(liveRegion(page)).toHaveText('2 movies found');
+
+  const said = await liveRegion(page).evaluateHandle((node) => {
+    const texts: { text: string | null; at: number }[] = [];
+    new MutationObserver(() =>
+      texts.push({ text: node.textContent, at: performance.now() })
+    ).observe(node, { childList: true, characterData: true, subtree: true });
+    return texts;
+  });
+
+  await page.goBack();
+
+  await expect(page.getByText('Found: dune')).toBeVisible();
+  await expect
+    .poll(async () => (await said.jsonValue()).map(({ text }) => text))
+    .toEqual(['', '2 movies found']);
+  const [emptied, filled] = await said.jsonValue();
+  expect((filled?.at ?? 0) - (emptied?.at ?? 0)).toBeGreaterThan(1000 / 60);
+});
+
 test.describe('every result leads to its details page', () => {
   test('a movie, with the watchlist on its card', async ({ page }) => {
     await page.goto('/search?q=dune');
@@ -328,7 +401,7 @@ test('a failed search offers a retry and leaves the form usable', async ({ page 
 });
 
 test('a hand-typed q over the limit reaches the error, and a submit gets out', async ({ page }) => {
-  const query = 'x'.repeat(MAX_QUERY_LENGTH + 1);
+  const query = refusedQuery(page);
   await page.goto(`/search?q=${query}`);
 
   await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
@@ -388,7 +461,7 @@ test.describe('on a phone', () => {
   }
 
   test('the error of a q over the limit stays inside', async ({ page }) => {
-    await page.goto(`/search?q=${'x'.repeat(MAX_QUERY_LENGTH + 1)}`);
+    await page.goto(`/search?q=${refusedQuery(page)}`);
 
     await expect(page.getByRole('button', { name: 'Try again' })).toBeVisible();
     expect(await overflow(page)).toBe(0);

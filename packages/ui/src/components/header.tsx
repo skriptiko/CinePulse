@@ -17,7 +17,7 @@ import { useIsScrolled } from '../hooks/use-is-scrolled';
 import { useResolvedTheme } from '../hooks/use-resolved-theme';
 import { cn } from '../lib/utils';
 import { Logo } from './logo';
-import { Button, buttonVariants } from './ui/button';
+import { BUTTON_ON_IMAGE_CLASS, Button, buttonVariants, LINK_ON_IMAGE_CLASS } from './ui/button';
 
 // Only routes that exist: New & Popular and My List come back with their pages.
 const NAV_ITEMS = [
@@ -28,12 +28,16 @@ const NAV_ITEMS = [
 
 const MOBILE_NAV_ID = 'mobile-nav';
 
-const TOOLBAR_BUTTON_CLASS = 'rounded-lg text-muted-foreground hover:text-foreground';
+// At the top of a page the transparent header lies on the hero image.
+const TOOLBAR_BUTTON_CLASS = cn(
+  BUTTON_ON_IMAGE_CLASS,
+  'text-muted-foreground hover:text-foreground rounded-lg'
+);
 
 /** Scroll offset after which the header gets its glass background. */
 const SCROLLED_THRESHOLD_PX = 20;
 
-const navLinkVariants = cva('rounded-lg px-4 text-sm transition-colors', {
+const navLinkVariants = cva(['rounded-lg px-4 text-sm transition-colors', LINK_ON_IMAGE_CLASS], {
   variants: {
     layout: {
       desktop: 'py-2',
@@ -67,10 +71,19 @@ export function Header({ className }: HeaderProps) {
     <header
       className={cn(
         'fixed top-0 right-0 left-0 z-50 transition-[padding,background-color] duration-300',
-        isScrolled ? 'glass py-3' : 'bg-transparent py-5',
+        isScrolled ? 'glass-bar py-3' : 'bg-transparent py-5',
         className
       )}
     >
+      {/* Parts the controls from whatever image lies under the header. It is solid down to the
+          last line of text, fades over the padding, and has the colour of the page, so a page
+          with no image shows nothing of it. */}
+      <div
+        className={cn(
+          'from-background pointer-events-none absolute inset-0 -z-10 bg-linear-to-b from-[calc(100%-1.75rem)] to-transparent transition-opacity duration-300',
+          isScrolled && 'opacity-0'
+        )}
+      />
       <div className="max-w-page mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between gap-8">
           <div className="flex items-center gap-8">
@@ -106,6 +119,7 @@ export function Header({ className }: HeaderProps) {
               aria-label={isAnonymous ? 'Sign in' : 'Profile'}
               className={cn(
                 buttonVariants({ variant: 'ghost', size: 'icon' }),
+                BUTTON_ON_IMAGE_CLASS,
                 'overflow-hidden rounded-lg'
               )}
             >
@@ -118,7 +132,7 @@ export function Header({ className }: HeaderProps) {
                   className="size-8 rounded-lg object-cover"
                 />
               ) : (
-                <span className="from-accent to-accent/60 flex size-8 items-center justify-center rounded-lg bg-linear-to-br">
+                <span className="from-accent to-accent/80 flex size-8 items-center justify-center rounded-lg bg-linear-to-br">
                   <User className="text-accent-foreground size-4" />
                 </span>
               )}

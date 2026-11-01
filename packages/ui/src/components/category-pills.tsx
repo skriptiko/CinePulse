@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 
 const pillVariants = cva(
-  'rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors duration-200 disabled:pointer-events-none disabled:opacity-50',
+  'focus-ring-inset rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors duration-200 disabled:pointer-events-none disabled:opacity-50',
   {
     variants: {
       selected: {

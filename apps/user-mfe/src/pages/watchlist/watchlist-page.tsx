@@ -1,12 +1,13 @@
 import { useGlobalStore } from '@repo/events';
 import { type WatchStatus, watchlistQueries } from '@repo/firebase';
-import { usePageMeta } from '@repo/ui';
+import { cn, usePageMeta } from '@repo/ui';
 import { useSuspenseQueries } from '@tanstack/react-query';
 import { useEffect, useId, useRef } from 'react';
 import { FolderActions } from './folder-actions';
 import { FolderTree } from './folder-tree';
 import { StatusFilter } from './status-filter';
 import { TitleList } from './title-list';
+import { useDoublePressHold } from './use-double-press-hold';
 import { useSelectedFolder } from './use-selected-folder';
 import { STATUS_LABELS, useKeptRows, useStatusFilter } from './use-status-filter';
 
@@ -35,6 +36,7 @@ function WatchlistContent({ uid }: WatchlistContentProps) {
   const previousViewRef = useRef(view);
   const previousCountRef = useRef(0);
   const { keptIds, keepRow } = useKeptRows(view);
+  const { isHolding, hold } = useDoublePressHold();
   const folderTitles = selected
     ? items.filter(({ folderIds }) => folderIds.includes(selected.id))
     : items;
@@ -63,12 +65,17 @@ function WatchlistContent({ uid }: WatchlistContentProps) {
       <h1 className="mb-6 text-2xl font-bold">Watchlist</h1>
       <div className="grid gap-8 md:grid-cols-[18rem_minmax(0,1fr)]">
         <FolderTree folders={folders} selectedId={selectedId ?? null} />
-        <section aria-labelledby={headingId} className="flex min-w-0 flex-col gap-4">
+        {/* Held as a whole: a form that closes moves the filter and the rows up under the finger,
+            and a toolbar that wraps comes back under it. Focus still returns to the toolbar. */}
+        <section
+          aria-labelledby={headingId}
+          className={cn('flex min-w-0 flex-col gap-4', isHolding && 'pointer-events-none')}
+        >
           <h2
             ref={headingRef}
             id={headingId}
             tabIndex={-1}
-            className="truncate text-lg font-semibold outline-hidden"
+            className="truncate text-lg font-semibold outline-none"
           >
             {selected?.name ?? 'All titles'}
           </h2>
@@ -78,6 +85,7 @@ function WatchlistContent({ uid }: WatchlistContentProps) {
             folders={folders}
             selected={selected}
             onDeleted={replaceSelection}
+            onFormClosed={hold}
           />
           <StatusFilter value={statusFilter} onChange={setStatusFilter} />
           {/* Always in the DOM: a live region announces a change only once it is already there. */}

@@ -1,9 +1,13 @@
-import { type Ref, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { type Ref, useEffect, useRef } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { DetailSection, DetailSectionEmpty } from './detail-section';
 import { Button } from './ui/button';
 
 const VISIBLE_CREDITS = 30;
+
+/** In the URL, so Back to the page finds the list as it was and the reader at their row. */
+const CREDITS_PARAM = 'credits';
+const ALL_CREDITS = 'all';
 
 /** One title in `FilmographySection`; build the list with `toFilmographyData`. */
 export type FilmographyCreditData = {
@@ -21,14 +25,25 @@ export type FilmographySectionProps = {
 };
 
 export function FilmographySection({ credits }: FilmographySectionProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
   const firstNewLinkRef = useRef<HTMLAnchorElement>(null);
+  const wasPressedRef = useRef(false);
+  const isExpanded = searchParams.get(CREDITS_PARAM) === ALL_CREDITS;
   const visibleCredits = isExpanded ? credits : credits.slice(0, VISIBLE_CREDITS);
 
   useEffect(() => {
-    // The press takes the button away, and focus would fall back to the top of the page.
-    if (isExpanded) firstNewLinkRef.current?.focus();
+    // The press takes the button away, and focus would fall back to the top of the page. A page
+    // that opens with the whole list had no press, and focus and scroll stay where they are.
+    if (isExpanded && wasPressedRef.current) firstNewLinkRef.current?.focus();
+    wasPressedRef.current = false;
   }, [isExpanded]);
+
+  const handleShowAll = () => {
+    wasPressedRef.current = true;
+    const next = new URLSearchParams(searchParams);
+    next.set(CREDITS_PARAM, ALL_CREDITS);
+    setSearchParams(next, { replace: true });
+  };
 
   return (
     <DetailSection title="Filmography">
@@ -47,7 +62,7 @@ export function FilmographySection({ credits }: FilmographySectionProps) {
       )}
 
       {visibleCredits.length < credits.length && (
-        <Button variant="secondary" className="mt-6" onClick={() => setIsExpanded(true)}>
+        <Button variant="secondary" className="mt-6" onClick={handleShowAll}>
           Show all {credits.length} credits
         </Button>
       )}

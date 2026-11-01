@@ -21,10 +21,11 @@ export function Home() {
   usePrefetchQuery(movieQueries.row('popular'));
 
   return (
-    <div>
+    // `space-y-12` parts a failed hero from the rows; a real hero has margins of its own.
+    <div className="space-y-12 pt-20 sm:pt-24">
       <h1 className="sr-only">CinePulse: trending and popular movies</h1>
       <HeroSection />
-      <div className="relative z-10 -mt-16 space-y-12 pb-16">
+      <div className="relative z-10 space-y-12 pb-16">
         <GenresSection />
         <TrendingSection />
         <FeaturedSection />

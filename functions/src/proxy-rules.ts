@@ -1,5 +1,6 @@
 /**
- * Pure request/response rules of `tmdbProxy`: no I/O, so they are unit-tested in isolation.
+ * Pure request/response rules of `tmdbProxy`: no I/O, so they are unit-tested in isolation, and
+ * `e2e/tmdb-mock.ts` checks every request with them.
  * The allowlist mirrors exactly what `@repo/api` calls (`packages/api/src/endpoints`).
  */
 

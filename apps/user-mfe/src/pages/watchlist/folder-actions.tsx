@@ -23,10 +23,18 @@ export type FolderActionsProps = {
   folders: WatchlistFolder[];
   selected: WatchlistFolder | null;
   onDeleted: (parentId: string | null) => void;
+  /** Runs as a form goes, which moves what lies under it. */
+  onFormClosed: () => void;
 };
 
 /** One toolbar for the selected folder. A form takes its place; the delete question goes below. */
-export function FolderActions({ uid, folders, selected, onDeleted }: FolderActionsProps) {
+export function FolderActions({
+  uid,
+  folders,
+  selected,
+  onDeleted,
+  onFormClosed,
+}: FolderActionsProps) {
   const [action, setAction] = useState<FolderAction | null>(null);
   const [returnFocusTo, setReturnFocusTo] = useState<FolderAction | null>(null);
   const queryClient = useQueryClient();
@@ -43,6 +51,7 @@ export function FolderActions({ uid, folders, selected, onDeleted }: FolderActio
   function close(): void {
     setReturnFocusTo(action);
     setAction(null);
+    onFormClosed();
   }
 
   if (action === 'create' || (action === 'createChild' && selected)) {
@@ -111,7 +120,10 @@ export function FolderActions({ uid, folders, selected, onDeleted }: FolderActio
           folders={folders}
           folder={selected}
           onClose={close}
-          onDeleted={() => onDeleted(selected.parentId)}
+          onDeleted={() => {
+            onFormClosed();
+            onDeleted(selected.parentId);
+          }}
         />
       )}
     </>

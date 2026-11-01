@@ -15,8 +15,8 @@ export default defineConfig({
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
-    // biome-ignore lint/suspicious/noUndeclaredEnvVars: read by Playwright, not by a Turbo task.
     command:
+      // biome-ignore lint/suspicious/noUndeclaredEnvVars: read by Playwright, not by a Turbo task.
       process.env.FIREBASE_CLI ??
       'firebase emulators:start --project demo --only hosting,auth,firestore',
     url: `http://127.0.0.1:${PORT}`,

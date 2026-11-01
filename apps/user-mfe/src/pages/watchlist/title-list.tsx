@@ -2,16 +2,15 @@ import { getImageUrl } from '@repo/api';
 import type { WatchlistItem } from '@repo/firebase';
 import { buildPath } from '@repo/routes';
 import { Button, cn, ImagePlaceholder, ToggleGroup, ToggleGroupItem } from '@repo/ui';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { focusOnMount } from './focus-on-mount';
 import { RemoveTitleForm } from './remove-title-form';
+import { useDoublePressHold } from './use-double-press-hold';
 import { isWatchStatus, STATUS_LABELS, WATCH_STATUSES } from './use-status-filter';
 import { useTitleStatus } from './use-title-status';
 
 const POSTER_SIZE_ROW = 'w92';
-/** Longer than the pause within a double press. */
-const REMOVAL_HOLD_MS = 400;
 
 export type TitleListProps = {
   uid: string;
@@ -24,23 +23,18 @@ export type TitleListProps = {
 // or rating to fill the card.
 export function TitleList({ uid, titles, onStatusChange }: TitleListProps) {
   const [askingId, setAskingId] = useState<string | null>(null);
-  const [isHolding, setIsHolding] = useState(false);
+  const { isHolding, hold } = useDoublePressHold();
 
-  useEffect(() => {
-    if (!isHolding) return;
-    const timer = setTimeout(() => setIsHolding(false), REMOVAL_HOLD_MS);
-    return () => clearTimeout(timer);
-  }, [isHolding]);
-
-  const handleRemoved = () => {
+  const handleQuestionClosed = () => {
     setAskingId(null);
-    setIsHolding(true);
+    hold();
   };
 
   if (titles.length === 0) return null;
 
   return (
-    // The rows below a removed one move up under the finger, and a second press would reach them.
+    // The rows below a closed question move up under the finger, whether its title was removed or
+    // kept, and a second press would reach them.
     <ul className={cn('flex flex-col gap-3', isHolding && 'pointer-events-none')}>
       {titles.map((item) => (
         <TitleRow
@@ -49,8 +43,8 @@ export function TitleList({ uid, titles, onStatusChange }: TitleListProps) {
           item={item}
           isAsking={askingId === item.id}
           onAsk={() => setAskingId(item.id)}
-          onCancel={() => setAskingId(null)}
-          onRemoved={handleRemoved}
+          onCancel={handleQuestionClosed}
+          onRemoved={handleQuestionClosed}
           onStatusChange={onStatusChange}
         />
       ))}

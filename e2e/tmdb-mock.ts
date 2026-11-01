@@ -1,4 +1,9 @@
-import type { Page, Route } from '@playwright/test';
+import { expect, type Page, type Route } from '@playwright/test';
+import {
+  CACHE_CONTROL_NO_STORE,
+  type ProxyError,
+  resolveProxyRequest,
+} from '../functions/src/proxy-rules';
 
 const GENRES = [
   { id: 28, name: 'Action' },
@@ -55,6 +60,8 @@ export function paginated(titles: string[], page = 1) {
 /** A movie with every section filled, and a second one to reach from its "More like this". */
 export const FULL_MOVIE_ID = 7;
 export const OTHER_FULL_MOVIE_ID = 8;
+/** `Film 2` in the filmography of the full person, with a cast that leads to other people. */
+export const FILMOGRAPHY_MOVIE_ID = 3002;
 /** A movie whose sections all come back empty. */
 export const EMPTY_MOVIE_ID = 9;
 /** A movie whose every external string is one long word. */
@@ -82,8 +89,6 @@ export const UNKNOWN_PERSON_ID = 2003;
 export const NOTHING_QUERY = 'nothing';
 /** A search that finds titles and names of one long word. */
 export const LONG_TEXT_QUERY = 'long text';
-/** `MAX_QUERY_LENGTH` of the proxy, which refuses a longer query with 400. */
-export const MAX_QUERY_LENGTH = 100;
 
 const ONE_PIXEL_PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
@@ -191,7 +196,9 @@ function fullSections(otherMovieId: number, text = (value: string) => value) {
 }
 
 function detailSections(id: number) {
-  if (id === FULL_MOVIE_ID) return fullSections(OTHER_FULL_MOVIE_ID);
+  if (id === FULL_MOVIE_ID || id === FILMOGRAPHY_MOVIE_ID) {
+    return fullSections(OTHER_FULL_MOVIE_ID);
+  }
   if (id === OTHER_FULL_MOVIE_ID) return fullSections(FULL_MOVIE_ID);
   if (id === EMPTY_MOVIE_ID) return emptySections();
   if (id === LONG_TEXT_MOVIE_ID) return fullSections(FULL_MOVIE_ID, () => 'x'.repeat(200));
@@ -373,7 +380,6 @@ function respondToSearch(route: Route, path: string, url: URL) {
   const page = Number(url.searchParams.get('page') ?? 1);
   const found = foundText(query, page);
 
-  if (query.length > MAX_QUERY_LENGTH) return route.fulfill({ status: 400, json: {} });
   if (query.startsWith(NOTHING_QUERY)) {
     return route.fulfill({ json: { page: 1, results: [], total_pages: 1, total_results: 0 } });
   }
@@ -423,9 +429,41 @@ function respond(route: Route, url: URL) {
   return route.fulfill({ json: paginated(['Row movie', 'Hero movie']) });
 }
 
-/** Answers every TMDB request from fixtures, so the tests need no token or network. */
+const provokedRefusals = new WeakMap<Page, (url: URL) => boolean>();
+
+/** Says that the test of this page means to provoke a refusal. Any other one still fails it. */
+export function expectRefusal(page: Page, isProvoked: (url: URL) => boolean): void {
+  provokedRefusals.set(page, isProvoked);
+}
+
+/**
+ * Answers as `tmdbProxy` does. The check is soft because a throw in a route handler fails the
+ * test but leaves the request unanswered and ends the test on the spot.
+ */
+function refuse(page: Page, route: Route, url: URL, { status, error }: ProxyError) {
+  const isProvoked = provokedRefusals.get(page)?.(url) ?? false;
+  const refusal = `tmdbProxy refuses ${url.pathname}${url.search}: ${status} ${error}`;
+
+  expect.soft(isProvoked, refusal).toBe(true);
+  return route.fulfill({
+    status,
+    headers: { 'Cache-Control': CACHE_CONTROL_NO_STORE },
+    json: { error },
+  });
+}
+
+/**
+ * Answers every TMDB request from fixtures, so the tests need no token or network. Each one goes
+ * through the rules of the real proxy first, and one they refuse fails the test: see
+ * `expectRefusal` for a test that provokes it.
+ */
 export async function mockTmdb(page: Page): Promise<void> {
-  await page.route('**/api/tmdb/**', (route) => respond(route, new URL(route.request().url())));
+  await page.route('**/api/tmdb/**', (route) => {
+    const url = new URL(route.request().url());
+    const resolved = resolveProxyRequest(url.pathname, url.searchParams);
+
+    return resolved.ok ? respond(route, url) : refuse(page, route, url, resolved.error);
+  });
   await page.route(/^https:\/\/(image\.tmdb\.org|i\.ytimg\.com)\//, (route) =>
     route.fulfill({ contentType: 'image/png', body: ONE_PIXEL_PNG })
   );

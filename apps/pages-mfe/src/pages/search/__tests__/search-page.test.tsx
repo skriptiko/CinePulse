@@ -121,6 +121,32 @@ function tabs(): HTMLElement {
   return screen.getByRole('navigation', { name: 'Search results by type' });
 }
 
+/** Not `busy`, as the skeleton is a status region too. */
+function liveRegion(): HTMLElement {
+  return screen.getByRole('status', { busy: false });
+}
+
+/** Every text the region has held since the call, as a screen reader could read it. */
+function recordRegion(region: HTMLElement): (string | null)[] {
+  const said: (string | null)[] = [];
+  new MutationObserver(() => said.push(region.textContent)).observe(region, {
+    childList: true,
+    characterData: true,
+    subtree: true,
+  });
+  return said;
+}
+
+/** A gate for a response, so a test can look at the page while it loads. */
+function hold() {
+  let release = () => {};
+  const held = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+
+  return { held, release };
+}
+
 describe('Search page', () => {
   describe('with no query', () => {
     it('asks what to look for and sends no request', async () => {
@@ -359,7 +385,7 @@ describe('Search page', () => {
         'href',
         '/movies/1'
       );
-      expect(screen.getByRole('status')).toHaveTextContent('1 movie found');
+      await waitFor(() => expect(liveRegion()).toHaveTextContent('1 movie found'));
       expect(
         screen.getByRole('button', { name: 'Add Film dune to your watchlist' })
       ).toBeInTheDocument();
@@ -374,7 +400,7 @@ describe('Search page', () => {
         'href',
         '/tv/2'
       );
-      expect(screen.getByRole('status')).toHaveTextContent('1 TV show found');
+      await waitFor(() => expect(liveRegion()).toHaveTextContent('1 TV show found'));
       expect(
         screen.getByRole('button', { name: 'Add Show dune to your watchlist' })
       ).toBeInTheDocument();
@@ -388,7 +414,7 @@ describe('Search page', () => {
       const link = await screen.findByRole('link', { name: /Zendaya/ });
       expect(link).toHaveAttribute('href', '/person/3');
       expect(link).toHaveTextContent('Acting');
-      expect(screen.getByRole('status')).toHaveTextContent('1 person found');
+      await waitFor(() => expect(liveRegion()).toHaveTextContent('1 person found'));
       expect(screen.queryByRole('button', { name: /watchlist/ })).not.toBeInTheDocument();
       await expectNoA11yViolations(container);
     });
@@ -413,6 +439,167 @@ describe('Search page', () => {
 
       expect(await screen.findByText('Film fast & furious #9')).toBeInTheDocument();
       expect(requests).toEqual(['movie:fast & furious #9']);
+    });
+  });
+
+  describe('the live region', () => {
+    it('is in the page before anything has been searched for', () => {
+      renderSearch();
+
+      expect(liveRegion().tagName).toBe('OUTPUT');
+      expect(liveRegion()).toBeEmptyDOMElement();
+      expect(liveRegion()).toHaveClass('sr-only');
+    });
+
+    it('takes the count while the visible one stays plain text', async () => {
+      mockSearch();
+      renderSearch('/search?q=dune');
+      const region = liveRegion();
+
+      await waitFor(() => expect(region).toHaveTextContent('1 movie found'));
+
+      expect(screen.getAllByRole('status')).toEqual([region]);
+      const visible = screen.getAllByText('1 movie found').filter((node) => node !== region);
+      expect(visible.map((node) => node.tagName)).toEqual(['P']);
+    });
+
+    it('is one element, empty while a search with the same count loads', async () => {
+      const { held, release } = hold();
+      mockSearch({
+        movie: async (params) => {
+          if (params.get('query') === 'dark') await held;
+          return HttpResponse.json(buildPaginated([buildMovie({ title: 'Film dark' })]));
+        },
+      });
+      const { user } = renderSearch('/search?q=dune');
+      const region = liveRegion();
+      await waitFor(() => expect(region).toHaveTextContent('1 movie found'));
+
+      await user.clear(searchInput());
+      await user.type(searchInput(), 'dark{Enter}');
+
+      expect(await screen.findByTestId('page-skeleton')).toBeInTheDocument();
+      expect(liveRegion()).toBe(region);
+      expect(region).toBeEmptyDOMElement();
+
+      release();
+
+      await screen.findByText('Film dark');
+      await waitFor(() => expect(region).toHaveTextContent('1 movie found'));
+      expect(liveRegion()).toBe(region);
+    });
+
+    it('is one element, empty while another tab loads', async () => {
+      const { held, release } = hold();
+      mockSearch({
+        tv: async () => {
+          await held;
+          return HttpResponse.json(buildPaginated([buildTv()], { total_results: 2_500 }));
+        },
+      });
+      const { user } = renderSearch('/search?q=dune');
+      const region = liveRegion();
+      await waitFor(() => expect(region).toHaveTextContent('1 movie found'));
+
+      await user.click(within(tabs()).getByRole('link', { name: 'TV Shows' }));
+
+      expect(await screen.findByTestId('page-skeleton')).toBeInTheDocument();
+      expect(liveRegion()).toBe(region);
+      expect(region).toBeEmptyDOMElement();
+
+      release();
+
+      await waitFor(() => expect(region).toHaveTextContent('2,500 TV shows found'));
+      expect(liveRegion()).toBe(region);
+    });
+
+    it('empties first for a search in the cache, which shows no skeleton', async () => {
+      mockSearch();
+      const { user } = renderSearch('/search?q=dune');
+      const region = liveRegion();
+      await waitFor(() => expect(region).toHaveTextContent('1 movie found'));
+      await user.clear(searchInput());
+      await user.type(searchInput(), 'dark{Enter}');
+      await screen.findByText('Film dark');
+      await waitFor(() => expect(region).toHaveTextContent('1 movie found'));
+      const said = recordRegion(region);
+
+      await user.click(screen.getByRole('button', { name: 'Go back' }));
+
+      expect(await screen.findByText('Film dune')).toBeInTheDocument();
+      await waitFor(() => expect(said).toEqual(['', '1 movie found']));
+      expect(liveRegion()).toBe(region);
+    });
+
+    it('keeps its text through Load more, as the count does not change', async () => {
+      mockSearch({ movie: twoPages });
+      const { user } = renderSearch('/search?q=dune');
+      const region = liveRegion();
+      await waitFor(() => expect(region).toHaveTextContent('3 movies found'));
+      const said = recordRegion(region);
+
+      await user.click(screen.getByRole('button', { name: 'Load more' }));
+      await screen.findByText('Only on page 2');
+
+      expect(region).toHaveTextContent('3 movies found');
+      expect(said).toEqual([]);
+    });
+
+    it('does not keep the old number when the next search fails', async () => {
+      mockSearch({
+        movie: (params) =>
+          params.get('query') === 'dark'
+            ? new HttpResponse(null, { status: 500 })
+            : HttpResponse.json(buildPaginated([buildMovie({ title: 'Found it' })])),
+      });
+      const { user } = renderSearch('/search?q=dune');
+      const region = liveRegion();
+      await waitFor(() => expect(region).toHaveTextContent('1 movie found'));
+
+      await user.clear(searchInput());
+      await user.type(searchInput(), 'dark{Enter}');
+
+      await screen.findByRole('alert');
+      expect(liveRegion()).toBe(region);
+      expect(region).toBeEmptyDOMElement();
+    });
+
+    it('does not keep the old number when the tab fails, and takes the retry', async () => {
+      let isDown = true;
+      mockSearch({
+        tv: () =>
+          isDown
+            ? new HttpResponse(null, { status: 500 })
+            : HttpResponse.json(buildPaginated([buildTv({ id: 2, name: 'Back online' })])),
+      });
+      const { user } = renderSearch('/search?q=dune');
+      const region = liveRegion();
+      await waitFor(() => expect(region).toHaveTextContent('1 movie found'));
+
+      await user.click(within(tabs()).getByRole('link', { name: 'TV Shows' }));
+
+      await screen.findByRole('alert');
+      expect(region).toBeEmptyDOMElement();
+
+      isDown = false;
+      await user.click(screen.getByRole('button', { name: 'Try again' }));
+
+      await screen.findByText('Back online');
+      await waitFor(() => expect(region).toHaveTextContent('1 TV show found'));
+      expect(liveRegion()).toBe(region);
+    });
+
+    it('empties when the query goes away', async () => {
+      mockSearch();
+      const { user } = renderSearch('/search?q=dune');
+      const region = liveRegion();
+      await waitFor(() => expect(region).toHaveTextContent('1 movie found'));
+
+      await user.click(screen.getByRole('link', { name: 'Search icon' }));
+
+      expect(await screen.findByText(NO_QUERY_LINE)).toBeInTheDocument();
+      expect(liveRegion()).toBe(region);
+      expect(region).toBeEmptyDOMElement();
     });
   });
 

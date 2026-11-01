@@ -2,6 +2,7 @@ import { expect, type Locator, type Page, test } from '@playwright/test';
 import { press, scrollToAndPress } from './scroll-to-and-press';
 import {
   EMPTY_PERSON_ID,
+  FILMOGRAPHY_MOVIE_ID,
   FULL_MOVIE_ID,
   FULL_PERSON_ID,
   LONG_TEXT_PERSON_ID,
@@ -24,6 +25,23 @@ function section(page: Page, name: string): Locator {
 
 function filmographyRows(page: Page): Locator {
   return section(page, 'Filmography').getByRole('listitem');
+}
+
+function showAllButton(page: Page): Locator {
+  return section(page, 'Filmography').getByRole('button', { name: /Show all/ });
+}
+
+function historyLength(page: Page): Promise<number> {
+  return page.evaluate(() => window.history.length);
+}
+
+/** At once, as the wheel of `scrollToAndPress` takes too long this far down the page. */
+async function bringToMiddle(target: Locator): Promise<number> {
+  await target.evaluate((element) => {
+    const { top, height } = element.getBoundingClientRect();
+    window.scrollBy(0, top + height / 2 - window.innerHeight / 2);
+  });
+  return target.page().evaluate(() => window.scrollY);
 }
 
 /** A count and not a boolean, so a failure says how many. */
@@ -267,5 +285,72 @@ test.describe('from far down the page', () => {
     await expect(filmographyRows(page)).toHaveCount(FULL_ROW_COUNT);
     expect(scrolled).toBeGreaterThan(0);
     expect(await page.evaluate(() => window.scrollY)).toBe(scrolled);
+  });
+
+  test('Show all adds no history entry and does not move the page', async ({ page }) => {
+    await page.goto(`/person/${FULL_PERSON_ID}`);
+    const entries = await historyLength(page);
+
+    const scrolled = await bringToMiddle(showAllButton(page));
+    await press(page, showAllButton(page));
+
+    await expect(page).toHaveURL(new RegExp(`/person/${FULL_PERSON_ID}\\?credits=all$`));
+    await expect(filmographyRows(page).nth(30).getByRole('link')).toBeFocused();
+    expect(await historyLength(page)).toBe(entries);
+    expect(scrolled).toBeGreaterThan(0);
+    expect(await page.evaluate(() => window.scrollY)).toBe(scrolled);
+  });
+
+  test('Back from a short title returns to the open list, at the same row', async ({ page }) => {
+    await page.goto(`/movies/${FULL_MOVIE_ID}`);
+    await section(page, 'Cast').getByRole('link', { name: 'Some Director' }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Some Person' })).toBeVisible();
+
+    await bringToMiddle(showAllButton(page));
+    await press(page, showAllButton(page));
+    await expect(filmographyRows(page)).toHaveCount(FULL_ROW_COUNT);
+
+    const row = section(page, 'Filmography').getByRole('link', { name: 'Film 0', exact: true });
+    const scrolled = await bringToMiddle(row);
+    const top = (await row.boundingBox())?.y;
+    await press(page, row);
+    await expect(page).toHaveURL(/\/movies\/3000$/);
+    await expect(page.getByRole('heading', { level: 1, name: 'Detail movie' })).toBeVisible();
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+    // The title must be shorter than where the reader was, or this proves nothing.
+    expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThan(scrolled);
+
+    await page.goBack();
+
+    await expect(page).toHaveURL(new RegExp(`/person/${FULL_PERSON_ID}\\?credits=all$`));
+    await expect(filmographyRows(page)).toHaveCount(FULL_ROW_COUNT);
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(scrolled);
+    expect((await row.boundingBox())?.y).toBe(top);
+    await expect(filmographyRows(page).nth(30).getByRole('link')).not.toBeFocused();
+
+    await page.goBack();
+
+    await expect(page).toHaveURL(new RegExp(`/movies/${FULL_MOVIE_ID}$`));
+  });
+
+  test('a shared link opens the whole list at the top, with no focus on it', async ({ page }) => {
+    await page.goto(`/person/${FULL_PERSON_ID}?credits=all`);
+
+    await expect(filmographyRows(page)).toHaveCount(FULL_ROW_COUNT);
+    await expect(filmographyRows(page).nth(30).getByRole('link')).not.toBeFocused();
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  });
+
+  test('a person reached from the open list starts with the short one', async ({ page }) => {
+    await page.goto(`/person/${FULL_PERSON_ID}?credits=all`);
+
+    await section(page, 'Filmography').getByRole('link', { name: 'Film 2', exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`/movies/${FILMOGRAPHY_MOVIE_ID}$`));
+    await section(page, 'Cast')
+      .getByRole('link', { name: /Actor 0/ })
+      .click();
+
+    await expect(page).toHaveURL(/\/person\/1000$/);
+    await expect(filmographyRows(page)).toHaveCount(30);
   });
 });

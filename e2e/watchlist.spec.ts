@@ -1,6 +1,13 @@
 import { type APIRequestContext, expect, type Locator, type Page, test } from '@playwright/test';
+import {
+  expectInsetRingToStandOut,
+  expectRingToStandOut,
+  expectTwoColoursOnImage,
+  getEdgeContrast,
+  getRingContrast,
+} from './painted-pixels';
 import { signIn } from './sign-in';
-import { mockTmdb, paginated } from './tmdb-mock';
+import { FULL_MOVIE_ID, mockTmdb, paginated } from './tmdb-mock';
 
 const FIRESTORE_DOCUMENTS =
   'http://127.0.0.1:5012/v1/projects/demo-cinepulse/databases/(default)/documents';
@@ -294,14 +301,15 @@ async function readTitle(request: APIRequestContext, uid: string, id: string) {
   };
 }
 
-async function makeFolders(page: Page, names: string[]) {
+/** One id per name, in order, so a caller destructures them without checking for a missing one. */
+async function makeFolders<const Names extends readonly string[]>(page: Page, names: Names) {
   const ids: string[] = [];
   for (const name of names) {
     await createFolder(page, 'New folder', name, 1);
     await selectFolder(page, name, 1);
     ids.push(getFolderId(page));
   }
-  return ids;
+  return ids as { -readonly [Index in keyof Names]: string };
 }
 
 function openMovies(page: Page) {
@@ -1024,7 +1032,9 @@ test('the row controls open nothing, and the rest of the row opens the title', a
   await expect(page).toHaveURL(/\/user\/watchlist$/);
   await page.getByRole('button', { name: 'Cancel' }).click();
 
-  await page.mouse.click(remove.x + remove.width + 40, middle);
+  const pastControls = { x: remove.x + remove.width + 40, y: middle };
+  await expectToCover(page.getByRole('link', { name: title }), pastControls);
+  await click(page, pastControls);
   await expect(page).toHaveURL(new RegExp(`/movies/${MOVIE_ID}$`));
 });
 
@@ -1144,7 +1154,124 @@ test.describe('in forced colours', () => {
     });
     expect(ring).toEqual({ onFill: true, outlineOffset: '-4px', outlineStyle: 'solid' });
   });
+
+  test('the heading has no outline, at rest or when focus moves to it', async ({ page }) => {
+    await openWatchlist(page);
+    const heading = page.getByRole('heading', { level: 2, name: 'All titles' });
+    await expect(heading).toHaveCSS('outline-style', 'none');
+
+    await createFolder(page, 'New folder', 'Gone', 1);
+    await selectFolder(page, 'Gone', 1);
+    await page.getByRole('button', { name: 'Delete' }).click();
+    await page.getByRole('button', { name: 'Delete folder' }).click();
+
+    await expect(heading).toBeFocused();
+    await expect(heading).toHaveCSS('outline-style', 'none');
+  });
+
+  test('a filled button and an outline one keep a border, with no outline at rest', async ({
+    page,
+    request,
+  }) => {
+    await openWatchlist(page);
+    await seedTitle(request, await getUid(page), MOVIE_ID, MOVIE, []);
+    await page.reload();
+    await page.getByRole('button', { name: `Remove ${MOVIE}` }).click();
+
+    const destructive = page.getByRole('button', { name: 'Remove title' });
+    await page.evaluate(() => {
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    });
+    await expect(getEdgeContrast(page, destructive, 0, 7)).resolves.toBeGreaterThanOrEqual(3);
+    expect(await getEdgeContrast(page, destructive, 3, 7)).toBeCloseTo(1);
+    await expect(getRingContrast(page, destructive, 3, 7)).resolves.toBeGreaterThanOrEqual(3);
+
+    await page.goto('/user/profile');
+    // The counts load on their own, and push the link down when they come.
+    await expect(page.getByText('Titles')).toBeVisible();
+    const outline = page.getByRole('main').getByRole('link', { name: 'Settings' });
+    await expect(getEdgeContrast(page, outline, 0, 7)).resolves.toBeGreaterThanOrEqual(3);
+    expect(await getEdgeContrast(page, outline, 3, 7)).toBeCloseTo(1);
+  });
 });
+
+for (const theme of ['dark', 'light']) {
+  test(`the focus ring of every Button variant stands out on the ${theme} theme`, async ({
+    page,
+    request,
+  }) => {
+    await page.addInitScript((value) => localStorage.setItem('cinepulse-theme', value), theme);
+    await openWatchlist(page);
+    await seedTitle(request, await getUid(page), MOVIE_ID, MOVIE, []);
+    await page.reload();
+
+    await expectRingToStandOut(page, page.getByRole('button', { name: 'New folder', exact: true }));
+    await page.getByRole('button', { name: `Remove ${MOVIE}` }).click();
+    await expectRingToStandOut(page, page.getByRole('button', { name: 'Remove title' }));
+    await expectRingToStandOut(page, page.getByRole('button', { name: 'Cancel' }));
+
+    await page.goto('/user/profile');
+    await expectRingToStandOut(page, page.getByRole('link', { name: 'Open watchlist' }));
+
+    await page.goto(`/movies/${FULL_MOVIE_ID}`);
+    await expectRingToStandOut(page, page.getByRole('button', { name: 'Add to watchlist' }));
+
+    await page.goto('/');
+    await expectRingToStandOut(page, page.getByRole('link', { name: /^More Info/ }));
+    await expectTwoColoursOnImage(page, addButton(page, 'Row movie'));
+    await page.evaluate(() => window.scrollTo(0, 0));
+    // The header grows back at the top of a page, and a box read before then goes out of date.
+    await expect(page.getByRole('banner')).toHaveCSS('padding-top', '20px');
+    const header = page.getByRole('banner');
+    await expectTwoColoursOnImage(page, header.getByRole('button', { name: 'Dark theme' }));
+    await expectTwoColoursOnImage(page, header.getByRole('link', { name: 'Profile' }));
+  });
+}
+
+for (const theme of ['dark', 'light']) {
+  test(`the focus of the other controls stands out on the ${theme} theme`, async ({
+    page,
+    request,
+  }) => {
+    test.slow();
+    await page.addInitScript((value) => localStorage.setItem('cinepulse-theme', value), theme);
+    await openWatchlist(page);
+    await seedTitle(request, await getUid(page), MOVIE_ID, MOVIE, []);
+    await page.reload();
+    await expect(statusBox(page, MOVIE, 'Planned')).toBeVisible();
+
+    await createFolder(page, 'New folder', 'First', 1);
+    await createFolder(page, 'New folder', 'Second', 1);
+    await selectFolder(page, 'Second', 1);
+    await expectInsetRingToStandOut(page, folderLink(page, 'First', 1));
+    await expectInsetRingToStandOut(page, folderLink(page, 'Second', 1));
+
+    await page.getByRole('button', { name: 'Rename' }).click();
+    const name = page.getByRole('textbox');
+    await expectRingToStandOut(page, name);
+    // Nothing in the app sets it yet, and `Input` does not take it as a prop.
+    await name.evaluate((element) => element.setAttribute('aria-invalid', 'true'));
+    await expectRingToStandOut(page, name);
+    await page.getByRole('button', { name: 'Cancel' }).click();
+
+    await page.getByRole('button', { name: 'Move' }).click();
+    // Its ring covers the border and goes 1 px past it, in a colour of the browser.
+    await expect(
+      getRingContrast(page, page.getByRole('combobox'), 0, 6)
+    ).resolves.toBeGreaterThanOrEqual(3);
+    await page.getByRole('button', { name: 'Cancel' }).click();
+
+    await page.goto('/user/watchlist');
+    await expectInsetRingToStandOut(page, filterPill(page, 'All'));
+    await expectInsetRingToStandOut(page, filterPill(page, 'Watched'));
+    await expectInsetRingToStandOut(page, statusBox(page, MOVIE, 'Planned'));
+    await expectInsetRingToStandOut(page, statusBox(page, MOVIE, 'Watched'));
+
+    await page.goto(`/movies/${FULL_MOVIE_ID}`);
+    await page.getByRole('button', { name: 'Add to watchlist' }).click();
+    await expectRingToStandOut(page, folderBox(page, 'First', 1));
+  });
+}
 
 test.describe('the status on a phone', () => {
   test.use({ hasTouch: true, viewport: { width: 320, height: 640 } });
@@ -1318,6 +1445,7 @@ test('the second press of a double press on Remove title lands on nothing', asyn
   await page.waitForTimeout(100);
   await expect(page).toHaveURL(/\/user\/watchlist$/);
   await expect(page.getByRole('radio', { name: 'Planned', checked: true })).toHaveCount(3);
+  await expect(page.getByRole('heading', { level: 2, name: 'All titles' })).toBeFocused();
 
   // The hold passes: this waits for the switch to take a press.
   const next = page.getByRole('radiogroup').first().getByRole('radio', { name: 'Watched' });
@@ -1340,4 +1468,217 @@ test('a removal in a long list keeps the page where it is', async ({ page, reque
 
   await expect(page.getByRole('link', { name: 'Row 1', exact: true })).toHaveCount(0);
   expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(scrollY - 200);
+});
+
+type Spot = { x: number; y: number };
+type Box = Spot & { width: number; height: number };
+
+function tap(page: Page, { x, y }: Spot) {
+  return page.touchscreen.tap(x, y);
+}
+
+function click(page: Page, { x, y }: Spot) {
+  return page.mouse.click(x, y);
+}
+
+/** The middle of where two boxes overlap. */
+function getOverlap(first: Box | null, second: Box | null): Spot {
+  if (!first || !second) throw new Error('No box');
+  const left = Math.max(first.x, second.x);
+  const right = Math.min(first.x + first.width, second.x + second.width);
+  const top = Math.max(first.y, second.y);
+  const bottom = Math.min(first.y + first.height, second.y + second.height);
+  if (left >= right || top >= bottom) throw new Error('The boxes do not overlap');
+  return { x: (left + right) / 2, y: (top + bottom) / 2 };
+}
+
+/**
+ * Polled, as a hold hides `under` from this check. It also waits the hold out: a `click()` that
+ * meets one retries at other scroll positions, which would take the page off the boxes it read.
+ */
+function expectToCover(under: Locator, spot: Spot) {
+  return expect
+    .poll(() =>
+      under.evaluate((element, { x, y }) => element.contains(document.elementFromPoint(x, y)), spot)
+    )
+    .toBe(true);
+}
+
+/** A folder with a title in it, and another folder for Move to offer. */
+async function openFolderWithTitle(page: Page, request: APIRequestContext, name: string) {
+  await openWatchlist(page);
+  const [, folderId] = await makeFolders(page, ['Other', name]);
+  await seedTitle(request, await getUid(page), 1, 'Row', [folderId]);
+  await page.reload();
+  await expect(page.getByRole('link', { name: 'Row', exact: true })).toBeVisible();
+}
+
+/**
+ * Both presses go to one point of Cancel, which `under` covers once the form is gone. Checked
+ * before pressing: a point that falls between two controls would pass on broken code.
+ */
+async function expectDoublePressToReachNothing(
+  page: Page,
+  form: string,
+  under: Locator,
+  press: typeof tap
+) {
+  const url = page.url();
+  const toolbarButton = page.getByRole('button', { name: form, exact: true });
+  const cancel = page.getByRole('button', { name: 'Cancel' });
+
+  const underBox = await under.boundingBox();
+  await toolbarButton.click();
+  const spot = getOverlap(await cancel.boundingBox(), underBox);
+  await cancel.click();
+  await expectToCover(under, spot);
+
+  await toolbarButton.click();
+  await press(page, spot);
+  await expect(cancel).toHaveCount(0);
+  await page.waitForTimeout(120);
+  await press(page, spot);
+
+  await page.waitForTimeout(100);
+  await expect(page).toHaveURL(url);
+  await expect(cancel).toHaveCount(0);
+  await expect(toolbarButton).toBeFocused();
+  await expectToCover(under, spot);
+}
+
+for (const { input, press } of [
+  { input: 'touch', press: tap },
+  { input: 'mouse', press: click },
+]) {
+  test.describe(`a double press on Cancel by ${input}`, () => {
+    test.use({ hasTouch: input === 'touch' });
+
+    for (const form of ['New folder', 'New subfolder', 'Rename', 'Move', 'Delete']) {
+      test(`in ${form} leaves the filter alone`, async ({ page, request }) => {
+        await openFolderWithTitle(page, request, 'Keep');
+
+        for (const width of [320, 430, 820]) {
+          await page.setViewportSize({ width, height: 800 });
+          await expectDoublePressToReachNothing(page, form, filterPill(page, 'Planned'), press);
+        }
+
+        // The hold passes: the same pill takes a press again.
+        await filterPill(page, 'Planned').click();
+        await expect(filterPill(page, 'Planned')).toHaveAttribute('aria-pressed', 'true');
+      });
+    }
+
+    test('under a long folder name opens no title', async ({ page, request }) => {
+      await page.setViewportSize({ width: 320, height: 800 });
+      await openFolderWithTitle(page, request, 'x'.repeat(100));
+      const link = page.getByRole('link', { name: 'Row', exact: true });
+
+      // The question wraps here, and takes its Cancel down to the row.
+      await expectDoublePressToReachNothing(page, 'Delete', link, press);
+    });
+  });
+}
+
+/** Rows from the top down: the list shows the latest first. */
+async function openTitles(page: Page, request: APIRequestContext, titles: string[]) {
+  await openWatchlist(page);
+  const uid = await getUid(page);
+  for (const [index, title] of titles.entries()) {
+    const addedAt = new Date(Date.now() - index * 60_000).toISOString();
+    await seedTitle(request, uid, index + 1, title, [], { addedAt });
+  }
+  await page.reload();
+  await expect(page.getByRole('radiogroup')).toHaveCount(titles.length);
+  return uid;
+}
+
+/**
+ * Both presses go to one point of Cancel in the question of `title`, which `under` covers once the
+ * question is gone. Checked before pressing, as with the folder forms below.
+ */
+async function expectDoublePressOnQuestionToReachNothing(
+  page: Page,
+  title: string,
+  under: Locator,
+  press: typeof tap
+) {
+  const remove = page.getByRole('button', { name: `Remove ${title}`, exact: true });
+  const cancel = page.getByRole('button', { name: 'Cancel' });
+
+  const underBox = await under.boundingBox();
+  await remove.click();
+  const spot = getOverlap(await cancel.boundingBox(), underBox);
+  await cancel.click();
+  await expectToCover(under, spot);
+
+  await remove.click();
+  await press(page, spot);
+  await expect(cancel).toHaveCount(0);
+  await page.waitForTimeout(120);
+  await press(page, spot);
+
+  await page.waitForTimeout(100);
+  await expect(page).toHaveURL(/\/user\/watchlist$/);
+  await expect(cancel).toHaveCount(0);
+  await expect(remove).toBeFocused();
+  await expectToCover(under, spot);
+  return spot;
+}
+
+for (const { input, press } of [
+  { input: 'touch', press: tap },
+  { input: 'mouse', press: click },
+]) {
+  test.describe(`a double press on Cancel in the question by ${input}`, () => {
+    test.use({ hasTouch: input === 'touch' });
+
+    test('leaves the status of the next title alone', async ({ page, request }) => {
+      const uid = await openTitles(page, request, ['First', 'Second']);
+
+      for (const width of [320, 430, 820]) {
+        await page.setViewportSize({ width, height: 800 });
+        const watched = statusBox(page, 'Second', 'Watched');
+        const spot = await expectDoublePressOnQuestionToReachNothing(page, 'First', watched, press);
+        await expect(statusBox(page, 'Second', 'Planned')).toBeChecked();
+        expect((await readTitle(request, uid, 'movie_2')).status).toBe('planned');
+
+        // The hold passes: the same switch takes a press again.
+        await press(page, spot);
+        await expect(watched).toBeChecked();
+        await statusBox(page, 'Second', 'Planned').click();
+        await expect(statusBox(page, 'Second', 'Planned')).toBeChecked();
+      }
+    });
+
+    test('under a long title opens no title', async ({ page, request }) => {
+      await page.setViewportSize({ width: 320, height: 800 });
+      const long = 'x'.repeat(100);
+      await openTitles(page, request, [long, 'Second', 'Third']);
+      const link = page.getByRole('link', { name: 'Third', exact: true });
+
+      // The question wraps here, and takes its Cancel down to the row after the next.
+      await expectDoublePressOnQuestionToReachNothing(page, long, link, press);
+    });
+  });
+}
+
+test.describe('a double tap on Cancel', () => {
+  test.use({ hasTouch: true });
+
+  // With 44 px targets the toolbar wraps, and it comes back over the top of Cancel.
+  for (const { width, button } of [
+    { width: 320, button: 'Move' },
+    { width: 390, button: 'Delete' },
+    { width: 768, button: 'Delete' },
+  ]) {
+    test(`at ${width} px does not press ${button} in the toolbar`, async ({ page, request }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await openFolderWithTitle(page, request, 'Keep');
+      const under = page.getByRole('button', { name: button, exact: true });
+
+      for (const form of ['New folder', 'Rename', 'Move']) {
+        await expectDoublePressToReachNothing(page, form, under, tap);
+      }
+    });
+  }
 });
