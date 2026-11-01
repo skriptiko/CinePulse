@@ -90,6 +90,7 @@ Add Playwright (chromium) on the merged `dist/` served by `firebase emulators:st
 5. An unknown URL shows NotFound.
 6. TV Shows opens from the header, the mobile menu and a direct URL, shows its empty and error states, and has no horizontal page scroll at 320 px, with a 100-character search too.
 7. With `sessionStorage` blocked, a chunk that keeps failing loads the document once and shows the page's error state.
+8. Reload after an error that reaches `ShellBoundary` stays in the app offline, and reloads on a press once the connection returns. The error comes from a `document.title` that throws on the catch-all route, which has no `PageBoundary`.
 
 The mock answers in the browser, so without a check a request the real `tmdbProxy` refuses would still pass e2e. Every request that reaches `e2e/tmdb-mock.ts` therefore goes through the real `resolveProxyRequest` from `functions/src/proxy-rules.ts`, with the path and params of the URL the browser sent, and `e2e/proxy-rules.spec.ts` covers the check:
 

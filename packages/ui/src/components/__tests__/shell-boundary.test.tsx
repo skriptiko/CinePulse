@@ -11,10 +11,26 @@ function Page() {
 }
 
 describe('ShellBoundary', () => {
+  const reload = vi.fn();
+
   beforeEach(() => {
+    vi.clearAllMocks();
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    vi.stubGlobal('location', { ...window.location, reload });
   });
-  afterEach(() => vi.restoreAllMocks());
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  async function pressReload() {
+    const { user } = renderWithProviders(
+      <ShellBoundary>
+        <Page />
+      </ShellBoundary>
+    );
+    await user.click(screen.getByRole('button', { name: 'Reload' }));
+  }
 
   it('shows a reload fallback instead of a crashed page', () => {
     renderWithProviders(
@@ -25,6 +41,21 @@ describe('ShellBoundary', () => {
 
     expect(screen.getByRole('alert')).toHaveTextContent('Something went wrong');
     expect(screen.getByRole('button', { name: 'Reload' })).toBeInTheDocument();
+  });
+
+  it('reloads the page on Reload', async () => {
+    await pressReload();
+
+    expect(reload).toHaveBeenCalledOnce();
+  });
+
+  it('stays on the page offline, where a reload would lose it', async () => {
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+
+    await pressReload();
+
+    expect(reload).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert')).toHaveTextContent('Something went wrong');
   });
 
   it('clears the error after navigating away', async () => {

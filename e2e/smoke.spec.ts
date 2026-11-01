@@ -221,6 +221,38 @@ test('a remote lost with the connection waits for it on Try again, and then load
   await expect(page.getByRole('heading', { level: 1, name: 'Sign in' })).toBeVisible();
 });
 
+test('Reload after a shell error waits for the connection, and then reloads', async ({
+  page,
+  context,
+}) => {
+  // The catch-all route has no `PageBoundary`, so this failure in its effect reaches `ShellBoundary`.
+  await page.addInitScript(() => {
+    const title = Object.getOwnPropertyDescriptor(Document.prototype, 'title');
+    Object.defineProperty(document, 'title', {
+      get: () => title?.get?.call(document),
+      set: (value: string) => {
+        if (value.startsWith('Page not found')) throw new Error('A failure outside any page');
+        title?.set?.call(document, value);
+      },
+    });
+  });
+  await page.goto('/no-such-page');
+  const fallback = page.getByRole('heading', { level: 1, name: 'Something went wrong' });
+  await expect(fallback).toBeVisible();
+
+  // A reload would land on chrome-error://chromewebdata/ soon after the press.
+  await context.setOffline(true);
+  await page.getByRole('button', { name: 'Reload' }).click();
+  await page.waitForTimeout(1_000);
+  await expect(fallback).toBeVisible();
+
+  await context.setOffline(false);
+  const reloaded = page.waitForEvent('load');
+  await page.getByRole('button', { name: 'Reload' }).click();
+  await reloaded;
+  await expect(fallback).toBeVisible();
+});
+
 test('a chunk that keeps failing does not loop the page when sessionStorage is blocked', async ({
   page,
 }) => {
