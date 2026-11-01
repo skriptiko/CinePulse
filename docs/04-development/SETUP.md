@@ -83,7 +83,7 @@ USER_MFE_URL=https://staging.example.com/user-mfe/remoteEntry.js pnpm --filter @
 
 ```bash
 pnpm build          # build all packages and apps (turbo)
-pnpm build:deploy   # build + merge the dist of all MFEs into a single folder for Firebase
+pnpm build:deploy   # empty the dist folders, build, merge the dist of all MFEs into a single folder for Firebase
 ```
 
 ## Useful scripts
@@ -95,7 +95,7 @@ pnpm build:deploy   # build + merge the dist of all MFEs into a single folder fo
 | `pnpm check` | Biome check with fixes applied automatically |
 | `pnpm typecheck` | TypeScript type checking (turbo for the packages, then `e2e/` and `playwright.config.ts`) |
 | `pnpm sync-types` | Sync remote module types into the host |
-| `pnpm build:deploy` | Build + merge the MFE `dist/` folders |
+| `pnpm build:deploy` | Empty the `dist/` folders, build + merge the MFE `dist/` folders |
 | `pnpm deploy` | Build, merge and deploy to Firebase Hosting (production) |
 
 ## Remote module types

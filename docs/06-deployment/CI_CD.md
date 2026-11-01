@@ -21,7 +21,7 @@ Pipeline: [`.github/workflows/firebase-deploy.yml`](../../.github/workflows/fire
 - **Job `e2e`** (PRs into `main` only): `pnpm build:deploy`, then Playwright on the merged `dist/` with the Hosting, Auth and Firestore emulators. Sets up Java 21 for Firestore.
 - **Job `build-and-deploy`** (`needs: [quality, rules]`, push to `main` only, no concurrent deploys):
   1. The same checkout / pnpm / Node / install.
-  2. `pnpm build:deploy` — Turbo builds all apps and packages except the `apps/design` sandbox (it does not go to production), and `scripts/merge-dist.js` merges `dist/` (see below). Locally it is the same command.
+  2. `pnpm build:deploy` — `scripts/clean-dist.js` empties the build folders (see below), Turbo builds all apps and packages except the `apps/design` sandbox (it does not go to production), and `scripts/merge-dist.js` merges `dist/` (see below). Locally it is the same command.
   3. Functions deploy (`firebase deploy --only functions`) — first, because the `/api/tmdb/**` rewrite points to `tmdbProxy`.
   4. Firestore rules deploy (`firebase deploy --only firestore:rules`).
   5. `FirebaseExtended/action-hosting-deploy@v0` — deploys to `projectId: cinepulse-eec15`, `target: production`, `channelId: live`.
@@ -55,8 +55,10 @@ Each app (`host`, `pages-mfe`, `user-mfe`) is built into its own `dist/`. Since 
 
 Rewrites in `firebase.json` route `/pages-mfe/**` and `/user-mfe/**` to their respective `index.html`, and everything else to the SPA fallback `/index.html`.
 
+Before the build, [`scripts/clean-dist.js`](../../scripts/clean-dist.js) empties `dist/` and the `dist/` of every app except `apps/design`. A Turbo cache hit restores files over a folder without clearing it, so chunks of another build would stay, reach Hosting through the merge and count in `pnpm size`. CI starts from a clean checkout and is not affected; a local `turbo build` on its own still is.
+
 **Local deploy scripts** (`package.json`):
-- `pnpm build:deploy` = `turbo build --filter=!@repo/design && pnpm merge-dist` (same as in CI).
+- `pnpm build:deploy` = `pnpm clean-dist && turbo build --filter=!@repo/design && pnpm merge-dist` (same as in CI).
 - `pnpm deploy` = `pnpm build:deploy && firebase deploy --only hosting:production`.
 
 ## Quality gates
