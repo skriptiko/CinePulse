@@ -1,4 +1,4 @@
-import { apiGet, type EndpointOptions, toIsoDate } from '../core';
+import { apiGet, DETAIL_APPEND, type EndpointOptions, toIsoDate } from '../core';
 import type { PageParams, PaginatedResponse, TV, TVDetails } from '../types';
 import { DISCOVER_MIN_VOTE_COUNT } from './movie';
 
@@ -25,7 +25,10 @@ export async function getTVDetails(
   id: number,
   { signal }: EndpointOptions = {}
 ): Promise<TVDetails> {
-  return apiGet<TVDetails>(`/tv/${id}`, { signal });
+  return apiGet<TVDetails>(`/tv/${id}`, {
+    params: { append_to_response: DETAIL_APPEND },
+    signal,
+  });
 }
 
 /** `GET /discover/tv`: as `discoverMovies`, with "first aired by today" for newest. */

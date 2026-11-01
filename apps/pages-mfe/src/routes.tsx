@@ -14,6 +14,9 @@ const MovieDetail = lazy(() =>
 const Movies = lazy(() =>
   import('./pages/movies/movies-page').then((module) => ({ default: module.Movies }))
 );
+const TVDetail = lazy(() =>
+  import('./pages/tv-detail/tv-detail-page').then((module) => ({ default: module.TVDetail }))
+);
 const TVShows = lazy(() =>
   import('./pages/tv/tv-page').then((module) => ({ default: module.TVShows }))
 );
@@ -49,6 +52,14 @@ export const routes: RouteObject[] = [
     element: (
       <PageBoundary fallback={<MovieDetailSkeleton />}>
         <MovieDetail />
+      </PageBoundary>
+    ),
+  },
+  {
+    path: ROUTE_PATHS.TV_DETAIL,
+    element: (
+      <PageBoundary fallback={<MovieDetailSkeleton />}>
+        <TVDetail />
       </PageBoundary>
     ),
   },

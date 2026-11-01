@@ -72,9 +72,10 @@ From here on, new or changed logic in `packages/*` and new UI states land with t
 5. Components: `MovieCard`, `Hero`, `ContentRow`, `MovieDetailView` and the sections of a details page, `CategoryPills`, `AsyncBoundary` (fallback, Try again refetch, 404 → `NotFound`), `NotFound`, page skeletons.
 6. Pages:
    - ✅ **Movies** (`apps/pages-mfe/src/pages/movies/__tests__/`): search ↔ list switching (regression for the conditional-hook bug), genre filter, sort, empty state, "Load more" (next-page error, end of list), state in the URL, URL parsing;
-   - ✅ **TV Shows** (`apps/pages-mfe/src/pages/tv/__tests__/`): the same flows on the shared catalog pieces, with TV genres, sort params and words, and cards with no link. `src/__tests__/routes.test.tsx` covers its skeleton, its error with a retry, and that no search text follows a move from Movies;
+   - ✅ **TV Shows** (`apps/pages-mfe/src/pages/tv/__tests__/`): the same flows on the shared catalog pieces, with TV genres, sort params and words, and cards that link to their show. `src/__tests__/routes.test.tsx` covers its skeleton, its error with a retry, and that no search text follows a move from Movies;
    - **Home**: rows render from MSW fixtures, and one failing row does not blank the page;
-   - ✅ **Movie Detail** (`apps/pages-mfe/src/pages/movie-detail/__tests__/`): one request for every section, their order, the region from the browser language, each empty state, a response without the appended blocks, the error state, axe.
+   - ✅ **Movie Detail** (`apps/pages-mfe/src/pages/movie-detail/__tests__/`): one request for every section, their order, the region from the browser language, each empty state, a response without the appended blocks, the error state, axe;
+   - ✅ **TV Detail** (`apps/pages-mfe/src/pages/tv-detail/__tests__/`): one request for every section, their order, each empty state, a response without the appended blocks, the error state and axe, as on Movie Detail, with seasons and episodes in the hero, the Seasons section with the specials last, the creator in the line of directors and writers, and TV cards in More like this. `parseRouteId` has its own test, and `src/__tests__/routes.test.tsx` covers the page on demand and its skeleton.
 
 ### Step 3 — ✅ e2e
 
@@ -97,6 +98,16 @@ Add Playwright (chromium) on the merged `dist/` served by `firebase emulators:st
 6. The providers follow the browser language, and the empty line names that country.
 7. At 320 px, neither a full page, an empty page nor long unbroken text widens the page.
 8. From far down the page, a card opens the other movie at the top, cached or not, and Back returns to where the reader was.
+
+`e2e/tv-detail.spec.ts` runs on the same fixtures:
+
+1. A card on TV Shows opens the show, and a direct URL does too.
+2. The six sections stand in order below the hero, which shows the seasons and episodes and the watchlist button.
+3. Seasons keep the order of TMDB with the specials last, and the creator stands first in the line of directors and writers.
+4. A section with nothing to show keeps its heading and says so.
+5. An id TMDB does not know and an id that is not a number reach NotFound, and a failed request offers a retry.
+6. At 320 px, neither a full page, an empty page nor long unbroken text in every external string widens the page.
+7. From far down the page, a card opens the other show at the top.
 
 `e2e/watchlist.spec.ts` runs on the Firestore emulator with the real rules:
 

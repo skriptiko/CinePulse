@@ -26,8 +26,7 @@ export function toTvCardData(tv: TV): MovieCardData {
     imageUrl: getImageUrl(tv.poster_path, POSTER_SIZE_CARD),
     year: formatYear(tv.first_air_date),
     rating: formatRating(tv.vote_average),
-    // No TV details page yet (CIN-17).
-    href: null,
+    href: buildPath.tv(tv.id),
   };
 }
 

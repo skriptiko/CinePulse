@@ -1,5 +1,12 @@
-import { ROUTE_PATHS } from '@repo/routes';
-import { buildPaginated, buildTv, renderWithProviders, screen, server } from '@repo/test-utils';
+import { buildPath, ROUTE_PATHS } from '@repo/routes';
+import {
+  buildPaginated,
+  buildTv,
+  buildTvDetails,
+  renderWithProviders,
+  screen,
+  server,
+} from '@repo/test-utils';
 import { delay, HttpResponse, http } from 'msw';
 import { Link, useRoutes } from 'react-router-dom';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -44,6 +51,30 @@ describe('routes', () => {
     renderWithProviders(<App />, { route: ROUTE_PATHS.TV });
 
     expect(await screen.findByRole('heading', { level: 1, name: 'TV Shows' })).toBeInTheDocument();
+  });
+
+  it('loads the TV Detail page on demand', async () => {
+    server.use(
+      http.get('*/api/tmdb/tv/7', () =>
+        HttpResponse.json(buildTvDetails({ id: 7, name: 'Severance' }))
+      )
+    );
+    renderWithProviders(<App />, { route: buildPath.tv(7) });
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Severance' })).toBeInTheDocument();
+  });
+
+  it('shows the details skeleton while a show loads', async () => {
+    server.use(
+      http.get('*/api/tmdb/tv/7', async () => {
+        await delay('infinite');
+        return HttpResponse.json(buildTvDetails());
+      })
+    );
+    renderWithProviders(<App />, { route: buildPath.tv(7) });
+
+    expect(await screen.findByTestId('page-skeleton')).toHaveAttribute('aria-busy', 'true');
+    expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
   });
 
   it('shows the TV Shows skeleton while the first page loads', async () => {

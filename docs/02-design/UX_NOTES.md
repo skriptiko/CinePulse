@@ -21,7 +21,7 @@ The design system lives in `@repo/ui` (`packages/ui/src`). Stack: **Shadcn UI + 
 - `FeaturedGrid` — grid of curated picks ("Editor's Picks")
 - `CategoryPills` — selectable genre pills (Movies, TV Shows); `CategoryLinks` — the same pills as links (Home: each genre opens `/movies?genre=<id>`)
 - `MovieDetailView` — the hero of a details page, with a slot below it for sections
-- `WatchProvidersSection`, `CastSection`, `MediaSection`, `MoreLikeThisSection`, `ReviewsSection` — the sections of a details page, built on `DetailSection`, with neutral names so TV Detail can reuse them
+- `WatchProvidersSection`, `SeasonsSection`, `CastSection`, `MediaSection`, `MoreLikeThisSection`, `ReviewsSection` — the sections of a details page, built on `DetailSection`, with neutral names: Movie Detail and TV Detail share them, and `SeasonsSection` is on TV Detail only
 - `ExternalLink` — opens in a new tab with `rel="noopener noreferrer"` and says so to a screen reader
 
 **Application frame:**
@@ -53,7 +53,7 @@ In the integration the host builds one stylesheet for every remote, so MFE style
 
 🟡 Partially unified:
 - **Loading:** every page or Home section suspends into a skeleton shaped like it. The layout is reserved at once and the skeleton appears after 300 ms, so fast loads do not flicker.
-- **Empty:** implemented in **Movies** and **TV Shows**: `No movies found for “…”` names the search query, with **Clear search** and **Reset filters**, and a long query wraps. The watchlist says `No titles here yet.`, or `No watched titles here.` under a filter, which the All pill right above it clears. Each section of **Movie Detail** keeps its heading over one muted line. Other pages have no empty states.
+- **Empty:** implemented in **Movies** and **TV Shows**: `No movies found for “…”` names the search query, with **Clear search** and **Reset filters**, and a long query wraps. The watchlist says `No titles here yet.`, or `No watched titles here.` under a filter, which the All pill right above it clears. Each section of **Movie Detail** and **TV Detail** keeps its heading over one muted line. Other pages have no empty states.
 - **Error:** without data, the page boundary shows a plain message with **Try again** (404 → `NotFound`); the host's `ShellBoundary` catches the rest and keeps the header; a failed background refetch keeps the data and shows one toast (bottom right).
 - **Offline:** one global banner at the bottom, "You are offline. Showing saved results."
 
@@ -69,7 +69,6 @@ Both pages are built from `apps/pages-mfe/src/components/catalog/`, so they diff
 - The state lives in the URL: `q` (search, debounced 300 ms, written with replace), `genre` (TMDB genre id) and `sort` (`popular` | `newest` | `rating`), both written with push, so Back/Forward and shared links restore the view. Missing or invalid values fall back to every genre / Popular.
 - TMDB search has no genre or sort: while a query is typed, the genre pills and the sort menu are disabled, with a one-line hint. The genre and sort stay in the URL and apply again once the search is cleared.
 - "Rating" needs at least 200 votes; "Newest" lists films released by today and shows first aired by today, not announced ones.
-- A TV Shows card has no link until TV Detail exists (CIN-17): it holds only the watchlist button.
 - While new results load, the current ones stay on screen dimmed (`aria-busy`); the counter is a persistent `role="status"` (`<output>`) region.
 
 ## Movie Detail: sections
@@ -83,6 +82,15 @@ Both pages are built from `apps/pages-mfe/src/components/catalog/`, so they diff
 - **Reviews:** the first 3, as plain text clamped to six lines. Markdown stays as the author typed it, and `Read the full review` opens the original.
 - External text is rendered as text, and a link from TMDB that is not https is left out.
 - A press on a card in More like this opens the other movie at the top of the page. Back returns to where the reader was.
+
+## TV Detail: sections
+
+Everything under Movie Detail holds here too, with TV cards in More like this. What differs:
+
+- Under the hero, in this order: Where to watch, Seasons, Cast, Videos and images, More like this, Reviews.
+- **Hero:** the year is of the first air date. Where a movie has its runtime, a show has its seasons and episodes, such as `3 seasons, 24 episodes`, with correct singulars. A count TMDB does not know, or sends as 0, is left out.
+- **Seasons:** poster, name, air year, episode count and an overview clamped to three lines, in the order of TMDB with season 0 (Specials) last. Empty: `No seasons listed.`
+- **Cast:** each creator stands first in the line of directors and writers, as `Creator`, because a show usually lists no director. A person who also directs or writes shows once, with both jobs.
 
 ## Watchlist: status
 

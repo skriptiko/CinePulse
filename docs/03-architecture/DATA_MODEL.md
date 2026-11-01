@@ -52,7 +52,7 @@ Helper types: `ProductionCompany`, `ProductionCountry`, `SpokenLanguage`, `Colle
 
 ### `DetailSections<Title>` (`types/common.ts`) — sections of a details page
 
-`Title` is the list item of the media type. The names are neutral, so TV details can take the same type.
+`Title` is the list item of the media type: `MovieDetails` carries `DetailSections<Movie>`, and `TVDetails` carries `DetailSections<TV>`.
 
 | Key | Type | Notes |
 |------|-----|---------|
@@ -74,6 +74,8 @@ Same as `Movie`, with TV specifics: `name` / `original_name` instead of `title`,
 ### `TVDetails` (`types/tv.ts`)
 
 Extends `TV` (without `genre_ids`) and adds: `genres`, `created_by: Creator[]`, `episode_run_time: number[]`, `in_production`, `languages`, `last_air_date`, `last_episode_to_air` / `next_episode_to_air: Episode | null`, `networks: Network[]`, `number_of_episodes`, `number_of_seasons`, `seasons: Season[]`, `status`, `tagline`, `type`.
+
+It also carries `DetailSections<TV>`, from the same `append_to_response` as a movie. `seasons` and `created_by` are part of the base response, so they take no block of their own. A `Season` has `season_number`, which is 0 for Specials, and `air_date: string | null`.
 
 Helper types: `Creator`, `Episode`, `Network`, `Season`, `ProductionCompany`.
 

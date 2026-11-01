@@ -8,10 +8,10 @@ export const PROXY_PREFIX = '/api/tmdb';
 export const MAX_PAGE = 500;
 export const MAX_QUERY_LENGTH = 100; // keep equal to SEARCH_QUERY_MAX_LENGTH in @repo/api
 /**
- * The only `append_to_response` `/movie/{id}` takes, so the CDN cache cannot be busted with it.
- * Keep equal to `MOVIE_DETAIL_APPEND` in @repo/api.
+ * The only `append_to_response` `/movie/{id}` and `/tv/{id}` take, so the CDN cache cannot be
+ * busted with it. Keep equal to `DETAIL_APPEND` in @repo/api.
  */
-export const MOVIE_DETAIL_APPEND =
+export const DETAIL_APPEND =
   'credits,videos,images,recommendations,similar,reviews,watch/providers';
 
 export const CACHE_CONTROL_DEFAULT = 'public, max-age=300, s-maxage=3600';
@@ -33,7 +33,7 @@ export const DISCOVER_TV_SORT_BY = [
 ] as const;
 export const MAX_VOTE_COUNT_FLOOR = 10_000;
 
-type QueryRule = 'page' | 'search' | 'discover' | 'discoverTv' | 'movieDetail';
+type QueryRule = 'page' | 'search' | 'discover' | 'discoverTv' | 'detail';
 
 type RouteRule = {
   pattern: RegExp;
@@ -41,7 +41,7 @@ type RouteRule = {
    * `page`: optional `page`; `search`: required `query` + optional `page`; `discover`:
    * required `sort_by` + optional `page`, `with_genres`, `vote_count.gte`,
    * `primary_release_date.lte`; `discoverTv`: the same with `first_air_date.lte` as the date;
-   * `movieDetail`: nothing, or `append_to_response` set to exactly `MOVIE_DETAIL_APPEND`;
+   * `detail`: nothing, or `append_to_response` set to exactly `DETAIL_APPEND`;
    * none: no params.
    */
   query?: QueryRule;
@@ -59,7 +59,7 @@ const ROUTES: readonly RouteRule[] = [
   },
   {
     pattern: new RegExp(`^/movie/${ID}$`),
-    query: 'movieDetail',
+    query: 'detail',
     cacheControl: CACHE_CONTROL_DEFAULT,
   },
   { pattern: /^\/discover\/movie$/, query: 'discover', cacheControl: CACHE_CONTROL_DEFAULT },
@@ -69,7 +69,7 @@ const ROUTES: readonly RouteRule[] = [
     query: 'page',
     cacheControl: CACHE_CONTROL_DEFAULT,
   },
-  { pattern: new RegExp(`^/tv/${ID}$`), cacheControl: CACHE_CONTROL_DEFAULT },
+  { pattern: new RegExp(`^/tv/${ID}$`), query: 'detail', cacheControl: CACHE_CONTROL_DEFAULT },
   {
     pattern: /^\/trending\/(all|movie|tv|person)\/(day|week)$/,
     query: 'page',
@@ -131,7 +131,7 @@ const ALLOWED_PARAMS: Record<QueryRule, readonly string[]> = {
   page: ['page'],
   search: ['query', 'page'],
   discover: ['sort_by', 'with_genres', 'vote_count.gte', 'primary_release_date.lte', 'page'],
-  movieDetail: ['append_to_response'],
+  detail: ['append_to_response'],
   discoverTv: ['sort_by', 'with_genres', 'vote_count.gte', 'first_air_date.lte', 'page'],
 };
 
@@ -150,11 +150,11 @@ function sanitizeQuery(params: URLSearchParams, rule: QueryRule | undefined): st
     keys.some((key) => !allowed.includes(key)) || new Set(keys).size !== keys.length;
   if (hasUnknownOrRepeated) return null;
 
-  if (rule === 'movieDetail') {
+  if (rule === 'detail') {
     const append = params.get('append_to_response');
     if (append === null) return '';
     // Not rebuilt with `URLSearchParams`: TMDB documents this value with a literal comma and slash.
-    return append === MOVIE_DETAIL_APPEND ? `?append_to_response=${append}` : null;
+    return append === DETAIL_APPEND ? `?append_to_response=${append}` : null;
   }
 
   const result = new URLSearchParams();

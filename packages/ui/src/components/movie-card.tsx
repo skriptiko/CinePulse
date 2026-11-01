@@ -15,8 +15,8 @@ export type MovieCardData = {
   year: string | null;
   /** Formatted rating; `null` hides the badge (`'0.0'` is shown). */
   rating: string | null;
-  /** Details page; `null` while the media type has none, which leaves the card inert. */
-  href: string | null;
+  /** Details page. */
+  href: string;
 };
 
 export type MovieCardProps = {
@@ -33,7 +33,6 @@ export function MovieCard({ movie, action, className }: MovieCardProps) {
     'translate-y-2 group-focus-within:translate-y-0 group-hover:translate-y-0',
     'transition duration-300 motion-reduce:transition-none'
   );
-  const titleText = <span className={cn('block truncate', revealClassName)}>{title}</span>;
 
   return (
     <div
@@ -71,13 +70,9 @@ export function MovieCard({ movie, action, className }: MovieCardProps) {
           `z-1` works on a grid item as it is, and lifts the text over the gradient. */}
       <div className="z-1 col-start-1 row-start-1 min-w-0 self-end p-3">
         <h3 className="text-foreground mb-1 text-sm font-medium @max-[160px]:text-xs @min-[301px]:text-base">
-          {href === null ? (
-            titleText
-          ) : (
-            <Link to={href} className="outline-hidden after:absolute after:inset-0">
-              {titleText}
-            </Link>
-          )}
+          <Link to={href} className="outline-hidden after:absolute after:inset-0">
+            <span className={cn('block truncate', revealClassName)}>{title}</span>
+          </Link>
         </h3>
         {(year !== null || rating !== null) && (
           <div

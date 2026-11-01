@@ -57,6 +57,8 @@ export {
 } from './components/page-skeletons';
 export type { ReviewData, ReviewsSectionProps } from './components/reviews-section';
 export { ReviewsSection } from './components/reviews-section';
+export type { SeasonData, SeasonsSectionProps } from './components/seasons-section';
+export { SeasonsSection } from './components/seasons-section';
 export { SectionErrorFallback } from './components/section-error-fallback';
 export type { ShellBoundaryProps } from './components/shell-boundary';
 export { ShellBoundary } from './components/shell-boundary';
@@ -99,8 +101,9 @@ export { toHeroData } from './lib/mappers/hero';
 export { toMediaData } from './lib/mappers/media';
 export { toMoreLikeThisData } from './lib/mappers/more-like-this';
 export { toMovieCardData, toTrendingCardData, toTvCardData } from './lib/mappers/movie-card';
-export { toMovieDetailData } from './lib/mappers/movie-detail';
+export { toMovieDetailData, toTvDetailData } from './lib/mappers/movie-detail';
 export { toReviewsData } from './lib/mappers/reviews';
+export { toSeasonsData } from './lib/mappers/seasons';
 export { toWatchProvidersData } from './lib/mappers/watch-providers';
 
 export { cn } from './lib/utils';

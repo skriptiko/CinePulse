@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { ImagePlaceholder } from './image-placeholder';
 
-/** What `MovieDetailView` renders; build it with `toMovieDetailData`. */
+/** What `MovieDetailView` renders; build it with `toMovieDetailData` / `toTvDetailData`. */
 export type MovieDetailData = {
   title: string;
   tagline: string | null;
@@ -13,7 +13,8 @@ export type MovieDetailData = {
   backdropSrcSet: string | null;
   year: string | null;
   rating: string | null;
-  runtime: string | null;
+  /** The runtime of a movie, the seasons and episodes of a show. */
+  duration: string | null;
   genres: string[];
 };
 
@@ -27,7 +28,7 @@ export type MovieDetailViewProps = {
 
 export function MovieDetailView({ movie, action, children }: MovieDetailViewProps) {
   const { title, tagline, description, posterUrl, backdropUrl, backdropSrcSet } = movie;
-  const { year, rating, runtime, genres } = movie;
+  const { year, rating, duration, genres } = movie;
 
   return (
     <article className="relative">
@@ -55,9 +56,13 @@ export function MovieDetailView({ movie, action, children }: MovieDetailViewProp
           )}
         </div>
 
-        <div className="max-w-2xl">
-          <h1 className="fluid-heading mb-2 font-bold tracking-tight text-balance">{title}</h1>
-          {tagline !== null && <p className="text-muted-foreground mb-4 italic">{tagline}</p>}
+        <div className="max-w-2xl min-w-0">
+          <h1 className="fluid-heading mb-2 font-bold tracking-tight text-balance wrap-anywhere">
+            {title}
+          </h1>
+          {tagline !== null && (
+            <p className="text-muted-foreground mb-4 wrap-anywhere italic">{tagline}</p>
+          )}
 
           <div className="text-muted-foreground mb-4 flex flex-wrap items-center gap-2 text-sm sm:gap-3">
             {rating !== null && (
@@ -66,13 +71,16 @@ export function MovieDetailView({ movie, action, children }: MovieDetailViewProp
               </span>
             )}
             {year !== null && <span>{year}</span>}
-            {runtime !== null && <span>{runtime}</span>}
+            {duration !== null && <span>{duration}</span>}
           </div>
 
           {genres.length > 0 && (
             <ul className="mb-6 flex flex-wrap gap-2">
               {genres.map((genre) => (
-                <li key={genre} className="bg-secondary rounded-lg px-3 py-1 text-sm">
+                <li
+                  key={genre}
+                  className="bg-secondary min-w-0 rounded-lg px-3 py-1 text-sm wrap-anywhere"
+                >
                   {genre}
                 </li>
               ))}
@@ -82,7 +90,9 @@ export function MovieDetailView({ movie, action, children }: MovieDetailViewProp
           {action !== undefined && <div className="mb-6">{action}</div>}
 
           {description !== null && (
-            <p className="text-muted-foreground leading-relaxed sm:text-lg">{description}</p>
+            <p className="text-muted-foreground leading-relaxed wrap-anywhere sm:text-lg">
+              {description}
+            </p>
           )}
         </div>
       </div>

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CACHE_CONTROL_DEFAULT,
   CACHE_CONTROL_LONG,
-  MOVIE_DETAIL_APPEND,
+  DETAIL_APPEND,
   mapUpstreamError,
   resolveProxyRequest,
   toTmdbPath,
@@ -286,15 +286,15 @@ describe('resolveProxyRequest: discover TV', () => {
   });
 });
 
-describe('resolveProxyRequest: movie details', () => {
+describe('resolveProxyRequest: details', () => {
   const BAD_REQUEST = { ok: false, error: { status: 400, error: 'Invalid query parameters' } };
 
-  function details(query: string) {
-    return resolve('/api/tmdb/movie/550', query);
+  function details(query: string, path = '/movie/550') {
+    return resolve(`/api/tmdb${path}`, query);
   }
 
-  it('takes the sections of the details page in one request', () => {
-    expect(MOVIE_DETAIL_APPEND).toBe(
+  it('takes the sections of a details page in one request', () => {
+    expect(DETAIL_APPEND).toBe(
       'credits,videos,images,recommendations,similar,reviews,watch/providers'
     );
   });
@@ -305,50 +305,54 @@ describe('resolveProxyRequest: movie details', () => {
       'utf8'
     );
 
-    expect(config).toContain(`'${MOVIE_DETAIL_APPEND}'`);
+    expect(config).toContain(`'${DETAIL_APPEND}'`);
   });
 
-  it('forwards the exact value as TMDB documents it, with a literal comma and slash', () => {
-    const query = new URLSearchParams({ append_to_response: MOVIE_DETAIL_APPEND }).toString();
+  describe.each(['/movie/550', '/tv/1399'])('%s', (path) => {
+    it('forwards the exact value as TMDB documents it, with a literal comma and slash', () => {
+      const query = new URLSearchParams({ append_to_response: DETAIL_APPEND }).toString();
 
-    expect(details(query)).toEqual({
-      ok: true,
-      target: {
-        path: '/movie/550',
-        search: `?append_to_response=${MOVIE_DETAIL_APPEND}`,
-        cacheControl: CACHE_CONTROL_DEFAULT,
-      },
+      expect(details(query, path)).toEqual({
+        ok: true,
+        target: {
+          path,
+          search: `?append_to_response=${DETAIL_APPEND}`,
+          cacheControl: CACHE_CONTROL_DEFAULT,
+        },
+      });
+    });
+
+    it('still accepts no params, so a client from the previous release keeps working', () => {
+      const result = details('', path);
+      expect(result.ok && result.target.search).toBe('');
+    });
+
+    it.each([
+      ['empty', ''],
+      ['a subset', 'credits'],
+      ['aggregate credits', DETAIL_APPEND.replace('credits', 'aggregate_credits')],
+      ['another order', 'videos,credits,images,recommendations,similar,reviews,watch/providers'],
+      ['a trailing comma', `${DETAIL_APPEND},`],
+      ['an extra section', `${DETAIL_APPEND},keywords`],
+      ['another case', DETAIL_APPEND.toUpperCase()],
+    ])('rejects append_to_response with %s', (_label, value) => {
+      expect(details(`append_to_response=${encodeURIComponent(value)}`, path)).toEqual(BAD_REQUEST);
+    });
+
+    it('rejects a junk param beside the exact value', () => {
+      const value = encodeURIComponent(DETAIL_APPEND);
+
+      expect(details(`append_to_response=${value}&language=en-US`, path)).toEqual(BAD_REQUEST);
+      expect(details(`append_to_response=${value}&page=1`, path)).toEqual(BAD_REQUEST);
+      expect(details(`append_to_response=${value}&append_to_response=${value}`, path)).toEqual(
+        BAD_REQUEST
+      );
     });
   });
 
-  it('still accepts no params, so a client from the previous release keeps working', () => {
-    const result = details('');
-    expect(result.ok && result.target.search).toBe('');
-  });
-
-  it.each([
-    ['empty', ''],
-    ['a subset', 'credits'],
-    ['another order', 'videos,credits,images,recommendations,similar,reviews,watch/providers'],
-    ['a trailing comma', `${MOVIE_DETAIL_APPEND},`],
-    ['an extra section', `${MOVIE_DETAIL_APPEND},keywords`],
-    ['another case', MOVIE_DETAIL_APPEND.toUpperCase()],
-  ])('rejects append_to_response with %s', (_label, value) => {
-    expect(details(`append_to_response=${encodeURIComponent(value)}`)).toEqual(BAD_REQUEST);
-  });
-
-  it('rejects a junk param beside the exact value', () => {
-    const value = encodeURIComponent(MOVIE_DETAIL_APPEND);
-
-    expect(details(`append_to_response=${value}&language=en-US`)).toEqual(BAD_REQUEST);
-    expect(details(`append_to_response=${value}&page=1`)).toEqual(BAD_REQUEST);
-    expect(details(`append_to_response=${value}&append_to_response=${value}`)).toEqual(BAD_REQUEST);
-  });
-
   it('keeps append_to_response off every other route', () => {
-    const query = `append_to_response=${encodeURIComponent(MOVIE_DETAIL_APPEND)}`;
+    const query = `append_to_response=${encodeURIComponent(DETAIL_APPEND)}`;
 
-    expect(resolve('/api/tmdb/tv/1399', query)).toEqual(BAD_REQUEST);
     expect(resolve('/api/tmdb/person/287', query)).toEqual(BAD_REQUEST);
     expect(resolve('/api/tmdb/movie/popular', query)).toEqual(BAD_REQUEST);
   });

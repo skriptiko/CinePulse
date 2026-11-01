@@ -12,7 +12,7 @@ const MOVIES: MovieCardData[] = [
     imageUrl: null,
     year: '2021',
     rating: '7.8',
-    href: null,
+    href: '/movies/1',
   },
   {
     id: 2,
@@ -22,7 +22,7 @@ const MOVIES: MovieCardData[] = [
     imageUrl: null,
     year: '2016',
     rating: '7.6',
-    href: null,
+    href: '/movies/2',
   },
 ];
 

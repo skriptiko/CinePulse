@@ -18,7 +18,7 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 const { data } = useSuspenseQuery(movieQueries.detail(id));
 ```
 
-`movieQueries.detail` brings every section of the page in one request, through `append_to_response`. The proxy accepts only that exact string, so `MOVIE_DETAIL_APPEND` in `core/config.ts` and in `functions/src/proxy-rules.ts` change together (ADR-0017).
+`movieQueries.detail` and `tvQueries.detail` bring every section of the page in one request, through `append_to_response`. The proxy accepts only that exact string, so `DETAIL_APPEND` in `core/config.ts` and in `functions/src/proxy-rules.ts` change together (ADR-0017).
 
 ## Dependencies
 

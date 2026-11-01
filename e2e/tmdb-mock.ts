@@ -60,6 +60,16 @@ export const EMPTY_MOVIE_ID = 9;
 /** A movie whose every external string is one long word. */
 export const LONG_TEXT_MOVIE_ID = 10;
 
+/** A show with every section filled, and a second one to reach from its "More like this". */
+export const FULL_SHOW_ID = 7;
+export const OTHER_FULL_SHOW_ID = 8;
+/** A show whose sections all come back empty. */
+export const EMPTY_SHOW_ID = 9;
+/** A show whose every external string is one long word. */
+export const LONG_TEXT_SHOW_ID = 10;
+/** A show TMDB does not know. */
+export const UNKNOWN_SHOW_ID = 404;
+
 const ONE_PIXEL_PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
   'base64'
@@ -173,6 +183,65 @@ function detailSections(id: number) {
   return {};
 }
 
+/** One unbroken word of 200 characters, different for each value. */
+function longWord(value: string) {
+  return value.replace(/\W/g, '').padEnd(200, 'x');
+}
+
+function season(seasonNumber: number, name: string, overview: string, episodeCount: number) {
+  return {
+    id: 5000 + seasonNumber,
+    name,
+    overview,
+    air_date: `${2020 + seasonNumber}-01-01`,
+    episode_count: episodeCount,
+    poster_path: seasonNumber === 2 ? null : `/season-${seasonNumber}.jpg`,
+    season_number: seasonNumber,
+  };
+}
+
+/** The sections of a movie, with what only a show has and a "More like this" of shows. */
+function fullShowSections(otherShowId: number, text = (value: string) => value) {
+  const results = Array.from({ length: 14 }, (_, index) =>
+    show(otherShowId + index * 100, text(`More ${index}`))
+  );
+
+  return {
+    ...fullSections(otherShowId, text),
+    created_by: [
+      { id: 3000, credit_id: 'creator-1', name: text('Some Creator'), profile_path: null },
+    ],
+    seasons: [
+      season(0, text('Specials'), text('Extras.'), 2),
+      season(1, text('Season 1'), text('It begins.'), 1),
+      season(2, text('Season 2'), '', 11),
+      season(3, text('Season 3'), text('It ends.'), 12),
+    ],
+    recommendations: { page: 1, results, total_pages: 1, total_results: results.length },
+  };
+}
+
+function showSections(id: number) {
+  if (id === FULL_SHOW_ID) return fullShowSections(OTHER_FULL_SHOW_ID);
+  if (id === OTHER_FULL_SHOW_ID) return fullShowSections(FULL_SHOW_ID);
+  if (id === EMPTY_SHOW_ID) return { ...emptySections(), created_by: [], seasons: [] };
+  if (id === LONG_TEXT_SHOW_ID) return fullShowSections(FULL_SHOW_ID, longWord);
+  return {};
+}
+
+function showDetails(id: number) {
+  const text = id === LONG_TEXT_SHOW_ID ? longWord : (value: string) => value;
+
+  return {
+    ...show(1, text('Detail show')),
+    tagline: text('A tagline'),
+    genres: TV_GENRES.map((genre) => ({ ...genre, name: text(genre.name) })),
+    number_of_seasons: 3,
+    number_of_episodes: 24,
+    ...showSections(id),
+  };
+}
+
 function paginatedShows(names: string[], page = 1) {
   return {
     page,
@@ -213,6 +282,11 @@ function respond(route: Route, url: URL) {
         ...detailSections(Number(path.split('/').pop())),
       },
     });
+  }
+  if (/^\/tv\/\d+$/.test(path)) {
+    const id = Number(path.split('/').pop());
+    if (id === UNKNOWN_SHOW_ID) return route.fulfill({ status: 404, json: {} });
+    return route.fulfill({ json: showDetails(id) });
   }
   return route.fulfill({ json: paginated(['Row movie', 'Hero movie']) });
 }
