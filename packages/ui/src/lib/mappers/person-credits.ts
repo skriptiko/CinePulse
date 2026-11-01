@@ -53,6 +53,8 @@ function mergeCredits(cast: CastCredit[], crew: CrewCredit[]): MergedTitle[] {
 
   const titles = new Map<string, MergedTitle>();
   for (const { credit, role } of credits) {
+    // The lists of TMDB leave these out by default, and credits do not.
+    if (credit.adult) continue;
     const key = `${credit.media_type}-${credit.id}`;
     const merged = titles.get(key) ?? {
       key,

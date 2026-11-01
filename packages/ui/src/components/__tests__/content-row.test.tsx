@@ -55,7 +55,7 @@ describe('ContentRow', () => {
       imageUrl: null,
       year: null,
       rating: null,
-      href: null,
+      href: '/titles/1',
     };
     const titles: MovieCardData[] = [
       { ...title, mediaType: 'movie' },

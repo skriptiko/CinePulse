@@ -6,7 +6,19 @@ import { toFilmographyData, toKnownForData } from '../person-credits';
 const TALK = 10767;
 const NEWS = 10763;
 
+const ADULT_CREDITS = {
+  cast: [
+    buildMovieCredit({ title: 'Adult film', adult: true }),
+    buildMovieCredit({ title: 'Film' }),
+  ],
+  crew: [buildTvCredit({ name: 'Adult show', adult: true, job: 'Director' })],
+};
+
 describe('toKnownForData', () => {
+  it('leaves out adult titles, as the catalog does', () => {
+    expect(toKnownForData(ADULT_CREDITS).map(({ title }) => title)).toEqual(['Film']);
+  });
+
   it('puts the highest vote count first, across movies and shows and cast and crew', () => {
     const titles = toKnownForData({
       cast: [
@@ -211,6 +223,10 @@ describe('toKnownForData', () => {
 });
 
 describe('toFilmographyData', () => {
+  it('leaves out adult titles, as the catalog does', () => {
+    expect(toFilmographyData(ADULT_CREDITS).map(({ title }) => title)).toEqual(['Film']);
+  });
+
   it('maps a movie to a row', () => {
     const rows = toFilmographyData({
       cast: [
