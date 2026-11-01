@@ -69,12 +69,13 @@ From here on, new or changed logic in `packages/*` and new UI states land with t
 2. `ApiError` classification, `shouldRetry`, `getRetryDelay`, `getNextPageParam` (including the 500-page cap).
 3. `queryOptions` factories: key shapes.
 4. `@repo/events`: event bus (`on` / `off` / `once` / `emit`) and the store.
-5. Components: `MovieCard`, `Hero`, `ContentRow`, `MovieDetailView` and the sections of a details page, `CategoryPills`, `AsyncBoundary` (fallback, Try again refetch, 404 → `NotFound`), `NotFound`, page skeletons.
+5. Components: `MovieCard`, `Hero`, `ContentRow`, `MovieDetailView`, `PersonDetailView` and the sections of a details page, `CategoryPills`, `AsyncBoundary` (fallback, Try again refetch, 404 → `NotFound`), `NotFound`, page skeletons.
 6. Pages:
    - ✅ **Movies** (`apps/pages-mfe/src/pages/movies/__tests__/`): search ↔ list switching (regression for the conditional-hook bug), genre filter, sort, empty state, "Load more" (next-page error, end of list), state in the URL, URL parsing;
    - ✅ **TV Shows** (`apps/pages-mfe/src/pages/tv/__tests__/`): the same flows on the shared catalog pieces, with TV genres, sort params and words, and cards with no link. `src/__tests__/routes.test.tsx` covers its skeleton, its error with a retry, and that no search text follows a move from Movies;
    - **Home**: rows render from MSW fixtures, and one failing row does not blank the page;
    - ✅ **Movie Detail** (`apps/pages-mfe/src/pages/movie-detail/__tests__/`): one request for every section, their order, the region from the browser language, each empty state, a response without the appended blocks, the error state, axe.
+   - ✅ **Person** (`apps/pages-mfe/src/pages/person/__tests__/`): one request, the order of the sections, the talk show left out of Known for and kept in the filmography, each empty state, a response without the appended block, credits that lack a date, a title or a poster, the error state, an unknown and an invalid id, axe. `src/__tests__/routes.test.tsx` covers its skeleton.
 
 ### Step 3 — ✅ e2e
 
@@ -93,10 +94,21 @@ Add Playwright (chromium) on the merged `dist/` served by `firebase emulators:st
 2. Thumbnails and logos load under the enforced CSP.
 3. Videos stay links, with no iframe.
 4. A section with nothing to show keeps its heading and says so.
-5. A person link reaches NotFound until the Person page lands (CIN-19).
-6. The providers follow the browser language, and the empty line names that country.
-7. At 320 px, neither a full page, an empty page nor long unbroken text widens the page.
-8. From far down the page, a card opens the other movie at the top, cached or not, and Back returns to where the reader was.
+5. The providers follow the browser language, and the empty line names that country.
+6. At 320 px, neither a full page, an empty page nor long unbroken text widens the page.
+7. From far down the page, a card opens the other movie at the top, cached or not, and Back returns to where the reader was.
+
+`e2e/person.spec.ts` runs on the same fixtures:
+
+1. The page opens from the cast of Movie Detail, from far down the page too, and starts at the top.
+2. The facts and sections stand in order, and the photo loads under the enforced CSP.
+3. Known for stops at 12 and leaves the talk show out, its cards open a movie, and its button offers the watchlist.
+4. The filmography shows 30 rows, then all of them on a press, with focus on the first new row. A press on the bottom edge of the screen works and leaves the reader there.
+5. A row merges the roles on one title and links to its page, and a credit with no date, title or poster takes the last row.
+6. A long biography opens and closes, and a short one has no toggle.
+7. A person with nothing to show keeps every heading and says so.
+8. An unknown id and an id that is not a positive integer reach NotFound, the second with no request. A failed request offers a retry that brings the person.
+9. At 320 px, with the biography and the filmography open, neither a full page, an empty page nor long unbroken text widens the page, and each external string stays inside the screen.
 
 `e2e/watchlist.spec.ts` runs on the Firestore emulator with the real rules:
 

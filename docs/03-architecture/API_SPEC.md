@@ -65,13 +65,15 @@ Paths are relative to the proxy base `/api/tmdb`. Keys follow `all → lists / d
 | `trendingQueries.list(mediaType, timeWindow)` / `.row(…)` | `['trending', 'list', mediaType, timeWindow]` | `GET /trending/{mediaType}/{timeWindow}` | `PaginatedResponse<TrendingItem>` |
 | `searchQueries.multi/movies/tv/person(query)` (infinite) | `['search', type, query]` | `GET /search/{multi,movie,tv,person}` | `PaginatedResponse<…>` |
 | `genreQueries.movie()` / `.tv()` | `['genres', 'movie' \| 'tv']` | `GET /genre/{movie,tv}/list` | `GenresResponse`, `staleTime: Infinity` |
-| `personQueries.detail(id)` | `['person', 'detail', id]` | `GET /person/{id}` | `PersonDetails` |
+| `personQueries.detail(id)` | `['person', 'detail', id]` | `GET /person/{id}?append_to_response=combined_credits` | `PersonDetails`, with every credit |
 
 `DEFAULT_DISCOVER_FILTERS` (`{ genreId: null, sortBy: 'popularity.desc' }`) is the unfiltered Movies view; the header prefetches it (and the genres) after 200 ms of hover or focus on the Movies link. `sortBy` (`DiscoverSortBy`) is `popularity.desc | primary_release_date.desc | vote_average.desc`; `genreId: null` omits `with_genres`. `vote_average.desc` also sends `vote_count.gte=200` (`DISCOVER_MIN_VOTE_COUNT`) and `primary_release_date.desc` sends `primary_release_date.lte=<today, UTC>`, so both sorts skip unrated and unreleased films. The proxy allowlist (`functions/src/proxy-rules.ts`) accepts exactly these params on `/discover/movie` and rejects anything else with 400.
 
 `DEFAULT_DISCOVER_TV_FILTERS` is the same for TV Shows, and the header prefetches it (and the TV genres) the same way. `sortBy` (`DiscoverTVSortBy`) is `popularity.desc | first_air_date.desc | vote_average.desc`. `vote_average.desc` sends the same `vote_count.gte=200` and `first_air_date.desc` sends `first_air_date.lte=<today, UTC>`, so both sorts skip unrated and unaired shows. `/discover/tv` has its own allowlist rule: it refuses the movie sort and date param with 400, as `/discover/movie` refuses the TV ones.
 
 `movieQueries.detail` asks for `credits,videos,images,recommendations,similar,reviews,watch/providers` in one request (`MOVIE_DETAIL_APPEND`, [ADR-0017](./decisions/ADR-0017-detail-page-sections.md)). The proxy accepts exactly that string or no params on `/movie/{id}` and rejects anything else with 400, so a change needs both copies, in `core/config.ts` and `functions/src/proxy-rules.ts`.
+
+`personQueries.detail` does the same with `combined_credits` (`PERSON_DETAIL_APPEND`), so Known for and the filmography come with the person. The rule on `/person/{id}` is its own exact string: the value of a movie is a 400 there, and this one is a 400 on `/movie/{id}`.
 
 `movieQueries.discover`, `tvQueries.discover`, `searchQueries.movies` and `searchQueries.tv` set `meta: { inlineErrors: true }`: Movies and TV Shows show a failed next page inline, so `QueryCache.onError` shows no toast.
 
@@ -81,7 +83,7 @@ Paths are relative to the proxy base `/api/tmdb`. Keys follow `all → lists / d
 
 ## Images
 
-`getImageUrl(path, size)` (`core/utils.ts`) builds an absolute `image.tmdb.org` URL for an `ImageSize` / `BackdropSize` / `ProfileSize`. It returns `null` when the path is `null` or `undefined`. Card and backdrop sizes are the `POSTER_SIZE_CARD`, `BACKDROP_SIZE_FEATURED` and `BACKDROP_SIZE_HERO` constants. The sizes of the Movie Detail sections stay in their mappers in `@repo/ui`, because `@repo/api` is a shared module that is not tree-shaken and its code reaches the host chunk.
+`getImageUrl(path, size)` (`core/utils.ts`) builds an absolute `image.tmdb.org` URL for an `ImageSize` / `BackdropSize` / `ProfileSize`. It returns `null` when the path is `null` or `undefined`. Card and backdrop sizes are the `POSTER_SIZE_CARD`, `BACKDROP_SIZE_FEATURED` and `BACKDROP_SIZE_HERO` constants. The sizes of the Movie Detail sections and the Person photo stay in their mappers in `@repo/ui`, because `@repo/api` is a shared module that is not tree-shaken and its code reaches the host chunk.
 
 ## API coverage vs UI
 
@@ -98,4 +100,4 @@ Paths are relative to the proxy base `/api/tmdb`. Keys follow `all → lists / d
 | `tvQueries.detail` | ⬜ | **TV Detail** `/tv/:id` |
 | `tvQueries.list`, `tvQueries.row` | ⬜ | kept for category pages and rows |
 | `searchQueries.multi/person` | ⬜ | **Search** `/search` |
-| `personQueries.detail` | ⬜ | **Person** `/person/:id` |
+| `personQueries.detail` | ✅ | **Person** `/person/:id` (hero, Known for, filmography) |

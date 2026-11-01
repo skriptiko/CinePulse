@@ -33,3 +33,4 @@ The sections live in `@repo/ui` as domain components with neutral names, and the
 - Viewers with no region in their browser language see the US. This is a known limit, not a bug.
 - Changing the sections means changing both copies of the string in one commit, and every cached response under the old URL ages out on its own.
 - CIN-17 needs the same rule on `/tv/{id}`, with its own exact string.
+- The Person page follows this decision: `GET /person/{id}?append_to_response=combined_credits`, through `personQueries.detail`, with `PERSON_DETAIL_APPEND` kept in the same two files under the same drift test, and with the same consequences. A failure takes down the whole page, and a response without the block degrades to empty sections.

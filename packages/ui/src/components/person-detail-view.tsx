@@ -50,7 +50,7 @@ export function PersonDetailView({ person, children }: PersonDetailViewProps) {
           )}
 
           {facts.length > 0 && (
-            <dl className="mb-6 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
               {facts.map(({ label, value }) => (
                 <Fragment key={label}>
                   <dt className="text-muted-foreground">{label}</dt>
@@ -60,7 +60,9 @@ export function PersonDetailView({ person, children }: PersonDetailViewProps) {
             </dl>
           )}
 
-          <BiographySection biography={biography} />
+          <div className="mt-6">
+            <BiographySection biography={biography} />
+          </div>
         </div>
       </div>
 
