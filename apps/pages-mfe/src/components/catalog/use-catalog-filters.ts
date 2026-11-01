@@ -1,6 +1,13 @@
-import { type DiscoverSortBy, SEARCH_QUERY_MAX_LENGTH } from '@repo/api';
-import { ROUTE_PATHS } from '@repo/routes';
-import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { SEARCH_QUERY_MAX_LENGTH } from '@repo/api';
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 export const SORT_OPTIONS = ['popular', 'newest', 'rating'] as const;
@@ -9,11 +16,11 @@ export type SortOption = (typeof SORT_OPTIONS)[number];
 export const DEFAULT_SORT: SortOption = 'popular';
 export const SEARCH_DEBOUNCE_MS = 300;
 
-/** URL search param names of the Movies page. */
+/** URL search param names of the catalog pages. */
 export const FILTER_PARAMS = { query: 'q', genre: 'genre', sort: 'sort' } as const;
 type FilterParam = (typeof FILTER_PARAMS)[keyof typeof FILTER_PARAMS];
 
-export type MovieFilters = {
+export type CatalogFilterValues = {
   /** Trimmed search text; `''` when not searching. */
   query: string;
   /** TMDB genre id; `null` means every genre. */
@@ -22,18 +29,12 @@ export type MovieFilters = {
 };
 
 /** Reads the filters from the URL; a missing or invalid value falls back to its default. */
-export function parseMovieFilters(params: URLSearchParams): MovieFilters {
+export function parseCatalogFilters(params: URLSearchParams): CatalogFilterValues {
   return {
     query: normalizeQuery(params.get(FILTER_PARAMS.query) ?? ''),
     genreId: parseGenreId(params.get(FILTER_PARAMS.genre)),
     sort: parseSort(params.get(FILTER_PARAMS.sort)),
   };
-}
-
-/** Link to Movies filtered by one genre, e.g. from the Home genre pills. */
-export function moviesHrefForGenre(genreId: number): string {
-  const params = new URLSearchParams({ [FILTER_PARAMS.genre]: String(genreId) });
-  return `${ROUTE_PATHS.MOVIES}?${params}`;
 }
 
 export function normalizeQuery(value: string): string {
@@ -53,21 +54,6 @@ export function isSortOption(value: string): value is SortOption {
   return SORT_OPTIONS.some((option) => option === value);
 }
 
-export function toDiscoverSortBy(sort: SortOption): DiscoverSortBy {
-  switch (sort) {
-    case 'popular':
-      return 'popularity.desc';
-    case 'newest':
-      return 'primary_release_date.desc';
-    case 'rating':
-      return 'vote_average.desc';
-    default: {
-      const unhandled: never = sort;
-      return unhandled;
-    }
-  }
-}
-
 export const SORT_LABELS: Record<SortOption, string> = {
   popular: 'Popular',
   newest: 'Newest',
@@ -81,17 +67,18 @@ function setParam(params: URLSearchParams, name: string, value: string | null): 
 }
 
 /**
- * Movies filters as URL state. Genre and sort are written with push (each choice is a
+ * Catalog filters as URL state. Genre and sort are written with push (each choice is a
  * history entry); the search text is debounced and written with replace, so typing does not
  * flood the history. Every write runs in a transition: the current results stay on screen
  * while the next ones load, and `isPending` tells the page to mark them stale.
  */
-export function useMovieFilters() {
+export function useCatalogFilters() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const searchKey = searchParams.toString();
   // Keyed by the string, so `filters` keeps its identity until the URL really changes.
-  const filters = useMemo(() => parseMovieFilters(new URLSearchParams(searchKey)), [searchKey]);
+  const filters = useMemo(() => parseCatalogFilters(new URLSearchParams(searchKey)), [searchKey]);
+  const deferredFilters = useDeferredValue(filters);
 
   // The input is local state: it changes on every keystroke, the URL only after the debounce.
   const [searchInput, setSearchInputState] = useState(filters.query);
@@ -183,9 +170,16 @@ export function useMovieFilters() {
 
   return {
     filters,
+    /**
+     * What the results query reads. URL writes are transitions already; deferring also keeps the
+     * current results on screen for a URL change that is not one (otherwise the Suspense
+     * fallback replaces the page).
+     */
+    deferredFilters,
     searchInput,
     /** The typed text is not in the URL yet, or the URL's results are still loading. */
-    isStale: isPending || normalizeQuery(searchInput) !== filters.query,
+    isStale:
+      isPending || normalizeQuery(searchInput) !== filters.query || deferredFilters !== filters,
     setSearchInput,
     clearSearch,
     setGenre,
@@ -193,3 +187,5 @@ export function useMovieFilters() {
     resetFilters,
   };
 }
+
+export type CatalogFiltersState = ReturnType<typeof useCatalogFilters>;

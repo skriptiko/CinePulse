@@ -1,4 +1,4 @@
-import { genreQueries, SEARCH_QUERY_MAX_LENGTH } from '@repo/api';
+import { type genreQueries, SEARCH_QUERY_MAX_LENGTH } from '@repo/api';
 import {
   buttonVariants,
   CategoryPills,
@@ -15,13 +15,17 @@ import {
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { ChevronDown, Grid3X3, LayoutGrid, Search, SlidersHorizontal } from 'lucide-react';
 import { type FormEvent, useId } from 'react';
-import { isSortOption, SORT_LABELS, SORT_OPTIONS, type SortOption } from './use-movie-filters';
+import { isSortOption, SORT_LABELS, SORT_OPTIONS, type SortOption } from './use-catalog-filters';
 
 export type ViewMode = 'grid' | 'compact';
 
 const ALL_GENRES = 'All';
 
-export type MoviesFiltersProps = {
+export type CatalogFiltersProps = {
+  /** Plural noun of the page, e.g. `movies`. */
+  noun: string;
+  /** `genreQueries.movie()` or `genreQueries.tv()`: each media type has its own list. */
+  genresQuery: ReturnType<typeof genreQueries.movie>;
   searchInput: string;
   onSearchChange: (value: string) => void;
   genreId: number | null;
@@ -34,7 +38,9 @@ export type MoviesFiltersProps = {
   onViewModeChange: (mode: ViewMode) => void;
 };
 
-export function MoviesFilters({
+export function CatalogFilters({
+  noun,
+  genresQuery,
   searchInput,
   onSearchChange,
   genreId,
@@ -44,8 +50,8 @@ export function MoviesFilters({
   isSearching,
   viewMode,
   onViewModeChange,
-}: MoviesFiltersProps) {
-  const { data: genresData } = useSuspenseQuery(genreQueries.movie());
+}: CatalogFiltersProps) {
+  const { data: genresData } = useSuspenseQuery(genresQuery);
   const searchId = useId();
 
   const genreNames = [ALL_GENRES, ...genresData.genres.map((genre) => genre.name)];
@@ -72,13 +78,13 @@ export function MoviesFilters({
             <search className="relative max-w-md flex-1">
               <form onSubmit={handleSearchSubmit}>
                 <label htmlFor={searchId} className="sr-only">
-                  Search movies
+                  Search {noun}
                 </label>
                 <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
                 <Input
                   id={searchId}
                   type="search"
-                  placeholder="Search movies..."
+                  placeholder={`Search ${noun}...`}
                   value={searchInput}
                   onChange={(event) => onSearchChange(event.target.value)}
                   maxLength={SEARCH_QUERY_MAX_LENGTH}
