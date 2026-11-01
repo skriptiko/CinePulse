@@ -4,12 +4,18 @@ import { buildPath } from '@repo/routes';
 import type { MovieCardData } from '../../components/movie-card';
 import { formatRating, formatYear } from '../format';
 
-export function toMovieCardData(movie: Movie): MovieCardData {
+/** What TMDB can leave out of a credit is optional here (ADR-0012). */
+type MovieCardFields = Pick<Movie, 'id' | 'title'> &
+  Partial<Pick<Movie, 'poster_path' | 'release_date' | 'vote_average'>>;
+type TvCardFields = Pick<TV, 'id' | 'name'> &
+  Partial<Pick<TV, 'poster_path' | 'first_air_date' | 'vote_average'>>;
+
+export function toMovieCardData(movie: MovieCardFields): MovieCardData {
   return {
     id: movie.id,
     title: movie.title,
     mediaType: 'movie',
-    posterPath: movie.poster_path,
+    posterPath: movie.poster_path ?? null,
     imageUrl: getImageUrl(movie.poster_path, POSTER_SIZE_CARD),
     year: formatYear(movie.release_date),
     rating: formatRating(movie.vote_average),
@@ -17,12 +23,12 @@ export function toMovieCardData(movie: Movie): MovieCardData {
   };
 }
 
-export function toTvCardData(tv: TV): MovieCardData {
+export function toTvCardData(tv: TvCardFields): MovieCardData {
   return {
     id: tv.id,
     title: tv.name,
     mediaType: 'tv',
-    posterPath: tv.poster_path,
+    posterPath: tv.poster_path ?? null,
     imageUrl: getImageUrl(tv.poster_path, POSTER_SIZE_CARD),
     year: formatYear(tv.first_air_date),
     rating: formatRating(tv.vote_average),

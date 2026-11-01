@@ -1,5 +1,12 @@
-import { ROUTE_PATHS } from '@repo/routes';
-import { buildPaginated, buildTv, renderWithProviders, screen, server } from '@repo/test-utils';
+import { buildPath, ROUTE_PATHS } from '@repo/routes';
+import {
+  buildPaginated,
+  buildPersonDetails,
+  buildTv,
+  renderWithProviders,
+  screen,
+  server,
+} from '@repo/test-utils';
 import { delay, HttpResponse, http } from 'msw';
 import { Link, useRoutes } from 'react-router-dom';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -83,6 +90,30 @@ describe('routes', () => {
     renderWithProviders(<App />, { route: ROUTE_PATHS.TV });
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Something went wrong');
+  });
+
+  it('loads the Person page on demand', async () => {
+    server.use(
+      http.get('*/api/tmdb/person/42', () =>
+        HttpResponse.json(buildPersonDetails({ name: 'Zendaya' }))
+      )
+    );
+    renderWithProviders(<App />, { route: buildPath.person(42) });
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Zendaya' })).toBeInTheDocument();
+  });
+
+  it('shows the Person skeleton while the person loads', async () => {
+    server.use(
+      http.get('*/api/tmdb/person/42', async () => {
+        await delay('infinite');
+        return HttpResponse.json(buildPersonDetails());
+      })
+    );
+    renderWithProviders(<App />, { route: buildPath.person(42) });
+
+    expect(await screen.findByTestId('page-skeleton')).toHaveAttribute('aria-busy', 'true');
+    expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument();
   });
 
   it('leaves no search text behind between Movies and TV Shows', async () => {

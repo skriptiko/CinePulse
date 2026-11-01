@@ -48,7 +48,11 @@ export function ContentRow({
           )}
         >
           {movies.map((movie) => (
-            <li key={movie.id} className="w-36 shrink-0 sm:w-40 md:w-44 lg:w-48">
+            // A movie and a show can share an id.
+            <li
+              key={`${movie.mediaType}-${movie.id}`}
+              className="w-36 shrink-0 sm:w-40 md:w-44 lg:w-48"
+            >
               <MovieCard movie={movie} action={renderCardAction?.(movie)} />
             </li>
           ))}

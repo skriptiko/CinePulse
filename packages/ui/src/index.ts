@@ -2,6 +2,8 @@ export type { AppLayoutProps } from './components/app-layout';
 export { AppLayout } from './components/app-layout';
 export type { AsyncBoundaryProps } from './components/async-boundary';
 export { AsyncBoundary } from './components/async-boundary';
+export type { BiographySectionProps } from './components/biography-section';
+export { BiographySection } from './components/biography-section';
 export type {
   CastMemberData,
   CastSectionProps,
@@ -19,6 +21,11 @@ export type { ContentRowProps } from './components/content-row';
 export { ContentRow } from './components/content-row';
 export type { FeaturedGridProps, FeaturedItemData } from './components/featured-grid';
 export { FeaturedGrid } from './components/featured-grid';
+export type {
+  FilmographyCreditData,
+  FilmographySectionProps,
+} from './components/filmography-section';
+export { FilmographySection } from './components/filmography-section';
 export type { FooterProps } from './components/footer';
 export { Footer } from './components/footer';
 export type { HeaderProps } from './components/header';
@@ -27,6 +34,8 @@ export type { HeroData, HeroProps } from './components/hero';
 export { Hero } from './components/hero';
 export type { ImagePlaceholderProps } from './components/image-placeholder';
 export { ImagePlaceholder } from './components/image-placeholder';
+export type { KnownForSectionProps } from './components/known-for-section';
+export { KnownForSection } from './components/known-for-section';
 export type {
   MediaData,
   MediaImageData,
@@ -55,6 +64,8 @@ export {
   SKELETON_DELAY_MS,
   SkeletonFrame,
 } from './components/page-skeletons';
+export type { PersonDetailData, PersonDetailViewProps } from './components/person-detail-view';
+export { PersonDetailView } from './components/person-detail-view';
 export type { ReviewData, ReviewsSectionProps } from './components/reviews-section';
 export { ReviewsSection } from './components/reviews-section';
 export { SectionErrorFallback } from './components/section-error-fallback';
@@ -100,6 +111,8 @@ export { toMediaData } from './lib/mappers/media';
 export { toMoreLikeThisData } from './lib/mappers/more-like-this';
 export { toMovieCardData, toTrendingCardData, toTvCardData } from './lib/mappers/movie-card';
 export { toMovieDetailData } from './lib/mappers/movie-detail';
+export { toFilmographyData, toKnownForData } from './lib/mappers/person-credits';
+export { toPersonDetailData } from './lib/mappers/person-detail';
 export { toReviewsData } from './lib/mappers/reviews';
 export { toWatchProvidersData } from './lib/mappers/watch-providers';
 
