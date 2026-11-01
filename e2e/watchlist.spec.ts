@@ -1513,6 +1513,21 @@ async function openFolderWithTitle(page: Page, request: APIRequestContext, name:
   await expect(page.getByRole('link', { name: 'Row', exact: true })).toBeVisible();
 }
 
+/** As in `useDoublePressHold`. */
+const DOUBLE_PRESS_HOLD_MS = 400;
+
+/**
+ * The pause runs from the first press, as a busy machine can spend longer than the hold on that
+ * press alone, and two presses further apart than the hold are no double press.
+ */
+async function pressTwice(page: Page, spot: Spot, press: typeof tap, cancel: Locator) {
+  const pause = page.waitForTimeout(120);
+  await press(page, spot);
+  await expect(cancel).toHaveCount(0);
+  await pause;
+  await press(page, spot);
+}
+
 /**
  * Both presses go to one point of Cancel, which `under` covers once the form is gone. Checked
  * before pressing: a point that falls between two controls would pass on broken code.
@@ -1534,10 +1549,7 @@ async function expectDoublePressToReachNothing(
   await expectToCover(under, spot);
 
   await toolbarButton.click();
-  await press(page, spot);
-  await expect(cancel).toHaveCount(0);
-  await page.waitForTimeout(120);
-  await press(page, spot);
+  await pressTwice(page, spot, press, cancel);
 
   await page.waitForTimeout(100);
   await expect(page).toHaveURL(url);
@@ -1612,10 +1624,7 @@ async function expectDoublePressOnQuestionToReachNothing(
   await expectToCover(under, spot);
 
   await remove.click();
-  await press(page, spot);
-  await expect(cancel).toHaveCount(0);
-  await page.waitForTimeout(120);
-  await press(page, spot);
+  await pressTwice(page, spot, press, cancel);
 
   await page.waitForTimeout(100);
   await expect(page).toHaveURL(/\/user\/watchlist$/);
@@ -1643,6 +1652,7 @@ for (const { input, press } of [
         expect((await readTitle(request, uid, 'movie_2')).status).toBe('planned');
 
         // The hold passes: the same switch takes a press again.
+        await page.waitForTimeout(DOUBLE_PRESS_HOLD_MS);
         await press(page, spot);
         await expect(watched).toBeChecked();
         await statusBox(page, 'Second', 'Planned').click();
