@@ -956,6 +956,49 @@ describe('WatchlistPage', () => {
     }
   });
 
+  it.each(['New folder', 'New subfolder', 'Rename', 'Move', 'Delete'])(
+    'holds the section against a second press after Cancel in %s',
+    async (form) => {
+      const { user } = renderPage('/user/watchlist?folder=top');
+      await user.click(await screen.findByRole('button', { name: form }));
+      await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+      const section = screen.getByRole('region', { name: 'Top' });
+      const toolbarButton = screen.getByRole('button', { name: form });
+      expect(section).toHaveClass('pointer-events-none');
+      expect(toolbarButton).toHaveFocus();
+
+      // `false`: the default is prevented, which on a real press would take focus off the button.
+      expect(fireEvent.mouseDown(section)).toBe(false);
+      await waitFor(() => expect(section).not.toHaveClass('pointer-events-none'));
+      await waitFor(() => expect(fireEvent.mouseDown(section)).toBe(true));
+    }
+  );
+
+  it('holds the section when a saved form closes', async () => {
+    vi.mocked(updateDoc).mockResolvedValue(undefined);
+    const { user } = renderPage('/user/watchlist?folder=top');
+    await user.click(await screen.findByRole('button', { name: 'Rename' }));
+
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    await screen.findByRole('button', { name: 'Rename' });
+    expect(screen.getByRole('region', { name: 'Top' })).toHaveClass('pointer-events-none');
+  });
+
+  it('holds the section when a deleted folder takes the form with it', async () => {
+    batch.commit.mockImplementationOnce(async () => {
+      folders = [TOP, DEEP, OTHER];
+    });
+    const { user } = renderPage('/user/watchlist?folder=child');
+    await user.click(await screen.findByRole('button', { name: 'Delete' }));
+
+    await user.click(screen.getByRole('button', { name: 'Delete folder' }));
+
+    const section = await screen.findByRole('region', { name: 'Top' });
+    expect(section).toHaveClass('pointer-events-none');
+  });
+
   it('asks about the folders the server has now', async () => {
     const { user } = renderPage('/user/watchlist?folder=other');
     const button = await screen.findByRole('button', { name: 'Delete' });
