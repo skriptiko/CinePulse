@@ -1,7 +1,9 @@
 import { Button } from '@repo/ui';
 import { Search } from 'lucide-react';
 
-export type MoviesEmptyStateProps = {
+export type CatalogEmptyStateProps = {
+  /** Plural noun of the page, e.g. `movies`. */
+  noun: string;
   /** The active search text; `''` when browsing by genre and sort. */
   query: string;
   /** A genre or a non-default sort is set. */
@@ -10,19 +12,20 @@ export type MoviesEmptyStateProps = {
   onResetFilters: () => void;
 };
 
-export function MoviesEmptyState({
+export function CatalogEmptyState({
+  noun,
   query,
   hasFilters,
   onClearSearch,
   onResetFilters,
-}: MoviesEmptyStateProps) {
+}: CatalogEmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
       <div className="bg-secondary mb-4 flex size-16 items-center justify-center rounded-full">
         <Search className="text-muted-foreground size-8" aria-hidden="true" />
       </div>
-      <h2 className="mb-2 text-lg font-medium">
-        {query ? `No movies found for “${query}”` : 'No movies found'}
+      <h2 className="mb-2 max-w-full text-lg font-medium break-words">
+        {query ? `No ${noun} found for “${query}”` : `No ${noun} found`}
       </h2>
       <p className="text-muted-foreground max-w-md text-sm">
         {query

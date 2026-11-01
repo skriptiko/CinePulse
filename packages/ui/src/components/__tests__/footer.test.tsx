@@ -7,6 +7,7 @@ describe('Footer', () => {
     renderWithProviders(<Footer />);
 
     expect(screen.getByRole('link', { name: 'Movies' })).toHaveAttribute('href', '/movies');
+    expect(screen.getByRole('link', { name: 'TV Shows' })).toHaveAttribute('href', '/tv');
     expect(screen.getByRole('link', { name: 'Profile' })).toHaveAttribute('href', '/user/profile');
     expect(screen.getByRole('link', { name: 'Settings' })).toHaveAttribute(
       'href',

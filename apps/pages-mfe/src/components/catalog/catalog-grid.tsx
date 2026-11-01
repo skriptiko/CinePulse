@@ -1,12 +1,13 @@
-import type { Movie } from '@repo/api';
-import { Button, cn, MovieCard, toMovieCardData } from '@repo/ui';
+import { Button, cn, MovieCard, type MovieCardData } from '@repo/ui';
 import { Loader2 } from 'lucide-react';
 import { useId } from 'react';
-import { renderAddToWatchlist } from '../../components/add-to-watchlist';
-import type { ViewMode } from './movies-filters';
+import { renderAddToWatchlist } from '../add-to-watchlist';
+import type { ViewMode } from './catalog-filters';
 
-export type MoviesGridProps = {
-  movies: Movie[];
+export type CatalogGridProps = {
+  /** Plural noun of the page, e.g. `movies`. */
+  noun: string;
+  cards: MovieCardData[];
   viewMode: ViewMode;
   hasNextPage: boolean;
   /** Any fetch of this query is in flight (next page or a refetch). */
@@ -16,15 +17,16 @@ export type MoviesGridProps = {
   onLoadMore: () => void;
 };
 
-export function MoviesGrid({
-  movies,
+export function CatalogGrid({
+  noun,
+  cards,
   viewMode,
   hasNextPage,
   isFetching,
   isFetchingNextPage,
   isFetchNextPageError,
   onLoadMore,
-}: MoviesGridProps) {
+}: CatalogGridProps) {
   const headingId = useId();
 
   return (
@@ -43,20 +45,17 @@ export function MoviesGrid({
             : 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8'
         )}
       >
-        {movies.map((movie) => {
-          const card = toMovieCardData(movie);
-          return (
-            <li key={movie.id}>
-              <MovieCard movie={card} action={renderAddToWatchlist(card)} />
-            </li>
-          );
-        })}
+        {cards.map((card) => (
+          <li key={card.id}>
+            <MovieCard movie={card} action={renderAddToWatchlist(card)} />
+          </li>
+        ))}
       </ul>
 
       <div className="mt-12 flex flex-col items-center gap-3">
         {isFetchNextPageError && !isFetchingNextPage && (
           <p role="alert" className="text-destructive text-sm">
-            Couldn&apos;t load more movies.
+            Couldn&apos;t load more {noun}.
           </p>
         )}
         {hasNextPage ? (

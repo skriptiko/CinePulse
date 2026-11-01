@@ -1,4 +1,10 @@
-import { DEFAULT_DISCOVER_FILTERS, genreQueries, movieQueries } from '@repo/api';
+import {
+  DEFAULT_DISCOVER_FILTERS,
+  DEFAULT_DISCOVER_TV_FILTERS,
+  genreQueries,
+  movieQueries,
+  tvQueries,
+} from '@repo/api';
 import { useGlobalStore } from '@repo/events';
 import { ROUTE_PATHS } from '@repo/routes';
 import { useQueryClient } from '@tanstack/react-query';
@@ -13,10 +19,11 @@ import { cn } from '../lib/utils';
 import { Logo } from './logo';
 import { Button, buttonVariants } from './ui/button';
 
-// Only routes that exist: Series, New & Popular and My List come back with their pages.
+// Only routes that exist: New & Popular and My List come back with their pages.
 const NAV_ITEMS = [
   { label: 'Home', href: ROUTE_PATHS.HOME },
   { label: 'Movies', href: ROUTE_PATHS.MOVIES },
+  { label: 'TV Shows', href: ROUTE_PATHS.TV },
 ] as const;
 
 const MOBILE_NAV_ID = 'mobile-nav';
@@ -153,10 +160,13 @@ type NavLinksProps = {
 
 /** `NavLink` sets `aria-current="page"` on the active item; `end` keeps Home from matching all. */
 function NavLinks({ layout, onNavigate }: NavLinksProps) {
-  const moviesIntent = useMoviesPrefetch();
+  const intents: Partial<Record<string, IntentHandlers>> = {
+    [ROUTE_PATHS.MOVIES]: useMoviesPrefetch(),
+    [ROUTE_PATHS.TV]: useTVPrefetch(),
+  };
 
   return NAV_ITEMS.map((item) => {
-    const intent = item.href === ROUTE_PATHS.MOVIES ? moviesIntent : undefined;
+    const intent = intents[item.href];
     return (
       <NavLink
         key={item.label}
@@ -182,5 +192,15 @@ function useMoviesPrefetch(): IntentHandlers {
   return useIntentPrefetch(() => {
     void queryClient.prefetchInfiniteQuery(movieQueries.discover(DEFAULT_DISCOVER_FILTERS));
     void queryClient.prefetchQuery(genreQueries.movie());
+  });
+}
+
+/** Warms the cache for the default TV Shows view (and its genres) on hover or focus intent. */
+function useTVPrefetch(): IntentHandlers {
+  const queryClient = useQueryClient();
+
+  return useIntentPrefetch(() => {
+    void queryClient.prefetchInfiniteQuery(tvQueries.discover(DEFAULT_DISCOVER_TV_FILTERS));
+    void queryClient.prefetchQuery(genreQueries.tv());
   });
 }

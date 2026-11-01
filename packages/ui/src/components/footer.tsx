@@ -20,6 +20,7 @@ const FOOTER_COLUMNS: FooterColumnData[] = [
     links: [
       { label: 'Home', href: ROUTE_PATHS.HOME },
       { label: 'Movies', href: ROUTE_PATHS.MOVIES },
+      { label: 'TV Shows', href: ROUTE_PATHS.TV },
     ],
   },
   {

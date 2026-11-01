@@ -19,7 +19,7 @@ Three Vite servers (Module Federation), started together via `pnpm dev` (Turbo):
 | App | Role | Port |
 |-----------|------|------|
 | `@repo/host` | shell | 5000 |
-| `@repo/pages-mfe` | remote: Home, Movies | 5001 |
+| `@repo/pages-mfe` | remote: Home, Movies, TV Shows | 5001 |
 | `@repo/user-mfe` | remote: Profile, Settings, Watchlist | 5002 |
 
 - Ports are fixed (`strictPort: true`).

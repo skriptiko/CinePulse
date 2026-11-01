@@ -21,3 +21,8 @@ export function buildQueryString(params: QueryParams): string {
   const queryString = searchParams.toString();
   return queryString ? `?${queryString}` : '';
 }
+
+/** `YYYY-MM-DD` in UTC, the format TMDB date filters take. */
+export function toIsoDate(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}

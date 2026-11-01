@@ -15,13 +15,14 @@ export {
   toHttpError,
 } from './core';
 
-export type { DiscoverSortBy, MovieCategory, TVCategory } from './endpoints';
-export { useMoviesOrSearch } from './hooks';
+export type { DiscoverSortBy, DiscoverTVSortBy, MovieCategory, TVCategory } from './endpoints';
+export { useMoviesOrSearch, useTVOrSearch } from './hooks';
 export type { ApiProviderProps } from './provider/api-provider';
 export { ApiProvider } from './provider/api-provider';
-export type { DiscoverMovieFilters } from './queries';
+export type { DiscoverMovieFilters, DiscoverTVFilters } from './queries';
 export {
   DEFAULT_DISCOVER_FILTERS,
+  DEFAULT_DISCOVER_TV_FILTERS,
   genreQueries,
   movieQueries,
   personQueries,

@@ -5,7 +5,7 @@ The TMDB client and the app's `QueryClient`. Requests go to the relative `/api/t
 ## Public API
 
 - **Query factories:** `movieQueries`, `tvQueries`, `personQueries`, `genreQueries`, `searchQueries`, `trendingQueries`. Pass them to `useSuspenseQuery` and friends.
-- **Hook:** `useMoviesOrSearch`, for the one query that switches between discover and search.
+- **Hooks:** `useMoviesOrSearch` and `useTVOrSearch`, for the one query that switches between discover and search.
 - **Client:** `ApiProvider`, `createQueryClient`, `shouldRetry`.
 - **Errors:** `ApiError` with a `kind`, `isApiError`, `isNotFound`, `isAbortError`, `toHttpError`, `getErrorMessage`.
 - **Images:** `getImageUrl` and the size constants.

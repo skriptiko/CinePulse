@@ -14,6 +14,9 @@ const MovieDetail = lazy(() =>
 const Movies = lazy(() =>
   import('./pages/movies/movies-page').then((module) => ({ default: module.Movies }))
 );
+const TVShows = lazy(() =>
+  import('./pages/tv/tv-page').then((module) => ({ default: module.TVShows }))
+);
 
 export const routes: RouteObject[] = [
   {
@@ -30,6 +33,14 @@ export const routes: RouteObject[] = [
     element: (
       <PageBoundary fallback={<MovieGridSkeleton />}>
         <Movies />
+      </PageBoundary>
+    ),
+  },
+  {
+    path: ROUTE_PATHS.TV,
+    element: (
+      <PageBoundary fallback={<MovieGridSkeleton />}>
+        <TVShows />
       </PageBoundary>
     ),
   },

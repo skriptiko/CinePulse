@@ -25,17 +25,24 @@ export const DISCOVER_SORT_BY = [
   'primary_release_date.desc',
   'vote_average.desc',
 ] as const;
+/** `sort_by` values `discoverTV` sends. */
+export const DISCOVER_TV_SORT_BY = [
+  'popularity.desc',
+  'first_air_date.desc',
+  'vote_average.desc',
+] as const;
 export const MAX_VOTE_COUNT_FLOOR = 10_000;
 
-type QueryRule = 'page' | 'search' | 'discover' | 'movieDetail';
+type QueryRule = 'page' | 'search' | 'discover' | 'discoverTv' | 'movieDetail';
 
 type RouteRule = {
   pattern: RegExp;
   /**
    * `page`: optional `page`; `search`: required `query` + optional `page`; `discover`:
    * required `sort_by` + optional `page`, `with_genres`, `vote_count.gte`,
-   * `primary_release_date.lte`; `movieDetail`: nothing, or `append_to_response` set to exactly
-   * `MOVIE_DETAIL_APPEND`; none: no params.
+   * `primary_release_date.lte`; `discoverTv`: the same with `first_air_date.lte` as the date;
+   * `movieDetail`: nothing, or `append_to_response` set to exactly `MOVIE_DETAIL_APPEND`;
+   * none: no params.
    */
   query?: QueryRule;
   cacheControl: string;
@@ -56,6 +63,7 @@ const ROUTES: readonly RouteRule[] = [
     cacheControl: CACHE_CONTROL_DEFAULT,
   },
   { pattern: /^\/discover\/movie$/, query: 'discover', cacheControl: CACHE_CONTROL_DEFAULT },
+  { pattern: /^\/discover\/tv$/, query: 'discoverTv', cacheControl: CACHE_CONTROL_DEFAULT },
   {
     pattern: /^\/tv\/(popular|top_rated|on_the_air|airing_today)$/,
     query: 'page',
@@ -124,6 +132,15 @@ const ALLOWED_PARAMS: Record<QueryRule, readonly string[]> = {
   search: ['query', 'page'],
   discover: ['sort_by', 'with_genres', 'vote_count.gte', 'primary_release_date.lte', 'page'],
   movieDetail: ['append_to_response'],
+  discoverTv: ['sort_by', 'with_genres', 'vote_count.gte', 'first_air_date.lte', 'page'],
+};
+
+/** What the discover routes do not share: neither takes the other's sort or date. */
+type DiscoverRule = { sortValues: readonly string[]; dateParam: string };
+
+const DISCOVER_RULES: Partial<Record<QueryRule, DiscoverRule>> = {
+  discover: { sortValues: DISCOVER_SORT_BY, dateParam: 'primary_release_date.lte' },
+  discoverTv: { sortValues: DISCOVER_TV_SORT_BY, dateParam: 'first_air_date.lte' },
 };
 
 function sanitizeQuery(params: URLSearchParams, rule: QueryRule | undefined): string | null {
@@ -148,7 +165,8 @@ function sanitizeQuery(params: URLSearchParams, rule: QueryRule | undefined): st
     result.set('query', query);
   }
 
-  if (rule === 'discover' && !copyDiscoverParams(params, result)) return null;
+  const discoverRule = rule && DISCOVER_RULES[rule];
+  if (discoverRule && !copyDiscoverParams(params, result, discoverRule)) return null;
 
   const page = params.get('page');
   if (page !== null) {
@@ -161,9 +179,12 @@ function sanitizeQuery(params: URLSearchParams, rule: QueryRule | undefined): st
 }
 
 /** Validates the discover params and copies them in a fixed order; `false` if any is invalid. */
-function copyDiscoverParams(params: URLSearchParams, result: URLSearchParams): boolean {
+function copyDiscoverParams(
+  params: URLSearchParams,
+  result: URLSearchParams,
+  { sortValues, dateParam }: DiscoverRule
+): boolean {
   const sortBy = params.get('sort_by');
-  const sortValues: readonly string[] = DISCOVER_SORT_BY;
   if (sortBy === null || !sortValues.includes(sortBy)) return false;
   result.set('sort_by', sortBy);
 
@@ -181,10 +202,10 @@ function copyDiscoverParams(params: URLSearchParams, result: URLSearchParams): b
     result.set('vote_count.gte', voteCount);
   }
 
-  const releasedBy = params.get('primary_release_date.lte');
+  const releasedBy = params.get(dateParam);
   if (releasedBy !== null) {
     if (!isValidIsoDate(releasedBy)) return false;
-    result.set('primary_release_date.lte', releasedBy);
+    result.set(dateParam, releasedBy);
   }
 
   return true;
