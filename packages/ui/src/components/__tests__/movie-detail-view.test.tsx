@@ -23,6 +23,15 @@ describe('MovieDetailView', () => {
     expect(screen.getByRole('article').children).toHaveLength(1);
   });
 
+  it('lets an unbroken word wrap in every external string', () => {
+    render(<MovieDetailView movie={{ ...MOVIE, tagline: 'Beyond fear' }} />);
+
+    expect(screen.getByRole('heading', { level: 1 })).toHaveClass('wrap-anywhere');
+    expect(screen.getByText('Beyond fear')).toHaveClass('wrap-anywhere');
+    expect(screen.getByText('Sci-Fi')).toHaveClass('min-w-0', 'wrap-anywhere');
+    expect(screen.getByText('A desert planet.')).toHaveClass('wrap-anywhere');
+  });
+
   it('renders the sections below the hero block', () => {
     render(
       <MovieDetailView movie={MOVIE}>
