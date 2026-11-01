@@ -71,6 +71,7 @@ In the integration the host builds one stylesheet for every remote, so MFE style
 - A row has a two-segment switch under its title, which writes at once. It has no spinner and is never disabled, so focus stays on it (ADR-0015).
 - The filter uses pills, so it does not look like the switch.
 - A row changed under a filter stays until the folder or the filter changes, as a free undo and so that a double tap cannot reach the next row.
+- `Remove` sits beside the switch and asks first, because a removal has no undo: `addedAt` and the status would be lost. Focus then moves to the heading, and the page does not scroll.
 - `<output>` above the list always holds the count or the empty message, and is the live region for a filter press.
 - In forced colours, a chosen segment or pill takes the system highlight, as forced colours would remove its fill and ring.
 

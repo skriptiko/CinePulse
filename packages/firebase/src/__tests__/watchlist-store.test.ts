@@ -1,5 +1,5 @@
 import { server } from '@repo/test-utils';
-import { getDoc, getDocs, setDoc, updateDoc, writeBatch } from 'firebase/firestore/lite';
+import { deleteDoc, getDoc, getDocs, setDoc, updateDoc, writeBatch } from 'firebase/firestore/lite';
 import { HttpResponse, http } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -7,6 +7,7 @@ import {
   deleteFolder,
   getFolders,
   moveFolder,
+  removeTitle,
   saveTitle,
   setTitleStatus,
 } from '../watchlist-store';
@@ -21,6 +22,7 @@ vi.mock('firebase/firestore/lite', () => ({
   arrayUnion: (...ids: string[]) => ({ arrayUnion: ids }),
   collection: (_db: unknown, ...path: string[]) => ({ path: path.join('/') }),
   connectFirestoreEmulator: vi.fn(),
+  deleteDoc: vi.fn(),
   doc: (first: { path?: string }, ...path: string[]) =>
     path.length > 0 ? { path: path.join('/') } : { path: `${first.path}/new` },
   getDoc: vi.fn(),
@@ -126,6 +128,14 @@ describe('watchlist store', () => {
     await expect(moveFolder('u', 'a', 'b')).rejects.toMatchObject({ kind: 'client' });
 
     expect(batch.commit).not.toHaveBeenCalled();
+  });
+
+  it('removes a title with one delete and no read', async () => {
+    await removeTitle('u', 'movie_1');
+
+    expect(deleteDoc).toHaveBeenCalledExactlyOnceWith({ path: 'users/u/items/movie_1' });
+    expect(getDoc).not.toHaveBeenCalled();
+    expect(getDocs).not.toHaveBeenCalled();
   });
 
   it('writes only the status of a title, with no read', async () => {

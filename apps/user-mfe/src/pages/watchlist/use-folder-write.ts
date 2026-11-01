@@ -23,9 +23,10 @@ export function useFolderWrite<T>({ write, invalidate, onDone }: FolderWriteOpti
     networkMode: 'always',
     // After a failure too: a rejected write usually means this tab's tree is out of date.
     // Not awaited: the form stays locked until this returns, and a refetch can retry for seconds.
+    // `all`, as a read from before the write would otherwise land on a page that was left.
     onSettled: () => {
       isWritingRef.current = false;
-      void queryClient.invalidateQueries({ queryKey: invalidate });
+      void queryClient.invalidateQueries({ queryKey: invalidate, refetchType: 'all' });
     },
   });
 

@@ -11,7 +11,7 @@ import {
 } from '@repo/test-utils';
 import { PageBoundary } from '@repo/ui';
 import { onlineManager, type QueryClient } from '@tanstack/react-query';
-import { getDocs, setDoc, updateDoc, writeBatch } from 'firebase/firestore/lite';
+import { deleteDoc, getDocs, setDoc, updateDoc, writeBatch } from 'firebase/firestore/lite';
 import { HttpResponse, http } from 'msw';
 import { useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -25,6 +25,7 @@ vi.mock('firebase/firestore/lite', () => ({
   arrayRemove: (...ids: string[]) => ({ arrayRemove: ids }),
   collection: (_db: unknown, ...path: string[]) => ({ path: path.join('/') }),
   connectFirestoreEmulator: vi.fn(),
+  deleteDoc: vi.fn(),
   doc: (_first: unknown, ...path: string[]) => ({ path: path.join('/') }),
   getDocs: vi.fn(),
   getFirestore: () => ({}),
@@ -581,6 +582,153 @@ describe('WatchlistPage', () => {
     await screen.findByRole('heading', { level: 2, name: 'Top' });
     expect(screen.queryByRole('link', { name: 'Alien' })).toBeNull();
     expect(screen.getByRole('status')).toHaveTextContent('No planned titles here.');
+  });
+
+  it('asks before removing a title, with Cancel focused', async () => {
+    const { user } = renderPage();
+    await screen.findByRole('link', { name: 'Alien' });
+
+    await user.click(screen.getByRole('button', { name: 'Remove Alien' }));
+
+    expect(
+      screen.getByRole('group', { name: 'Remove Alien? It leaves every folder.' })
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Remove Alien' })).toBeDisabled();
+    expect(deleteDoc).not.toHaveBeenCalled();
+  });
+
+  it('returns focus to Remove after Cancel', async () => {
+    const { user } = renderPage();
+    await screen.findByRole('link', { name: 'Alien' });
+
+    await user.click(screen.getByRole('button', { name: 'Remove Alien' }));
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(screen.getByRole('button', { name: 'Remove Alien' })).toHaveFocus();
+    expect(screen.queryByRole('group', { name: /^Remove Alien/ })).not.toBeInTheDocument();
+  });
+
+  it('removes a title, drops its row at once and moves focus to the heading', async () => {
+    vi.mocked(deleteDoc).mockResolvedValue(undefined);
+    const { user } = renderPage();
+    await screen.findByRole('link', { name: 'Alien' });
+    await user.click(screen.getByRole('button', { name: 'Remove Alien' }));
+    // A read of a long list must not keep a removed row on screen.
+    holdRead([LOST]);
+
+    await user.click(screen.getByRole('button', { name: 'Remove title' }));
+
+    await waitFor(() => expect(screen.queryByRole('link', { name: 'Alien' })).toBeNull());
+    expect(deleteDoc).toHaveBeenCalledExactlyOnceWith({ path: 'users/u/items/movie_1' });
+    expect(screen.getByRole('status')).toHaveTextContent(/^1 title$/);
+    expect(screen.getByRole('heading', { level: 2, name: 'All titles' })).toHaveFocus();
+  });
+
+  it('moves focus to the heading when a failed press takes the row away', async () => {
+    vi.mocked(updateDoc).mockRejectedValueOnce(
+      Object.assign(new Error('gone'), { code: 'not-found' })
+    );
+    const { user } = renderPage();
+    await screen.findByRole('link', { name: 'Alien' });
+    mockItems([LOST]);
+
+    await user.click(statusOf('Alien', 'Watched'));
+
+    await waitFor(() => expect(screen.queryByRole('link', { name: 'Alien' })).toBeNull());
+    expect(screen.getByRole('heading', { level: 2, name: 'All titles' })).toHaveFocus();
+  });
+
+  it('leaves focus alone when it moved on during the removal', async () => {
+    let finish = () => {};
+    vi.mocked(deleteDoc).mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          finish = resolve;
+        })
+    );
+    const { user } = renderPage();
+    await screen.findByRole('link', { name: 'Alien' });
+    await user.click(screen.getByRole('button', { name: 'Remove Alien' }));
+    await user.click(screen.getByRole('button', { name: 'Remove title' }));
+    await waitFor(() => expect(deleteDoc).toHaveBeenCalled());
+
+    mockItems([LOST]);
+    statusOf('Lost', 'Watched').focus();
+    finish();
+
+    await waitFor(() => expect(screen.queryByRole('link', { name: 'Alien' })).toBeNull());
+    expect(statusOf('Lost', 'Watched')).toHaveFocus();
+  });
+
+  it('keeps one question open: asking about another title closes the first', async () => {
+    const { user } = renderPage();
+    await screen.findByRole('link', { name: 'Alien' });
+
+    await user.click(screen.getByRole('button', { name: 'Remove Alien' }));
+    await user.click(screen.getByRole('button', { name: 'Remove Lost' }));
+
+    expect(screen.queryByRole('group', { name: /^Remove Alien/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('group', { name: /^Remove Lost/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Remove Alien' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toHaveFocus();
+  });
+
+  it('holds the rows against a second press for a moment after a removal', async () => {
+    vi.mocked(deleteDoc).mockResolvedValue(undefined);
+    const { user } = renderPage();
+    await screen.findByRole('link', { name: 'Alien' });
+    await user.click(screen.getByRole('button', { name: 'Remove Alien' }));
+    mockItems([LOST]);
+
+    await user.click(screen.getByRole('button', { name: 'Remove title' }));
+
+    await waitFor(() => expect(screen.queryByRole('link', { name: 'Alien' })).toBeNull());
+    const list = screen.getByRole('radiogroup', { name: 'Status of Lost' }).closest('ul');
+    expect(list).toHaveClass('pointer-events-none');
+    await waitFor(() => expect(list).not.toHaveClass('pointer-events-none'));
+  });
+
+  it('drops a read from before the removal when the person left during it', async () => {
+    let finishDelete = () => {};
+    vi.mocked(deleteDoc).mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          finishDelete = resolve;
+        })
+    );
+    const { user, queryClient, unmount } = renderPage();
+    await screen.findByRole('link', { name: 'Alien' });
+    await user.click(screen.getByRole('button', { name: 'Remove Alien' }));
+    await user.click(screen.getByRole('button', { name: 'Remove title' }));
+    await waitFor(() => expect(deleteDoc).toHaveBeenCalled());
+
+    const { queryKey } = watchlistQueries.items('u');
+    const finishOldRead = holdRead([ALIEN, LOST]);
+    void queryClient.refetchQueries({ queryKey });
+    unmount();
+    mockItems([LOST]);
+    finishDelete();
+    await waitFor(() => expect(queryClient.isMutating()).toBe(0));
+    finishOldRead();
+
+    await waitFor(() => expect(queryClient.isFetching({ queryKey })).toBe(0));
+    expect(queryClient.getQueryData(queryKey)?.map(({ id }) => id)).toEqual([LOST.id]);
+  });
+
+  it('keeps the row and the question when a removal fails', async () => {
+    vi.mocked(deleteDoc).mockRejectedValueOnce(
+      Object.assign(new Error('failed'), { code: 'permission-denied' })
+    );
+    const { user } = renderPage();
+    await screen.findByRole('link', { name: 'Alien' });
+    await user.click(screen.getByRole('button', { name: 'Remove Alien' }));
+
+    await user.click(screen.getByRole('button', { name: 'Remove title' }));
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Remove title' })).toBeEnabled());
+    expect(screen.getByRole('link', { name: 'Alien' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Remove title' })).toHaveFocus();
   });
 
   it('offers no subfolder at the last level and says why', async () => {
