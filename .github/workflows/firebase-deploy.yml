@@ -133,6 +133,53 @@ jobs:
         env:
           FIREBASE_CLI: pnpm dlx firebase-tools@15.18.0 emulators:start --project demo --only hosting,auth,firestore
 
+  # A person's PRs only: a fork has no secrets, and a bot's dependency update would run code nobody
+  # has read in the job that holds the deploy key.
+  preview:
+    needs: [quality, rules]
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.type != 'Bot'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+    # A new push to the PR replaces the deploy of the one before it.
+    concurrency:
+      group: preview-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build and merge dist
+        run: pnpm build:deploy
+
+      # With no channelId the action names the channel after the PR and comments its link there.
+      - name: Deploy preview channel
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          projectId: cinepulse-eec15
+          target: production
+          expires: 7d
+
   build-and-deploy:
     needs: [quality, rules]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
