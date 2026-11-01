@@ -5,6 +5,7 @@ import {
   SectionErrorFallback,
   usePageMeta,
 } from '@repo/ui';
+import { useState } from 'react';
 import { CatalogHeader } from '../../components/catalog/catalog-header';
 import { SearchForm } from './search-form';
 import { SearchResults } from './search-results';
@@ -14,6 +15,7 @@ const PAGE_TITLE = 'Search';
 
 export function Search() {
   const { query, type, submit } = useSearchState();
+  const [liveCount, setLiveCount] = useState('');
   usePageMeta(query === '' ? PAGE_TITLE : `${PAGE_TITLE}: ${query}`);
 
   const tabs = SEARCH_TYPES.map((option) => ({
@@ -32,6 +34,9 @@ export function Search() {
         className="px-4 sm:px-6 md:px-6 lg:px-12"
       />
 
+      {/* Out of the boundary: a live region that arrives with its text may not be announced. */}
+      <output className="sr-only">{liveCount}</output>
+
       <div className="px-4 pt-4 pb-16 sm:px-6 lg:px-12">
         {query === '' ? (
           <p className="text-muted-foreground py-12 text-center text-sm">
@@ -46,7 +51,12 @@ export function Search() {
             resetKeys={[query, type]}
             suspenseKey={`${type}:${query}`}
           >
-            <SearchResults type={type} query={query} onClear={() => submit('')} />
+            <SearchResults
+              type={type}
+              query={query}
+              onClear={() => submit('')}
+              onCountChange={setLiveCount}
+            />
           </AsyncBoundary>
         )}
       </div>

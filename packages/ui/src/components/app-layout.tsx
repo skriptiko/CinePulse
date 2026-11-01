@@ -36,7 +36,7 @@ export function AppLayout({ children }: AppLayoutProps) {
  * A client-side navigation leaves focus on a link that may be gone, so it moves to `main`,
  * which exists while the next page suspends. A new page starts at the top; on Back the browser
  * restores the position itself. Query changes stay put: they come from filters the user is still
- * typing in.
+ * typing in, or from a list that opens where they are reading.
  */
 function useResetOnNavigation(mainRef: RefObject<HTMLElement | null>): void {
   const { pathname } = useLocation();

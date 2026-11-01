@@ -60,6 +60,8 @@ export function paginated(titles: string[], page = 1) {
 /** A movie with every section filled, and a second one to reach from its "More like this". */
 export const FULL_MOVIE_ID = 7;
 export const OTHER_FULL_MOVIE_ID = 8;
+/** `Film 2` in the filmography of the full person, with a cast that leads to other people. */
+export const FILMOGRAPHY_MOVIE_ID = 3002;
 /** A movie whose sections all come back empty. */
 export const EMPTY_MOVIE_ID = 9;
 /** A movie whose every external string is one long word. */
@@ -194,7 +196,9 @@ function fullSections(otherMovieId: number, text = (value: string) => value) {
 }
 
 function detailSections(id: number) {
-  if (id === FULL_MOVIE_ID) return fullSections(OTHER_FULL_MOVIE_ID);
+  if (id === FULL_MOVIE_ID || id === FILMOGRAPHY_MOVIE_ID) {
+    return fullSections(OTHER_FULL_MOVIE_ID);
+  }
   if (id === OTHER_FULL_MOVIE_ID) return fullSections(FULL_MOVIE_ID);
   if (id === EMPTY_MOVIE_ID) return emptySections();
   if (id === LONG_TEXT_MOVIE_ID) return fullSections(FULL_MOVIE_ID, () => 'x'.repeat(200));

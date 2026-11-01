@@ -77,7 +77,7 @@ From here on, new or changed logic in `packages/*` and new UI states land with t
    - ✅ **Movie Detail** (`apps/pages-mfe/src/pages/movie-detail/__tests__/`): one request for every section, their order, the region from the browser language, each empty state, a response without the appended blocks, the error state, axe;
    - ✅ **TV Detail** (`apps/pages-mfe/src/pages/tv-detail/__tests__/`): one request for every section, their order, each empty state, a response without the appended blocks, the error state and axe, as on Movie Detail, with seasons and episodes in the hero, the Seasons section with the specials last, the creator in the line of directors and writers, and TV cards in More like this. `parseRouteId` has its own test, and `src/__tests__/routes.test.tsx` covers the page on demand and its skeleton;
    - ✅ **Person** (`apps/pages-mfe/src/pages/person/__tests__/`): one request, the order of the sections, the talk show left out of Known for and kept in the filmography, each empty state, a response without the appended block, credits that lack a date, a title or a poster, the error state, an unknown and an invalid id, axe. `src/__tests__/routes.test.tsx` covers its skeleton;
-   - ✅ **Search** (`apps/pages-mfe/src/pages/search/__tests__/`): no request and focus on the input with no query, a search on submit alone, the query trimmed and the type kept, an empty submit, the input following the URL on Back, tabs that are links and load one at a time, each result leading to its page, Load more with an inline failure, the empty line of each tab, the skeleton and the error beside a form that still works, a `q` over the limit, axe, and the URL parsing and links of `use-search-state.ts`.
+   - ✅ **Search** (`apps/pages-mfe/src/pages/search/__tests__/`): no request and focus on the input with no query, a search on submit alone, the query trimmed and the type kept, an empty submit, the input following the URL on Back, tabs that are links and load one at a time, each result leading to its page, Load more with an inline failure, the empty line of each tab, the skeleton and the error beside a form that still works, one live region through new searches, tabs and failures, a `q` over the limit, axe, and the URL parsing and links of `use-search-state.ts`.
 
 ### Step 3 — ✅ e2e
 
@@ -123,7 +123,7 @@ Two mutants proved the check, each on a new `pnpm build:deploy` and the whole su
 1. The page opens from the cast of Movie Detail, from far down the page too, and starts at the top.
 2. The facts and sections stand in order, and the photo loads under the enforced CSP.
 3. Known for stops at 12 and leaves the talk show out, its cards open a movie, and its button offers the watchlist.
-4. The filmography shows 30 rows, then all of them on a press, with focus on the first new row. A press on the bottom edge of the screen works and leaves the reader there.
+4. The filmography shows 30 rows, then all of them on a press, with focus on the first new row. A press on the bottom edge of the screen works and leaves the reader there. The press adds no history entry and does not move the page. Back from a title shorter than the reader's position finds the list open, at the same row and with no focus on it, and a second Back leaves the page. A shared link opens the whole list at the top, and a person reached from the open list starts with the short one.
 5. A row merges the roles on one title and links to its page, and a credit with no date, title or poster takes the last row.
 6. A long biography opens and closes, and a short one has no toggle.
 7. A person with nothing to show keeps every heading and says so.
@@ -145,7 +145,7 @@ Two mutants proved the check, each on a new `pnpm build:deploy` and the whole su
 1. The header icon leaves focus on the input, on a chunk that is new, delayed past the move to `main`, and on one already loaded, and on the open page it drops the search.
 2. With no query, nothing is sent. A link opens the same view and survives a reload.
 3. A search runs on submit alone, and Back and Forward bring each search and its text back. An empty submit keeps the type.
-4. Tabs are links, and only the active one loads, with the skeleton beside the form and the tabs.
+4. Tabs are links, and only the active one loads, with the skeleton beside the form and the tabs. A new search and a tab tell one and the same live region, empty while they load, and a search in the cache empties it for longer than a frame.
 5. A movie, a show and a person each open their details page, and the photo loads under the enforced CSP.
 6. Load more adds a page, and a failed one shows inline with no toast.
 7. Nothing found names the query and the tab, and a failed search offers a retry with the form still usable.
