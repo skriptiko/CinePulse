@@ -20,6 +20,9 @@ const TVDetail = lazy(() =>
 const PersonDetail = lazy(() =>
   import('./pages/person/person-page').then((module) => ({ default: module.PersonDetail }))
 );
+const Search = lazy(() =>
+  import('./pages/search/search-page').then((module) => ({ default: module.Search }))
+);
 const TVShows = lazy(() =>
   import('./pages/tv/tv-page').then((module) => ({ default: module.TVShows }))
 );
@@ -72,6 +75,14 @@ export const routes: RouteObject[] = [
       // The same hero, so the same shape: a portrait beside text.
       <PageBoundary fallback={<MovieDetailSkeleton />}>
         <PersonDetail />
+      </PageBoundary>
+    ),
+  },
+  {
+    path: ROUTE_PATHS.SEARCH,
+    element: (
+      <PageBoundary fallback={<MovieGridSkeleton />}>
+        <Search />
       </PageBoundary>
     ),
   },

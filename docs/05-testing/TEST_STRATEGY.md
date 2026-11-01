@@ -69,14 +69,15 @@ From here on, new or changed logic in `packages/*` and new UI states land with t
 2. `ApiError` classification, `shouldRetry`, `getRetryDelay`, `getNextPageParam` (including the 500-page cap).
 3. `queryOptions` factories: key shapes.
 4. `@repo/events`: event bus (`on` / `off` / `once` / `emit`) and the store.
-5. Components: `MovieCard`, `Hero`, `ContentRow`, `MovieDetailView`, `PersonDetailView` and the sections of a details page, `CategoryPills`, `AsyncBoundary` (fallback, Try again refetch, 404 → `NotFound`), `NotFound`, page skeletons.
+5. Components: `MovieCard`, `PersonCard`, `Hero`, `ContentRow`, `MovieDetailView`, `PersonDetailView` and the sections of a details page, `CategoryPills`, `CategoryLinks`, `AsyncBoundary` (fallback, Try again refetch, 404 → `NotFound`), `NotFound`, page skeletons.
 6. Pages:
    - ✅ **Movies** (`apps/pages-mfe/src/pages/movies/__tests__/`): search ↔ list switching (regression for the conditional-hook bug), genre filter, sort, empty state, "Load more" (next-page error, end of list), state in the URL, URL parsing;
    - ✅ **TV Shows** (`apps/pages-mfe/src/pages/tv/__tests__/`): the same flows on the shared catalog pieces, with TV genres, sort params and words, and cards that link to their show. `src/__tests__/routes.test.tsx` covers its skeleton, its error with a retry, and that no search text follows a move from Movies;
    - **Home**: rows render from MSW fixtures, and one failing row does not blank the page;
    - ✅ **Movie Detail** (`apps/pages-mfe/src/pages/movie-detail/__tests__/`): one request for every section, their order, the region from the browser language, each empty state, a response without the appended blocks, the error state, axe;
    - ✅ **TV Detail** (`apps/pages-mfe/src/pages/tv-detail/__tests__/`): one request for every section, their order, each empty state, a response without the appended blocks, the error state and axe, as on Movie Detail, with seasons and episodes in the hero, the Seasons section with the specials last, the creator in the line of directors and writers, and TV cards in More like this. `parseRouteId` has its own test, and `src/__tests__/routes.test.tsx` covers the page on demand and its skeleton;
-   - ✅ **Person** (`apps/pages-mfe/src/pages/person/__tests__/`): one request, the order of the sections, the talk show left out of Known for and kept in the filmography, each empty state, a response without the appended block, credits that lack a date, a title or a poster, the error state, an unknown and an invalid id, axe. `src/__tests__/routes.test.tsx` covers its skeleton.
+   - ✅ **Person** (`apps/pages-mfe/src/pages/person/__tests__/`): one request, the order of the sections, the talk show left out of Known for and kept in the filmography, each empty state, a response without the appended block, credits that lack a date, a title or a poster, the error state, an unknown and an invalid id, axe. `src/__tests__/routes.test.tsx` covers its skeleton;
+   - ✅ **Search** (`apps/pages-mfe/src/pages/search/__tests__/`): no request and focus on the input with no query, a search on submit alone, the query trimmed and the type kept, an empty submit, the input following the URL on Back, tabs that are links and load one at a time, each result leading to its page, Load more with an inline failure, the empty line of each tab, the skeleton and the error beside a form that still works, a `q` over the limit, axe, and the URL parsing and links of `use-search-state.ts`.
 
 ### Step 3 — ✅ e2e
 
@@ -120,6 +121,18 @@ Add Playwright (chromium) on the merged `dist/` served by `firebase emulators:st
 5. An id TMDB does not know and an id that is not a number reach NotFound, and a failed request offers a retry.
 6. At 320 px, neither a full page, an empty page nor long unbroken text in every external string widens the page.
 7. From far down the page, a card opens the other show at the top.
+
+`e2e/search.spec.ts` runs on the same fixtures, whose search stands in for the proxy with a 400 over 100 characters:
+
+1. The header icon leaves focus on the input, on a chunk that is new, delayed past the move to `main`, and on one already loaded, and on the open page it drops the search.
+2. With no query, nothing is sent. A link opens the same view and survives a reload.
+3. A search runs on submit alone, and Back and Forward bring each search and its text back. An empty submit keeps the type.
+4. Tabs are links, and only the active one loads, with the skeleton beside the form and the tabs.
+5. A movie, a show and a person each open their details page, and the photo loads under the enforced CSP.
+6. Load more adds a page, and a failed one shows inline with no toast.
+7. Nothing found names the query and the tab, and a failed search offers a retry with the form still usable.
+8. A `q` over the limit reaches the error, and a submit gets out of it.
+9. At 320 px, on each tab, neither a 100-character unbroken query, with results or none, nor a 200-character name widens the page.
 
 `e2e/watchlist.spec.ts` runs on the Firestore emulator with the real rules:
 

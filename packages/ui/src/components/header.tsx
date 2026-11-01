@@ -82,8 +82,8 @@ export function Header({ className }: HeaderProps) {
 
           <div className="flex items-center gap-2">
             <Link
-              to={ROUTE_PATHS.MOVIES}
-              aria-label="Search movies"
+              to={ROUTE_PATHS.SEARCH}
+              aria-label="Search"
               className={cn(
                 buttonVariants({ variant: 'ghost', size: 'icon' }),
                 TOOLBAR_BUTTON_CLASS

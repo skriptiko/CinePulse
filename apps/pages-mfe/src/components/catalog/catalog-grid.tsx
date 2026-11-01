@@ -1,14 +1,16 @@
 import { Button, cn, MovieCard, type MovieCardData } from '@repo/ui';
 import { Loader2 } from 'lucide-react';
-import { useId } from 'react';
+import { type ReactNode, useId } from 'react';
 import { renderAddToWatchlist } from '../add-to-watchlist';
 import type { ViewMode } from './catalog-filters';
 
-export type CatalogGridProps = {
+export type CatalogGridProps<T> = {
   /** Plural noun of the page, e.g. `movies`. */
   noun: string;
-  cards: MovieCardData[];
-  viewMode: ViewMode;
+  items: T[];
+  /** One card; `renderTitleCard` for movies and shows. */
+  renderItem: (item: T) => ReactNode;
+  viewMode?: ViewMode;
   hasNextPage: boolean;
   /** Any fetch of this query is in flight (next page or a refetch). */
   isFetching: boolean;
@@ -17,16 +19,22 @@ export type CatalogGridProps = {
   onLoadMore: () => void;
 };
 
-export function CatalogGrid({
+/** A movie or a show in the grid, with its watchlist button. */
+export function renderTitleCard(card: MovieCardData) {
+  return <MovieCard movie={card} action={renderAddToWatchlist(card)} />;
+}
+
+export function CatalogGrid<T extends { id: number }>({
   noun,
-  cards,
-  viewMode,
+  items,
+  renderItem,
+  viewMode = 'grid',
   hasNextPage,
   isFetching,
   isFetchingNextPage,
   isFetchNextPageError,
   onLoadMore,
-}: CatalogGridProps) {
+}: CatalogGridProps<T>) {
   const headingId = useId();
 
   return (
@@ -45,10 +53,8 @@ export function CatalogGrid({
             : 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8'
         )}
       >
-        {cards.map((card) => (
-          <li key={card.id}>
-            <MovieCard movie={card} action={renderAddToWatchlist(card)} />
-          </li>
+        {items.map((item) => (
+          <li key={item.id}>{renderItem(item)}</li>
         ))}
       </ul>
 

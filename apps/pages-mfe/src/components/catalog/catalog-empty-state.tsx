@@ -7,15 +7,19 @@ export type CatalogEmptyStateProps = {
   /** The active search text; `''` when browsing by genre and sort. */
   query: string;
   /** A genre or a non-default sort is set. */
-  hasFilters: boolean;
+  hasFilters?: boolean;
+  /** The line under the heading while searching. */
+  searchHint?: string;
   onClearSearch: () => void;
-  onResetFilters: () => void;
+  /** Left out where the page has no filters. */
+  onResetFilters?: () => void;
 };
 
 export function CatalogEmptyState({
   noun,
   query,
-  hasFilters,
+  hasFilters = false,
+  searchHint = 'Check the spelling or try a different title.',
   onClearSearch,
   onResetFilters,
 }: CatalogEmptyStateProps) {
@@ -28,9 +32,7 @@ export function CatalogEmptyState({
         {query ? `No ${noun} found for “${query}”` : `No ${noun} found`}
       </h2>
       <p className="text-muted-foreground max-w-md text-sm">
-        {query
-          ? 'Check the spelling or try a different title.'
-          : 'Try a different genre or reset the filters.'}
+        {query ? searchHint : 'Try a different genre or reset the filters.'}
       </p>
       <div className="mt-4 flex gap-2">
         {query && (
@@ -38,7 +40,7 @@ export function CatalogEmptyState({
             Clear search
           </Button>
         )}
-        {(hasFilters || query) && (
+        {onResetFilters && (hasFilters || query) && (
           <Button variant="secondary" className="rounded-lg" onClick={onResetFilters}>
             Reset filters
           </Button>

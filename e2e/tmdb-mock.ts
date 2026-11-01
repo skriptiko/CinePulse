@@ -78,6 +78,13 @@ export const LONG_TEXT_PERSON_ID = 2002;
 /** TMDB answers 404. */
 export const UNKNOWN_PERSON_ID = 2003;
 
+/** A search that starts like this finds nothing, on any tab. */
+export const NOTHING_QUERY = 'nothing';
+/** A search that finds titles and names of one long word. */
+export const LONG_TEXT_QUERY = 'long text';
+/** `MAX_QUERY_LENGTH` of the proxy, which refuses a longer query with 400. */
+export const MAX_QUERY_LENGTH = 100;
+
 const ONE_PIXEL_PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
   'base64'
@@ -333,22 +340,59 @@ function paginatedShows(names: string[], page = 1) {
   };
 }
 
+function paginatedPeople(name: string, page: number) {
+  return {
+    page,
+    results: [
+      {
+        // The full page for the first result, so a press on it opens a real person.
+        id: page === 1 ? FULL_PERSON_ID : EMPTY_PERSON_ID,
+        name,
+        original_name: name,
+        profile_path: page === 1 ? '/person.jpg' : null,
+        adult: false,
+        popularity: 1,
+        gender: 0,
+        known_for_department: 'Directing',
+        known_for: [],
+      },
+    ],
+    total_pages: 2,
+    total_results: 2,
+  };
+}
+
+/** The first page names the query as it always has, and a later one says which it is. */
+function foundText(query: string, page: number) {
+  if (query === LONG_TEXT_QUERY) return 'x'.repeat(200);
+  return page === 1 ? `Found: ${query}` : `Found: ${query}, page ${page}`;
+}
+
+function respondToSearch(route: Route, path: string, url: URL) {
+  const query = url.searchParams.get('query') ?? '';
+  const page = Number(url.searchParams.get('page') ?? 1);
+  const found = foundText(query, page);
+
+  if (query.length > MAX_QUERY_LENGTH) return route.fulfill({ status: 400, json: {} });
+  if (query.startsWith(NOTHING_QUERY)) {
+    return route.fulfill({ json: { page: 1, results: [], total_pages: 1, total_results: 0 } });
+  }
+  if (path === '/search/movie') return route.fulfill({ json: paginated([found], page) });
+  if (path === '/search/tv') return route.fulfill({ json: paginatedShows([found], page) });
+  return route.fulfill({ json: paginatedPeople(found, page) });
+}
+
 function respond(route: Route, url: URL) {
   const path = url.pathname.replace('/api/tmdb', '');
   const page = Number(url.searchParams.get('page') ?? 1);
 
   if (path === '/genre/movie/list') return route.fulfill({ json: { genres: GENRES } });
   if (path === '/genre/tv/list') return route.fulfill({ json: { genres: TV_GENRES } });
-  if (path === '/search/movie') {
-    return route.fulfill({ json: paginated([`Found: ${url.searchParams.get('query')}`]) });
-  }
+  if (path.startsWith('/search/')) return respondToSearch(route, path, url);
   if (path === '/discover/movie') {
     const genre = url.searchParams.get('with_genres');
     const label = genre === '28' ? 'Action' : 'Any';
     return route.fulfill({ json: paginated([`${label} movie ${page}`], page) });
-  }
-  if (path === '/search/tv') {
-    return route.fulfill({ json: paginatedShows([`Found: ${url.searchParams.get('query')}`]) });
   }
   if (path === '/discover/tv') {
     const label = url.searchParams.get('with_genres') === '18' ? 'Drama' : 'Any';

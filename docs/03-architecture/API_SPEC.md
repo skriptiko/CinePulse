@@ -76,11 +76,13 @@ Paths are relative to the proxy base `/api/tmdb`. Keys follow `all → lists / d
 
 `personQueries.detail` does the same with `combined_credits` (`PERSON_DETAIL_APPEND`), so Known for and the filmography come with the person. The rule on `/person/{id}` is its own exact string: the value of a movie is a 400 there, and this one is a 400 on `/movie/{id}`.
 
-`movieQueries.discover`, `tvQueries.discover`, `searchQueries.movies` and `searchQueries.tv` set `meta: { inlineErrors: true }`: Movies and TV Shows show a failed next page inline, so `QueryCache.onError` shows no toast.
+`movieQueries.discover`, `tvQueries.discover`, `searchQueries.movies`, `searchQueries.tv` and `searchQueries.person` set `meta: { inlineErrors: true }`: Movies, TV Shows and Search show a failed next page inline, so `QueryCache.onError` shows no toast.
 
 `category` is `popular | top_rated | upcoming | now_playing` for movies and `popular | top_rated | on_the_air | airing_today` for TV; `mediaType` is `movie | tv | person | all`, `timeWindow` is `day | week`.
 
 `useMoviesOrSearch(query, { genreId, sortBy })` switches between `searchQueries.movies(query)` and `movieQueries.discover({ genreId, sortBy })` inside one infinite query, using their keys, so the cache is shared. A non-empty `query` wins and the filters are ignored: TMDB search has no genre or sort. `useTVOrSearch(query, { genreId, sortBy })` does the same with `searchQueries.tv(query)` and `tvQueries.discover({ genreId, sortBy })`.
+
+The Search page calls `searchQueries.movies`, `.tv` and `.person` directly, one for each tab, so it shares its cache with Movies and TV Shows. TMDB treats a query it cannot use as an empty result. The proxy refuses a query over `SEARCH_QUERY_MAX_LENGTH` with 400, which only a URL typed by hand can send, and Search shows that as its error.
 
 ## Images
 
@@ -100,5 +102,6 @@ Paths are relative to the proxy base `/api/tmdb`. Keys follow `all → lists / d
 | `genreQueries.tv` | ✅ | TV Shows (genre pills, prefetched next to the list) |
 | `tvQueries.detail` | ✅ | **TV Detail** `/tv/:id` (hero and all six sections) |
 | `tvQueries.list`, `tvQueries.row` | ⬜ | kept for category pages and rows |
-| `searchQueries.multi/person` | ⬜ | **Search** `/search` |
+| `searchQueries.movies`, `searchQueries.tv`, `searchQueries.person` | ✅ | **Search** `/search`, one query for the active tab, with Load more |
+| `searchQueries.multi` | ⬜ | not used: a mixed list cannot page by type, so Search has tabs |
 | `personQueries.detail` | ✅ | **Person** `/person/:id` (hero, Known for, filmography) |
