@@ -63,7 +63,7 @@ In the integration the host builds one stylesheet for every remote, so MFE style
 
 - **Home sections** load and fail independently: each has its own skeleton (`HeroSkeleton`, `ContentRowSkeleton`, `FeaturedGridSkeleton`) and an inline `SectionErrorFallback` with **Try again**; one failed row never blanks the page. All requests start together (`usePrefetchQuery` in the page).
 
-- **Genre pills on Home** lie over the bottom of the hero, by 32 px below `sm` and by 64 px from it. On a phone that leaves 16 px under **More Info**. From `sm` to `md` the padding of the hero is those same 64 px, so the pills touch the button, which rises above them while it has focus to keep its ring whole.
+- **Genre pills on Home** lie over the bottom of the hero, by 32 px below `sm` and by 64 px from it. On a phone that leaves 16 px under **More Info**. From `sm` to `md` the padding of the hero is those same 64 px, so the pills touch the button, which rises above them while it has focus to keep its ring whole. With no hero, as nothing trends or the request failed, the page starts below the Header like any other, and only a real hero and its skeleton go under it. The message of a failed hero stands 48 px above the pills, the gap between the rows.
 
 ## Movies and TV Shows: search, genre and sort
 

@@ -6,6 +6,7 @@ import { mockTmdb } from './tmdb-mock';
 const RING_WIDTH_PX = 3;
 /** `sm`: from here the padding of the hero matches the overlap, so the pills touch the button. */
 const SM_PX = 640;
+const TRENDING = '**/api/tmdb/trending/**';
 
 function moreInfo(page: Page) {
   return page.getByRole('link', { name: /^More Info/ });
@@ -19,6 +20,12 @@ async function getBox(target: Locator) {
   const box = await target.boundingBox();
   if (!box) throw new Error('No target');
   return box;
+}
+
+async function expectBelowHeader(target: Locator) {
+  const header = await getBox(target.page().getByRole('banner'));
+
+  expect((await getBox(target)).y).toBeGreaterThanOrEqual(header.y + header.height);
 }
 
 for (const width of [320, 375, 480, 639, SM_PX]) {
@@ -56,6 +63,57 @@ for (const width of [320, 375, 480, 639, SM_PX]) {
       await page.mouse.click(button.x + button.width / 2, button.y + button.height - 1);
 
       await expect(page).toHaveURL(/\/movies\/\d+$/);
+    });
+  });
+}
+
+for (const width of [320, 1280]) {
+  test.describe(`Home and the Header at ${width} px`, () => {
+    test.use({ viewport: { width, height: 720 } });
+
+    test.beforeEach(async ({ page }) => {
+      await mockTmdb(page);
+    });
+
+    test('a hero starts at the top of the page, under the Header', async ({ page }) => {
+      await page.goto('/');
+      await expect(moreInfo(page)).toBeVisible();
+
+      expect((await getBox(page.getByRole('region', { name: 'Row movie' }))).y).toBe(0);
+    });
+
+    test('the skeleton of the hero lies where the hero will', async ({ page }) => {
+      await page.route(TRENDING, () => {});
+      await page.goto('/');
+      await expect(genrePills(page)).toBeVisible();
+
+      expect((await getBox(page.getByTestId('page-skeleton').first())).y).toBe(0);
+    });
+
+    test('with nothing trending, the genre pills clear the Header', async ({ page }) => {
+      await page.route(TRENDING, (route) =>
+        route.fulfill({ json: { page: 1, results: [], total_pages: 1, total_results: 0 } })
+      );
+      await page.goto('/');
+      await expect(genrePills(page)).toBeVisible();
+
+      await expectBelowHeader(genrePills(page));
+    });
+
+    test('with trending failed, the message clears the Header and the genre pills', async ({
+      page,
+    }) => {
+      await page.route(TRENDING, (route) => route.fulfill({ status: 500, json: {} }));
+      await page.goto('/');
+      const message = page.getByRole('alert').first();
+      // It comes after the retries of the request.
+      await expect(message).toBeVisible({ timeout: 15_000 });
+      await expect(genrePills(page)).toBeVisible();
+
+      await expectBelowHeader(message);
+      await expectBelowHeader(genrePills(page));
+      const { y, height } = await getBox(message);
+      expect((await getBox(genrePills(page))).y).toBeGreaterThan(y + height);
     });
   });
 }

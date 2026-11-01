@@ -160,6 +160,12 @@ Two mutants proved the check, each on a new `pnpm build:deploy` and the whole su
 2. The focus ring shows on all four sides, read from painted pixels, where the first pill would cover it.
 3. A real press on the bottom edge of **More Info** opens the title.
 
+It also runs at 320 and 1280 px:
+
+1. A hero and its skeleton start at the top of the page, under the Header.
+2. With nothing trending, the genre pills lie below the Header.
+3. With the trending request failed, the message lies below the Header, and the pills below the message.
+
 `e2e/header.spec.ts` runs on the same fixtures, in both themes:
 
 1. The focus of the Logo and of the nav links, in the menu at 320 px too, shows two colours at least 9:1 apart.
