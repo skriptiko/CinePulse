@@ -27,3 +27,6 @@ export const SEARCH_QUERY_MAX_LENGTH = 100;
  */
 export const MOVIE_DETAIL_APPEND =
   'credits,videos,images,recommendations,similar,reviews,watch/providers';
+
+/** The same for a person's page: keep it equal to its copy in `functions/src/proxy-rules.ts`. */
+export const PERSON_DETAIL_APPEND = 'combined_credits';

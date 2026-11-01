@@ -13,6 +13,8 @@ export const MAX_QUERY_LENGTH = 100; // keep equal to SEARCH_QUERY_MAX_LENGTH in
  */
 export const MOVIE_DETAIL_APPEND =
   'credits,videos,images,recommendations,similar,reviews,watch/providers';
+/** The same for `/person/{id}`. Keep equal to `PERSON_DETAIL_APPEND` in @repo/api. */
+export const PERSON_DETAIL_APPEND = 'combined_credits';
 
 export const CACHE_CONTROL_DEFAULT = 'public, max-age=300, s-maxage=3600';
 /** Genre lists change rarely. */
@@ -33,7 +35,7 @@ export const DISCOVER_TV_SORT_BY = [
 ] as const;
 export const MAX_VOTE_COUNT_FLOOR = 10_000;
 
-type QueryRule = 'page' | 'search' | 'discover' | 'discoverTv' | 'movieDetail';
+type QueryRule = 'page' | 'search' | 'discover' | 'discoverTv' | 'movieDetail' | 'personDetail';
 
 type RouteRule = {
   pattern: RegExp;
@@ -42,7 +44,7 @@ type RouteRule = {
    * required `sort_by` + optional `page`, `with_genres`, `vote_count.gte`,
    * `primary_release_date.lte`; `discoverTv`: the same with `first_air_date.lte` as the date;
    * `movieDetail`: nothing, or `append_to_response` set to exactly `MOVIE_DETAIL_APPEND`;
-   * none: no params.
+   * `personDetail`: the same with `PERSON_DETAIL_APPEND`; none: no params.
    */
   query?: QueryRule;
   cacheControl: string;
@@ -81,7 +83,11 @@ const ROUTES: readonly RouteRule[] = [
     cacheControl: CACHE_CONTROL_DEFAULT,
   },
   { pattern: /^\/genre\/(movie|tv)\/list$/, cacheControl: CACHE_CONTROL_LONG },
-  { pattern: new RegExp(`^/person/${ID}$`), cacheControl: CACHE_CONTROL_DEFAULT },
+  {
+    pattern: new RegExp(`^/person/${ID}$`),
+    query: 'personDetail',
+    cacheControl: CACHE_CONTROL_DEFAULT,
+  },
 ];
 
 export type ProxyError = {
@@ -132,7 +138,14 @@ const ALLOWED_PARAMS: Record<QueryRule, readonly string[]> = {
   search: ['query', 'page'],
   discover: ['sort_by', 'with_genres', 'vote_count.gte', 'primary_release_date.lte', 'page'],
   movieDetail: ['append_to_response'],
+  personDetail: ['append_to_response'],
   discoverTv: ['sort_by', 'with_genres', 'vote_count.gte', 'first_air_date.lte', 'page'],
+};
+
+/** The one `append_to_response` each details route takes. */
+const DETAIL_APPEND: Partial<Record<QueryRule, string>> = {
+  movieDetail: MOVIE_DETAIL_APPEND,
+  personDetail: PERSON_DETAIL_APPEND,
 };
 
 /** What the discover routes do not share: neither takes the other's sort or date. */
@@ -150,11 +163,12 @@ function sanitizeQuery(params: URLSearchParams, rule: QueryRule | undefined): st
     keys.some((key) => !allowed.includes(key)) || new Set(keys).size !== keys.length;
   if (hasUnknownOrRepeated) return null;
 
-  if (rule === 'movieDetail') {
+  const detailAppend = rule && DETAIL_APPEND[rule];
+  if (detailAppend) {
     const append = params.get('append_to_response');
     if (append === null) return '';
     // Not rebuilt with `URLSearchParams`: TMDB documents this value with a literal comma and slash.
-    return append === MOVIE_DETAIL_APPEND ? `?append_to_response=${append}` : null;
+    return append === detailAppend ? `?append_to_response=${append}` : null;
   }
 
   const result = new URLSearchParams();
