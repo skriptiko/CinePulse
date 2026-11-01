@@ -2,7 +2,7 @@ import { delay, HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { ApiError } from '../../core';
-import { DISCOVER_MIN_VOTE_COUNT, discoverMovies, getMovies } from '../movie';
+import { DISCOVER_MIN_VOTE_COUNT, discoverMovies, getMovieDetails, getMovies } from '../movie';
 
 // @repo/api cannot use @repo/test-utils (that package depends on @repo/api), so it owns its server.
 const server = setupServer();
@@ -62,6 +62,26 @@ describe('getMovies', () => {
     const call = (): unknown => getMovies('popular', { sort: 'asc' });
 
     expect(call).toBeTypeOf('function');
+  });
+});
+
+describe('getMovieDetails', () => {
+  it('asks for every section of the details page in one request', async () => {
+    const requests: URL[] = [];
+    server.use(
+      http.get('*/api/tmdb/movie/:id', ({ request }) => {
+        requests.push(new URL(request.url));
+        return HttpResponse.json({ id: 42 });
+      })
+    );
+
+    await getMovieDetails(42);
+
+    expect(requests).toHaveLength(1);
+    expect(requests[0]?.pathname).toBe('/api/tmdb/movie/42');
+    expect(Object.fromEntries(requests[0]?.searchParams ?? [])).toEqual({
+      append_to_response: 'credits,videos,images,recommendations,similar,reviews,watch/providers',
+    });
   });
 });
 

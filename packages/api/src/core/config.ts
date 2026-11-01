@@ -20,3 +20,10 @@ export const BACKDROP_SIZE_HERO = 'w1280' satisfies BackdropSize;
 
 /** Longest search query the proxy accepts (`MAX_QUERY_LENGTH` in `functions/src/proxy-rules.ts`). */
 export const SEARCH_QUERY_MAX_LENGTH = 100;
+
+/**
+ * The sections of a movie's details page, in one request. The proxy accepts exactly this
+ * string, so keep it equal to `MOVIE_DETAIL_APPEND` in `functions/src/proxy-rules.ts`.
+ */
+export const MOVIE_DETAIL_APPEND =
+  'credits,videos,images,recommendations,similar,reviews,watch/providers';

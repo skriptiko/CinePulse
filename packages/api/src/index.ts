@@ -36,12 +36,18 @@ export type { ApiQueryMeta } from './query-client';
 export { createQueryClient, MAX_RETRIES, shouldRetry } from './query-client';
 
 export type {
+  CastMember,
   Collection,
   Creator,
+  Credits,
+  CrewMember,
+  DetailSections,
   Episode,
   Genre,
   GenresResponse,
+  ImagesResponse,
   KnownFor,
+  MediaImage,
   MediaType,
   Movie,
   MovieDetails,
@@ -53,6 +59,8 @@ export type {
   PersonDetails,
   ProductionCompany,
   ProductionCountry,
+  RegionWatchProviders,
+  Review,
   SearchMovie,
   SearchPerson,
   SearchTV,
@@ -65,4 +73,8 @@ export type {
   TrendingTV,
   TV,
   TVDetails,
+  Video,
+  VideosResponse,
+  WatchProvider,
+  WatchProvidersResponse,
 } from './types';

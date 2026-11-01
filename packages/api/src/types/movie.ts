@@ -1,4 +1,4 @@
-import type { ProductionCompany } from './common';
+import type { DetailSections, ProductionCompany } from './common';
 import type { Genre } from './genre';
 
 export type Movie = {
@@ -18,20 +18,21 @@ export type Movie = {
   video: boolean;
 };
 
-export type MovieDetails = Omit<Movie, 'genre_ids'> & {
-  genres: Genre[];
-  budget: number;
-  revenue: number;
-  runtime: number | null;
-  status: string;
-  tagline: string | null;
-  homepage: string | null;
-  imdb_id: string | null;
-  production_companies: ProductionCompany[];
-  production_countries: ProductionCountry[];
-  spoken_languages: SpokenLanguage[];
-  belongs_to_collection: Collection | null;
-};
+export type MovieDetails = Omit<Movie, 'genre_ids'> &
+  DetailSections<Movie> & {
+    genres: Genre[];
+    budget: number;
+    revenue: number;
+    runtime: number | null;
+    status: string;
+    tagline: string | null;
+    homepage: string | null;
+    imdb_id: string | null;
+    production_companies: ProductionCompany[];
+    production_countries: ProductionCountry[];
+    spoken_languages: SpokenLanguage[];
+    belongs_to_collection: Collection | null;
+  };
 
 export type ProductionCountry = {
   iso_3166_1: string;
