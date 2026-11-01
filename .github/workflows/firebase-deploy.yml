@@ -133,27 +133,28 @@ jobs:
         env:
           FIREBASE_CLI: pnpm dlx firebase-tools@15.18.0 emulators:start --project demo --only hosting,auth,firestore
 
-  # A person's PRs only: a fork has no secrets, and a bot's dependency update would run code nobody
-  # has read in the job that holds the deploy key.
-  preview:
+  # Two jobs, so that the code of a PR, dependencies included, never shares a machine with the deploy
+  # key. A person's pushes only: a fork has no secrets, and nobody reads a bot's update first.
+  preview-build:
     needs: [quality, rules]
     if: >-
       github.event_name == 'pull_request' &&
       github.event.pull_request.head.repo.full_name == github.repository &&
-      github.event.pull_request.user.type != 'Bot'
+      github.event.pull_request.user.type != 'Bot' &&
+      !endsWith(github.actor, '[bot]')
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      checks: write
-      pull-requests: write
-    # A new push to the PR replaces the deploy of the one before it.
+    # A new push must not lose the race to the deploy against the one before it.
     concurrency:
-      group: preview-${{ github.event.pull_request.number }}
+      group: preview-build-${{ github.event.pull_request.number }}
       cancel-in-progress: true
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -169,6 +170,45 @@ jobs:
 
       - name: Build and merge dist
         run: pnpm build:deploy
+
+      - name: Upload dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-dist
+          path: dist
+          if-no-files-found: error
+          retention-days: 1
+
+  # Runs nothing from the PR but the files it serves: firebase.json comes from the base branch, as
+  # a PR could otherwise put a predeploy command next to the key.
+  preview:
+    needs: preview-build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+    concurrency:
+      group: preview-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout the base branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download dist
+        uses: actions/download-artifact@v4
+        with:
+          name: preview-dist
+          path: dist
 
       # With no channelId the action names the channel after the PR and comments its link there.
       - name: Deploy preview channel

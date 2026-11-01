@@ -19,7 +19,11 @@ Pipeline: [`.github/workflows/firebase-deploy.yml`](../../.github/workflows/fire
 - **Job `size`** (on every trigger, not required for merge): `pnpm turbo build --filter=@repo/host` → `pnpm size` (budget in `.size-limit.json`).
 - **Job `rules`** (on every trigger): sets up Java 21 and runs the Firestore rules tests on the emulator.
 - **Job `e2e`** (PRs into `main` only): `pnpm build:deploy`, then Playwright on the merged `dist/` with the Hosting, Auth and Firestore emulators. Sets up Java 21 for Firestore.
-- **Job `preview`** (`needs: [quality, rules]`, PRs by a person from this repository only; a new push cancels the deploy of the one before it): `pnpm build:deploy`, then `FirebaseExtended/action-hosting-deploy@v0` with no `channelId` and `expires: 7d`. The action names the channel after the PR and comments its link there. See [ENVIRONMENTS.md](./ENVIRONMENTS.md#pr-previews). It leaves out forks, which get no secrets, and bots: a Renovate PR would run dependency code nobody has read in the job that holds the deploy key. It is not a required check.
+- **Jobs `preview-build` and `preview`** (`needs: [quality, rules]`, PRs by a person from this repository only; a new push cancels the run of the one before it; not required checks):
+  1. `preview-build` has no secrets and a read-only token: `pnpm build:deploy`, then uploads `dist/` as an artifact.
+  2. `preview` holds the deploy key and runs no code of the PR: it checks out the base branch, for its `firebase.json`, downloads `dist/`, and calls `FirebaseExtended/action-hosting-deploy@v0` with no `channelId` and `expires: 7d`. The action names the channel after the PR and comments its link there.
+
+  The two jobs keep install scripts, build plugins and a `predeploy` command in a PR away from the key. Forks are left out, as they get no secrets, and so are bots, whose updates nobody reads before they run. See [ENVIRONMENTS.md](./ENVIRONMENTS.md#pr-previews).
 - **Job `build-and-deploy`** (`needs: [quality, rules]`, push to `main` only, no concurrent deploys):
   1. The same checkout / pnpm / Node / install.
   2. `pnpm build:deploy` — `scripts/clean-dist.js` empties the build folders (see below), Turbo builds all apps and packages except the `apps/design` sandbox (it does not go to production), and `scripts/merge-dist.js` merges `dist/` (see below). Locally it is the same command.

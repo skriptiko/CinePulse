@@ -58,13 +58,14 @@ Three Vite servers (Module Federation), started together via `pnpm dev` (Turbo):
 
 ## PR previews
 
-Every PR that a person opens from this repository gets a Firebase Hosting preview channel, built by the job `preview`, with the link in a comment on the PR. A new push replaces it, and the channel expires after 7 days.
+Every PR that a person opens from this repository gets a Firebase Hosting preview channel, built by the jobs `preview-build` and `preview`, with the link in a comment on the PR. A new push replaces it. The channel expires 7 days after the last push, and closing the PR does not remove it: a bad build stays up until then unless it is deleted with `firebase hosting:channel:delete`.
 
 A preview replaces only the Hosting content. Everything behind it is production:
 
 - **Firestore and Auth are the real ones.** The channel domain is added to the authorized domains by the deploy, so Google sign-in works, and a watchlist change on a preview writes to the real data with the code of the PR.
 - **`tmdbProxy` is the deployed one.** A PR that adds a proxy endpoint gets a 400 or a 404 on its preview until that function reaches production.
 - **`firestore.rules` are the deployed ones.** A PR that changes them is not covered.
+- **`firebase.json` is the one of the base branch.** A PR that changes headers or rewrites does not show them on its preview.
 
 ## staging
 
