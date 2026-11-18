@@ -4,7 +4,7 @@
 
 How the design lives in Figma and how a change reaches the code. The decision is [ADR-0019](../03-architecture/decisions/ADR-0019-figma-design-source-of-truth.md).
 
-**File:** [CinePulse Design System](https://www.figma.com/design/fhJ2HsroPBivgDcshCTuku) (the owner's team, Professional plan, Full seat).
+**File:** [CinePulse](https://www.figma.com/design/fhJ2HsroPBivgDcshCTuku) in the team project `CinePulse` (the owner's team, Professional plan, Full seat).
 
 ## Source of truth
 
