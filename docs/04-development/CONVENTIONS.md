@@ -23,7 +23,7 @@ Packages are consumed via `@repo/*` aliases (`@repo/api`, `@repo/ui`, `@repo/rou
 
 ## Linting and formatting
 
-The single tool is **Biome** (`biome.json`); it replaces ESLint + Prettier.
+The single tool is **Biome** (`biome.json`); it replaces ESLint + Prettier. JSX spread (`{...props}`) and `asChild` are forbidden too: Biome does not catch them, so `pnpm lint` also runs `scripts/check-jsx-spread.js` (`pnpm lint:jsx-spread`).
 
 Formatting:
 - quotes — **single** (`quoteStyle: single`)
@@ -31,17 +31,24 @@ Formatting:
 - indent — **2 spaces**
 - line width — **100**
 - trailing commas — `es5`
-- import sorting — enabled (`organizeImports`)
+- import sorting — enabled (`assist.actions.source.organizeImports`)
 
 Key linter rules:
-- `noExplicitAny` — **warn**
+- `noExplicitAny` — **error**
 - `noUnusedImports` — **error**
 - `noUnusedVariables` — **error**
-- `noNonNullAssertion` — **warn**
+- `noNonNullAssertion` — **error**
 - `useConst` — **error**
+- `useHookAtTopLevel` — **error**
+- `noDefaultExport` — **error** (off for `*.config.*`)
+- `useFilenamingConvention` — **error** (kebab-case)
+- `noReExportAll` — **error**
+- `noDangerouslySetInnerHtml` — **error**
+- `useTailwindSortedClasses` — **error** (safe fix)
+- the `a11y` group — **error**
 - `noUselessFragments` — **warn**
 
-Git hooks (**Husky**): `.husky/pre-commit` → `pnpm lint-staged`, which runs `biome check --apply` on `*.{js,ts,tsx,json}`. So code is automatically checked/fixed before each commit.
+Git hooks (**Husky**): `.husky/pre-commit` → `pnpm lint-staged`, which runs `biome check --write --no-errors-on-unmatched` on `*.{js,ts,tsx,json}`. So code is automatically checked/fixed before each commit. `.husky/commit-msg` checks the header format (see [Commits](#commits)).
 
 Manual commands: `pnpm lint`, `pnpm format`, `pnpm check`, `pnpm typecheck`.
 
@@ -49,9 +56,9 @@ Manual commands: `pnpm lint`, `pnpm format`, `pnpm check`, `pnpm typecheck`.
 
 Shared configs live in `@repo/typescript-config`:
 - `base.json` — base strict config
-- `react-library.json` — for React packages
+- `react-library.json` — `base.json` plus composite library output (`outDir`, `rootDir`, `composite`); `jsx` is already in `base.json`
 
-Each package/app extends the relevant config in its own `tsconfig.json`. `*.d.ts` files (including the generated `@mf-types`) are excluded from Biome.
+Each package/app extends the relevant config in its own `tsconfig.json`: apps extend `base.json`; `functions/tsconfig.json` is standalone, because Cloud Build installs `functions/` with npm outside the monorepo. `*.d.ts` files (including the generated `@mf-types`) are excluded from Biome.
 
 ## Routing
 
@@ -68,7 +75,7 @@ Dynamic routes are linked with `buildPath.movie(id)` and friends, never by hand.
 ## MFE pattern (Module Federation)
 
 - A **remote** exposes `./routes`; the **host** imports them dynamically (`import('pagesMfe/routes')`).
-- **Shared** dependencies (one instance for the whole app): `react`, `react-dom`, `react-router-dom`, `@tanstack/react-query`, `@repo/events`, `@repo/routes`, `@repo/api`. When adding a new shared dependency, register it in `shared` in **every** `vite.config.ts` (host + remotes), otherwise you get duplicate instances.
+- **Shared** dependencies (one instance for the whole app): `react`, `react-dom`, `react-router-dom`, `@tanstack/react-query`, `react-error-boundary`, `zustand`, `@repo/events`, `@repo/routes`, `@repo/api`, `@repo/firebase`. Every `vite.config.ts` (host + remotes) takes the same map from `createMfShared()` in `scripts/mf-shared.ts`, so add a new shared dependency only there (and, for a third-party one, to the pnpm catalog).
 - Each MFE has its own `main.tsx` for **standalone development** (with `ApiProvider` + `AppLayout`); when integrated into the host, only the `routes` export is used.
 
 ## MFE workflow (mandatory)
@@ -106,7 +113,7 @@ A new domain term (a watchlist entity, a status, a UI concept users see) goes in
 
 ## Commits
 
-Format: `CIN-<number>: <short description in the imperative mood>`. The number is the task ID in the "Tasks" database in [Notion](https://app.notion.com/p/40880c5f7ed58170bca1efda4e894ce9), where all project management happens. No commit without a Notion task: create the ticket first.
+Format: `CIN-<number>: <short description in the imperative mood>`. The number is the task ID in the "Tasks" database in [Notion](https://app.notion.com/p/40880c5f7ed58170bca1efda4e894ce9), where all project management happens. No commit without a Notion task: create the ticket first. `.husky/commit-msg` enforces the header: it must match `CIN-<N>: <summary>` without a trailing dot and stay within 72 characters; `Merge`, `Revert`, `fixup!`, `squash!` and `amend!` headers are skipped.
 
 ## Known tech debt
 

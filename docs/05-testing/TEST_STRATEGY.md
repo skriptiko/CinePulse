@@ -2,7 +2,7 @@
 
 # Test strategy
 
-> **Current state:** unit, component and integration tests run in job `quality`, Firestore rules in job `rules`, Playwright smoke, auth and watchlist scenarios in job `e2e`. Tools and versions are fixed in [ADR-0006](../03-architecture/decisions/ADR-0006-testing-stack.md). The rules for writing tests (queries, mocking, states, timers, coverage) live in the engineering standards, §14 (Notion). Where this document and the standards disagree, the standards win.
+> **Current state:** unit, component and integration tests run in job `quality`, Firestore rules in job `rules`, Playwright smoke, details, search, auth, watchlist, accessibility and focus-ring scenarios in job `e2e`. Tools and versions are fixed in [ADR-0006](../03-architecture/decisions/ADR-0006-testing-stack.md). The rules for writing tests (queries, mocking, states, timers, coverage) live in the engineering standards, §14 (Notion). Where this document and the standards disagree, the standards win.
 
 ## Pyramid
 
@@ -33,6 +33,8 @@ packages/ui/src/components/
 apps/pages-mfe/src/pages/movies/
   movies-page.tsx
   __tests__/movies-page.test.tsx
+functions/src/__tests__/         # proxy rules and Hosting headers, a project of the root run
+firestore/__tests__/             # Firestore rules, own vitest.config.ts, run by `pnpm test:rules`
 e2e/                             # <scenario>.spec.ts
 ```
 
@@ -40,7 +42,7 @@ e2e/                             # <scenario>.spec.ts
 - `e2e/` and `playwright.config.ts` are not a workspace package, so the root scripts add them to `pnpm typecheck` (`e2e/tsconfig.json`) and `pnpm lint`, after Turbo.
 - jsdom projects point `environment` at `scripts/vitest-jsdom-environment.ts` (jsdom plus Node's fetch globals, see ADR-0006).
 - `@repo/api` tests create their own MSW server: `@repo/test-utils` depends on `@repo/api`, so using it back would be a cycle.
-- Each project's `vitest.config.ts` only sets its environment and setup files.
+- Each project's `vitest.config.ts` sets its `name`, its environment and setup files, and excludes `dist/`; the apps add the `@` alias, and `@repo/ui` runs with `TZ` west of UTC.
 
 ## Rollout
 
@@ -64,13 +66,13 @@ Exit: `pnpm test` is green locally and in CI, with at least one test in `@repo/a
 
 ### Step 2 — tests come with the refactoring (phases 4–6)
 
-From here on, new or changed logic in `packages/*` and new UI states land with tests in the same PR (§14.2). Planned coverage, in the order the code is touched:
+From here on, new or changed logic in `packages/*` and new UI states land with tests in the same PR (§14.2). Coverage, in the order the code was touched:
 
-1. UI mappers and `format.ts` (`toMovieCardData`, `toHeroData`, `formatYear`, `formatRating`).
-2. `ApiError` classification, `shouldRetry`, `getRetryDelay`, `getNextPageParam` (including the 500-page cap).
-3. `queryOptions` factories: key shapes.
-4. `@repo/events`: event bus (`on` / `off` / `once` / `emit`) and the store.
-5. Components: `MovieCard`, `PersonCard`, `Hero`, `ContentRow`, `MovieDetailView`, `PersonDetailView` and the sections of a details page, `CategoryPills`, `CategoryLinks`, `AsyncBoundary` (fallback, Try again refetch, 404 → `NotFound`), `NotFound`, page skeletons.
+1. ✅ UI mappers and `format.ts` (`toMovieCardData`, `toHeroData`, `formatYear`, `formatRating`).
+2. ✅ `ApiError` classification, `shouldRetry` (with `MAX_RETRIES`), `getNextPageParam` (including the 500-page cap).
+3. ✅ `queryOptions` factories: key shapes.
+4. ✅ `@repo/events`: event bus (`on` / `off` / `once` / `emit`) and the store.
+5. ✅ Components: `MovieCard`, `PersonCard`, `Hero`, `ContentRow`, `MovieDetailView`, `PersonDetailView` and the sections of a details page, `CategoryPills`, `CategoryLinks`, `AsyncBoundary` (fallback, Try again refetch, 404 → `NotFound`), `NotFound`, page skeletons.
 6. Pages:
    - ✅ **Movies** (`apps/pages-mfe/src/pages/movies/__tests__/`): search ↔ list switching (regression for the conditional-hook bug), genre filter, sort, empty state, "Load more" (next-page error, end of list), state in the URL, URL parsing;
    - ✅ **TV Shows** (`apps/pages-mfe/src/pages/tv/__tests__/`): the same flows on the shared catalog pieces, with TV genres, sort params and words, and cards that link to their show. `src/__tests__/routes.test.tsx` covers its skeleton, its error with a retry, and that no search text follows a move from Movies;
@@ -79,10 +81,17 @@ From here on, new or changed logic in `packages/*` and new UI states land with t
    - ✅ **TV Detail** (`apps/pages-mfe/src/pages/tv-detail/__tests__/`): one request for every section, their order, each empty state, a response without the appended blocks, the error state and axe, as on Movie Detail, with seasons and episodes in the hero, the Seasons section with the specials last, the creator in the line of directors and writers, and TV cards in More like this. `parseRouteId` has its own test, and `src/__tests__/routes.test.tsx` covers the page on demand and its skeleton;
    - ✅ **Person** (`apps/pages-mfe/src/pages/person/__tests__/`): one request, the order of the sections, the talk show left out of Known for and kept in the filmography, each empty state, a response without the appended block, credits that lack a date, a title or a poster, the error state, an unknown and an invalid id, axe. `src/__tests__/routes.test.tsx` covers its skeleton;
    - ✅ **Search** (`apps/pages-mfe/src/pages/search/__tests__/`): no request and focus on the input with no query, a search on submit alone, the query trimmed and the type kept, an empty submit, the input following the URL on Back, tabs that are links and load one at a time, each result leading to its page, Load more with an inline failure, the empty line of each tab, the skeleton and the error beside a form that still works, one live region through new searches, tabs and failures, a `q` over the limit, axe, and the URL parsing and links of `use-search-state.ts`.
+7. ✅ Beyond the pages of `pages-mfe`:
+   - `apps/pages-mfe/src/components/__tests__/`: `AddToWatchlist`, its dialog loaded on the first press, and a dialog chunk that fails to download;
+   - `apps/user-mfe`: `RequireAuth`, Login, Settings, Profile and Watchlist;
+   - `apps/host`: `useRemoteRoutes`, `loadRemote`, `RemoteUnavailable`, the error channel, `ApiProvider` and the stale-chunk reload;
+   - `packages/firebase`: the auth session, the watchlist store (also on the Firestore emulator) and the tree helpers;
+   - `@repo/ui` primitives (`Button`, `Dialog`, `DropdownMenu`) and hooks (`useHorizontalScroll`, `usePageMeta`);
+   - `functions/`: the proxy rules and the Hosting headers.
 
 ### Step 3 — ✅ e2e
 
-Add Playwright (chromium) on the merged `dist/` served by `firebase emulators:start --only hosting`. Network goes through `page.route('**/api/tmdb/**')` with fixtures. Scenarios:
+Add Playwright (chromium) on the merged `dist/` served by `firebase emulators:start --project demo --only hosting,auth,firestore`. Network goes through `page.route('**/api/tmdb/**')` with fixtures. Scenarios (`e2e/smoke.spec.ts`):
 
 1. Home shows the hero and content rows.
 2. Navigation Home → Movies → Profile across MFEs.
@@ -92,6 +101,9 @@ Add Playwright (chromium) on the merged `dist/` served by `firebase emulators:st
 6. TV Shows opens from the header, the mobile menu and a direct URL, shows its empty and error states, and has no horizontal page scroll at 320 px, with a 100-character search too.
 7. With `sessionStorage` blocked, a chunk that keeps failing loads the document once and shows the page's error state.
 8. Reload after an error that reaches `ShellBoundary` stays in the app offline, and reloads on a press once the connection returns. The error comes from a `document.title` that throws on the catch-all route, which has no `PageBoundary`.
+9. A page downloads only the remote it needs: Home loads nothing of `user-mfe`.
+10. A card opens the details page, also by direct URL.
+11. The chosen theme applies before the app loads, from the blocking theme script alone.
 
 The mock answers in the browser, so without a check a request the real `tmdbProxy` refuses would still pass e2e. Every request that reaches `e2e/tmdb-mock.ts` therefore goes through the real `resolveProxyRequest` from `functions/src/proxy-rules.ts`, with the path and params of the URL the browser sent, and `e2e/proxy-rules.spec.ts` covers the check:
 
@@ -200,12 +212,27 @@ The fixtures have no backdrop, so the contrast over solid white, mid grey and bl
 21. The switch opens nothing, and the rest of the row opens the title. A correction during a slow write ends on the last press, and a failed write puts the stored status back.
 22. Under a filter, a double tap leaves the next title alone, the keyboard keeps its focus, and Back that takes the focused row moves focus to the heading. At 320 px the switch and the pills fit, with 44 px to press.
 23. The profile shows the account and the watchlist counts and leads to the watchlist and Settings. A failed read of the watchlist leaves the account, and `Try again` brings the counts.
-24. A theme chosen in Settings reaches a page of another remote, survives a new load and a sign-out, and `System` follows the device.
-25. A removed title leaves every folder and the profile, also after a reload, and a removal in a long list keeps the page where it is.
-26. A double press on Cancel in a folder form, by touch or mouse, reaches no pill, title or toolbar button, and focus stays on the toolbar button. Each press point is first checked to lie on that control.
-27. Every page, in both themes and with the account pages signed in, has no WCAG 2.1 A or AA violation by axe in the browser, contrast included, and Tab reaches its last control through visible stops (`e2e/a11y.spec.ts`).
-27. A double press on Cancel in the Remove title question, by touch or mouse, changes no status and opens no title, and focus returns to Remove. Each press point is first checked to lie on that control.
-28. The focus ring of every Button variant reaches 3:1 in both themes, read from painted pixels. A button on an image shows two colours at least 9:1 apart.
+24. A removed title leaves every folder and the profile, also after a reload, and a removal in a long list keeps the page where it is.
+25. A double press on Cancel in a folder form, by touch or mouse, reaches no pill, title or toolbar button, and focus stays on the toolbar button. Each press point is first checked to lie on that control.
+26. A double press on Cancel in the Remove title question, by touch or mouse, changes no status and opens no title, and focus returns to Remove. Each press point is first checked to lie on that control.
+27. The focus ring of every Button variant reaches 3:1 in both themes, read from painted pixels. A button on an image shows two colours at least 9:1 apart.
+
+`e2e/auth.spec.ts` runs on the Auth emulator:
+
+1. An anonymous visitor on Home requests nothing of Firebase.
+2. A protected page leads through Google sign-in and back to itself, with the heading below the Header.
+3. The session survives a reload and ends with sign-out.
+4. A theme chosen in Settings reaches a page of another remote, survives a new load and a sign-out, and `System` follows the device.
+
+`e2e/a11y.spec.ts` runs on the same fixtures and the Auth emulator:
+
+1. Every public page and, signed in, every account page has no WCAG 2.1 A or AA violation by axe in the browser, contrast included, in both themes.
+2. Tab reaches the last control of each of those pages through visible stops.
+
+`e2e/focus-ring.spec.ts` runs on the same fixtures, read from painted pixels:
+
+1. In both themes, the ring of an Input and of an invalid control stands out, the ring of a pill, a segment and a card in a row stays whole, and the header links stand out on any image.
+2. In forced colours, a focused control has an outline and one at rest has none, a control whose fill is gone keeps a border, a menu item has an outline only while it is focused, and `main` and a dialog have none.
 
 Titles are seeded through the emulator's REST API only for states the UI cannot produce on demand. `pnpm test:e2e` needs Java as well as `firebase-tools`.
 
@@ -218,6 +245,6 @@ e2e runs on PRs into `main` only, so run it locally before merging a change to t
 
 ## Coverage
 
-- Target: **lines and branches ≥ 80%** for `@repo/api`, `@repo/events` and `@repo/ui/src/lib`, with an explicit `coverage.include`.
+- Target: **lines and branches ≥ 80%** for `@repo/api`, `@repo/events`, `@repo/ui/src/lib` and `functions/src/proxy-rules.ts`, with an explicit `coverage.include`.
 - Start with a report only. A `coverage.thresholds` gate is added once those packages have their tests.
 - Components and pages have no percentage target; the state checklist from §14.4 applies instead.

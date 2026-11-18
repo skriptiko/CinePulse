@@ -14,7 +14,7 @@ CinePulse is a micro-frontend (MFE) web app: a movie catalog on top of the TMDB 
 |------------|------|:---:|-------------------|
 | `apps/host` | Shell | 5000 | `remotes: pagesMfe, userMfe` |
 | `apps/pages-mfe` | Public catalog (Home, Movies, TV Shows, Movie Detail, TV Detail, Person, Search) | 5001 | `exposes: ./routes` |
-| `apps/user-mfe` | User account (Profile, Settings, Watchlist) | 5002 | `exposes: ./routes` |
+| `apps/user-mfe` | User account (Login, Profile, Settings, Watchlist) | 5002 | `exposes: ./routes` |
 
 The host has no pages of its own. `REMOTES` in `apps/host/src/remotes/remotes.ts` lists each remote with its loader and the paths it serves, and `useRemoteRoutes(REMOTES)` imports a remote the first time the user reaches one of those paths ([ADR-0011](./decisions/ADR-0011-lazy-remotes-declarative-routing.md)):
 
@@ -43,10 +43,12 @@ USER_MFE_URL=https://staging.example.com/user-mfe/remoteEntry.js
 - `react`, `react-dom` — React 19 ([ADR-0007](./decisions/ADR-0007-react-19.md)); every shared dependency is a `singleton`, and `requiredVersion` comes from the pnpm catalog via `scripts/mf-shared.ts` (`strictVersion` for third-party ones)
 - `react-router-dom` — shared router, one `BrowserRouter` in the host
 - `@tanstack/react-query` — shared `QueryClient`
+- `react-error-boundary` — the boundaries in `@repo/ui` (see Error handling below)
 - `zustand` — runtime of the global store ([ADR-0008](./decisions/ADR-0008-zustand-global-store.md))
 - `@repo/events` — shared event bus and global store
 - `@repo/routes` — shared path constants
 - `@repo/api` — shared data access layer
+- `@repo/firebase` — shared Firebase app and Auth session ([ADR-0010](./decisions/ADR-0010-firebase-auth-firestore-watchlist.md))
 
 Sharing these dependencies is critical: `react` and `react-router-dom` must be single instances, otherwise hooks and the router context break; `@repo/events` must be a single instance so that the event bus and store are truly global (see [ADR-0004](./decisions/ADR-0004-typed-event-bus.md)).
 
@@ -72,6 +74,7 @@ Task orchestration is in `turbo.json`: `build` (with `dependsOn: ["^build"]`, ca
 | `@repo/ui` | Design system (Shadcn UI + Radix + Tailwind), mappers |
 | `@repo/events` | Typed event bus + global store |
 | `@repo/routes` | Path constants (`ROUTE_PATHS`) and helpers |
+| `@repo/test-utils` | Test helpers: `renderWithProviders`, MSW `server` and `handlers`, data builders, `expectNoA11yViolations` |
 | `@repo/typescript-config` | Shared `tsconfig` files (base, react-library) |
 
 Every MFE and the host are workspace packages and consume these packages via `@repo/*` without publishing to a registry.
@@ -90,7 +93,7 @@ React Query (Suspense)             packages/api/src/queries/*
 apiGet(endpoint, { params })       packages/api/src/core/client.ts
    │  fetch(`/api/tmdb` + endpoint)
    ▼
-Proxy   ── dev:  Vite server.proxy (apps/*/vite.config.ts)
+Proxy   ── dev:  Vite server.proxy (apps/host, apps/pages-mfe)
         └─ prod: Firebase Function `tmdbProxy` (functions/src/index.ts)
    │  adds Authorization: Bearer <TMDB_API_READ_TOKEN>
    ▼
@@ -105,8 +108,8 @@ React Query caches data with `staleTime` 5 minutes and `refetchOnWindowFocus: fa
 
 MFEs never import from each other. They communicate through `@repo/events`:
 
-- **Event bus** (`packages/events/src/event-bus.ts`) — a typed emitter/listener on top of `window.__CINEPULSE_EVENT_BUS__` (a singleton on `window`). Event types are fixed in `EventMap` (`notification:show`, `mfe:error`, `error:report`).
-- **Global store** (`packages/events/src/store.ts`) — a Zustand store, singleton on `window.__CINEPULSE_STORE__`, with `{ theme }` and `setTheme`. React components subscribe with `useGlobalStore(selector)` ([ADR-0008](./decisions/ADR-0008-zustand-global-store.md)).
+- **Event bus** (`packages/events/src/event-bus.ts`) — a typed emitter/listener on top of `window.__CINEPULSE_EVENT_BUS__` (a singleton on `window`). Event types are fixed in `EventMap` (`notification:show`, `mfe:error`, `error:report`, `user:login`, `user:logout`).
+- **Global store** (`packages/events/src/store.ts`) — a Zustand store, singleton on `window.__CINEPULSE_STORE__`, with `{ theme, user, authStatus }`, `setTheme` and `setUser`. React components subscribe with `useGlobalStore(selector)` ([ADR-0008](./decisions/ADR-0008-zustand-global-store.md)).
 
 Keeping the singleton on `window` guarantees a single instance even if federation loads the package twice. The API transport does not emit events; error toasts and reports go through `QueryCache.onError` (see Error handling below).
 
@@ -131,9 +134,9 @@ Also:
 
 ## Build and deploy
 
-- **Bundler:** Vite. The production build uses `target: 'chrome89'`, `minify: false`, `cssCodeSplit: false`, `modulePreload: false` (for Module Federation compatibility).
+- **Bundler:** Vite. The production build uses `target: 'chrome89'`, `cssTarget: 'chrome111'` (Tailwind 4 output), `cssCodeSplit: false`, `modulePreload: false` (for Module Federation compatibility).
 - **Merge dist:** `scripts/merge-dist.js` merges the `dist/` of every app into one folder for Firebase Hosting (`pnpm build:deploy`).
-- **Hosting + Functions:** `firebase.json` defines rewrites (`/api/tmdb/**` → `tmdbProxy`, `/pages-mfe/**` and `/user-mfe/**` → their `index.html`, everything else → host `index.html`) and a CORS header for `*.js`.
+- **Hosting + Functions:** `firebase.json` defines rewrites (`/api/tmdb/**` → `tmdbProxy`, `/pages-mfe/**` and `/user-mfe/**` → their `index.html`, everything else → host `index.html`) and headers: `Content-Security-Policy`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` on every path, and `Cache-Control` (`immutable` for `assets/`, `no-cache` for `remoteEntry.js`, `index.html` and the SPA paths).
 
 Pipeline details: [CI_CD.md](../06-deployment/CI_CD.md); environments: [ENVIRONMENTS.md](../06-deployment/ENVIRONMENTS.md).
 

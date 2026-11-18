@@ -24,7 +24,7 @@ Pipeline: [`.github/workflows/firebase-deploy.yml`](../../.github/workflows/fire
   2. `preview` holds the deploy key and runs no code of the PR: it checks out the base branch, for its `firebase.json`, downloads `dist/`, and calls `FirebaseExtended/action-hosting-deploy@v0` with no `channelId` and `expires: 7d`. The action names the channel after the PR and comments its link there.
 
   The two jobs keep install scripts, build plugins and a `predeploy` command in a PR away from the key. Forks are left out, as they get no secrets, and so are bots, whose updates nobody reads before they run. See [ENVIRONMENTS.md](./ENVIRONMENTS.md#pr-previews).
-- **Job `build-and-deploy`** (`needs: [quality, rules]`, push to `main` only, no concurrent deploys):
+- **Job `build-and-deploy`** (`needs: [quality, rules, size]`, push to `main` only, no concurrent deploys):
   1. The same checkout / pnpm / Node / install.
   2. `pnpm build:deploy` — `scripts/clean-dist.js` empties the build folders (see below), Turbo builds all apps and packages, and `scripts/merge-dist.js` merges `dist/` (see below). Locally it is the same command.
   3. Functions deploy (`firebase deploy --only functions`) — first, because the `/api/tmdb/**` rewrite points to `tmdbProxy`.
@@ -58,7 +58,7 @@ Each app (`host`, `pages-mfe`, `user-mfe`) is built into its own `dist/`. Since 
 - `apps/pages-mfe/dist` → `/dist/pages-mfe`;
 - `apps/user-mfe/dist` → `/dist/user-mfe`.
 
-Rewrites in `firebase.json` route `/pages-mfe/**` and `/user-mfe/**` to their respective `index.html`, and everything else to the SPA fallback `/index.html`.
+Rewrites in `firebase.json` are regexes that match only paths without a dot: `^/pages-mfe/[^.]*$` and `^/user-mfe/[^.]*$` go to their respective `index.html`, and `^/[^.]*$` to the SPA fallback `/index.html`. A file request (a path with a dot) is never rewritten, so a missing file is a 404.
 
 Before the build, [`scripts/clean-dist.js`](../../scripts/clean-dist.js) empties `dist/` and the `dist/` of every app. A Turbo cache hit restores files over a folder without clearing it, so chunks of another build would stay, reach Hosting through the merge and count in `pnpm size`. CI starts from a clean checkout and is not affected; a local `turbo build` on its own still is.
 

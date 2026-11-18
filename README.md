@@ -18,8 +18,7 @@ A movie and TV catalog on TMDB data with a personal watchlist, built as micro-fr
 ├── apps/
 │   ├── host/           # Host application (shell) — port 5000
 │   ├── pages-mfe/      # Public catalog MFE: Home, Movies, TV Shows, Movie and TV Detail, Person, Search (remote) — port 5001
-│   ├── user-mfe/       # Personal account MFE: Sign in, Profile, Settings, Watchlist (remote) — port 5002
-│   └── design/         # Mockups, not built or deployed
+│   └── user-mfe/       # Personal account MFE: Sign in, Profile, Settings, Watchlist (remote) — port 5002
 ├── packages/
 │   ├── api/             # TMDB client: endpoints and queryOptions factories
 │   ├── firebase/        # Auth session and the watchlist on Firestore Lite, loaded lazily
@@ -128,7 +127,7 @@ One Tailwind 4 theme, `@repo/ui/theme.css`. In the integration only the host's C
 - `pnpm emulators` — `build:deploy`, then the Hosting, Functions, Firestore and Auth emulators
 - `pnpm sync-types` — sync remote module types into the host
 - `pnpm build:deploy` — empty the `dist/` folders, build all applications and merge their `dist/` for Firebase Hosting
-- `pnpm deploy` — build, merge and deploy to Firebase Hosting (production target)
+- `pnpm run deploy` — build, merge and deploy to Firebase Hosting (production target)
 
 ## License
 

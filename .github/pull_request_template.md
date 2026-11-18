@@ -1,6 +1,6 @@
 ## What and why
 
-<!-- One task per PR. Title format: `CIN-<N>: <imperative summary>`. -->
+<!-- One task per PR. Title format: `CIN-<N>: <imperative summary>`; the release PR `develop` → `main` is `Release: <summary>`. -->
 
 Notion task: <!-- link to CIN-N -->
 
@@ -8,6 +8,7 @@ Notion task: <!-- link to CIN-N -->
 
 - [ ] `pnpm lint`
 - [ ] `pnpm typecheck`
+- [ ] `pnpm test`
 - [ ] Manually checked: <!-- pages, flows, preview URL -->
 
 <!-- Screenshots for visible UI changes. -->

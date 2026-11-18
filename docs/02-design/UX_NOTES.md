@@ -12,6 +12,7 @@ The design system lives in `@repo/ui` (`packages/ui/src`). Stack: **Shadcn UI + 
 **Primitives (UI kit):**
 - `Button` (+ `buttonVariants`), `Input`
 - `DropdownMenu` (`Trigger`, `Content`, `RadioGroup`, `RadioItem`)
+- `Dialog` (`DialogContent`), `ToggleGroup` (`ToggleGroupItem`)
 - `Skeleton`
 
 **Domain components (movies):**
@@ -29,7 +30,7 @@ The design system lives in `@repo/ui` (`packages/ui/src`). Stack: **Shadcn UI + 
 **Application frame:**
 - `Header`, `Footer`, `AppLayout` — page shell
 - `PageBoundary` / `AsyncBoundary` (page and section loading + errors), `ShellBoundary` (host), `PageErrorFallback`, `NotFound`
-- `PageSkeleton`, `MovieGridSkeleton` (pages), `CardGridSkeleton` (the results of Search) and `HeroSkeleton`, `ContentRowSkeleton`, `FeaturedGridSkeleton` (Home sections) — shown after 300 ms; `SectionErrorFallback` — inline error of one section
+- `PageSkeleton`, `HomeSkeleton`, `MovieGridSkeleton`, `MovieDetailSkeleton` (pages), `CardGridSkeleton` (the results of Search) and `HeroSkeleton`, `ContentRowSkeleton`, `FeaturedGridSkeleton` (Home sections) — shown after 300 ms; `SectionErrorFallback` — inline error of one section
 
 Utilities: `cn` (class merging), the `to…Data` mappers in `lib/mappers/` (TMDB → UI models).
 
@@ -40,7 +41,7 @@ The theme is **dark-first**, built on Tailwind CSS variables (`packages/ui/src/t
 - text: `text-foreground`, `text-muted-foreground`
 - borders: `border-border`
 
-The theme lives in the shared store (`@repo/events`, `theme`: `light | dark | system`, default `dark`). The header toggle (`aria-pressed`) switches light/dark; `AppLayout` mirrors the resolved theme onto `<html class="dark">`, and `system` follows `prefers-color-scheme`. The choice is not persisted yet (Settings page, CIN-29).
+The theme lives in the shared store (`@repo/events`, `theme`: `light | dark | system`, default `dark`). The header toggle (`aria-pressed`) switches light/dark; `AppLayout` mirrors the resolved theme onto `<html class="dark">`, and `system` follows `prefers-color-scheme`. The choice, made in the header or on Settings, is saved in `localStorage` and applied before the first paint by `apps/host/public/theme-init.js`.
 
 ## Style isolation
 

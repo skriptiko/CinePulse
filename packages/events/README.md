@@ -5,7 +5,7 @@ The only channel between micro-frontends: a typed event bus and a shared Zustand
 ## Public API
 
 - **Events:** `createTypedEmitter`, `createTypedListener`, `eventBus`, `EventMap`.
-- **Store:** `useGlobalStore(selector)` in React, `globalStore` outside it. It holds `theme`, `user` and `authStatus`.
+- **Store:** `useGlobalStore(selector)` in React, `globalStore` outside it. It holds `theme`, `user` and `authStatus`, changed through `setTheme` and `setUser` (`THEMES` lists the themes). `createGlobalStore` and `getGlobalStore` build and return the instance.
 - **Errors:** `serializeError` for payloads that leave the page.
 
 ```ts

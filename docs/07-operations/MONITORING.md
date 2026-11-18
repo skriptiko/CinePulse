@@ -7,7 +7,7 @@
 ## What exists now
 
 - **Firebase Hosting/Functions built-in metrics** — available in the Firebase Console (hosting traffic; for the `tmdbProxy` function: invocations, errors, latency, cold starts). Collected passively, but there is **no active observation/alerting**.
-- **Function logs** — `tmdbProxy` logs through `logger` from `firebase-functions` (structured entries with severity): `error` for a missing token or a failed/timed-out upstream request, `warn` for a non-404 TMDB error status; fields are the TMDB path and status only (no token, no search query). Cloud Logging (Firebase Console → Functions → Logs).
+- **Function logs** — `tmdbProxy` logs through `logger` from `firebase-functions` (structured entries with severity): `error` for a missing token, a failed/timed-out upstream request or a failed read of the upstream body (fields: TMDB path and reason), `warn` for a non-404 TMDB error status (fields: TMDB path and status); no token, no search query. Cloud Logging (Firebase Console → Functions → Logs).
 - **Budget alert** — a GCP budget alert is configured on the project (cost guard for the Blaze plan, together with `maxInstances: 2` and CDN caching of proxy responses).
 - **Client** — the host's `error-channel/` logs reports and `mfe:error` (a remote that `useRemoteRoutes` failed to load) with `console.error` in development only; in production client errors are **not collected anywhere**.
 - **User-facing error notifications** — a toast when a background refetch or a mutation fails (`QueryCache` / `MutationCache.onError` → `notification:show` → sonner in the host).
@@ -24,7 +24,7 @@
 ## Logging
 
 ⬜ The client has no structured logging; the function has.
-- **Functions:** ✅ structured logs via `firebase-functions` `logger` with the TMDB path and status (CIN-52).
+- **Functions:** ✅ structured logs via `firebase-functions` `logger` with the TMDB path and the status or reason (CIN-52).
 - **Client:** centralize through the error-tracking SDK instead of `console`.
 - Define levels (error/warn/info) and what exactly to log (no PII and no TMDB token).
 

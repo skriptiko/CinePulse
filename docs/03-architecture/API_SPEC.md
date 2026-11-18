@@ -7,9 +7,9 @@
 1. `types/` — TMDB response shapes as they are.
 2. `endpoints/<domain>.ts` — plain async functions over `apiGet`, no React.
 3. `queries/<domain>.ts` — `queryOptions` / `infiniteQueryOptions` factories: key, `queryFn` and cache options in one place.
-4. Components call `useSuspenseQuery(movieQueries.detail(id))` (or `useSuspenseQueries`, `prefetchQuery`) with a factory directly. `hooks/` keeps only hooks that add logic: `useMoviesOrSearch`.
+4. Components call `useSuspenseQuery(movieQueries.detail(id))` (or `useSuspenseQueries`, `prefetchQuery`) with a factory directly. `hooks/` keeps only hooks that add logic: `useMoviesOrSearch`, `useTVOrSearch`.
 
-The public API is `packages/api/src/index.ts`. It exports the factories, `useMoviesOrSearch`, `createQueryClient`, `ApiProvider`, the error guards, image helpers and types. `apiGet` and the endpoint functions are internal.
+The public API is `packages/api/src/index.ts`. It exports the factories, `useMoviesOrSearch`, `useTVOrSearch`, `createQueryClient`, `ApiProvider`, the error guards, image helpers and types. `apiGet` and the endpoint functions are internal.
 
 ## Transport and security
 
@@ -61,7 +61,7 @@ Paths are relative to the proxy base `/api/tmdb`. Keys follow `all → lists / d
 | `movieQueries.detail(id)` | `['movies', 'detail', id]` | `GET /movie/{id}?append_to_response=…` | `MovieDetails`, with every section of the page |
 | `tvQueries.detail(id)` | `['tv', 'detail', id]` | `GET /tv/{id}?append_to_response=…` | `TVDetails`, with every section of the page |
 | `tvQueries.discover({ genreId, sortBy })` (infinite) | `['tv', 'list', 'discover', { genreId, sortBy }]` | `GET /discover/tv?sort_by&with_genres&page` | `PaginatedResponse<TV>` |
-| `trendingQueries.row(mediaType, timeWindow)` | `['trending', 'list', mediaType, timeWindow, 'first-page']` | `GET /trending/{mediaType}/{timeWindow}` | `PaginatedResponse<TrendingItem>` |
+| `trendingQueries.row(mediaType, timeWindow)` | `['trending', 'list', mediaType, timeWindow, 'first-page']` | `GET /trending/{mediaType}/{timeWindow}?page=1` | `PaginatedResponse<TrendingItem>` |
 | `searchQueries.movies/tv/person(query)` (infinite) | `['search', type, query]` | `GET /search/{movie,tv,person}` | `PaginatedResponse<…>` |
 | `genreQueries.movie()` / `.tv()` | `['genres', 'movie' \| 'tv']` | `GET /genre/{movie,tv}/list` | `GenresResponse`, `staleTime: Infinity` |
 | `personQueries.detail(id)` | `['person', 'detail', id]` | `GET /person/{id}?append_to_response=combined_credits` | `PersonDetails`, with every credit |
