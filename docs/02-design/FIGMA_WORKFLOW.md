@@ -48,6 +48,9 @@ A new token is added in Figma and in `theme.css` in the same ticket. Never bind 
 - Variant properties use the names and values of the code props: `variant=default|destructive|outline|secondary|ghost|link`, `size=default|sm|lg|icon|icon-sm|icon-lg`. A state the code draws (`hover`, `focus-visible`, `disabled`) is a `state` property.
 - A domain component takes the content of its UI model (`MovieCardData`: title, year, rating, poster) as text and instance-swap properties, not as variants.
 - Icons are `lucide-react`, the same as the code: `Icon/<Name>` components at 16 px (`size-4`), swapped with instance-swap properties. An icon the code starts to import is added on the `Primitives` page.
+- Components that change with the breakpoint (Header, Footer, Hero, ContentRow, the details views and sections, the skeletons) have a `viewport=desktop|mobile` variant at 1440 and 390.
+- Images (posters, backdrops, photos, provider logos) are `Image Placeholder` instances; a screen fills them with real TMDB images.
+- Gradients over images use the dark background color directly: a gradient stop bound to a variable loses its alpha in Figma.
 - Components follow the dark spec, as the app is dark-first. Where a component differs in light beyond its tokens (a `dark:` class in code), its description says so.
 
 ### Component map and Code Connect
@@ -63,19 +66,24 @@ The Professional plan has Code Connect (one framework at a time, React here). It
 | Toggle Group, Toggle Group Item | `packages/ui/src/components/ui/toggle-group.tsx` | ✅ |
 | Skeleton | `packages/ui/src/components/ui/skeleton.tsx` | ✅ |
 | Icon/* (20 icons) | `lucide-react`, the icons the app imports | ✅ |
-| MovieCard | `packages/ui/src/components/movie-card.tsx` | ⬜ |
-| PersonCard | `packages/ui/src/components/person-card.tsx` | ⬜ |
-| Hero | `packages/ui/src/components/hero.tsx` | ⬜ |
-| ContentRow | `packages/ui/src/components/content-row.tsx` | ⬜ |
-| FeaturedGrid | `packages/ui/src/components/featured-grid.tsx` | ⬜ |
-| CategoryPills | `packages/ui/src/components/category-pills.tsx` | ⬜ |
-| Header | `packages/ui/src/components/header.tsx` | ⬜ |
-| Footer | `packages/ui/src/components/footer.tsx` | ⬜ |
-| MovieDetailView | `packages/ui/src/components/movie-detail-view.tsx` | ⬜ |
-| PersonDetailView | `packages/ui/src/components/person-detail-view.tsx` | ⬜ |
-| Detail sections | `packages/ui/src/components/*-section.tsx` | ⬜ |
-| NotFound | `packages/ui/src/components/not-found.tsx` | ⬜ |
-| Skeletons | `packages/ui/src/components/page-skeletons.tsx` | ⬜ |
+| Logo | `packages/ui/src/components/logo.tsx` | ✅ |
+| Image Placeholder | `packages/ui/src/components/image-placeholder.tsx` | ✅ |
+| MovieCard, Rating Badge | `packages/ui/src/components/movie-card.tsx` | ✅ |
+| PersonCard | `packages/ui/src/components/person-card.tsx` | ✅ |
+| Hero | `packages/ui/src/components/hero.tsx` | ✅ |
+| ContentRow, Carousel Arrow | `packages/ui/src/components/content-row.tsx` (also MoreLikeThisSection, KnownForSection) | ✅ |
+| Featured Tile | `packages/ui/src/components/featured-grid.tsx` | ✅ |
+| Category Pill, Category Pills | `packages/ui/src/components/category-pills.tsx` | ✅ |
+| Header, Nav Link, Avatar | `packages/ui/src/components/header.tsx` | ✅ |
+| Footer | `packages/ui/src/components/footer.tsx` | ✅ |
+| MovieDetailView, Genre Chip | `packages/ui/src/components/movie-detail-view.tsx` | ✅ |
+| PersonDetailView | `packages/ui/src/components/person-detail-view.tsx`, `biography-section.tsx` | ✅ |
+| WatchProvidersSection, CastSection, MediaSection, SeasonsSection, ReviewsSection, FilmographySection | `packages/ui/src/components/*-section.tsx` | ✅ |
+| Detail Section Empty | `packages/ui/src/components/detail-section.tsx` | ✅ |
+| Section Error Fallback, Page Error Fallback | `section-error-fallback.tsx`, `page-error-fallback.tsx` | ✅ |
+| NotFound | `packages/ui/src/components/not-found.tsx` | ✅ |
+| HeroSkeleton, ContentRowSkeleton, FeaturedGridSkeleton, MovieDetailSkeleton, MovieGridSkeleton, PageSkeleton | `packages/ui/src/components/page-skeletons.tsx` | ✅ |
+| Add to Watchlist | `apps/pages-mfe/src/components/add-to-watchlist.tsx` | ✅ |
 
 ## The loop: from a design change to the code
 
