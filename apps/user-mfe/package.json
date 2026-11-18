@@ -24,7 +24,6 @@
     "zustand": "catalog:"
   },
   "devDependencies": {
-    "@module-federation/dts-plugin": "catalog:",
     "@module-federation/vite": "catalog:",
     "@repo/test-utils": "workspace:*",
     "@repo/typescript-config": "workspace:*",
