@@ -195,6 +195,24 @@ describe('WatchlistPage', () => {
     renderPage('/user/watchlist?folder=other');
 
     expect(await screen.findByText('No titles here yet.')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Browse movies' })).not.toBeInTheDocument();
+  });
+
+  it('leads an empty watchlist to the catalog, in any folder and under any filter', async () => {
+    mockItems([]);
+    renderPage('/user/watchlist?folder=top&status=watched');
+
+    expect(await screen.findByText('No watched titles here.')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Browse movies' })).toHaveAttribute('href', '/movies');
+    expect(screen.getByRole('link', { name: 'Browse TV shows' })).toHaveAttribute('href', '/tv');
+  });
+
+  it('has no axe violations when empty', async () => {
+    mockItems([]);
+    const { container } = renderPage();
+
+    await screen.findByRole('link', { name: 'Browse movies' });
+    await expectNoA11yViolations(container);
   });
 
   it('keeps the other search params when a folder is chosen', async () => {
