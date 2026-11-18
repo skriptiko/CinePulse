@@ -25,7 +25,7 @@ pnpm typecheck                        # turbo typecheck (tsc --noEmit in each pa
 pnpm lint                             # biome check src/ in each package + JSX-spread ban + biome check e2e/ and playwright.config.ts
 pnpm check                            # biome check --write across the whole repo
 pnpm --filter @repo/api typecheck     # check a single package
-pnpm build:deploy                     # as in CI: scripts/clean-dist.js, build without apps/design + scripts/merge-dist.js → root dist/
+pnpm build:deploy                     # as in CI: scripts/clean-dist.js, build + scripts/merge-dist.js → root dist/
 pnpm test                             # vitest run across all projects (root vitest.config.ts)
 pnpm exec vitest run --project ui     # a single project; pnpm test:coverage — report in coverage/
 pnpm size                             # host JS budget (.size-limit.json); run pnpm build:deploy first: a bare turbo build keeps the chunks of older builds
@@ -75,7 +75,7 @@ Packages are not built for consumption: `exports` point straight to `src/index.t
 
 ### Deployment
 
-Pushes to `main`/`develop` and PRs → GitHub Actions jobs `quality` (`pnpm lint` + `pnpm typecheck` + `pnpm test`, install with `--frozen-lockfile`, so the lockfile must be up to date), `size` (host JS budget, `.size-limit.json`; the production deploy needs it) and `rules` (Firestore rules on the emulator); PRs into `main` also run `e2e`. A PR by a person from this repository also gets `preview-build` (no secrets) and `preview` (the deploy key, no code of the PR), a Firebase preview channel with the link in a comment: it shares the production Firestore, Auth and `tmdbProxy` (docs/06-deployment/ENVIRONMENTS.md). Only a push to `main` continues: `pnpm build:deploy` (`scripts/clean-dist.js` → build without `apps/design` → `scripts/merge-dist.js`) (host into the root of `dist/`, remotes into `dist/pages-mfe/` and `dist/user-mfe/`) → deploy of Functions, Firestore rules and Firebase Hosting (project `cinepulse-eec15`). Rewrites in `firebase.json`: `/api/tmdb/**` → `tmdbProxy`, SPA fallback for each MFE. When adding a new MFE, update `merge-dist.js`, `firebase.json` and the host's `.env.production`.
+Pushes to `main`/`develop` and PRs → GitHub Actions jobs `quality` (`pnpm lint` + `pnpm typecheck` + `pnpm test`, install with `--frozen-lockfile`, so the lockfile must be up to date), `size` (host JS budget, `.size-limit.json`; the production deploy needs it) and `rules` (Firestore rules on the emulator); PRs into `main` also run `e2e`. A PR by a person from this repository also gets `preview-build` (no secrets) and `preview` (the deploy key, no code of the PR), a Firebase preview channel with the link in a comment: it shares the production Firestore, Auth and `tmdbProxy` (docs/06-deployment/ENVIRONMENTS.md). Only a push to `main` continues: `pnpm build:deploy` (`scripts/clean-dist.js` → build → `scripts/merge-dist.js`) (host into the root of `dist/`, remotes into `dist/pages-mfe/` and `dist/user-mfe/`) → deploy of Functions, Firestore rules and Firebase Hosting (project `cinepulse-eec15`). Rewrites in `firebase.json`: `/api/tmdb/**` → `tmdbProxy`, SPA fallback for each MFE. When adding a new MFE, update `merge-dist.js`, `firebase.json` and the host's `.env.production`.
 
 `docs/08-design-files/` is a separate Next.js design prototype (a UI reference), not part of the workspace.
 

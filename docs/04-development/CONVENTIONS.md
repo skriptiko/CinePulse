@@ -12,7 +12,7 @@ firestore/  Firestore security rules and their tests
 e2e/        Playwright specs
 ```
 
-Packages are consumed via `@repo/*` aliases (`@repo/api`, `@repo/ui`, `@repo/routes`, `@repo/events`, `@repo/firebase`, `@repo/test-utils`, `@repo/typescript-config`). Apps: `@repo/host`, `@repo/pages-mfe`, `@repo/user-mfe`, `@repo/design`, `@repo/functions`.
+Packages are consumed via `@repo/*` aliases (`@repo/api`, `@repo/ui`, `@repo/routes`, `@repo/events`, `@repo/firebase`, `@repo/test-utils`, `@repo/typescript-config`). Apps: `@repo/host`, `@repo/pages-mfe`, `@repo/user-mfe`, `@repo/functions`.
 
 ## Naming
 
