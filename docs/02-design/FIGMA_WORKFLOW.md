@@ -2,7 +2,7 @@
 
 # Figma workflow
 
-How the design lives in Figma and how a change reaches the code. The decision is [ADR-0019](../03-architecture/decisions/ADR-0019-figma-design-source-of-truth.md).
+How the design lives in Figma and how a change reaches the code. The decision is [ADR-0019](../03-architecture/decisions/ADR-0019-figma-design-source-of-truth.md). The design ideas behind the file are in [DESIGN_APPROACH](./DESIGN_APPROACH.md).
 
 **File:** [CinePulse](https://www.figma.com/design/fhJ2HsroPBivgDcshCTuku) in the team project `CinePulse` (the owner's team, Professional plan, Full seat).
 
