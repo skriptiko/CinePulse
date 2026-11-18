@@ -61,7 +61,7 @@ A new token is added in Figma and in `theme.css` in the same ticket. Never bind 
 - A domain component takes the content of its UI model (`MovieCardData`: title, year, rating, poster) as text and instance-swap properties, not as variants.
 - Icons are `lucide-react`, the same as the code: `Icon/<Name>` components at 16 px (`size-4`), swapped with instance-swap properties. An icon the code starts to import is added on the `Primitives` page.
 - Components that change with the breakpoint (Header, Footer, Hero, ContentRow, the details views and sections, the skeletons) have a `viewport=desktop|mobile` variant at 1440 and 390. Those whose inner grid changes at 1920 also have `viewport=wide`: MovieDetailView, CastSection, MediaSection, SeasonsSection and MovieGridSkeleton. The others are widened in the 1920 frame.
-- Images (posters, backdrops, photos, provider logos) are `Image Placeholder` instances; a screen fills them with real TMDB images.
+- Images (posters, backdrops, photos, provider logos) are `Image Placeholder` instances, filled with the generated vector art of the `Placeholder art` frame on the `Components` page (posters, backdrops, portraits, provider logos; the media thumbnails use the backdrops). The art is fictional, so a design never shows a real poster or a real person; a screen may replace it with real TMDB images.
 - Gradients over images use the dark background color directly: a gradient stop bound to a variable loses its alpha in Figma.
 - Components follow the dark spec, as the app is dark-first. Where a component differs in light beyond its tokens (a `dark:` class in code), its description says so.
 
