@@ -6,6 +6,8 @@
 
 Accepted
 
+Amended 2026-11-18 (CIN-113): `/tv/{popular|top_rated|on_the_air|airing_today}` and `/search/multi` left the allowlist with the unused query factories that called them. The list below is kept as decided; `functions/src/proxy-rules.ts` is the current one.
+
 ## Context
 
 The app's data comes from the TMDB API, which requires a token (`TMDB_API_READ_TOKEN`). Calling TMDB directly from the browser would inevitably expose the token in the client bundle or network requests, leaking the secret. We need a way to hide the token while keeping the client code simple.

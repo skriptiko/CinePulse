@@ -1,18 +1,10 @@
 import { infiniteQueryOptions } from '@tanstack/react-query';
 import { getNextPageParam } from '../core';
-import { searchMovies, searchMulti, searchPerson, searchTV } from '../endpoints';
+import { searchMovies, searchPerson, searchTV } from '../endpoints';
 
 /** Query options for TMDB search. Share keys with `useMoviesOrSearch` and `useTVOrSearch`. */
 export const searchQueries = {
   all: () => ['search'] as const,
-
-  multi: (query: string) =>
-    infiniteQueryOptions({
-      queryKey: [...searchQueries.all(), 'multi', query],
-      queryFn: ({ pageParam, signal }) => searchMulti({ query, page: pageParam }, { signal }),
-      initialPageParam: 1,
-      getNextPageParam,
-    }),
 
   movies: (query: string) =>
     infiniteQueryOptions({

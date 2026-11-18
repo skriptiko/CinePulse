@@ -67,11 +67,6 @@ const ROUTES: readonly RouteRule[] = [
   },
   { pattern: /^\/discover\/movie$/, query: 'discover', cacheControl: CACHE_CONTROL_DEFAULT },
   { pattern: /^\/discover\/tv$/, query: 'discoverTv', cacheControl: CACHE_CONTROL_DEFAULT },
-  {
-    pattern: /^\/tv\/(popular|top_rated|on_the_air|airing_today)$/,
-    query: 'page',
-    cacheControl: CACHE_CONTROL_DEFAULT,
-  },
   { pattern: new RegExp(`^/tv/${ID}$`), query: 'detail', cacheControl: CACHE_CONTROL_DEFAULT },
   {
     pattern: /^\/trending\/(all|movie|tv|person)\/(day|week)$/,
@@ -79,7 +74,7 @@ const ROUTES: readonly RouteRule[] = [
     cacheControl: CACHE_CONTROL_DEFAULT,
   },
   {
-    pattern: /^\/search\/(multi|movie|tv|person)$/,
+    pattern: /^\/search\/(movie|tv|person)$/,
     query: 'search',
     cacheControl: CACHE_CONTROL_DEFAULT,
   },

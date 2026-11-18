@@ -25,15 +25,6 @@ export const movieQueries = {
   lists: () => [...movieQueries.all(), 'list'] as const,
   details: () => [...movieQueries.all(), 'detail'] as const,
 
-  /** Every page of a category, for "Load more". */
-  list: (category: MovieCategory) =>
-    infiniteQueryOptions({
-      queryKey: [...movieQueries.lists(), category],
-      queryFn: ({ pageParam, signal }) => getMovies(category, { page: pageParam }, { signal }),
-      initialPageParam: 1,
-      getNextPageParam,
-    }),
-
   /**
    * Every page of `/discover/movie` for one genre + sort, for "Load more". A next-page
    * failure is shown inline by the page, so it never becomes a toast.

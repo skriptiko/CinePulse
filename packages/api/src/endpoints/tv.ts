@@ -2,8 +2,6 @@ import { apiGet, DETAIL_APPEND, type EndpointOptions, toIsoDate } from '../core'
 import type { PageParams, PaginatedResponse, TV, TVDetails } from '../types';
 import { DISCOVER_MIN_VOTE_COUNT } from './movie';
 
-export type TVCategory = 'popular' | 'top_rated' | 'on_the_air' | 'airing_today';
-
 /** `sort_by` values the app sends to `/discover/tv` (the proxy allows only these). */
 export type DiscoverTVSortBy = 'popularity.desc' | 'first_air_date.desc' | 'vote_average.desc';
 
@@ -12,14 +10,6 @@ export type DiscoverTVParams = PageParams & {
   genreId?: number | null;
   sortBy: DiscoverTVSortBy;
 };
-
-export async function getTVShows(
-  category: TVCategory,
-  params: PageParams = {},
-  { signal }: EndpointOptions = {}
-): Promise<PaginatedResponse<TV>> {
-  return apiGet<PaginatedResponse<TV>>(`/tv/${category}`, { params, signal });
-}
 
 export async function getTVDetails(
   id: number,

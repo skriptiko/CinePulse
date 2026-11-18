@@ -1,5 +1,4 @@
-import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
-import { getNextPageParam } from '../core';
+import { queryOptions } from '@tanstack/react-query';
 import { getTrending } from '../endpoints';
 import type { MediaType, TimeWindow } from '../types';
 
@@ -7,15 +6,6 @@ import type { MediaType, TimeWindow } from '../types';
 export const trendingQueries = {
   all: () => ['trending'] as const,
   lists: () => [...trendingQueries.all(), 'list'] as const,
-
-  list: (mediaType: MediaType, timeWindow: TimeWindow) =>
-    infiniteQueryOptions({
-      queryKey: [...trendingQueries.lists(), mediaType, timeWindow],
-      queryFn: ({ pageParam, signal }) =>
-        getTrending(mediaType, timeWindow, { page: pageParam }, { signal }),
-      initialPageParam: 1,
-      getNextPageParam,
-    }),
 
   row: (mediaType: MediaType, timeWindow: TimeWindow) =>
     queryOptions({

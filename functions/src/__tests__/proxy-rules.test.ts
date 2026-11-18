@@ -33,10 +33,6 @@ describe('resolveProxyRequest: paths', () => {
     '/movie/upcoming',
     '/movie/now_playing',
     '/movie/550',
-    '/tv/popular',
-    '/tv/top_rated',
-    '/tv/on_the_air',
-    '/tv/airing_today',
     '/tv/1399',
     '/trending/all/day',
     '/trending/movie/week',
@@ -63,6 +59,9 @@ describe('resolveProxyRequest: paths', () => {
     '/movie/abc',
     '/movie/popular/',
     '/tv/1399/season/1',
+    '/tv/popular',
+    '/tv/top_rated',
+    '/search/multi',
     '/trending/movie/month',
     '/trending/collection/day',
     '/genre/person/list',
@@ -102,7 +101,7 @@ describe('resolveProxyRequest: query', () => {
   });
 
   it.each(['0', '501', '01', '-1', '1.5', 'abc', '', '1e2', '9999'])('rejects page=%s', (page) => {
-    expect(resolve('/api/tmdb/tv/popular', `page=${page}`)).toEqual(BAD_REQUEST);
+    expect(resolve('/api/tmdb/movie/popular', `page=${page}`)).toEqual(BAD_REQUEST);
   });
 
   it('rejects unknown params', () => {
@@ -126,7 +125,7 @@ describe('resolveProxyRequest: query', () => {
   });
 
   it('rebuilds the search query string, trimmed and encoded', () => {
-    const result = resolve('/api/tmdb/search/multi', 'page=3&query=%20star%20wars%20');
+    const result = resolve('/api/tmdb/search/movie', 'page=3&query=%20star%20wars%20');
     expect(result.ok && result.target.search).toBe('?query=star+wars&page=3');
   });
 
