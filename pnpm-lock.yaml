@@ -95,7 +95,7 @@ catalogs:
       version: 5.0.16
 
 overrides:
-  '@grpc/grpc-js@~1.9.0': ^1.14.5
+  '@grpc/grpc-js@~1.9.0': ^1.14.7
   adm-zip@<0.6.1: ^0.6.1
   glob@>=9.0.0 <14.0.2: ^14.0.3
   koa@2.15.4: ^2.16.4
@@ -4236,6 +4236,7 @@ packages:
 
   tldts-core@7.4.20:
     resolution: {integrity: sha512-C630TWXZCZmLq0F2bW4QqwnaaxCQ/svpAqvJwnC4JvgEM5ohhBnGsEzTLSOXcN+xjz+kEaHS5uoWIw2klnqd0A==}
+    deprecated: Partial release, see https://github.com/remusao/tldts/issues/2735. Use >=7.4.22.
 
   tldts@7.4.19:
     resolution: {integrity: sha512-48dH6aSpQnpbzDUc4vIQZ1VjB8tkK+e8c1yx05/SZK+rkssgjEOlxDd/yU8/a4vGYQ9vRgJr9dwMq9TJ0b3X2Q==}
