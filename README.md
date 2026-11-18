@@ -5,7 +5,7 @@ A movie and TV catalog on TMDB data with a personal watchlist, built as micro-fr
 ## Architecture
 
 - **Monorepo orchestration**: Turborepo + pnpm
-- **Apps**: Vite 7, React 19, React Router 7, TanStack Query 5
+- **Apps**: Vite 8, React 19, React Router 7, TanStack Query 5
 - **Federation mechanism**: `@module-federation/vite`
 - **UI**: Tailwind 4 + shadcn/Radix
 - **Backend**: Firebase Hosting, Cloud Functions (TMDB proxy), Auth and Firestore Lite (watchlist)
