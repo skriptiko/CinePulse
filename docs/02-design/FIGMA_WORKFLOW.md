@@ -25,6 +25,7 @@ The bootstrap is done (CIN-132…135, 2026-11-18): the file mirrors every token,
 | `Foundations` | Variables and styles, with a specimen of each token group in both modes |
 | `Primitives` | One section per `components/ui/*` component: Button, Input, DropdownMenu, Dialog, ToggleGroup, Skeleton |
 | `Components` | The domain components and the page frame: MovieCard, Hero, Header, Footer, detail sections… |
+| `Test Images` | The test image pack that fills every image in the file: posters, backdrops, portraits, provider logos |
 | `——— SCREENS ———` | Separator |
 | `Home`, `Movies`, `TV Shows`, `Movie Detail`, `TV Detail`, `Person`, `Search`, `Watchlist`, `Profile`, `Settings`, `Login`, `Not Found` | One page per route of `ROUTE_PATHS`: frames at 1920, 1440 and 390 (see [Screen sizes](#screen-sizes)), plus the loading, empty and error states the page has, built only from component instances. A frame is named `<Page> — Desktop 1920 — <state>`, `<Page> — Desktop 1440 — <state>` or `<Page> — Mobile 390 — <state>` |
 | `——— WORK ———` | Separator |
@@ -61,7 +62,7 @@ A new token is added in Figma and in `theme.css` in the same ticket. Never bind 
 - A domain component takes the content of its UI model (`MovieCardData`: title, year, rating, poster) as text and instance-swap properties, not as variants.
 - Icons are `lucide-react`, the same as the code: `Icon/<Name>` components at 16 px (`size-4`), swapped with instance-swap properties. An icon the code starts to import is added on the `Primitives` page.
 - Components that change with the breakpoint (Header, Footer, Hero, ContentRow, the details views and sections, the skeletons) have a `viewport=desktop|mobile` variant at 1440 and 390. Those whose inner grid changes at 1920 also have `viewport=wide`: MovieDetailView, CastSection, MediaSection, SeasonsSection and MovieGridSkeleton. The others are widened in the 1920 frame.
-- Images (posters, backdrops, photos, provider logos) are `Image Placeholder` instances, filled with the generated vector art of the `Placeholder art` frame on the `Components` page (posters, backdrops, portraits, provider logos; the media thumbnails use the backdrops). The art is fictional, so a design never shows a real poster or a real person; a screen may replace it with real TMDB images.
+- Images (posters, backdrops, photos, provider logos) are `Image Placeholder` instances, filled with the test images of the `Test Images` page: hand-drawn vector art with thick ink outlines and muted flat colours, 2:3 posters and portraits, 16:9 backdrops (also the media thumbnails) and square provider logos. The art is fictional, so a design never shows a real poster or a real person. A new image in the pack keeps the same style and goes on that page first.
 - Gradients over images use the dark background color directly: a gradient stop bound to a variable loses its alpha in Figma.
 - Components follow the dark spec, as the app is dark-first. Where a component differs in light beyond its tokens (a `dark:` class in code), its description says so.
 
