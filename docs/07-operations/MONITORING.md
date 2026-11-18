@@ -2,14 +2,14 @@
 
 # Monitoring and observability
 
-> **Status: stub ⬜.** Active monitoring, error tracking and alerts are **not set up**. This document is a plan and an implementation checklist.
+> **Status: out of scope.** Active monitoring, error tracking and alerts are **not set up**: Deliberately out of scope for this pet project, see "Out of scope" on the [roadmap (Notion)](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb). This document records what exists and keeps the plan as a checklist in case that changes.
 
 ## What exists now
 
 - **Firebase Hosting/Functions built-in metrics** — available in the Firebase Console (hosting traffic; for the `tmdbProxy` function: invocations, errors, latency, cold starts). Collected passively, but there is **no active observation/alerting**.
 - **Function logs** — `tmdbProxy` logs through `logger` from `firebase-functions` (structured entries with severity): `error` for a missing token or a failed/timed-out upstream request, `warn` for a non-404 TMDB error status; fields are the TMDB path and status only (no token, no search query). Cloud Logging (Firebase Console → Functions → Logs).
 - **Budget alert** — a GCP budget alert is configured on the project (cost guard for the Blaze plan, together with `maxInstances: 2` and CDN caching of proxy responses).
-- **Client** — only `console.error` in dev mode (`App.tsx` when loading remote routes fails); in production client errors are **not collected anywhere**.
+- **Client** — the host's `error-channel/` logs reports and `mfe:error` (a remote that `useRemoteRoutes` failed to load) with `console.error` in development only; in production client errors are **not collected anywhere**.
 - **User-facing error notifications** — a toast when a background refetch or a mutation fails (`QueryCache` / `MutationCache.onError` → `notification:show` → sonner in the host).
 - **Error reports** — every boundary, failed query/mutation and uncaught window error emits `error:report`; the host listener (`apps/host/src/error-channel/error-reporting.ts`) filters expected failures and logs the rest in development. Sending reports anywhere in production needs a vendor decision.
 

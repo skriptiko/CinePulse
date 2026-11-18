@@ -115,7 +115,7 @@ type TrendingItem  = TrendingMovie | TrendingTV | TrendingPerson; // Movie/TV/Pe
 type MultiSearchResult = SearchMovie | SearchTV | SearchPerson; // SearchMovie = TrendingMovie, etc.
 ```
 
-The `media_type` discriminant lets code narrow the type at runtime (e.g. `Home.tsx` filters `media_type === 'movie'`).
+The `media_type` discriminant lets code narrow the type at runtime (e.g. `apps/pages-mfe/src/pages/home/trending.ts` keeps `media_type === 'movie'`).
 
 ## Client state: Global Store
 

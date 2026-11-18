@@ -2,7 +2,7 @@
 
 # Runbook
 
-> **Status: stub ⬜.** Most operational procedures have not been worked out or documented yet. Only items confirmed by code/config (deployment, secrets) are filled in. The rest is TODO.
+> **Status: out of scope.** Deliberately out of scope for this pet project, see "Out of scope" on the [roadmap (Notion)](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb). Only items confirmed by code/config (deployment, secrets) are filled in; the TODO items below are kept as a checklist in case that changes.
 
 ## Common incidents
 

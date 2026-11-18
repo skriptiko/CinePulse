@@ -48,8 +48,7 @@ In the integration the host builds one stylesheet for every remote, so MFE style
 
 ## Mockups
 
-> ⬜ ⚠️ **needs my input.** There are no formal mockups (Figma/Sketch).
-> To fill in: links to design files (if any), or a statement that the source of truth is the implementation in `@repo/ui`. If needed, define the design tokens formally (palette, typography, spacing).
+> There are no formal mockups (Figma/Sketch), and none are planned. The source of truth is the implementation in `@repo/ui` and its tokens in `@repo/ui/theme.css`; the prototype in `docs/08-design-files/` is the visual reference.
 
 ## UI states
 
@@ -138,7 +137,7 @@ Everything under Movie Detail holds here too, with TV cards in More like this. W
 
 ## Accessibility
 
-> ⬜ No formal a11y audit has been carried out.
+> The target is WCAG 2.1 AA ([PRD](../01-product/PRD.md)). There has been no formal third-party audit: axe runs in the component and page tests (`expectNoA11yViolations`), and an axe and Lighthouse pass was done in CIN-33.
 - Semantic elements (`<main>`, `<h1>`, `<button type="button">`) and Radix components (with built-in a11y support) are used.
 - The focus ring of a `Button` and an `Input` is solid `--ring`, 5.27:1 in the dark theme and 4.57:1 in the light one on the page background. A button laid straight on an image, as on a card or in the header over the hero, takes `BUTTON_ON_IMAGE_CLASS`: a ring of `--foreground` around a band of `--background`, about 18:1 apart, as one colour can match the image. The logo, the header links and the skip link lie there too, and take the same ring with `LINK_ON_IMAGE_CLASS`.
 - With `aria-invalid`, the ring and the border of a `Button` or an `Input` are solid `--destructive`, 3.1:1 in the dark theme and 5.1:1 in the light one. Nothing in the app sets it yet.
@@ -148,4 +147,3 @@ Everything under Movie Detail holds here too, with TV cards in More like this. W
 - Scrolled, the header lies on `glass-bar`, 0.9 opaque where `glass` is 0.6 in the dark theme and 0.7 in the light one, so its muted text and icons keep their colours and stay legible with or without the blur. Nav text and icons read 4.83:1 in the dark theme over a white image and 5.96:1 in the light one over a black image, the worst for each, at 1280 and 320 px with the menu open; on plain `glass` they read 1.61:1 and 3.55:1. The profile icon lies on its own chip, whose gradient ends 0.8 opaque, and reads at least 3.53:1 at its worst stroke, in the light theme over a white image.
 - A navigation to another page moves focus to `main` and starts that page at the top. Back keeps the position the browser restores, and a change of the query alone moves neither. Search with no query then moves focus on to its input, from a passive effect, which runs after the layout effect that moves it to `main`.
 - Not verified: contrast in the dark theme, keyboard navigation across the whole application, focus management. The grid/compact switch of Movies and TV Shows is a radio group with an `aria-label`.
-- TODO: run axe / Lighthouse, define the target WCAG level.

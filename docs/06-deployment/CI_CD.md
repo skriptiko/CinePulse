@@ -2,7 +2,7 @@
 
 # CI/CD
 
-Automatic deployment to Firebase Hosting (+ Cloud Functions) via GitHub Actions. Stage status: **🟡 partial** — deployment and quality gates (lint + typecheck + test) work; there is no documented rollback.
+Automatic deployment to Firebase Hosting (+ Cloud Functions) via GitHub Actions. Stage status: **✅** — deployment, PR previews and quality gates (lint + typecheck + test, e2e for PRs into `main`) work; a verified rollback procedure is out of scope (see [Rollback](#rollback)).
 
 ## GitHub Actions
 
@@ -80,7 +80,7 @@ Before the build, [`scripts/clean-dist.js`](../../scripts/clean-dist.js) empties
 
 ## Rollback
 
-⬜ **Not documented.** Recommended approach via Firebase Hosting (each deploy = a separate release):
+Out of scope: no verified procedure is planned, as Firebase Hosting can roll a release back from the console (see the [roadmap (Notion)](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb)). Recommended approach via Firebase Hosting (each deploy = a separate release):
 
 - **Via the console:** Firebase Console → Hosting → release history → pick the previous healthy one → "Rollback".
 - **Via the CLI (approximate):**
@@ -88,5 +88,3 @@ Before the build, [`scripts/clean-dist.js`](../../scripts/clean-dist.js) empties
   firebase hosting:clone cinepulse-eec15:live:<PREV_VERSION> cinepulse-eec15:live
   ```
 - **Via Git:** `revert` the problematic commit in `main` → the pipeline deploys the previous state.
-
-**TODO:** record a verified rollback procedure and add it to the [RUNBOOK](../07-operations/RUNBOOK.md).
