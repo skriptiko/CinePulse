@@ -6,6 +6,8 @@
 
 Accepted (2026-11-01). Follows the note in [ADR-0013](./ADR-0013-firestore-lite-watchlist-store.md) that static growth in a shared package needs a recorded budget move.
 
+Amended 2026-11-18 (CIN-117): `size` is now a required check of `main`, and the production deploy needs it, so the limit is no longer checked by hand.
+
 ## Context
 
 Host JS stood at 207.99 of 208 kB gzip, 15 bytes under the limit. The catalog tasks that come next add endpoints and queries to `@repo/api`, a nav item to `Header` and a search field. Module Federation does not tree-shake a shared module, so everything reachable from `@repo/api` reaches the host chunk, and those tasks would break the limit at once.

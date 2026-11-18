@@ -221,7 +221,8 @@ jobs:
           expires: 7d
 
   build-and-deploy:
-    needs: [quality, rules]
+    # `size` too: a shell over its budget is not deployed (ADR-0016).
+    needs: [quality, rules, size]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     # Never run two production deploys at once; a newer push waits for the current one.
