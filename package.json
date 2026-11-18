@@ -15,7 +15,7 @@
     "prepare": "husky",
     "clean-dist": "node scripts/clean-dist.js",
     "merge-dist": "node scripts/merge-dist.js",
-    "build:deploy": "pnpm clean-dist && turbo build --filter=!@repo/design && pnpm merge-dist",
+    "build:deploy": "pnpm clean-dist && turbo build && pnpm merge-dist",
     "emulators": "pnpm build:deploy && firebase emulators:start --project demo --only hosting,functions,auth,firestore",
     "deploy": "pnpm build:deploy && firebase deploy --only hosting:production",
     "size": "size-limit",

@@ -74,7 +74,6 @@
       "!**/.__mf__temp",
       "!**/docs/08-design-files",
       "!**/coverage",
-      "!**/apps/design/src/styles",
       "!**/*.md",
       "!**/*.yaml",
       "!**/*.yml",

@@ -246,7 +246,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Same command as locally: builds everything except the apps/design sandbox, then merges dist/.
+      # Same command as locally: builds every app and package, then merges dist/.
       - name: Build and merge dist
         run: pnpm build:deploy
 

@@ -6,12 +6,9 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const appsDir = path.join(root, 'apps');
 
-// Outside `build:deploy`, so its own build stays.
-const EXCLUDED_APP = 'design';
-
 const appDists = fs
   .readdirSync(appsDir, { withFileTypes: true })
-  .filter((entry) => entry.isDirectory() && entry.name !== EXCLUDED_APP)
+  .filter((entry) => entry.isDirectory())
   .map((entry) => path.join(appsDir, entry.name, 'dist'));
 
 for (const dist of [...appDists, path.join(root, 'dist')]) {

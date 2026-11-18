@@ -33,4 +33,4 @@ Isolation relied on `important: '#mfe-…-root'`, which Tailwind 4 does not have
 - Tailwind 4 needs Chrome 111, Safari 16.4 or Firefox 128; older browsers lose the theme.
 - `tailwind-merge` moves to v3 to understand Tailwind 4 classes.
 - The palette changes from the hsl placeholder to the design's oklch tokens: this is an intended visual change.
-- `apps/design` is not part of the build and stays on Tailwind 3 with its own pinned version.
+- `apps/design` is not part of the build and stays on Tailwind 3 with its own pinned version. (The sandbox was removed later, in CIN-127.)

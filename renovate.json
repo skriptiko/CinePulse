@@ -36,6 +36,11 @@
       "matchPackageNames": ["@module-federation/**"]
     },
     {
+      "description": "Types follow the runtime: Node 24 (engines, .nvmrc, CI, Cloud Functions). They move with Node, not on their own.",
+      "matchPackageNames": ["@types/node"],
+      "allowedVersions": "<25.0.0"
+    },
+    {
       "groupName": "Tooling",
       "matchPackageNames": [
         "@biomejs/biome",
