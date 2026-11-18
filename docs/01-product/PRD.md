@@ -110,14 +110,14 @@ The data model for this feature (Firestore structure for the folder tree) — se
 Implemented and working:
 - **Home** (`/`) — the main page with Hero, categories, the Trending / New Releases / Top Rated / Popular rows and the "Editor's Picks" block. Real TMDB data. ✅
 - **Movies** (`/movies`) — a catalog with search, genre filter, sorting (Popular / Newest / Rating), a grid/compact toggle and incremental loading ("Load More"). ✅
+- **Movie Detail** (`/movies/:id`) — the hero, then where to watch, cast, videos and images, more like this, and reviews, all from one request (ADR-0017). ✅
 - **TV Shows** (`/tv`) — the same catalog for TV shows. A card opens TV Detail. ✅
 - **TV Detail** (`/tv/:id`) — the hero with the seasons and episodes, then where to watch, seasons, cast, videos and images, more like this, and reviews. ✅
 - **Search** (`/search`) — a form and three tabs, Movies, TV Shows and People, with the query and the tab in the URL. Each result opens its details page. ✅
+- **Person** (`/person/:id`) — the biography, Known for and the filmography. ✅
 - **Profile** (`/user/profile`) — the account (name, email, the date it was created), watchlist counts, and links to the watchlist and Settings. ✅
 - **Settings** (`/user/settings`) — the theme (Light, Dark, System) and sign-out. There is no password to change, as sign-in is through Google only (ADR-0010). ✅
-
-In progress:
-- **Watchlist** (`/user/watchlist`) — the folder tree and the titles of a folder, each with a Watched or Planned switch, and a filter by status. Titles are added from catalog cards and the details pages and removed on this page, and the links to the page are "Open watchlist" in that dialog and on Profile. 🟡
+- **Watchlist** (`/user/watchlist`) — the folder tree and the titles of a folder, each with a Watched or Planned switch, and a filter by status. Titles are added from catalog cards and the details pages and removed on this page, and the links to the page are "Open watchlist" in that dialog and on Profile. ✅
 
 The full list of pages and their state is in the [roadmap page catalog (Notion)](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb).
 
@@ -128,7 +128,9 @@ Recorded assumptions (confirmed in the 2026-07-12 session):
 - TV shows use the same *watched/planned* status (no separate "watching/in progress").
 - The public catalog works anonymously; authentication is required only for the watchlist.
 
-Open questions to work out in later stages:
-- Firestore collection structure and security rules for the folder tree → [Stage 3 (Notion)](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb).
-- UX for managing the folder tree: create/rename/move, drag-n-drop, breadcrumbs → [Stage 2 (Notion)](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb).
-- Deduplication and TMDB limits (rate limits) when adding titles in bulk.
+Resolved questions:
+- Firestore collection structure and security rules for the folder tree → [DATA_MODEL](../03-architecture/DATA_MODEL.md), ADR-0010 and ADR-0013.
+- UX for managing the folder tree (create, rename, move) → the watchlist page (CIN-25); drag-n-drop is not planned.
+- Deduplication and TMDB limits when adding titles in bulk → not applicable: titles are added one at a time, a second add of the same title only joins folders (ADR-0014), and adding sends no TMDB request.
+
+There are no open questions.

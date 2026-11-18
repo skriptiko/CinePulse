@@ -2,7 +2,7 @@
 
 # CI/CD
 
-Automatic deployment to Firebase Hosting (+ Cloud Functions) via GitHub Actions. Stage status: **🟡 partial** — deployment and quality gates (lint + typecheck + test) work; there is no documented rollback.
+Automatic deployment to Firebase Hosting (+ Cloud Functions) via GitHub Actions. Stage status: **✅** — deployment, PR previews and quality gates (lint + typecheck + test, e2e for PRs into `main`) work; a verified rollback procedure is out of scope (see [Rollback](#rollback)).
 
 ## GitHub Actions
 
@@ -16,7 +16,7 @@ Pipeline: [`.github/workflows/firebase-deploy.yml`](../../.github/workflows/fire
   3. `pnpm lint` (Biome, `e2e/` included, + JSX-spread ban).
   4. `pnpm typecheck` (`e2e/` included).
   5. `pnpm test`.
-- **Job `size`** (on every trigger, not required for merge): `pnpm turbo build --filter=@repo/host` → `pnpm size` (budget in `.size-limit.json`).
+- **Job `size`** (on every trigger; required for a merge into `main`, and the deploy waits for it): `pnpm turbo build --filter=@repo/host` → `pnpm size` (budget in `.size-limit.json`).
 - **Job `rules`** (on every trigger): sets up Java 21 and runs the Firestore rules tests on the emulator.
 - **Job `e2e`** (PRs into `main` only): `pnpm build:deploy`, then Playwright on the merged `dist/` with the Hosting, Auth and Firestore emulators. Sets up Java 21 for Firestore.
 - **Jobs `preview-build` and `preview`** (`needs: [quality, rules]`, PRs by a person from this repository only; a new push cancels the run of the one before it; not required checks):
@@ -74,13 +74,13 @@ Before the build, [`scripts/clean-dist.js`](../../scripts/clean-dist.js) empties
 
 🟢 **E2E** — job `e2e` on PRs into `main`.
 
-🟡 **Bundle budget** — job `size` reports on every trigger but does not block the deploy.
+🟢 **Bundle budget** — job `size` fails when the host is over `.size-limit.json`; it blocks the merge into `main` and the deploy.
 
-🟢 **Rulesets** — `main` takes changes only through a PR with green `quality`, `rules`, `e2e` and `pr-title`, merged with a merge commit; no approval is required, and `size` stays optional. `develop` keeps direct pushes. Both forbid force-pushes and deletion. Do not enable auto-delete of head branches: the head of a release PR is `develop`.
+🟢 **Rulesets** — `main` takes changes only through a PR with green `quality`, `rules`, `e2e`, `size` and `pr-title`, merged with a merge commit; no approval is required. `develop` keeps direct pushes. Both forbid force-pushes and deletion. Do not enable auto-delete of head branches: the head of a release PR is `develop`.
 
 ## Rollback
 
-⬜ **Not documented.** Recommended approach via Firebase Hosting (each deploy = a separate release):
+Out of scope: no verified procedure is planned, as Firebase Hosting can roll a release back from the console (see the [roadmap (Notion)](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb)). Recommended approach via Firebase Hosting (each deploy = a separate release):
 
 - **Via the console:** Firebase Console → Hosting → release history → pick the previous healthy one → "Rollback".
 - **Via the CLI (approximate):**
@@ -88,5 +88,3 @@ Before the build, [`scripts/clean-dist.js`](../../scripts/clean-dist.js) empties
   firebase hosting:clone cinepulse-eec15:live:<PREV_VERSION> cinepulse-eec15:live
   ```
 - **Via Git:** `revert` the problematic commit in `main` → the pipeline deploys the previous state.
-
-**TODO:** record a verified rollback procedure and add it to the [RUNBOOK](../07-operations/RUNBOOK.md).

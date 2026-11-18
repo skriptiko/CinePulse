@@ -48,14 +48,13 @@ In the integration the host builds one stylesheet for every remote, so MFE style
 
 ## Mockups
 
-> ⬜ ⚠️ **needs my input.** There are no formal mockups (Figma/Sketch).
-> To fill in: links to design files (if any), or a statement that the source of truth is the implementation in `@repo/ui`. If needed, define the design tokens formally (palette, typography, spacing).
+> There are no formal mockups (Figma/Sketch), and none are planned. The source of truth is the implementation in `@repo/ui` and its tokens in `@repo/ui/theme.css`; the prototype in `docs/08-design-files/` is the visual reference.
 
 ## UI states
 
-🟡 Partially unified:
+✅ Unified:
 - **Loading:** every page or Home section suspends into a skeleton shaped like it. The layout is reserved at once and the skeleton appears after 300 ms, so fast loads do not flicker.
-- **Empty:** implemented in **Movies** and **TV Shows**: `No movies found for “…”` names the search query, with **Clear search** and **Reset filters**, and a long query wraps. **Search** has the same line for each tab, with **Clear search** alone, and asks what to look for before there is a query. The watchlist says `No titles here yet.`, or `No watched titles here.` under a filter, which the All pill right above it clears. Each section of **Movie Detail**, **TV Detail** and **Person** keeps its heading over one muted line. Other pages have no empty states.
+- **Empty:** implemented in **Movies** and **TV Shows**: `No movies found for “…”` names the search query, with **Clear search** and **Reset filters**, and a long query wraps. **Search** has the same line for each tab, with **Clear search** alone, and asks what to look for before there is a query. The watchlist says `No titles here yet.`, or `No watched titles here.` under a filter, which the All pill right above it clears; with nothing saved at all it adds **Browse movies** and **Browse TV shows**, and Profile says `No titles yet.` with **Browse movies**. Each section of **Movie Detail**, **TV Detail** and **Person** keeps its heading over one muted line. A Home section with no items is left out, so the page shows the sections that have them; the genre links always stay.
 - **Error:** without data, the page boundary shows a plain message with **Try again** (404 → `NotFound`); the host's `ShellBoundary` catches the rest and keeps the header; a failed background refetch keeps the data and shows one toast (bottom right).
 - **Offline:** one global banner at the bottom, "You are offline. Showing saved results." It stays mounted as an empty live region while online, so it takes no pointer events: a press at the bottom edge of the screen reaches the page.
 
@@ -138,7 +137,7 @@ Everything under Movie Detail holds here too, with TV cards in More like this. W
 
 ## Accessibility
 
-> ⬜ No formal a11y audit has been carried out.
+> The target is WCAG 2.1 AA ([PRD](../01-product/PRD.md)). There has been no formal third-party audit: axe runs in the component and page tests (`expectNoA11yViolations`), and an axe and Lighthouse pass was done in CIN-33.
 - Semantic elements (`<main>`, `<h1>`, `<button type="button">`) and Radix components (with built-in a11y support) are used.
 - The focus ring of a `Button` and an `Input` is solid `--ring`, 5.27:1 in the dark theme and 4.57:1 in the light one on the page background. A button laid straight on an image, as on a card or in the header over the hero, takes `BUTTON_ON_IMAGE_CLASS`: a ring of `--foreground` around a band of `--background`, about 18:1 apart, as one colour can match the image. The logo, the header links and the skip link lie there too, and take the same ring with `LINK_ON_IMAGE_CLASS`.
 - With `aria-invalid`, the ring and the border of a `Button` or an `Input` are solid `--destructive`, 3.1:1 in the dark theme and 5.1:1 in the light one. Nothing in the app sets it yet.
@@ -147,5 +146,5 @@ Everything under Movie Detail holds here too, with TV cards in More like this. W
 - At the top of a page the header lies on a scrim of `--background` as tall as the header, so its controls do not depend on the image under them: it is solid down to the last line of text and fades over the 28 px below it. On painted pixels over white, mid grey and black images, at 1280 and 320 px, icons and nav text at rest read 6.38:1 in the dark theme and 7.02:1 in the light one, and the focus of the Logo and the nav links keeps 8.13:1 or more against the surface around it. On a page with no image, at the top, the scrim moves a pixel by at most 2 of 255 per channel; in the 20 px of scroll before the glass, a heading on a phone fades under its lower edge. It takes no presses and fades out once the header turns to glass.
 - Scrolled, the header lies on `glass-bar`, 0.9 opaque where `glass` is 0.6 in the dark theme and 0.7 in the light one, so its muted text and icons keep their colours and stay legible with or without the blur. Nav text and icons read 4.83:1 in the dark theme over a white image and 5.96:1 in the light one over a black image, the worst for each, at 1280 and 320 px with the menu open; on plain `glass` they read 1.61:1 and 3.55:1. The profile icon lies on its own chip, whose gradient ends 0.8 opaque, and reads at least 3.53:1 at its worst stroke, in the light theme over a white image.
 - A navigation to another page moves focus to `main` and starts that page at the top. Back keeps the position the browser restores, and a change of the query alone moves neither. Search with no query then moves focus on to its input, from a passive effect, which runs after the layout effect that moves it to `main`.
-- Not verified: contrast in the dark theme, keyboard navigation across the whole application, focus management. The grid/compact switch of Movies and TV Shows is a radio group with an `aria-label`.
-- TODO: run axe / Lighthouse, define the target WCAG level.
+- `e2e/a11y.spec.ts` runs axe with the WCAG 2.1 A and AA rules, contrast included, on every page in both themes, the account pages signed in, and tabs through each page to its last control: every stop is visible and nothing traps the focus. Text that axe cannot judge, on an image or a gradient, is measured on painted pixels by `e2e/header.spec.ts` and `e2e/focus-ring.spec.ts`. Focus after a navigation, a removal and a dialog is covered by the watchlist, Person and focus-ring specs.
+- The grid/compact switch of Movies and TV Shows is a radio group with an `aria-label`.

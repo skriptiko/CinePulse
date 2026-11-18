@@ -8,6 +8,7 @@
   "rangeStrategy": "bump",
   "labels": ["dependencies"],
   "dependencyDashboard": true,
+  "ignorePaths": ["**/node_modules/**", "docs/08-design-files/**"],
   "lockFileMaintenance": {
     "enabled": true,
     "schedule": ["before 6am on the first day of the month"]

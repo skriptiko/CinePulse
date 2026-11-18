@@ -11,7 +11,7 @@ Status: **🟡** — local dev, PR previews and production exist; there is no se
 | **Local dev** | local machine | Vite dev servers (5000/5001/5002) | Vite proxy + `.env` | ✅ |
 | **PR preview** | Firebase | A Hosting channel of `cinepulse-eec15`, for 7 days | The production `tmdbProxy` | ✅ |
 | **Production** | Firebase | Firebase Hosting `cinepulse-eec15` | Cloud Function `tmdbProxy` + Secret | ✅ |
-| **Staging / Preview** | — | — | — | ⬜ none |
+| **Staging** | — | — | — | ⬜ none |
 
 ## Local dev
 
@@ -69,4 +69,4 @@ A preview replaces only the Hosting content. Everything behind it is production:
 
 ## staging
 
-⬜ **There is no separate staging environment.** Production deploys on `push` to `main`. A permanent `staging` channel would share the production data in the same way as a preview.
+**There is no separate staging environment, and none is planned** (out of scope, see the [roadmap (Notion)](https://app.notion.com/p/40880c5f7ed581f59f9fd2b85b8a8ebb)). Production deploys on `push` to `main`. A permanent `staging` channel would share the production data in the same way as a preview.

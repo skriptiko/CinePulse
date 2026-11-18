@@ -15,7 +15,7 @@ Packages are consumed via `@repo/*` aliases (`@repo/api`, `@repo/ui`, `@repo/rou
 ## Naming
 
 - Component files in `@repo/ui` are **kebab-case** (`movie-card.tsx`, `content-row.tsx`); the exported component is **PascalCase** (`MovieCard`).
-- Pages in apps are **PascalCase** (`Home.tsx`, `Movies.tsx`, `Profile.tsx`).
+- Every file and folder is **kebab-case**, pages included. A page with local hooks or components is a `pages/<name>/` folder with `<name>-page.tsx` (`pages/home/home-page.tsx`, `pages/movie-detail/movie-detail-page.tsx`); the exported component is PascalCase (`HomePage`).
 - Hooks are `useXxx` (`useMoviesOrSearch`, `useCatalogFilters`); query factories are `<domain>Queries` (`movieQueries`).
 - Shared constants are `SCREAMING_SNAKE` (`ROUTE_PATHS`, `API_CONFIG`).
 
@@ -72,6 +72,10 @@ Dynamic routes are linked with `buildPath.movie(id)` and friends, never by hand.
 ## Cross-MFE communication
 
 Only through `@repo/events`: the typed `createTypedEmitter` / `createTypedListener` (events from `EventMap`) and `globalStore`. No direct imports between apps.
+
+## Documentation
+
+A new domain term (a watchlist entity, a status, a UI concept users see) goes into the [GLOSSARY](../01-product/GLOSSARY.md) in the same PR as the feature that introduces it, and a changed page or flow updates its line in the [PRD](../01-product/PRD.md). A new architectural decision gets an ADR.
 
 ## Commits
 

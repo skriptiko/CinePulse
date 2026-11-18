@@ -74,7 +74,7 @@ From here on, new or changed logic in `packages/*` and new UI states land with t
 6. Pages:
    - ✅ **Movies** (`apps/pages-mfe/src/pages/movies/__tests__/`): search ↔ list switching (regression for the conditional-hook bug), genre filter, sort, empty state, "Load more" (next-page error, end of list), state in the URL, URL parsing;
    - ✅ **TV Shows** (`apps/pages-mfe/src/pages/tv/__tests__/`): the same flows on the shared catalog pieces, with TV genres, sort params and words, and cards that link to their show. `src/__tests__/routes.test.tsx` covers its skeleton, its error with a retry, and that no search text follows a move from Movies;
-   - **Home**: rows render from MSW fixtures, and one failing row does not blank the page;
+   - ✅ **Home** (`apps/pages-mfe/src/pages/home/__tests__/`): rows render from MSW fixtures, and one failing row does not blank the page;
    - ✅ **Movie Detail** (`apps/pages-mfe/src/pages/movie-detail/__tests__/`): one request for every section, their order, the region from the browser language, each empty state, a response without the appended blocks, the error state, axe;
    - ✅ **TV Detail** (`apps/pages-mfe/src/pages/tv-detail/__tests__/`): one request for every section, their order, each empty state, a response without the appended blocks, the error state and axe, as on Movie Detail, with seasons and episodes in the hero, the Seasons section with the specials last, the creator in the line of directors and writers, and TV cards in More like this. `parseRouteId` has its own test, and `src/__tests__/routes.test.tsx` covers the page on demand and its skeleton;
    - ✅ **Person** (`apps/pages-mfe/src/pages/person/__tests__/`): one request, the order of the sections, the talk show left out of Known for and kept in the filmography, each empty state, a response without the appended block, credits that lack a date, a title or a poster, the error state, an unknown and an invalid id, axe. `src/__tests__/routes.test.tsx` covers its skeleton;
@@ -203,6 +203,7 @@ The fixtures have no backdrop, so the contrast over solid white, mid grey and bl
 24. A theme chosen in Settings reaches a page of another remote, survives a new load and a sign-out, and `System` follows the device.
 25. A removed title leaves every folder and the profile, also after a reload, and a removal in a long list keeps the page where it is.
 26. A double press on Cancel in a folder form, by touch or mouse, reaches no pill, title or toolbar button, and focus stays on the toolbar button. Each press point is first checked to lie on that control.
+27. Every page, in both themes and with the account pages signed in, has no WCAG 2.1 A or AA violation by axe in the browser, contrast included, and Tab reaches its last control through visible stops (`e2e/a11y.spec.ts`).
 27. A double press on Cancel in the Remove title question, by touch or mouse, changes no status and opens no title, and focus returns to Remove. Each press point is first checked to lie on that control.
 28. The focus ring of every Button variant reaches 3:1 in both themes, read from painted pixels. A button on an image shows two colours at least 9:1 apart.
 
