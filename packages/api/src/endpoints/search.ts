@@ -1,16 +1,9 @@
 import { apiGet, type EndpointOptions } from '../core';
-import type { Movie, MultiSearchResult, PageParams, PaginatedResponse, Person, TV } from '../types';
+import type { Movie, PageParams, PaginatedResponse, Person, TV } from '../types';
 
 export type SearchParams = PageParams & {
   query: string;
 };
-
-export async function searchMulti(
-  params: SearchParams,
-  { signal }: EndpointOptions = {}
-): Promise<PaginatedResponse<MultiSearchResult>> {
-  return apiGet<PaginatedResponse<MultiSearchResult>>('/search/multi', { params, signal });
-}
 
 export async function searchMovies(
   params: SearchParams,

@@ -34,7 +34,6 @@ export type {
   Person,
   PersonDetails,
 } from './person';
-export type { MultiSearchResult, SearchMovie, SearchPerson, SearchTV } from './search';
 export type {
   MediaType,
   TimeWindow,

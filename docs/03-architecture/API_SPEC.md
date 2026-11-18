@@ -56,15 +56,13 @@ Paths are relative to the proxy base `/api/tmdb`. Keys follow `all → lists / d
 
 | Factory | Key | HTTP | Data |
 |---|---|---|---|
-| `movieQueries.list(category)` (infinite) | `['movies', 'list', category]` | `GET /movie/{category}` | `PaginatedResponse<Movie>` |
 | `movieQueries.discover({ genreId, sortBy })` (infinite) | `['movies', 'list', 'discover', { genreId, sortBy }]` | `GET /discover/movie?sort_by&with_genres&page` | `PaginatedResponse<Movie>` |
 | `movieQueries.row(category)` | `['movies', 'list', category, 'first-page']` | `GET /movie/{category}?page=1` | `PaginatedResponse<Movie>` |
 | `movieQueries.detail(id)` | `['movies', 'detail', id]` | `GET /movie/{id}?append_to_response=…` | `MovieDetails`, with every section of the page |
-| `tvQueries.list(category)` / `.row(category)` | `['tv', …]` | `GET /tv/{category}` | `PaginatedResponse<TV>` |
 | `tvQueries.detail(id)` | `['tv', 'detail', id]` | `GET /tv/{id}?append_to_response=…` | `TVDetails`, with every section of the page |
 | `tvQueries.discover({ genreId, sortBy })` (infinite) | `['tv', 'list', 'discover', { genreId, sortBy }]` | `GET /discover/tv?sort_by&with_genres&page` | `PaginatedResponse<TV>` |
-| `trendingQueries.list(mediaType, timeWindow)` / `.row(…)` | `['trending', 'list', mediaType, timeWindow]` | `GET /trending/{mediaType}/{timeWindow}` | `PaginatedResponse<TrendingItem>` |
-| `searchQueries.multi/movies/tv/person(query)` (infinite) | `['search', type, query]` | `GET /search/{multi,movie,tv,person}` | `PaginatedResponse<…>` |
+| `trendingQueries.row(mediaType, timeWindow)` | `['trending', 'list', mediaType, timeWindow, 'first-page']` | `GET /trending/{mediaType}/{timeWindow}` | `PaginatedResponse<TrendingItem>` |
+| `searchQueries.movies/tv/person(query)` (infinite) | `['search', type, query]` | `GET /search/{movie,tv,person}` | `PaginatedResponse<…>` |
 | `genreQueries.movie()` / `.tv()` | `['genres', 'movie' \| 'tv']` | `GET /genre/{movie,tv}/list` | `GenresResponse`, `staleTime: Infinity` |
 | `personQueries.detail(id)` | `['person', 'detail', id]` | `GET /person/{id}?append_to_response=combined_credits` | `PersonDetails`, with every credit |
 
@@ -78,7 +76,7 @@ Paths are relative to the proxy base `/api/tmdb`. Keys follow `all → lists / d
 
 `movieQueries.discover`, `tvQueries.discover`, `searchQueries.movies`, `searchQueries.tv` and `searchQueries.person` set `meta: { inlineErrors: true }`: Movies, TV Shows and Search show a failed next page inline, so `QueryCache.onError` shows no toast.
 
-`category` is `popular | top_rated | upcoming | now_playing` for movies and `popular | top_rated | on_the_air | airing_today` for TV; `mediaType` is `movie | tv | person | all`, `timeWindow` is `day | week`.
+`category` is `popular | top_rated | upcoming | now_playing`; `mediaType` is `movie | tv | person | all`, `timeWindow` is `day | week`.
 
 `useMoviesOrSearch(query, { genreId, sortBy })` switches between `searchQueries.movies(query)` and `movieQueries.discover({ genreId, sortBy })` inside one infinite query, using their keys, so the cache is shared. A non-empty `query` wins and the filters are ignored: TMDB search has no genre or sort. `useTVOrSearch(query, { genreId, sortBy })` does the same with `searchQueries.tv(query)` and `tvQueries.discover({ genreId, sortBy })`.
 
@@ -90,18 +88,15 @@ The Search page calls `searchQueries.movies`, `.tv` and `.person` directly, one 
 
 ## API coverage vs UI
 
-| Factory | Used in UI | Where / planned page |
+| Factory | Used in UI | Where |
 |-----|:---:|-----------------------|
 | `movieQueries.row` | ✅ | Home (rows) |
 | `movieQueries.discover`, `searchQueries.movies` | ✅ | Movies, through `useMoviesOrSearch` (genre, sort and search from the URL) |
-| `movieQueries.list` | ⬜ | not used since Movies moved to `discover`; kept for category pages |
 | `trendingQueries.row` | ✅ | Home (Hero + Trending) |
 | `genreQueries.movie` | ✅ | Home, Movies (genre pills, prefetched next to the list) |
 | `movieQueries.detail` | ✅ | **Movie Detail** `/movies/:id` (hero and all five sections) |
 | `tvQueries.discover`, `searchQueries.tv` | ✅ | TV Shows, through `useTVOrSearch` (genre, sort and search from the URL) |
 | `genreQueries.tv` | ✅ | TV Shows (genre pills, prefetched next to the list) |
 | `tvQueries.detail` | ✅ | **TV Detail** `/tv/:id` (hero and all six sections) |
-| `tvQueries.list`, `tvQueries.row` | ⬜ | kept for category pages and rows |
 | `searchQueries.movies`, `searchQueries.tv`, `searchQueries.person` | ✅ | **Search** `/search`, one query for the active tab, with Load more |
-| `searchQueries.multi` | ⬜ | not used: a mixed list cannot page by type, so Search has tabs |
 | `personQueries.detail` | ✅ | **Person** `/person/:id` (hero, Known for, filmography) |

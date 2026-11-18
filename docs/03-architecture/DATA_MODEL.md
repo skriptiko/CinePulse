@@ -105,14 +105,13 @@ One person can hold several credits on one title, so only `credit_id` is unique 
 
 ## Domain: Trending and Search (unified types)
 
-Trending and multi-search return mixed items, discriminated by the `media_type` field (`types/trending.ts`, `types/search.ts`):
+Trending returns mixed items, discriminated by the `media_type` field (`types/trending.ts`):
 
 ```ts
 type MediaType = 'movie' | 'tv' | 'person' | 'all';
 type TimeWindow = 'day' | 'week';
 
 type TrendingItem  = TrendingMovie | TrendingTV | TrendingPerson; // Movie/TV/Person & { media_type }
-type MultiSearchResult = SearchMovie | SearchTV | SearchPerson; // SearchMovie = TrendingMovie, etc.
 ```
 
 The `media_type` discriminant lets code narrow the type at runtime (e.g. `apps/pages-mfe/src/pages/home/trending.ts` keeps `media_type === 'movie'`).

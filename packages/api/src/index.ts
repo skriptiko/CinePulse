@@ -15,7 +15,7 @@ export {
   toHttpError,
 } from './core';
 
-export type { DiscoverSortBy, DiscoverTVSortBy, MovieCategory, TVCategory } from './endpoints';
+export type { DiscoverSortBy, DiscoverTVSortBy, MovieCategory } from './endpoints';
 export { useMoviesOrSearch, useTVOrSearch } from './hooks';
 export type { ApiProviderProps } from './provider/api-provider';
 export { ApiProvider } from './provider/api-provider';
@@ -58,7 +58,6 @@ export type {
   MediaType,
   Movie,
   MovieDetails,
-  MultiSearchResult,
   Network,
   PageParams,
   PaginatedResponse,
@@ -68,9 +67,6 @@ export type {
   ProductionCountry,
   RegionWatchProviders,
   Review,
-  SearchMovie,
-  SearchPerson,
-  SearchTV,
   Season,
   SpokenLanguage,
   TimeWindow,
