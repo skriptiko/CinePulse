@@ -2,7 +2,7 @@
 
 # UX Notes
 
-Design and UX notes. The design system is implemented in code (`packages/ui`) and can be treated as the source of truth; there are no formal mockups (Figma).
+Design and UX notes. The design system is implemented in code (`packages/ui`); how it looks is owned by the Figma file, see [FIGMA_WORKFLOW](./FIGMA_WORKFLOW.md) and [ADR-0019](../03-architecture/decisions/ADR-0019-figma-design-source-of-truth.md).
 
 ## Design system components
 
@@ -48,7 +48,7 @@ In the integration the host builds one stylesheet for every remote, so MFE style
 
 ## Mockups
 
-> There are no formal mockups (Figma/Sketch), and none are planned. The source of truth is the implementation in `@repo/ui` and its tokens in `@repo/ui/theme.css`; the prototype in `docs/08-design-files/` is the visual reference.
+> Mockups live in the [CinePulse Design System](https://www.figma.com/design/fhJ2HsroPBivgDcshCTuku) Figma file, built from `@repo/ui` and its tokens in `@repo/ui/theme.css` ([FIGMA_WORKFLOW](./FIGMA_WORKFLOW.md)). Until every page is in it, the implementation stays the reference; the prototype in `docs/08-design-files/` is outdated and goes away once it is (CIN-136).
 
 ## UI states
 
