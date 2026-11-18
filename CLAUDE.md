@@ -34,7 +34,9 @@ pnpm test:e2e                         # Playwright on the merged dist/ + Auth an
 pnpm test:rules                       # Firestore rules on the emulator: needs Java and a global firebase-tools
 ```
 
-Verifying changes = `pnpm typecheck` + `pnpm lint` + `pnpm test`. Test stack: ADR-0006, plan: `docs/05-testing/TEST_STRATEGY.md`:
+**MFE workflow (mandatory, `docs/04-development/CONVENTIONS.md` § MFE workflow):** one task = one MFE or one shared package (a single "Area" in Notion; a shared package merges first, each MFE adopts it in its own ticket). A remote runs standalone (`pnpm --filter @repo/<mfe> dev`); only a host task runs `pnpm dev`. It is verified on its MFE: `pnpm exec turbo typecheck lint build --filter=@repo/<mfe>` + `pnpm exec vitest run --project <mfe>` + `pnpm lint:jsx-spread`; a shared package uses `--filter=...@repo/<package>` and the vitest projects of the package and every app. The full `pnpm typecheck` + `pnpm lint` + `pnpm test` is for tasks with no MFE (CI, dependencies, configs, docs); integration and e2e happen in CI and on the release PR.
+
+Test stack: ADR-0006, plan: `docs/05-testing/TEST_STRATEGY.md`:
 - Vitest 5, Testing Library, MSW 3, jsdom, axe-core.
 - Tests live in `__tests__/<name>.test.ts(x)` next to the code. A project becomes part of the run once it has its own `vitest.config.ts`.
 - jsdom projects set `environment: scripts/vitest-jsdom-environment.ts` (jsdom with Node fetch globals, except `FormData`, which React builds from a form whose submit starts a transition); with plain `jsdom`, MSW fails on `AbortSignal`.
