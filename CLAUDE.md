@@ -35,7 +35,7 @@ pnpm test:rules                       # Firestore rules on the emulator: needs J
 ```
 
 Verifying changes = `pnpm typecheck` + `pnpm lint` + `pnpm test`. Test stack: ADR-0006, plan: `docs/05-testing/TEST_STRATEGY.md`:
-- Vitest 4, Testing Library, MSW 3, jsdom, axe-core.
+- Vitest 5, Testing Library, MSW 3, jsdom, axe-core.
 - Tests live in `__tests__/<name>.test.ts(x)` next to the code. A project becomes part of the run once it has its own `vitest.config.ts`.
 - jsdom projects set `environment: scripts/vitest-jsdom-environment.ts` (jsdom with Node fetch globals, except `FormData`, which React builds from a form whose submit starts a transition); with plain `jsdom`, MSW fails on `AbortSignal`.
 - Helpers are in `@repo/test-utils`:

@@ -8,6 +8,8 @@ Accepted (2026-10-29)
 
 Amended 2026-10-30 (CIN-80): security updates moved the repo to Vite 7 and Vitest 4. The version constraint below no longer applies; the rest of the decision stands. Vitest 4 no longer skips `dist/` by default, so every project excludes it.
 
+Amended 2026-11-18 (CIN-121, CIN-122): the repo is on Vite 8 ([ADR-0018](./ADR-0018-vite-8-federation-runtime.md)), Vitest 5 and jsdom 31. `scripts/vitest-jsdom-environment.ts` and the MSW setup run unchanged on them.
+
 Amended 2026-11-18 (CIN-112): the E2E layer below, planned for later, is in place since CIN-12: Playwright on the merged `dist/` with the Hosting, Auth and Firestore emulators, specs in `e2e/`.
 
 ## Context
