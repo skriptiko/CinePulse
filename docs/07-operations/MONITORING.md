@@ -23,7 +23,7 @@
 
 ## Logging
 
-⬜ There is no structured logging.
+⬜ The client has no structured logging; the function has.
 - **Functions:** ✅ structured logs via `firebase-functions` `logger` with the TMDB path and status (CIN-52).
 - **Client:** centralize through the error-tracking SDK instead of `console`.
 - Define levels (error/warn/info) and what exactly to log (no PII and no TMDB token).

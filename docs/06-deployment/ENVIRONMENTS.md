@@ -2,7 +2,7 @@
 
 # Environments
 
-Status: **🟡** — local dev, PR previews and production exist; there is no separate staging.
+Status: **✅** — local dev, PR previews and production exist; a separate staging is out of scope.
 
 ## Overview
 
@@ -11,7 +11,7 @@ Status: **🟡** — local dev, PR previews and production exist; there is no se
 | **Local dev** | local machine | Vite dev servers (5000/5001/5002) | Vite proxy + `.env` | ✅ |
 | **PR preview** | Firebase | A Hosting channel of `cinepulse-eec15`, for 7 days | The production `tmdbProxy` | ✅ |
 | **Production** | Firebase | Firebase Hosting `cinepulse-eec15` | Cloud Function `tmdbProxy` + Secret | ✅ |
-| **Staging** | — | — | — | ⬜ none |
+| **Staging** | — | — | — | not planned |
 
 ## Local dev
 

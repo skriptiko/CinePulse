@@ -16,15 +16,16 @@ CinePulse is a micro-frontend (MFE) web app: a movie catalog on top of the TMDB 
 | `apps/pages-mfe` | Public catalog (Home, Movies, TV Shows, Movie Detail, TV Detail, Person, Search) | 5001 | `exposes: ./routes` |
 | `apps/user-mfe` | User account (Profile, Settings, Watchlist) | 5002 | `exposes: ./routes` |
 
-The host has no pages of its own: it imports routes from the remote modules in `apps/host/src/App.tsx`:
+The host has no pages of its own. `REMOTES` in `apps/host/src/remotes/remotes.ts` lists each remote with its loader and the paths it serves, and `useRemoteRoutes(REMOTES)` imports a remote the first time the user reaches one of those paths ([ADR-0011](./decisions/ADR-0011-lazy-remotes-declarative-routing.md)):
 
 ```ts
-const [pagesModule, userModule] = await Promise.all([
-  import('pagesMfe/routes'),
-  import('userMfe/routes'),
-]);
-setRemoteRoutes([...pagesModule.routes, ...userModule.routes]);
+export const REMOTES: readonly RemoteDefinition[] = [
+  { name: 'pagesMfe', load: () => import('pagesMfe/routes'), paths: [ROUTE_PATHS.HOME, ROUTE_PATHS.MOVIES, /* … */] },
+  { name: 'userMfe', load: () => import('userMfe/routes'), paths: [ROUTE_PATHS.AUTH_LOGIN, ROUTE_PATHS.USER_PROFILE, /* … */] },
+];
 ```
+
+`AppRoutes` (`apps/host/src/app-routes.tsx`) renders the loaded routes with `useRoutes` and a final `*` route to `NotFound`.
 
 Each remote exposes only a `RouteObject[]` array (`exposes: { './routes': './src/routes.tsx' }`), so the unit of composition is a **route**, not a single component. This is deliberate (see [ADR-0001](./decisions/ADR-0001-micro-frontend-module-federation.md)).
 
