@@ -11,8 +11,12 @@ const STRICT_SINGLETONS = [
   'zustand',
 ];
 
-/** Workspace packages: always the same source, so singleton is enough. */
-const WORKSPACE_SINGLETONS = ['@repo/events', '@repo/routes', '@repo/api', '@repo/firebase'];
+/**
+ * Workspace packages: always the same source, so singleton is enough. They are TypeScript source,
+ * and Module Federation adds every shared key to `optimizeDeps.include`, where Vite 8 parses them
+ * as JSX: every app excludes them from pre-bundling.
+ */
+export const WORKSPACE_SINGLETONS = ['@repo/events', '@repo/routes', '@repo/api', '@repo/firebase'];
 
 interface SharedConfig {
   singleton: true;
