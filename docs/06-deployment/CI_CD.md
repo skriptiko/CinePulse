@@ -17,8 +17,8 @@ Pipeline: [`.github/workflows/firebase-deploy.yml`](../../.github/workflows/fire
   4. `pnpm typecheck` (`e2e/` included).
   5. `pnpm test`.
 - **Job `size`** (on every trigger; required for a merge into `main`, and the deploy waits for it): `pnpm turbo build --filter=@repo/host` → `pnpm size` (budget in `.size-limit.json`).
-- **Job `rules`** (on every trigger): sets up Java 21 and runs the Firestore rules tests on the emulator.
-- **Job `e2e`** (PRs into `main` only): `pnpm build:deploy`, then Playwright on the merged `dist/` with the Hosting, Auth and Firestore emulators. Sets up Java 21 for Firestore.
+- **Job `rules`** (on every trigger): sets up Java 25 and runs the Firestore rules tests on the emulator.
+- **Job `e2e`** (PRs into `main` only): `pnpm build:deploy`, then Playwright on the merged `dist/` with the Hosting, Auth and Firestore emulators. Sets up Java 25 for Firestore.
 - **Jobs `preview-build` and `preview`** (`needs: [quality, rules]`, PRs by a person from this repository only; a new push cancels the run of the one before it; not required checks):
   1. `preview-build` has no secrets and a read-only token: `pnpm build:deploy`, then uploads `dist/` as an artifact.
   2. `preview` holds the deploy key and runs no code of the PR: it checks out the base branch, for its `firebase.json`, downloads `dist/`, and calls `FirebaseExtended/action-hosting-deploy@v0` with no `channelId` and `expires: 7d`. The action names the channel after the PR and comments its link there.

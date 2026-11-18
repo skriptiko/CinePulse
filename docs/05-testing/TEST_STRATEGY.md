@@ -214,7 +214,7 @@ e2e runs on PRs into `main` only, so run it locally before merging a change to t
 ## CI
 
 - `quality` job: `pnpm install --frozen-lockfile` → `pnpm lint` → `pnpm typecheck` → `pnpm test`.
-- ✅ e2e: a separate `e2e` job on PRs into `main`, after `build:deploy`. `FIREBASE_CLI` overrides the emulator command there, because CI has no global `firebase-tools`; the job sets up Java 21 for the Firestore emulator.
+- ✅ e2e: a separate `e2e` job on PRs into `main`, after `build:deploy`. `FIREBASE_CLI` overrides the emulator command there, because CI has no global `firebase-tools`; the job sets up Java 25 for the Firestore emulator.
 
 ## Coverage
 
