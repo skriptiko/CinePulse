@@ -203,6 +203,7 @@ The fixtures have no backdrop, so the contrast over solid white, mid grey and bl
 24. A theme chosen in Settings reaches a page of another remote, survives a new load and a sign-out, and `System` follows the device.
 25. A removed title leaves every folder and the profile, also after a reload, and a removal in a long list keeps the page where it is.
 26. A double press on Cancel in a folder form, by touch or mouse, reaches no pill, title or toolbar button, and focus stays on the toolbar button. Each press point is first checked to lie on that control.
+27. Every page, in both themes and with the account pages signed in, has no WCAG 2.1 A or AA violation by axe in the browser, contrast included, and Tab reaches its last control through visible stops (`e2e/a11y.spec.ts`).
 27. A double press on Cancel in the Remove title question, by touch or mouse, changes no status and opens no title, and focus returns to Remove. Each press point is first checked to lie on that control.
 28. The focus ring of every Button variant reaches 3:1 in both themes, read from painted pixels. A button on an image shows two colours at least 9:1 apart.
 
