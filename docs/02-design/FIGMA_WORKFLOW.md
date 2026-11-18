@@ -45,6 +45,32 @@ The design and the code support three widths; every screen page has a frame for 
 
 Widths in between are not drawn: the breakpoints of the code decide them. A new screen gets all three frames; its loading, empty and error states are drawn at least at 1440 and 1920.
 
+## States on a screen page
+
+A screen page holds one Figma section per state, so a state is easy to find and every screen size of it sits side by side:
+
+- **Section:** named after the state (`Default`, `Loading`, `Error`…). A screen with several default views, such as the Search tabs, names the view first: `Results, People tab`, `No results, Movies tab`.
+- **Columns:** inside a section the frames stand left to right: 390 at x = 160, 1440 at x = 670, 1920 at x = 2230. A state drawn only at 1440 and 1920 leaves the 390 column empty.
+- **Order:** sections run top to bottom from the usual view to the rare one: default views, `Loading`, empty states, `Not found`, `Error`, section errors, list states (`Load more`, `End of list`), `Offline`, the forms and dialogs, then the app-level failures (`Remote unavailable`, `App crash`).
+- **Frame name:** `<Page> — <Mobile 390|Desktop 1440|Desktop 1920> — <State>`. The app-level failures on `Not Found` are `App — …`, as they are not tied to a route.
+
+Each state copies its text from the code, so the frame shows what the user reads:
+
+| Page | States besides Default |
+| --- | --- |
+| Home | Loading, Section error (Trending and Editor's Picks fail), Offline (the offline banner) |
+| Movies, TV Shows | Loading, Empty search, Empty filters, Error, Load more loading, Load more failed, End of list |
+| Movie Detail, TV Detail | Loading, Empty sections (every section shows its `DetailSection` empty text), Not found, Error, and on Movie Detail the watchlist dialog: signed out, folders, saving |
+| Person | Loading, Empty sections, Not found, Error |
+| Search | Before a query, Loading results, No results (Movies and People tabs), Results error |
+| Watchlist | Loading, Empty, Error, Filter empty, Folder rename, Folder move, Folder delete, Remove confirm |
+| Profile | Loading, Stats loading, Stats error, Stats empty |
+| Settings | Loading |
+| Login | Loading, Error, Popup blocked |
+| Not Found | Page error, Remote unavailable, App crash |
+
+A new state goes into its own section in this order. A state the code adds is drawn in the same ticket.
+
 ## Tokens
 
 - **Colour:** collection `Color`, modes `Dark` (default, as the app is dark-first) and `Light`. Each variable carries the name of its CSS variable without the dashes: `background`, `muted-foreground`, `glass-border`, plus `rating` (`--color-rating`). Code syntax is the Tailwind theme variable, `var(--color-background)`, so `get_design_context` names the class the code already uses (`bg-background`). A frame shows the light theme by setting the `Light` mode on it.
@@ -61,7 +87,7 @@ A new token is added in Figma and in `theme.css` in the same ticket. Never bind 
 - Variant properties use the names and values of the code props: `variant=default|destructive|outline|secondary|ghost|link`, `size=default|sm|lg|icon|icon-sm|icon-lg`. A state the code draws (`hover`, `focus-visible`, `disabled`) is a `state` property.
 - A domain component takes the content of its UI model (`MovieCardData`: title, year, rating, poster) as text and instance-swap properties, not as variants.
 - Icons are `lucide-react`, the same as the code: `Icon/<Name>` components at 16 px (`size-4`), swapped with instance-swap properties. An icon the code starts to import is added on the `Primitives` page.
-- Components that change with the breakpoint (Header, Footer, Hero, ContentRow, the details views and sections, the skeletons) have a `viewport=desktop|mobile` variant at 1440 and 390. Those whose inner grid changes at 1920 also have `viewport=wide`: MovieDetailView, CastSection, MediaSection, SeasonsSection and MovieGridSkeleton. The others are widened in the 1920 frame.
+- Components that change with the breakpoint (Header, Footer, Hero, ContentRow, the details views and sections, the skeletons) have a `viewport=desktop|mobile` variant at 1440 and 390. Those whose inner grid changes at 1920 also have `viewport=wide`: MovieDetailView, CastSection, MediaSection, SeasonsSection, MovieGridSkeleton, HeroSkeleton, FeaturedGridSkeleton and ContentRowSkeleton. The others are widened in the 1920 frame.
 - Images (posters, backdrops, photos, provider logos) are `Image Placeholder` instances, filled with the test images of the `Test Images` page: soft 3D clay renders with rounded shapes, studio light and soft shadows. Every image has its own subject and its own palette (red, green, pink, teal, purple, orange, blue), so a screen shows how the UI reads next to many colours in both the `Dark` and the `Light` mode; neighbouring cards get different images. 2:3 posters and portraits, 16:9 backdrops (also the media thumbnails) and square provider logos. The art is fictional, so a design never shows a real poster or a real person. A new image in the pack keeps the same style and goes on that page first. An image keeps the size its component has in `@repo/ui` (a Hero or a backdrop fills its frame, a detail poster is `w-64`, a provider logo `size-10`): never reset the overrides of an `Image Placeholder`, it brings back the default 192×288.
 - Gradients over images use the dark background color directly: a gradient stop bound to a variable loses its alpha in Figma.
 - Components follow the dark spec, as the app is dark-first. Where a component differs in light beyond its tokens (a `dark:` class in code), its description says so.
