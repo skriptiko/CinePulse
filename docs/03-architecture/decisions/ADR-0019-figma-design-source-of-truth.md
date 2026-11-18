@@ -24,10 +24,10 @@ The official Figma MCP server can now write to a Figma file (variables, componen
 
 - **Keep the code as the only source:** no tool to design before building, and no reference to review a page against.
 - **Import the prototype into Figma as a Code Layer or Make file:** fast, but it gives no editable shapes or variables, and it would bring in the outdated prototype rather than the app.
-- **Code Connect for the component mapping:** needs an Organization plan; a table in FIGMA_WORKFLOW does the same for one file and one team.
+- **Stay on the free Starter plan:** it allows three pages per file and one mode per variable collection, so there is no page per screen and no Dark/Light switch, and it caps MCP reads at about 20 a month. Professional with one Full seat lifts all three and adds Code Connect; a Dev seat cannot edit the file.
 
 ## Consequences
 
 - Two places hold the tokens. They are kept identical by naming and by the rule that a token changes on both sides in one ticket.
-- On the Starter plan, MCP reads are capped at about 20 a month, which limits design-to-code work; regular use needs a Professional plan.
+- The team is on Figma Professional with a Full seat: 200 MCP reads a day, variable modes, a page per screen, and Code Connect once the components are published.
 - Design work becomes tickets of its own (stage "2. Design and UX"), ahead of the code tickets that implement it.
