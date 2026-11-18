@@ -69,7 +69,7 @@ Ports are fixed (`strictPort: true`): if a port is taken, the app does not start
 
 ### MFE startup order
 
-At runtime the host loads the `remoteEntry.js` of each remote module. So **the remotes (5001, 5002) must be reachable** when the host tries to load them. `pnpm dev` starts everything in parallel; if you start them manually, start the remotes before or together with the host. If a remote is unreachable, its paths show `RemoteUnavailable` with a Retry button, the other remote keeps working, and `mfe:error` is logged in development.
+At runtime the host loads the `remoteEntry.js` of each remote module. So **the remotes (5001, 5002) must be reachable** when the host tries to load them. `pnpm dev` starts everything in parallel; if you start them manually, start the remotes before or together with the host. If a remote is unreachable, its paths show `RemoteUnavailable` with a "Try again" button, the other remote keeps working, and `mfe:error` is logged in development.
 
 ### Hybrid mode (remote from staging)
 
@@ -91,7 +91,7 @@ pnpm build:deploy   # empty the dist folders, build, merge the dist of all MFEs 
 
 | Command | Purpose |
 |---------|-------------|
-| `pnpm lint` | Linting via Biome (turbo for the packages, then `e2e/` and `playwright.config.ts`) |
+| `pnpm lint` | Linting via Biome (turbo for the packages, then `e2e/` and `playwright.config.ts`) plus the JSX-spread/`asChild` check (`pnpm lint:jsx-spread`) |
 | `pnpm format` | Formatting via Biome |
 | `pnpm check` | Biome check with fixes applied automatically |
 | `pnpm typecheck` | TypeScript type checking (turbo for the packages, then `e2e/` and `playwright.config.ts`) |
@@ -102,7 +102,7 @@ pnpm build:deploy   # empty the dist folders, build, merge the dist of all MFEs 
 | `pnpm emulators` | `build:deploy`, then Hosting, Functions, Firestore and Auth emulators |
 | `pnpm sync-types` | Sync remote module types into the host |
 | `pnpm build:deploy` | Empty the `dist/` folders, build + merge the MFE `dist/` folders |
-| `pnpm deploy` | Build, merge and deploy to Firebase Hosting (production) |
+| `pnpm run deploy` | Build, merge and deploy to Firebase Hosting (production) |
 
 ## Remote module types
 
@@ -114,7 +114,7 @@ pnpm sync-types
 
 ## Troubleshooting
 
-- **Host does not see pages / "Failed to load remote routes"** — make sure `pages-mfe` (5001) and `user-mfe` (5002) are running and `remoteEntry.js` is reachable. The host logs the loading error in the dev console.
+- **Host does not see pages / "This section is unavailable"** — make sure `pages-mfe` (5001) and `user-mfe` (5002) are running and `remoteEntry.js` is reachable. The host logs the loading error in the dev console as `[mfe:error] <name>`.
 - **Port is taken** — because of `strictPort: true` the app will crash; free the port (5000/5001/5002) or stop the previous process.
 - **Empty data / 401 from TMDB** — check `TMDB_API_READ_TOKEN` in the (root) `.env` and that it is the Read Access Token, not the API Key v3.
 - **Remote types out of sync** — run `pnpm sync-types` (requires the remote modules to be built first).

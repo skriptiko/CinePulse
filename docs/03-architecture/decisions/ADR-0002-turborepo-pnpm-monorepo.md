@@ -6,6 +6,8 @@
 
 Accepted
 
+Amended 2026-11-18 (CIN-129): the repo requires Node `>=24` since CIN-53 (Node 24 LTS). The rest of the decision stands.
+
 ## Context
 
 The project consists of three apps (host, pages-mfe, user-mfe), several shared packages (`@repo/api`, `@repo/ui`, `@repo/events`, `@repo/routes`, `@repo/typescript-config`) and Firebase Functions. These parts are tightly coupled (shared types, UI, data layer) and must be versioned together. Publishing the shared packages to an external registry is not worth it.

@@ -6,6 +6,8 @@
 
 Accepted
 
+Amended 2026-11-18 (CIN-129): `minify: false` below no longer applies: CIN-49 re-enabled minification of the production builds. The rest of the decision stands.
+
 ## Context
 
 CinePulse splits logically into two independent areas: the public catalog (Home, Movies, later TV/Search/Detail) and the user account (Profile, Settings, authentication). These areas have different development cycles and potentially different owning teams. We need an architecture that lets us develop and deploy them independently while presenting them to the user as one app.

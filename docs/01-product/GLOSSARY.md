@@ -10,7 +10,7 @@ Key project terms. Most are derived from the code (reliable); the watchlist/auth
 - **Host (shell)** — the `apps/host` application (port 5000) that loads the remote modules and assembles them into a single application. Contains the layout, top-level routing and the shell-level error boundary.
 - **Remote** — an MFE that exposes its modules (`exposes: { './routes': ... }`) for the host to load. In CinePulse the remotes are `pages-mfe` (5001) and `user-mfe` (5002).
 - **Module Federation** — a Vite mechanism (`@module-federation/vite`) that lets one application load code from another at runtime via `remoteEntry.js`.
-- **Shared dependency** — a dependency that the host and remotes share from a single instance (to avoid duplicating React, etc.). In the configs: `react`, `react-dom`, `react-router-dom`, `@tanstack/react-query`, `@repo/*`.
+- **Shared dependency** — a dependency that the host and remotes share from a single instance (to avoid duplicating React, etc.). In the configs: `react`, `react-dom`, `react-router-dom`, `@tanstack/react-query`, `react-error-boundary`, `zustand`, `@repo/events`, `@repo/routes`, `@repo/api`, `@repo/firebase` (`scripts/mf-shared.ts`); `@repo/ui` is deliberately not shared.
 - **shareScope / entryGlobalName** — Module Federation parameters that define the shared dependency scope and the global name of the remote entry.
 - **Turborepo** — the monorepo task orchestrator (`turbo.json`): caches and parallelizes `build`, `dev`, `lint`, `typecheck`, `sync-types`.
 - **pnpm workspace** — the monorepo package manager; the workspace members are listed in `pnpm-workspace.yaml` (`apps/*`, `packages/*`, `functions`).
@@ -35,18 +35,20 @@ Key project terms. Most are derived from the code (reliable); the watchlist/auth
 
 ## Cross-MFE communication (`@repo/events`)
 
-- **Event bus** — a typed event bus (a singleton on `window.__CINEPULSE_EVENT_BUS__`) for communication between MFEs without direct dependencies. API: `createTypedEmitter` / `createTypedListener`. Events are described in `EventMap` (`notification:show`, `mfe:error`, `error:report`).
-- **Global store** — global state (`window.__CINEPULSE_STORE__`), a Zustand store: `theme` + `setTheme`; React reads it with `useGlobalStore(selector)`.
+- **Event bus** — a typed event bus (a singleton on `window.__CINEPULSE_EVENT_BUS__`) for communication between MFEs without direct dependencies. API: `createTypedEmitter` / `createTypedListener`. Events are described in `EventMap` (`notification:show`, `mfe:error`, `error:report`, `user:login`, `user:logout`).
+- **Global store** — global state (`window.__CINEPULSE_STORE__`), a Zustand store: `theme` + `setTheme`, `user` + `authStatus` + `setUser`; React reads it with `useGlobalStore(selector)`.
 - **Error boundary** — a React error-handling boundary. Two levels: **shell-level** (critical failure, application reload) and **module-level** (a single MFE can retry without reloading everything).
 
 ## Shared packages
 
 - **`@repo/api`** — TMDB client, endpoints, React Query hooks, types.
-- **`@repo/ui`** — design system (components, theme, mappers, provider).
+- **`@repo/ui`** — design system (components, theme, mappers).
 - **`@repo/routes`** — path constants (`ROUTE_PATHS`) and the `RoutePath` type.
 - **`@repo/events`** — event bus and global store.
+- **`@repo/firebase`** — the only importer of the Firebase SDK: auth session and the watchlist.
+- **`@repo/test-utils`** — shared test helpers (`renderWithProviders`, MSW `server`, builders, `expectNoA11yViolations`).
 - **`@repo/typescript-config`** — shared TS configs (`base.json`, `react-library.json`).
-- **ROUTE_PATHS** — the single source of truth for routing paths (`HOME`, `MOVIES`, `USER_PROFILE`, `USER_SETTINGS`, `USER_WATCHLIST`).
+- **ROUTE_PATHS** — the single source of truth for routing paths (e.g. `HOME`, `MOVIES`, `MOVIE_DETAIL`, `SEARCH`, `AUTH_LOGIN`, `USER_WATCHLIST`); dynamic paths are built with `buildPath.movie(id)` / `.tv(id)` / `.person(id)`.
 
 ## Product terms (watchlist, auth) — from the 2026-07-12 requirements
 

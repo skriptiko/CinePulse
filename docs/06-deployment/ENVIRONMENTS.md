@@ -20,8 +20,8 @@ Three Vite servers (Module Federation), started together via `pnpm dev` (Turbo):
 | App | Role | Port |
 |-----------|------|------|
 | `@repo/host` | shell | 5000 |
-| `@repo/pages-mfe` | remote: Home, Movies, TV Shows | 5001 |
-| `@repo/user-mfe` | remote: Profile, Settings, Watchlist | 5002 |
+| `@repo/pages-mfe` | remote: Home, Movies, TV Shows, Movie Detail, TV Detail, Person, Search | 5001 |
+| `@repo/user-mfe` | remote: Login, Profile, Settings, Watchlist | 5002 |
 
 - Ports are fixed (`strictPort: true`).
 - **TMDB in dev:** the Vite proxy (`vite.config.ts`) intercepts `/api/tmdb` → `https://api.themoviedb.org/3`, adding the `Authorization: Bearer ${TMDB_API_READ_TOKEN}` header from the root `.env`.
@@ -38,9 +38,11 @@ Three Vite servers (Module Federation), started together via `pnpm dev` (Turbo):
 | Pattern | Destination |
 |--------|-------------|
 | `/api/tmdb/**` | function `tmdbProxy` |
-| `/pages-mfe/**` | `/pages-mfe/index.html` |
-| `/user-mfe/**` | `/user-mfe/index.html` |
-| `**` | `/index.html` (SPA fallback) |
+| `^/pages-mfe/[^.]*$` (regex) | `/pages-mfe/index.html` |
+| `^/user-mfe/[^.]*$` (regex) | `/user-mfe/index.html` |
+| `^/[^.]*$` (regex) | `/index.html` (SPA fallback) |
+
+The regexes skip any path with a dot, so a request for a missing file gets a 404 instead of an `index.html`.
 
 **Headers:** the host and remotes are served from the same origin, so there are no CORS headers. All responses get security headers: `Content-Security-Policy`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`. Firebase Hosting adds HSTS itself.
 
@@ -51,10 +53,10 @@ Three Vite servers (Module Federation), started together via `pnpm dev` (Turbo):
 | Variable | Local dev | Production |
 |--------|-----------|-----------|
 | `TMDB_API_READ_TOKEN` | root `.env`, used by the Vite proxy | Firebase Secret Manager (`defineSecret`) in the function |
-| `PAGES_MFE_URL` | (optional) remote staging URL for hybrid dev | — |
-| `USER_MFE_URL` | (optional) remote staging URL for hybrid dev | — |
+| `PAGES_MFE_URL` | (optional) remote staging URL for hybrid dev | `/pages-mfe/remoteEntry.js` (`apps/host/.env.production`) |
+| `USER_MFE_URL` | (optional) remote staging URL for hybrid dev | `/user-mfe/remoteEntry.js` (`apps/host/.env.production`) |
 
-> `.env` is not committed. An example/instructions are in the root `.env` (a template with a comment).
+> `apps/host/.env.staging` sets the same remote URLs. The root `.env` is not committed; how to create it is in [SETUP](../04-development/SETUP.md).
 
 ## PR previews
 

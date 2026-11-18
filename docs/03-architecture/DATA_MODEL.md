@@ -69,11 +69,11 @@ The key `'watch/providers'` has a slash because it repeats the name in `append_t
 
 ### `TV` (`types/tv.ts`) — list item
 
-Same as `Movie`, with TV specifics: `name` / `original_name` instead of `title`, `first_air_date` instead of `release_date`, `origin_country: string[]`.
+Same as `Movie`, with TV specifics: `name` / `original_name` instead of `title`, `first_air_date` instead of `release_date`, `origin_country: string[]`, no `video`.
 
 ### `TVDetails` (`types/tv.ts`)
 
-Extends `TV` (without `genre_ids`) and adds: `genres`, `created_by: Creator[]`, `episode_run_time: number[]`, `in_production`, `languages`, `last_air_date`, `last_episode_to_air` / `next_episode_to_air: Episode | null`, `networks: Network[]`, `number_of_episodes`, `number_of_seasons`, `seasons: Season[]`, `status`, `tagline`, `type`.
+Extends `TV` (without `genre_ids`) and adds: `genres`, `created_by: Creator[]`, `episode_run_time: number[]`, `homepage`, `in_production`, `languages`, `last_air_date`, `last_episode_to_air` / `next_episode_to_air: Episode | null`, `networks: Network[]`, `number_of_episodes`, `number_of_seasons`, `production_companies: ProductionCompany[]`, `seasons: Season[]`, `status`, `tagline`, `type`.
 
 It also carries `DetailSections<TV>`, from the same `append_to_response` as a movie. `seasons` and `created_by` are part of the base response, so they take no block of their own. A `Season` has `season_number`, which is 0 for Specials, and `air_date: string | null`.
 
@@ -194,7 +194,7 @@ The typed event dictionary of the event bus (`packages/events/src/types.ts`):
 | `user:login` | `UserLoginPayload { user: AuthUser }` |
 | `user:logout` | `UserLogoutPayload { uid: string }` |
 
-`NotificationPayload.type` ∈ `'success' | 'error' | 'warning' | 'info'`. Event names are typed as ``EventKey = `${EventDomain}:${string}` ``, so a key outside the `domain:action` format fails `tsc`. `mfe:error` carries plain data (`serializeError(error)` → `{ name, message }`); `error:report` keeps the original error because the host listener filters reports by `ApiError` kind. `error:report` is emitted by boundaries, `QueryCache`/`MutationCache` and the host's window handlers, and has one listener in the host; `notification:show` is emitted by `QueryCache.onError` and shown as a toast by the host; `mfe:error` is emitted when a remote fails to load. `user:login` / `user:logout` are emitted by `@repo/firebase` when the signed-in user changes, including a restored session. The former `navigation:change` and `mfe:ready` events had no emitters or listeners and were removed.
+`NotificationPayload.type` ∈ `'success' | 'error' | 'warning' | 'info'`. Event names are typed as ``EventKey = `${EventDomain}:${string}` ``, so a key outside the `domain:action` format fails `tsc`. `mfe:error` carries plain data (`serializeError(error)` → `{ name, message }`); `error:report` keeps the original error because the host listener filters reports by `ApiError` kind. `error:report` is emitted by boundaries, `QueryCache`/`MutationCache`, `@repo/firebase` (`source: 'auth'`) and the host's window handlers, and has one listener in the host; `notification:show` is emitted by `QueryCache`/`MutationCache` and by `AddToWatchlist` and `WatchlistDialog` in `pages-mfe`, and shown as a toast by the host; `mfe:error` is emitted when a remote fails to load. `user:login` / `user:logout` are emitted by `@repo/firebase` when the signed-in user changes, including a restored session. The former `navigation:change` and `mfe:ready` events had no emitters or listeners and were removed.
 
 ## Images
 

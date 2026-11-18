@@ -6,6 +6,8 @@
 
 Accepted
 
+Amended 2026-11-18 (CIN-129): `noExplicitAny` and `noNonNullAssertion` are now errors, and `organizeImports` lives under `assist.actions.source` (Biome 2). `pnpm lint` also runs `scripts/check-jsx-spread.js`, and the CI job `quality` runs it, so lint errors block merges; the local-only trade-off below no longer applies.
+
 ## Context
 
 The monorepo needs static analysis and formatting for TypeScript/React code across several apps and packages. The traditional ESLint + Prettier stack requires separate configs, plugins and rules kept in sync with each other, and it noticeably slows down linting on a large codebase.

@@ -5,9 +5,10 @@ The design system: primitives, domain components, layout and error boundaries.
 ## Public API
 
 - **Primitives:** `Button`, `buttonVariants`, `BUTTON_ON_IMAGE_CLASS` (for a button laid straight on an image), `Dialog`, `DialogContent`, `Input`, `DropdownMenu`, `Skeleton`, `ToggleGroup`.
-- **Domain components:** `MovieCard`, `Hero`, `ContentRow`, `FeaturedGrid`, `MovieDetailView`, and the sections of a details page: `WatchProvidersSection`, `SeasonsSection`, `CastSection`, `MediaSection`, `MoreLikeThisSection`, `ReviewsSection`. Each takes one UI model.
+- **Domain components:** `MovieCard`, `PersonCard`, `Hero`, `ContentRow`, `FeaturedGrid`, `CategoryPills`, `CategoryLinks`, `ImagePlaceholder`, `MovieDetailView`, `PersonDetailView`, and the sections of a details page: `WatchProvidersSection`, `SeasonsSection`, `CastSection`, `MediaSection`, `MoreLikeThisSection`, `ReviewsSection`, `BiographySection`, `KnownForSection`, `FilmographySection`. Each takes one UI model.
 - **Mappers:** `toMovieCardData`, `toHeroData`, `toFeaturedItemData` and others turn TMDB data into UI models. `getViewerRegion` gives the country for `toWatchProvidersData`.
-- **Layout:** `AppLayout`, `Header`, `Footer`.
+- **Layout:** `AppLayout`, `Header`, `Footer`, `usePageMeta`.
+- **Formatting:** `formatTimestamp`.
 - **Boundaries:** `AsyncBoundary`, `PageBoundary`, `ShellBoundary`, `NotFound` and page skeletons.
 - **Theme:** `@repo/ui/theme.css`, imported after `tailwindcss`.
 
@@ -23,4 +24,4 @@ This package is not a Module Federation singleton: it holds no state of its own,
 
 ## Dependencies
 
-`@repo/api`, `@repo/events`, `@repo/routes`, Radix. `react`, `react-router-dom` and `@tanstack/react-query` are peers.
+`@repo/api`, `@repo/events`, `@repo/routes`, Radix. `react`, `react-dom`, `react-router-dom`, `react-error-boundary` and `@tanstack/react-query` are peers.

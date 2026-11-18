@@ -19,8 +19,8 @@
 - **Actions:** TODO.
 
 ### Remote MFE (remoteEntry) unavailable
-- **Symptoms:** the remote's URLs show "This section is unavailable", other sections work; an `mfe:error` event; in dev, `console.error('Failed to load remote "<name>"')`.
-- **Diagnosis:** TODO — reachability of `/pages-mfe/**` and `/user-mfe/**`; correctness of rewrites; CORS header on `*.js`.
+- **Symptoms:** the remote's URLs show "This section is unavailable", other sections work; an `mfe:error` event; in dev, `console.error('[mfe:error] <name>')`.
+- **Diagnosis:** TODO — reachability of `/pages-mfe/**` and `/user-mfe/**`; correctness of rewrites; `remoteEntry.js` served with `no-cache` (`firebase.json`).
 - **Actions:** TODO.
 
 ### Deployment failed
