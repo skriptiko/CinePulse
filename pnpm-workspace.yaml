@@ -19,7 +19,7 @@ catalog:
   "@types/react": ^19.3.0
   "@types/react-dom": ^19.3.0
   "@types/node": ^24.0.0
-  typescript: ^5.7.3
+  typescript: ^7.0.2
   vite: ^8.3.8
   "@vitejs/plugin-react": ^6.3.0
   # Vite 8 needs 1.12+; its runtime is why the host budget is 222 kB (ADR-0018).

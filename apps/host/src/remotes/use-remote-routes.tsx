@@ -23,7 +23,7 @@ export function useRemoteRoutes(remotes: readonly RemoteDefinition[]): RouteObje
     });
   }, [owner]);
 
-  return remotes.flatMap(
+  return remotes.flatMap<RouteObject>(
     ({ name, paths }) =>
       loadedRoutes[name] ?? paths.map((path) => ({ path, element: <PageSkeleton /> }))
   );
