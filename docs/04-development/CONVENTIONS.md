@@ -6,16 +6,18 @@
 
 ```
 apps/       host (5000), pages-mfe (5001), user-mfe (5002)
-packages/   api, ui, routes, events, typescript-config
+packages/   api, ui, routes, events, firebase, test-utils, typescript-config
 functions/  Firebase Cloud Functions (tmdbProxy)
+firestore/  Firestore security rules and their tests
+e2e/        Playwright specs
 ```
 
-Packages are consumed via `@repo/*` aliases (`@repo/api`, `@repo/ui`, `@repo/routes`, `@repo/events`, `@repo/typescript-config`). Apps: `@repo/host`, `@repo/pages-mfe`, `@repo/user-mfe`, `@repo/functions`.
+Packages are consumed via `@repo/*` aliases (`@repo/api`, `@repo/ui`, `@repo/routes`, `@repo/events`, `@repo/firebase`, `@repo/test-utils`, `@repo/typescript-config`). Apps: `@repo/host`, `@repo/pages-mfe`, `@repo/user-mfe`, `@repo/functions`.
 
 ## Naming
 
 - Component files in `@repo/ui` are **kebab-case** (`movie-card.tsx`, `content-row.tsx`); the exported component is **PascalCase** (`MovieCard`).
-- Every file and folder is **kebab-case**, pages included. A page with local hooks or components is a `pages/<name>/` folder with `<name>-page.tsx` (`pages/home/home-page.tsx`, `pages/movie-detail/movie-detail-page.tsx`); the exported component is PascalCase (`HomePage`).
+- Every file and folder is **kebab-case**, pages included. A page with local hooks or components is a `pages/<name>/` folder with `<name>-page.tsx` (`pages/home/home-page.tsx`, `pages/movie-detail/movie-detail-page.tsx`); the exported component is PascalCase (`Home`, `MovieDetail`).
 - Hooks are `useXxx` (`useMoviesOrSearch`, `useCatalogFilters`); query factories are `<domain>Queries` (`movieQueries`).
 - Shared constants are `SCREAMING_SNAKE` (`ROUTE_PATHS`, `API_CONFIG`).
 
@@ -68,6 +70,31 @@ Dynamic routes are linked with `buildPath.movie(id)` and friends, never by hand.
 - A **remote** exposes `./routes`; the **host** imports them dynamically (`import('pagesMfe/routes')`).
 - **Shared** dependencies (one instance for the whole app): `react`, `react-dom`, `react-router-dom`, `@tanstack/react-query`, `@repo/events`, `@repo/routes`, `@repo/api`. When adding a new shared dependency, register it in `shared` in **every** `vite.config.ts` (host + remotes), otherwise you get duplicate instances.
 - Each MFE has its own `main.tsx` for **standalone development** (with `ApiProvider` + `AppLayout`); when integrated into the host, only the `routes` export is used.
+
+## MFE workflow (mandatory)
+
+The project works the way a team that owns micro-frontends separately does: a task lives in one MFE, runs there and is verified there; the MFEs meet in CI.
+
+- **One task, one MFE.** A ticket belongs to exactly one app (`host`, `pages-mfe`, `user-mfe`) or one shared package (`@repo/ui`, `@repo/api`, `@repo/routes`, `@repo/events`, `@repo/firebase`): its "Area" in Notion has a single value. Work that needs a shared package and an MFE is split: the package ticket merges first, then each MFE adopts it in a ticket of its own. Tasks with no MFE (CI, dependencies, configs, `functions/`, Firestore rules, docs) are their own area.
+- **Run it on its MFE.** A remote is developed standalone, through its `main.tsx`: `pnpm --filter @repo/pages-mfe dev` (5001) or `pnpm --filter @repo/user-mfe dev` (5002), not `pnpm dev`. Only a host task runs `pnpm dev`, because the host loads both remotes.
+- **Verify it on its MFE.** Before the merge into `develop`, for an app (`<mfe>` is `host`, `pages-mfe` or `user-mfe`):
+
+  ```bash
+  pnpm exec turbo typecheck lint build --filter=@repo/<mfe>
+  pnpm exec vitest run --project <mfe>
+  pnpm lint:jsx-spread
+  ```
+
+  A shared package is verified together with every app that consumes it (`...` selects the package and its dependents):
+
+  ```bash
+  pnpm exec turbo typecheck lint build --filter=...@repo/<package>
+  pnpm exec vitest run --project <package> --project host --project pages-mfe --project user-mfe
+  pnpm lint:jsx-spread
+  ```
+
+  A task with no MFE runs the full set: `pnpm typecheck` + `pnpm lint` + `pnpm test`.
+- **Integration happens in CI and on release.** Every PR runs the full `quality`, `size` and `rules` jobs; the host with both remotes and `pnpm test:e2e` run on the release PR into `main`. A failure there that one MFE caused goes back to that MFE as a ticket of its own.
 
 ## Cross-MFE communication
 

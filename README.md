@@ -1,29 +1,36 @@
 # CinePulse
 
-A micro-frontend (MFE) application built with Turborepo, Vite and React.
+A movie and TV catalog on TMDB data with a personal watchlist, built as micro-frontends.
 
 ## Architecture
 
-- **Monorepo orchestration**: Turborepo
-- **Package manager**: pnpm
-- **Static analysis**: Biome.js
+- **Monorepo orchestration**: Turborepo + pnpm
+- **Apps**: Vite 8, React 19, React Router 7, TanStack Query 5
 - **Federation mechanism**: `@module-federation/vite`
-- **UI library**: Shadcn UI + Radix
+- **UI**: Tailwind 4 + shadcn/Radix
+- **Backend**: Firebase Hosting, Cloud Functions (TMDB proxy), Auth and Firestore Lite (watchlist)
+- **Static analysis**: Biome
+- **Tests**: Vitest, Testing Library, MSW, Playwright
 
 ## Project structure
 
 ```
 ├── apps/
 │   ├── host/           # Host application (shell) — port 5000
-│   ├── pages-mfe/      # Public catalog MFE: Home, Movies, TV Shows, Search, ... (remote) — port 5001
-│   └── user-mfe/       # Personal account MFE: Profile, Settings, ... (remote) — port 5002
+│   ├── pages-mfe/      # Public catalog MFE: Home, Movies, TV Shows, Movie and TV Detail, Person, Search (remote) — port 5001
+│   ├── user-mfe/       # Personal account MFE: Sign in, Profile, Settings, Watchlist (remote) — port 5002
+│   └── design/         # Mockups, not built or deployed
 ├── packages/
-│   ├── api/             # TMDB API client + React Query hooks
+│   ├── api/             # TMDB client: endpoints and queryOptions factories
+│   ├── firebase/        # Auth session and the watchlist on Firestore Lite, loaded lazily
 │   ├── routes/          # Shared routing path constants
 │   ├── events/          # Typed event bus and global store
-│   ├── ui/               # Shared UI components / design system
+│   ├── ui/              # Design system, domain components and boundaries
+│   ├── test-utils/      # Test helpers: providers, MSW server, factories, axe
 │   └── typescript-config/  # Shared TypeScript configurations
-└── functions/           # Firebase Cloud Functions (TMDB proxy)
+├── functions/           # Firebase Cloud Functions (TMDB proxy)
+├── firestore/           # Firestore security rules and their tests
+└── e2e/                 # Playwright specs
 ```
 
 ## Documentation
@@ -35,7 +42,9 @@ Detailed technical documentation — architecture, the page catalog with impleme
 ### Prerequisites
 
 - Node.js >= 24
-- pnpm >= 9
+- pnpm 9.15.4 (pinned via `packageManager`)
+- A TMDB read access token in the root `.env` as `TMDB_API_READ_TOKEN` (see [SETUP](./docs/04-development/SETUP.md))
+- For the emulators and the e2e and rules tests: Java and a global `firebase-tools`
 
 ### Installation
 
@@ -94,14 +103,15 @@ const onUserLogin = createTypedListener('user:login');
 
 ### Error boundaries
 
-Two-level error boundaries for graceful degradation:
+Failures stay as small as they can:
 
-- **Shell-level**: catches critical failures and offers to reload the application
-- **Module-level**: a single MFE can retry without reloading the whole application
+- **Remote**: a remote that fails to load shows "This section is unavailable" on its paths, and the other remotes keep working
+- **Page**: `PageBoundary` shows a skeleton while loading and an error with Try again; a 404 shows `NotFound`
+- **Shell**: `ShellBoundary` catches the rest, keeps the header and offers Reload
 
-### Style isolation
+### Styles
 
-Each MFE uses Tailwind scoping with unique ID prefixes to avoid style conflicts.
+One Tailwind 4 theme, `@repo/ui/theme.css`. In the integration only the host's CSS loads, and its `@source` covers `packages/ui` and both remotes, so host and remotes deploy together ([ADR-0009](./docs/03-architecture/decisions/ADR-0009-tailwind-4-style-isolation.md)).
 
 ## Scripts
 
@@ -111,6 +121,11 @@ Each MFE uses Tailwind scoping with unique ID prefixes to avoid style conflicts.
 - `pnpm format` — format the code with Biome
 - `pnpm check` — run Biome checks and apply fixes automatically
 - `pnpm typecheck` — TypeScript type checking
+- `pnpm test` — unit and component tests (Vitest); `pnpm test:coverage` with a coverage report
+- `pnpm test:e2e` — Playwright on the merged `dist/` with the Firebase emulators (run `pnpm build:deploy` first)
+- `pnpm test:rules` — Firestore security rules tests
+- `pnpm size` — host JS budget (run `pnpm build:deploy` first)
+- `pnpm emulators` — `build:deploy`, then the Hosting, Functions, Firestore and Auth emulators
 - `pnpm sync-types` — sync remote module types into the host
 - `pnpm build:deploy` — empty the `dist/` folders, build all applications and merge their `dist/` for Firebase Hosting
 - `pnpm deploy` — build, merge and deploy to Firebase Hosting (production target)

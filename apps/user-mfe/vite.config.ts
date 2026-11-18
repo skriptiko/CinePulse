@@ -3,7 +3,7 @@ import { federation } from '@module-federation/vite';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
-import { createMfShared } from '../../scripts/mf-shared';
+import { createMfShared, WORKSPACE_SINGLETONS } from '../../scripts/mf-shared';
 
 export default defineConfig({
   plugins: [
@@ -27,6 +27,8 @@ export default defineConfig({
       '@repo/firebase > firebase/auth',
       '@repo/firebase > firebase/firestore/lite',
     ],
+    // A copy: the federation plugin pushes into this array.
+    exclude: [...WORKSPACE_SINGLETONS],
   },
   resolve: {
     alias: {
