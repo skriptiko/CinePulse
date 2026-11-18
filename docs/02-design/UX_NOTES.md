@@ -52,9 +52,9 @@ In the integration the host builds one stylesheet for every remote, so MFE style
 
 ## UI states
 
-🟡 Partially unified:
+✅ Unified:
 - **Loading:** every page or Home section suspends into a skeleton shaped like it. The layout is reserved at once and the skeleton appears after 300 ms, so fast loads do not flicker.
-- **Empty:** implemented in **Movies** and **TV Shows**: `No movies found for “…”` names the search query, with **Clear search** and **Reset filters**, and a long query wraps. **Search** has the same line for each tab, with **Clear search** alone, and asks what to look for before there is a query. The watchlist says `No titles here yet.`, or `No watched titles here.` under a filter, which the All pill right above it clears. Each section of **Movie Detail**, **TV Detail** and **Person** keeps its heading over one muted line. Other pages have no empty states.
+- **Empty:** implemented in **Movies** and **TV Shows**: `No movies found for “…”` names the search query, with **Clear search** and **Reset filters**, and a long query wraps. **Search** has the same line for each tab, with **Clear search** alone, and asks what to look for before there is a query. The watchlist says `No titles here yet.`, or `No watched titles here.` under a filter, which the All pill right above it clears; with nothing saved at all it adds **Browse movies** and **Browse TV shows**, and Profile says `No titles yet.` with **Browse movies**. Each section of **Movie Detail**, **TV Detail** and **Person** keeps its heading over one muted line. A Home section with no items is left out, so the page shows the sections that have them; the genre links always stay.
 - **Error:** without data, the page boundary shows a plain message with **Try again** (404 → `NotFound`); the host's `ShellBoundary` catches the rest and keeps the header; a failed background refetch keeps the data and shows one toast (bottom right).
 - **Offline:** one global banner at the bottom, "You are offline. Showing saved results." It stays mounted as an empty live region while online, so it takes no pointer events: a press at the bottom edge of the screen reaches the page.
 

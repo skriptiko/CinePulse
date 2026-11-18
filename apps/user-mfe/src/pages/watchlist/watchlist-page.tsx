@@ -1,8 +1,10 @@
 import { useGlobalStore } from '@repo/events';
 import { type WatchStatus, watchlistQueries } from '@repo/firebase';
-import { cn, usePageMeta } from '@repo/ui';
+import { ROUTE_PATHS } from '@repo/routes';
+import { buttonVariants, cn, usePageMeta } from '@repo/ui';
 import { useSuspenseQueries } from '@tanstack/react-query';
 import { useEffect, useId, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { FolderActions } from './folder-actions';
 import { FolderTree } from './folder-tree';
 import { StatusFilter } from './status-filter';
@@ -91,8 +93,25 @@ function WatchlistContent({ uid }: WatchlistContentProps) {
           {/* Always in the DOM: a live region announces a change only once it is already there. */}
           <output className="text-muted-foreground">{getSummary(count, statusFilter)}</output>
           <TitleList uid={uid} titles={titles} onStatusChange={keepRow} />
+          {items.length === 0 && <CatalogLinks />}
         </section>
       </div>
+    </div>
+  );
+}
+
+const CATALOG_LINK_CLASS = cn(buttonVariants({ variant: 'link', size: 'sm' }), 'touch-target px-0');
+
+/** With nothing saved anywhere, the way to add a title: the catalog, as on Profile. */
+function CatalogLinks() {
+  return (
+    <div className="flex flex-wrap items-center gap-x-4">
+      <Link to={ROUTE_PATHS.MOVIES} className={CATALOG_LINK_CLASS}>
+        Browse movies
+      </Link>
+      <Link to={ROUTE_PATHS.TV} className={CATALOG_LINK_CLASS}>
+        Browse TV shows
+      </Link>
     </div>
   );
 }
