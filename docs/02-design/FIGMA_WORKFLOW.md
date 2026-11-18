@@ -14,7 +14,7 @@ How the design lives in Figma and how a change reaches the code. The decision is
 | How it behaves: data, routing, a11y semantics, focus, loading order | Code (`@repo/ui`, the MFEs) and [UX_NOTES](./UX_NOTES.md) |
 | Token values | Figma variables, mirrored one to one in `packages/ui/src/theme.css` |
 
-Until the bootstrap epic is done (the file mirrors every component and page, CIN-132…135), the code stays the reference and the Figma file is built from it. From then on a visual change starts in Figma.
+The bootstrap is done (CIN-132…135, 2026-11-18): the file mirrors every token, component and page of the app, so a visual change now starts in Figma. Images in the screens are placeholders until real TMDB images are added.
 
 ## File structure
 
@@ -26,7 +26,7 @@ Until the bootstrap epic is done (the file mirrors every component and page, CIN
 | `Primitives` | One section per `components/ui/*` component: Button, Input, DropdownMenu, Dialog, ToggleGroup, Skeleton |
 | `Components` | The domain components and the page frame: MovieCard, Hero, Header, Footer, detail sections… |
 | `——— SCREENS ———` | Separator |
-| `Home`, `Movies`, `TV Shows`, `Movie Detail`, `TV Detail`, `Person`, `Search`, `Watchlist`, `Profile`, `Settings`, `Login`, `Not Found` | One page per route of `ROUTE_PATHS`: frames at 1440 and 390, plus the loading, empty and error states the page has, built only from component instances |
+| `Home`, `Movies`, `TV Shows`, `Movie Detail`, `TV Detail`, `Person`, `Search`, `Watchlist`, `Profile`, `Settings`, `Login`, `Not Found` | One page per route of `ROUTE_PATHS`: frames at 1440 and 390, plus the loading, empty and error states the page has, built only from component instances. A frame is named `<Page> — Desktop 1440 — <state>` |
 | `——— WORK ———` | Separator |
 | `Explorations` | Work in progress. Nothing here is implemented; a design moves to the pages above once it is agreed |
 
