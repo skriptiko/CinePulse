@@ -47,7 +47,8 @@ A new token is added in Figma and in `theme.css` in the same ticket. Never bind 
 - A Figma component carries the name of its code component (`Button`, `MovieCard`) and its file path in the description (`packages/ui/src/components/ui/button.tsx`).
 - Variant properties use the names and values of the code props: `variant=default|destructive|outline|secondary|ghost|link`, `size=default|sm|lg|icon|icon-sm|icon-lg`. A state the code draws (`hover`, `focus-visible`, `disabled`) is a `state` property.
 - A domain component takes the content of its UI model (`MovieCardData`: title, year, rating, poster) as text and instance-swap properties, not as variants.
-- Icons are `lucide-react`, the same as the code, swapped with instance-swap properties.
+- Icons are `lucide-react`, the same as the code: `Icon/<Name>` components at 16 px (`size-4`), swapped with instance-swap properties. An icon the code starts to import is added on the `Primitives` page.
+- Components follow the dark spec, as the app is dark-first. Where a component differs in light beyond its tokens (a `dark:` class in code), its description says so.
 
 ### Component map and Code Connect
 
@@ -55,12 +56,13 @@ The Professional plan has Code Connect (one framework at a time, React here). It
 
 | Figma | Code | In Figma |
 | --- | --- | --- |
-| Button | `packages/ui/src/components/ui/button.tsx` | ⬜ |
-| Input | `packages/ui/src/components/ui/input.tsx` | ⬜ |
-| DropdownMenu | `packages/ui/src/components/ui/dropdown-menu.tsx` | ⬜ |
-| Dialog | `packages/ui/src/components/ui/dialog.tsx` | ⬜ |
-| ToggleGroup | `packages/ui/src/components/ui/toggle-group.tsx` | ⬜ |
-| Skeleton | `packages/ui/src/components/ui/skeleton.tsx` | ⬜ |
+| Button, Icon Button | `packages/ui/src/components/ui/button.tsx` | ✅ |
+| Input | `packages/ui/src/components/ui/input.tsx` | ✅ |
+| Dropdown Menu, Dropdown Menu Radio Item | `packages/ui/src/components/ui/dropdown-menu.tsx` | ✅ |
+| Dialog | `packages/ui/src/components/ui/dialog.tsx` | ✅ |
+| Toggle Group, Toggle Group Item | `packages/ui/src/components/ui/toggle-group.tsx` | ✅ |
+| Skeleton | `packages/ui/src/components/ui/skeleton.tsx` | ✅ |
+| Icon/* (20 icons) | `lucide-react`, the icons the app imports | ✅ |
 | MovieCard | `packages/ui/src/components/movie-card.tsx` | ⬜ |
 | PersonCard | `packages/ui/src/components/person-card.tsx` | ⬜ |
 | Hero | `packages/ui/src/components/hero.tsx` | ⬜ |
@@ -84,6 +86,16 @@ The Professional plan has Code Connect (one framework at a time, React here). It
 5. **Close.** Mark the row in the component map, and set the Figma section's status to *Implemented* with the ticket number.
 
 **Drift rule:** a visual change made in code without a design (a bug fix, an a11y fix) is mirrored in Figma in the same ticket, so the file never falls behind.
+
+## Changing the design without drawing
+
+No design skills are needed: describe the change, and Claude makes it in the file.
+
+1. **Point at the element.** In Figma, click the element (a card, a button, a section) and leave a comment on it: "make the rating a yellow badge over the poster", "more space between the rows". Or select it and *Copy link to selection*.
+2. **Ask Claude Code.** "Apply the Figma comments" (Claude reads them with `get_comments`), or paste the link with the request. Claude makes the change in `Explorations` first, or in place when it is small, and binds it to tokens and components.
+3. **Review in Figma.** Look at it, comment again to adjust. When it is agreed, Claude moves it into the component or screen and opens the "Figma → code" ticket.
+
+Figma's own AI (the *Agents* panel in the file) also edits designs, but it spends Figma AI credits and does not know the repo conventions, the token names or the component map, so design changes go through Claude Code.
 
 ## Working with Claude and the Figma MCP
 
