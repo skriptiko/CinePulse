@@ -27,7 +27,7 @@ Workflow:
 | Section | Document | About |
 |--------|----------|--------|
 | **01 · Product** | [PRD](./01-product/PRD.md) · [GLOSSARY](./01-product/GLOSSARY.md) | Requirements, goals, personas, terminology |
-| **02 · Design** | [UX_NOTES](./02-design/UX_NOTES.md) | Design system, theme, UI states, a11y |
+| **02 · Design** | [UX_NOTES](./02-design/UX_NOTES.md) · [FIGMA_WORKFLOW](./02-design/FIGMA_WORKFLOW.md) | Design system, theme, UI states, a11y; the Figma file and the design-to-code loop |
 | **03 · Architecture** | [ARCHITECTURE](./03-architecture/ARCHITECTURE.md) · [DATA_MODEL](./03-architecture/DATA_MODEL.md) · [API_SPEC](./03-architecture/API_SPEC.md) · [ADR](./03-architecture/decisions/) | MFE, monorepo, data, API, decisions |
 | **04 · Development** | [SETUP](./04-development/SETUP.md) · [CONVENTIONS](./04-development/CONVENTIONS.md) | Local setup, code conventions |
 | **05 · Testing** | [TEST_STRATEGY](./05-testing/TEST_STRATEGY.md) | Test pyramid, tools, goals |
