@@ -73,6 +73,10 @@ Dynamic routes are linked with `buildPath.movie(id)` and friends, never by hand.
 
 Only through `@repo/events`: the typed `createTypedEmitter` / `createTypedListener` (events from `EventMap`) and `globalStore`. No direct imports between apps.
 
+## Documentation
+
+A new domain term (a watchlist entity, a status, a UI concept users see) goes into the [GLOSSARY](../01-product/GLOSSARY.md) in the same PR as the feature that introduces it, and a changed page or flow updates its line in the [PRD](../01-product/PRD.md). A new architectural decision gets an ADR.
+
 ## Commits
 
 Format: `CIN-<number>: <short description in the imperative mood>`. The number is the task ID in the "Tasks" database in [Notion](https://app.notion.com/p/40880c5f7ed58170bca1efda4e894ce9), where all project management happens. No commit without a Notion task: create the ticket first.

@@ -131,6 +131,6 @@ Recorded assumptions (confirmed in the 2026-07-12 session):
 Resolved questions:
 - Firestore collection structure and security rules for the folder tree → [DATA_MODEL](../03-architecture/DATA_MODEL.md), ADR-0010 and ADR-0013.
 - UX for managing the folder tree (create, rename, move) → the watchlist page (CIN-25); drag-n-drop is not planned.
+- Deduplication and TMDB limits when adding titles in bulk → not applicable: titles are added one at a time, a second add of the same title only joins folders (ADR-0014), and adding sends no TMDB request.
 
-Open questions:
-- Deduplication and TMDB limits (rate limits) when adding titles in bulk.
+There are no open questions.
