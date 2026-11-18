@@ -7,6 +7,7 @@
 - **Node.js** >= 24
 - **pnpm** >= 9.15.4 (the project is pinned to `pnpm@9.15.4` via `packageManager`)
 - A TMDB API access token (read access token)
+- For `pnpm emulators`, `pnpm test:e2e` and `pnpm test:rules`: Java and a global `firebase-tools`
 
 ## Installation
 
@@ -94,6 +95,11 @@ pnpm build:deploy   # empty the dist folders, build, merge the dist of all MFEs 
 | `pnpm format` | Formatting via Biome |
 | `pnpm check` | Biome check with fixes applied automatically |
 | `pnpm typecheck` | TypeScript type checking (turbo for the packages, then `e2e/` and `playwright.config.ts`) |
+| `pnpm test` | Vitest over every project; `pnpm test:coverage` adds a merged report in `coverage/` |
+| `pnpm test:e2e` | Playwright on the merged `dist/` with the Hosting, Auth and Firestore emulators (run `pnpm build:deploy` first) |
+| `pnpm test:rules` | Firestore rules tests on the emulator |
+| `pnpm size` | Host JS budget from `.size-limit.json` (run `pnpm build:deploy` first) |
+| `pnpm emulators` | `build:deploy`, then Hosting, Functions, Firestore and Auth emulators |
 | `pnpm sync-types` | Sync remote module types into the host |
 | `pnpm build:deploy` | Empty the `dist/` folders, build + merge the MFE `dist/` folders |
 | `pnpm deploy` | Build, merge and deploy to Firebase Hosting (production) |

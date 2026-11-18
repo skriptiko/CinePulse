@@ -5,17 +5,19 @@
 ## Monorepo structure
 
 ```
-apps/       host (5000), pages-mfe (5001), user-mfe (5002)
-packages/   api, ui, routes, events, typescript-config
+apps/       host (5000), pages-mfe (5001), user-mfe (5002); design (mockups, not built or deployed)
+packages/   api, ui, routes, events, firebase, test-utils, typescript-config
 functions/  Firebase Cloud Functions (tmdbProxy)
+firestore/  Firestore security rules and their tests
+e2e/        Playwright specs
 ```
 
-Packages are consumed via `@repo/*` aliases (`@repo/api`, `@repo/ui`, `@repo/routes`, `@repo/events`, `@repo/typescript-config`). Apps: `@repo/host`, `@repo/pages-mfe`, `@repo/user-mfe`, `@repo/functions`.
+Packages are consumed via `@repo/*` aliases (`@repo/api`, `@repo/ui`, `@repo/routes`, `@repo/events`, `@repo/firebase`, `@repo/test-utils`, `@repo/typescript-config`). Apps: `@repo/host`, `@repo/pages-mfe`, `@repo/user-mfe`, `@repo/design`, `@repo/functions`.
 
 ## Naming
 
 - Component files in `@repo/ui` are **kebab-case** (`movie-card.tsx`, `content-row.tsx`); the exported component is **PascalCase** (`MovieCard`).
-- Every file and folder is **kebab-case**, pages included. A page with local hooks or components is a `pages/<name>/` folder with `<name>-page.tsx` (`pages/home/home-page.tsx`, `pages/movie-detail/movie-detail-page.tsx`); the exported component is PascalCase (`HomePage`).
+- Every file and folder is **kebab-case**, pages included. A page with local hooks or components is a `pages/<name>/` folder with `<name>-page.tsx` (`pages/home/home-page.tsx`, `pages/movie-detail/movie-detail-page.tsx`); the exported component is PascalCase (`Home`, `MovieDetail`).
 - Hooks are `useXxx` (`useMoviesOrSearch`, `useCatalogFilters`); query factories are `<domain>Queries` (`movieQueries`).
 - Shared constants are `SCREAMING_SNAKE` (`ROUTE_PATHS`, `API_CONFIG`).
 
