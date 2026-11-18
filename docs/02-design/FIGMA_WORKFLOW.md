@@ -26,18 +26,30 @@ The bootstrap is done (CIN-132…135, 2026-11-18): the file mirrors every token,
 | `Primitives` | One section per `components/ui/*` component: Button, Input, DropdownMenu, Dialog, ToggleGroup, Skeleton |
 | `Components` | The domain components and the page frame: MovieCard, Hero, Header, Footer, detail sections… |
 | `——— SCREENS ———` | Separator |
-| `Home`, `Movies`, `TV Shows`, `Movie Detail`, `TV Detail`, `Person`, `Search`, `Watchlist`, `Profile`, `Settings`, `Login`, `Not Found` | One page per route of `ROUTE_PATHS`: frames at 1440 and 390, plus the loading, empty and error states the page has, built only from component instances. A frame is named `<Page> — Desktop 1440 — <state>` |
+| `Home`, `Movies`, `TV Shows`, `Movie Detail`, `TV Detail`, `Person`, `Search`, `Watchlist`, `Profile`, `Settings`, `Login`, `Not Found` | One page per route of `ROUTE_PATHS`: frames at 1920, 1440 and 390 (see [Screen sizes](#screen-sizes)), plus the loading, empty and error states the page has, built only from component instances. A frame is named `<Page> — Desktop 1920 — <state>`, `<Page> — Desktop 1440 — <state>` or `<Page> — Mobile 390 — <state>` |
 | `——— WORK ———` | Separator |
 | `Explorations` | Work in progress. Nothing here is implemented; a design moves to the pages above once it is agreed |
 
 A new route gets its own page. `Explorations` is where a redesign is drawn before it replaces the component or screen it changes; Figma branching is an Organization feature.
+
+## Screen sizes
+
+The design and the code support three widths; every screen page has a frame for each:
+
+| Frame | Width | What it checks |
+| --- | --- | --- |
+| Mobile | 390 | The phone layout: one column, the mobile Header and Footer, `fluid-*` text at the bottom of its `clamp()` |
+| Desktop | 1440 | The laptop layout from `xl`: `fluid-*` text at the top of its `clamp()` |
+| Full HD | 1920 | The `2xl` layout (1536 and up). Capped content stops at `max-w-page` (1800, `--container-page`), so it gains 60 on each side: Header, Footer, the Hero content, the detail views and their sections, Editor's Picks and the account pages. Full-width content grows: a Home row shows more `w-48` cards, a catalog grid keeps 6 columns and its cards widen. `2xl` steps: Cast in 12 columns (`CAST_LIMIT`). Type is the same as at 1440 |
+
+Widths in between are not drawn: the breakpoints of the code decide them. A new screen gets all three frames; its loading, empty and error states are drawn at least at 1440 and 1920.
 
 ## Tokens
 
 - **Colour:** collection `Color`, modes `Dark` (default, as the app is dark-first) and `Light`. Each variable carries the name of its CSS variable without the dashes: `background`, `muted-foreground`, `glass-border`, plus `rating` (`--color-rating`). Code syntax is the Tailwind theme variable, `var(--color-background)`, so `get_design_context` names the class the code already uses (`bg-background`). A frame shows the light theme by setting the `Light` mode on it.
 - **Radius:** collection `Radius`: `radius-none` = 0, `radius-sm` = 4, `radius-md` = 6, `radius-lg` = 8 (`--radius` and its `calc()` steps), `radius-full` for pills and avatars.
 - **Spacing:** collection `Spacing`, the Tailwind 4 scale (`--spacing` = 4 px), named after the class step: `1` = 4, `2` = 8, `4` = 16, `6` = 24…; a half step is `0-5`, `1-5`, `2-5`. A value off the scale in a design is a question, not a new token.
-- **Type:** Geist, text styles named after their Tailwind classes: `text-sm/medium` is `text-sm font-medium`, for `xs`…`3xl` and `6xl` in four weights. The fluid utilities have one style for each end of their `clamp()`: `fluid-heading/mobile` (390 frames) and `fluid-heading/desktop` (1440 frames), bold and tight like their headings in code.
+- **Type:** Geist, text styles named after their Tailwind classes: `text-sm/medium` is `text-sm font-medium`, for `xs`…`3xl` and `6xl` in four weights. The fluid utilities have one style for each end of their `clamp()`: `fluid-heading/mobile` (390 frames) and `fluid-heading/desktop` (1440 and 1920 frames), bold and tight like their headings in code.
 - **Effects:** `shadow-xs`, `shadow`, `shadow-md`, `shadow-lg` (the Tailwind 4 values) and `glass-blur`, the `backdrop-filter: blur(20px)` of `glass` and `glass-bar`, used with the `glass`/`glass-bar` fill and the `glass-border` stroke.
 
 A new token is added in Figma and in `theme.css` in the same ticket. Never bind a raw colour in a component; a one-off colour in an exploration is fine until it is agreed.
@@ -48,7 +60,7 @@ A new token is added in Figma and in `theme.css` in the same ticket. Never bind 
 - Variant properties use the names and values of the code props: `variant=default|destructive|outline|secondary|ghost|link`, `size=default|sm|lg|icon|icon-sm|icon-lg`. A state the code draws (`hover`, `focus-visible`, `disabled`) is a `state` property.
 - A domain component takes the content of its UI model (`MovieCardData`: title, year, rating, poster) as text and instance-swap properties, not as variants.
 - Icons are `lucide-react`, the same as the code: `Icon/<Name>` components at 16 px (`size-4`), swapped with instance-swap properties. An icon the code starts to import is added on the `Primitives` page.
-- Components that change with the breakpoint (Header, Footer, Hero, ContentRow, the details views and sections, the skeletons) have a `viewport=desktop|mobile` variant at 1440 and 390.
+- Components that change with the breakpoint (Header, Footer, Hero, ContentRow, the details views and sections, the skeletons) have a `viewport=desktop|mobile` variant at 1440 and 390. Those whose inner grid changes at 1920 also have `viewport=wide`: MovieDetailView, CastSection, MediaSection, SeasonsSection and MovieGridSkeleton. The others are widened in the 1920 frame.
 - Images (posters, backdrops, photos, provider logos) are `Image Placeholder` instances; a screen fills them with real TMDB images.
 - Gradients over images use the dark background color directly: a gradient stop bound to a variable loses its alpha in Figma.
 - Components follow the dark spec, as the app is dark-first. Where a component differs in light beyond its tokens (a `dark:` class in code), its description says so.
@@ -90,7 +102,7 @@ The Professional plan has Code Connect (one framework at a time, React here). It
 1. **Design.** Draw the change in `Explorations`, by hand or with Claude through the Figma MCP ("make the MovieCard rating a badge on the poster"). Agree on it, then move it into the component or screen it changes.
 2. **Ticket.** One Notion ticket per area, as in [CONVENTIONS § MFE workflow](../04-development/CONVENTIONS.md): tokens and components are `@repo/ui` tickets and merge first; a screen that changes a page's layout is a ticket in its MFE. The ticket links the Figma node (*Copy link to selection*, `?node-id=…`).
 3. **Implement.** Claude reads the node (see the order below), maps it to existing components and tokens through the table above, and changes the code. A token change edits `theme.css` only. The output of `get_design_context` is a reference to adapt, never code to paste: the code keeps its conventions (no JSX spread, `Pick<ComponentProps<…>>`, `cn()`, kebab-case files).
-4. **Verify.** The usual checks for the area, plus the page side by side with the Figma frame at 390 and 1440.
+4. **Verify.** The usual checks for the area, plus the page side by side with the Figma frames at 390, 1440 and 1920.
 5. **Close.** Mark the row in the component map, and set the Figma section's status to *Implemented* with the ticket number.
 
 **Drift rule:** a visual change made in code without a design (a bug fix, an a11y fix) is mirrored in Figma in the same ticket, so the file never falls behind.
