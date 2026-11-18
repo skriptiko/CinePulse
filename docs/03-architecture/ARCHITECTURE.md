@@ -160,7 +160,7 @@ Pipeline details: [CI_CD.md](../06-deployment/CI_CD.md); environments: [ENVIRONM
 
 ## Diagrams
 
-⬜ There are no formal C4 diagrams yet. Below is a text diagram of the composition (replace with C4/sequence diagrams if needed).
+There are no formal C4 diagrams, and none are planned: the text diagram of the composition below is enough.
 
 ```
                          ┌─────────────────────────────┐
