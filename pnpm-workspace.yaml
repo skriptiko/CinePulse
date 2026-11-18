@@ -24,7 +24,6 @@ catalog:
   "@vitejs/plugin-react": ^6.3.0
   # Vite 8 needs 1.12+; its runtime is why the host budget is 222 kB (ADR-0018).
   "@module-federation/vite": ~1.24.1
-  "@module-federation/dts-plugin": ^0.11.0
   tailwindcss: ^4.3.3
   '@tailwindcss/vite': ^4.3.3
   vitest: ^5.1.1
