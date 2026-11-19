@@ -20,7 +20,7 @@ export function DetailSection({
 
   return (
     <section aria-labelledby={titleId} className={gutterClassName}>
-      <h2 id={titleId} className="mb-4 text-xl font-semibold tracking-tight md:text-2xl">
+      <h2 id={titleId} className="heading-section mb-4">
         {title}
       </h2>
       {children}
@@ -34,5 +34,5 @@ export type DetailSectionEmptyProps = {
 
 /** The one line a section keeps when TMDB has nothing for it. */
 export function DetailSectionEmpty({ children }: DetailSectionEmptyProps) {
-  return <p className="text-muted-foreground text-sm">{children}</p>;
+  return <p className="text-muted-foreground max-w-prose text-base">{children}</p>;
 }

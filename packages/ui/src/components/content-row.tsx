@@ -28,10 +28,7 @@ export function ContentRow({
   return (
     <section aria-labelledby={titleId} className={cn('relative', className)}>
       {/* "See all" comes back with a page to link to. */}
-      <h2
-        id={titleId}
-        className={cn('mb-4 text-xl font-semibold tracking-tight md:text-2xl', gutterClassName)}
-      >
+      <h2 id={titleId} className={cn('heading-section mb-4', gutterClassName)}>
         {title}
       </h2>
 

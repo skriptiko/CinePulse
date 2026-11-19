@@ -90,7 +90,7 @@ export function MovieDetailView({ movie, action, children }: MovieDetailViewProp
           {action !== undefined && <div className="mb-6">{action}</div>}
 
           {description !== null && (
-            <p className="text-foreground/80 leading-relaxed wrap-anywhere sm:text-lg">
+            <p className="text-foreground/80 max-w-prose leading-relaxed wrap-anywhere sm:text-lg">
               {description}
             </p>
           )}

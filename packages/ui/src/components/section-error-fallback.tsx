@@ -8,7 +8,9 @@ export function SectionErrorFallback({ resetErrorBoundary }: FallbackProps) {
       role="alert"
       className="border-border bg-secondary/40 flex flex-col items-start gap-3 rounded-lg border p-6"
     >
-      <p className="text-muted-foreground text-sm">This section could not be loaded.</p>
+      <p className="text-muted-foreground max-w-prose text-base">
+        This section could not be loaded.
+      </p>
       <Button variant="outline" size="sm" className="touch-target" onClick={resetErrorBoundary}>
         Try again
       </Button>

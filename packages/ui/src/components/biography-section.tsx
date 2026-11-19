@@ -33,7 +33,7 @@ export function BiographySection({ biography }: BiographySectionProps) {
       <p
         id={textId}
         className={cn(
-          'text-muted-foreground leading-relaxed wrap-anywhere whitespace-pre-line sm:text-lg',
+          'text-muted-foreground max-w-prose text-base wrap-anywhere whitespace-pre-line',
           isLong && !isExpanded && 'line-clamp-6'
         )}
       >

@@ -113,9 +113,16 @@
   line-height: 1.2;
 }
 
+/* 16 px up to 768 wide, 18 px from 1440, as in Figma. The line height grows with it, 24 → 28 px,
+   and never drops below 1.5 (WCAG 1.4.8). */
 @utility fluid-body {
-  font-size: clamp(0.875rem, 1vw + 0.25rem, 1.125rem);
-  line-height: 1.6;
+  font-size: clamp(1rem, 0.3vw + 0.855rem, 1.125rem);
+  line-height: clamp(1.5rem, 0.6vw + 1.21rem, 1.75rem);
+}
+
+/* A section title (`h2`) under the page title. */
+@utility heading-section {
+  @apply text-xl font-semibold tracking-tight md:text-2xl;
 }
 
 @utility touch-target {

@@ -42,7 +42,7 @@ export function FeaturedGrid({ title, items, className }: FeaturedGridProps) {
 
   return (
     <section aria-labelledby={titleId} className={cn('px-4 md:px-8', className)}>
-      <h2 id={titleId} className="mb-6 text-xl font-semibold tracking-tight md:text-2xl">
+      <h2 id={titleId} className="heading-section mb-6">
         {title}
       </h2>
 

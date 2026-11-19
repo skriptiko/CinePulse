@@ -61,8 +61,8 @@ A rule in this document that cites a standard follows it. Where we go further th
 | Level | Style |
 | --- | --- |
 | Page title (`h1`) | `fluid-display` or `fluid-heading`, bold, tight |
-| Section title (`h2`) | `text-xl` → `text-2xl` from `md`, semibold, tight |
-| Reading text | `text-base` (overviews: `fluid-body`), line height ≥ 1.5 |
+| Section title (`h2`) | `heading-section`: `text-xl` → `text-2xl` from `md`, semibold, tight |
+| Reading text | `text-base` (overviews: `fluid-body`), line height ≥ 1.5, at most `max-w-prose` |
 | Secondary text, controls | `text-sm` |
 | Metadata, labels | `text-xs`, `muted-foreground`; on an image `foreground/80` |
 
@@ -147,7 +147,7 @@ The file or the code does not yet follow these rules. Each gap is a ticket in No
 | The code still has three page gutters (32 at 768, where Figma has 24), and its grids and rows do not share the capped left edge of Figma | CIN-162, CIN-163, CIN-164 |
 | MovieCard and Hero have no image property: a poster is a fill override on its `Image Placeholder` | none yet |
 | The automated checks run WCAG 2.1 rules; 2.4.11 and 2.5.8 are not checked | CIN-153 |
-| Reading text is 16 px in Figma but still 14 px in the code; `fluid-body` starts at 14 px in `theme.css` | CIN-159, CIN-160 |
+| Reading text is 16 px in Figma but still 14 px in some places in the code | CIN-160 |
 | Tokens are kept by hand in two places, not in the W3C format | CIN-158 |
 | Card titles are hover-only in code; Figma shows them at rest on touch (`pointer=coarse`) | CIN-161 |
 

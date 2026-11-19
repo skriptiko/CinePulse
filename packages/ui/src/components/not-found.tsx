@@ -18,7 +18,7 @@ export function NotFound() {
       <h1 id={titleId} className="text-2xl font-semibold sm:text-3xl">
         Page not found
       </h1>
-      <p className="text-muted-foreground max-w-md">
+      <p className="text-muted-foreground max-w-prose">
         The page you are looking for does not exist or has been moved.
       </p>
       <Link to={ROUTE_PATHS.HOME} className={cn(buttonVariants(), 'mt-2')}>
