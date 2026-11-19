@@ -71,7 +71,7 @@ The project author as a **learner** is the real "customer" of the value: the end
 ## Non-functional requirements (NFR)
 
 - **Performance:** Lighthouse Performance ≥ **90**; LCP < **2.5s** (with particular attention to the overhead of loading MFE remote modules).
-- **Accessibility:** **WCAG 2.1 level AA**.
+- **Accessibility:** **WCAG 2.2 level AA** (ISO/IEC 40500:2025); the design rules are in [DESIGN_APPROACH](../02-design/DESIGN_APPROACH.md).
 - **Browsers:** evergreen — the last 2 versions of Chrome, Edge, Firefox, Safari. No IE/legacy support.
 - **Responsiveness:** mobile-first, working from mobile to desktop widths.
 

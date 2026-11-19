@@ -138,7 +138,7 @@ Everything under Movie Detail holds here too, with TV cards in More like this. W
 
 ## Accessibility
 
-> The target is WCAG 2.1 AA ([PRD](../01-product/PRD.md)). There has been no formal third-party audit: axe runs in the component and page tests (`expectNoA11yViolations`), and an axe and Lighthouse pass was done in CIN-33.
+> The target is WCAG 2.2 AA ([PRD](../01-product/PRD.md), rules in [DESIGN_APPROACH](./DESIGN_APPROACH.md) § 6). The automated checks below still run the WCAG 2.1 rules until CIN-153. There has been no formal third-party audit: axe runs in the component and page tests (`expectNoA11yViolations`), and an axe and Lighthouse pass was done in CIN-33.
 - Semantic elements (`<main>`, `<h1>`, `<button type="button">`) and Radix components (with built-in a11y support) are used.
 - The focus ring of a `Button` and an `Input` is solid `--ring`, 5.27:1 in the dark theme and 4.57:1 in the light one on the page background. A button laid straight on an image, as on a card or in the header over the hero, takes `BUTTON_ON_IMAGE_CLASS`: a ring of `--foreground` around a band of `--background`, about 18:1 apart, as one colour can match the image. The logo, the header links and the skip link lie there too, and take the same ring with `LINK_ON_IMAGE_CLASS`.
 - With `aria-invalid`, the ring and the border of a `Button` or an `Input` are solid `--destructive`, 3.1:1 in the dark theme and 5.1:1 in the light one. Nothing in the app sets it yet.
