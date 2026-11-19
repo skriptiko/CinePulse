@@ -83,9 +83,9 @@ A component whose layout changes with the width has a `viewport` variant (`mobil
 
 **Every layout reflows at 320 px** (WCAG 1.4.10): at 320 CSS px wide, which is also 1280 at 400 % zoom, nothing needs side scrolling except carousels, which scroll on purpose. The 390 frame is drawn; 320 is checked, not drawn.
 
-**One page gutter.** The Header, the page title and the first card start on the same left edge at every width. Material margins are 16 at compact and 24 at medium; we use 16 / 24 / 48.
+**One page gutter, one left edge.** The Header, the page title and the first card start on the same left edge at every width: 16 below 640, 24 from 640, 48 from 1024 (Material margins are 16 at compact and 24 at medium).
 
-**Chrome is capped, content is full width.** At 1920, the Header, Footer, Hero content, detail views and account pages stop at `max-w-page` (1800). Rows and catalog grids keep growing: a Home row shows more cards, and a catalog grid keeps 6 columns with wider cards.
+**Content is capped; rows bleed right.** From `2xl`, all content sits in `max-w-page` (1800) with the gutter inside, so the left edge stays at 108 on a 1920 screen. A horizontal row starts on that edge and runs to the right edge of the screen, so it shows more cards and hints that it scrolls.
 
 **Columns come from content; grids are a guide.** Frames use auto layout; a catalog grid is 2 cards per row at 390 and 6 at 1440 and 1920. Each `Default` frame carries the layout grid of its width class (4, 8 or 12 columns), hidden by default, to align new work.
 
@@ -144,10 +144,9 @@ The file or the code does not yet follow these rules. Each gap is a ticket in No
 
 | Gap | Ticket |
 | --- | --- |
-| The watchlist dialog on Movie Detail overflows its panel; dialogs and the offline banner are local frames, not `Dialog` instances | CIN-145 |
 | No screen is drawn in the light theme; image gradients use raw dark stops; muted metadata is hard to read on bright images | CIN-146 |
 | Mobile frames show only the default view; the refresh toast is not drawn; section order differs from FIGMA_WORKFLOW on 9 pages; file clean-up | CIN-149 |
-| Three page gutters (`px-4 md:px-8`, `px-4 sm:px-6 lg:px-12`, `px-4 sm:px-6 md:px-8`) instead of one | CIN-150 |
+| The code still has three page gutters, and its grids and rows do not share the capped left edge of Figma | CIN-162, CIN-163, CIN-164 |
 | The automated checks run WCAG 2.1 rules; 2.4.11 and 2.5.8 are not checked | CIN-153 |
 | Reading text is 16 px in Figma but still 14 px in the code; `fluid-body` starts at 14 px in `theme.css` | CIN-159, CIN-160 |
 | No Tablet 768 frames | CIN-155 |

@@ -41,7 +41,7 @@ The design and the code support three widths; every screen page has a frame for 
 | --- | --- | --- |
 | Mobile | 390 | The phone layout: one column, the mobile Header and Footer, `fluid-*` text at the bottom of its `clamp()` |
 | Desktop | 1440 | The laptop layout from `xl`: `fluid-*` text at the top of its `clamp()` |
-| Full HD | 1920 | The `2xl` layout (1536 and up). Capped content stops at `max-w-page` (1800, `--container-page`), so it gains 60 on each side: Header, Footer, the Hero content, the detail views and their sections, Editor's Picks and the account pages. Full-width content grows: a Home row shows more `w-48` cards, a catalog grid keeps 6 columns and its cards widen. `2xl` steps: Cast in 12 columns (`CAST_LIMIT`). Type is the same as at 1440 |
+| Full HD | 1920 | The `2xl` layout (1536 and up). All content sits in one centred area, `max-w-page` (1800, `--container-page`) with the 48 gutter inside, so every left edge is at 108: Header, Footer, the Hero content, page titles, catalog grids (6 columns of 264 in 1704), the detail views and their sections, Editor's Picks and the account pages. A horizontal row starts at that edge (`row-start-wide` = 108) and runs to the right edge of the screen, so it shows more `w-48` cards. `2xl` steps: Cast in 12 columns (`CAST_LIMIT`). Type is the same as at 1440 |
 
 Widths in between are not drawn: the breakpoints of the code decide them. A new screen gets all three frames; its loading, empty and error states are drawn at least at 1440 and 1920.
 
@@ -74,6 +74,7 @@ A new state goes into its own section in this order. A state the code adds is dr
 ## Tokens
 
 - **Colour:** collection `Color`, modes `Dark` (default, as the app is dark-first) and `Light`. Each variable carries the name of its CSS variable without the dashes: `background`, `muted-foreground`, `glass-border`, plus `rating` (`--color-rating`). Code syntax is the Tailwind theme variable, `var(--color-background)`, so `get_design_context` names the class the code already uses (`bg-background`). A frame shows the light theme by setting the `Light` mode on it.
+- **Layout:** `container-page` = 1800 and `row-start-wide` = 108 (in `Spacing`). The page gutter is 16 below 640, 24 from 640, 48 from 1024 (`px-4 sm:px-6 lg:px-12`) everywhere. Capped components hold an inner `page` frame (fill width, max width `container-page`, padding 48, centred), so one variant gives 48 at 1440 and 108 at 1920; `ContentRow` has `viewport=wide` for the row start.
 - **Radius:** collection `Radius`: `radius-none` = 0, `radius-sm` = 4, `radius-md` = 6, `radius-lg` = 8 (`--radius` and its `calc()` steps), `radius-full` for pills and avatars.
 - **Spacing:** collection `Spacing`, the Tailwind 4 scale (`--spacing` = 4 px), named after the class step: `1` = 4, `2` = 8, `4` = 16, `6` = 24…; a half step is `0-5`, `1-5`, `2-5`; `28` = 112 and `36` = 144 are the page tops below the fixed Header (`pt-28`, `pt-36`). A value off the scale in a design is a question, not a new token.
 - **Type:** Geist, text styles named after their Tailwind classes: `text-sm/medium` is `text-sm font-medium`, for `xs`…`3xl` and `6xl` in four weights. The fluid utilities have one style for each end of their `clamp()`: `fluid-heading/mobile` (390 frames) and `fluid-heading/desktop` (1440 and 1920 frames), bold and tight like their headings in code. `fluid-body` is 16 → 18 with line height 24 / 28. Section titles use `heading-section/mobile` (20/28) and `heading-section/desktop` (24/32), SemiBold, −2.5 % (`text-xl md:text-2xl font-semibold tracking-tight`). The Logo wordmark uses `logo/wordmark` (20/28, Header) and `logo/wordmark-sm` (18/28, Footer).
@@ -105,7 +106,8 @@ The Professional plan has Code Connect (one framework at a time, React here). It
 | Button, Icon Button | `packages/ui/src/components/ui/button.tsx` | ✅ |
 | Input | `packages/ui/src/components/ui/input.tsx` | ✅ |
 | Dropdown Menu, Dropdown Menu Radio Item | `packages/ui/src/components/ui/dropdown-menu.tsx` | ✅ |
-| Dialog | `packages/ui/src/components/ui/dialog.tsx` | ✅ |
+| Dialog (hug height, 448 wide, swappable `Body`, footer Buttons; properties `Body`, `Show body`, `Show footer`, `Show secondary`) | `packages/ui/src/components/ui/dialog.tsx` | ✅ |
+| Checkbox (`checked` × `state`), Icon/Check | the native checkbox in the watchlist folder picker | ✅ |
 | Toggle Group, Toggle Group Item | `packages/ui/src/components/ui/toggle-group.tsx` | ✅ |
 | Skeleton | `packages/ui/src/components/ui/skeleton.tsx` | ✅ |
 | Icon/* (20 icons) | `lucide-react`, the icons the app imports | ✅ |
@@ -126,7 +128,8 @@ The Professional plan has Code Connect (one framework at a time, React here). It
 | Section Error Fallback, Page Error Fallback | `section-error-fallback.tsx`, `page-error-fallback.tsx` | ✅ |
 | NotFound | `packages/ui/src/components/not-found.tsx` | ✅ |
 | HeroSkeleton, ContentRowSkeleton, FeaturedGridSkeleton, MovieDetailSkeleton, MovieGridSkeleton, PageSkeleton | `packages/ui/src/components/page-skeletons.tsx` | ✅ |
-| Add to Watchlist | `apps/pages-mfe/src/components/add-to-watchlist.tsx` | ✅ |
+| Add to Watchlist, Watchlist Folder Picker (`state=folders|saving`, the body of its Dialog) | `apps/pages-mfe/src/components/add-to-watchlist.tsx` and the dialog it loads | ✅ |
+| OfflineBanner | the offline banner of the host error channel (`apps/host/src/error-channel/`) | ✅ |
 
 ## The loop: from a design change to the code
 
