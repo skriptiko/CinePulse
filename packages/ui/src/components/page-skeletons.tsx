@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useDelayedFlag } from '../hooks/use-delayed-flag';
 import { cn } from '../lib/utils';
+import { ROW_GUTTER } from './content-row';
 import { Skeleton } from './ui/skeleton';
 
 /** Fast loads finish before this and never flash a skeleton. */
@@ -41,7 +42,7 @@ export function HeroSkeleton() {
 export function ContentRowSkeleton() {
   return (
     // The gutter of `ContentRow`, so the placeholder starts where the row will.
-    <SkeletonFrame className="px-4 sm:px-6 lg:px-12 2xl:pl-[max(3rem,calc((100%-var(--container-page))/2+3rem))]">
+    <SkeletonFrame className={ROW_GUTTER}>
       <CardRowSkeleton />
     </SkeletonFrame>
   );
@@ -49,7 +50,8 @@ export function ContentRowSkeleton() {
 
 export function FeaturedGridSkeleton() {
   return (
-    <SkeletonFrame className="px-4 sm:px-6 lg:px-12">
+    // Capped like the `FeaturedGrid` on Home, so the placeholder starts where the grid will.
+    <SkeletonFrame className="max-w-page mx-auto px-4 sm:px-6 lg:px-12">
       <Skeleton className="mb-6 h-6 w-40" />
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <Skeleton className="col-span-2 row-span-2 aspect-video rounded-lg md:aspect-auto" />

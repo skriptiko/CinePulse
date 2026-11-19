@@ -10,7 +10,7 @@ import { Button } from './ui/button';
  * card start where the Header does, and the cards run on to the right edge of the screen.
  * `max()` keeps the gutter at 48 while the screen is still narrower than the cap.
  */
-const ROW_GUTTER =
+export const ROW_GUTTER =
   'px-4 sm:px-6 lg:px-12 2xl:pl-[max(3rem,calc((100%-var(--container-page))/2+3rem))]';
 
 export type ContentRowProps = {

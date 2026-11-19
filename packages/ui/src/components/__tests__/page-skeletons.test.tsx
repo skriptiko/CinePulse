@@ -1,7 +1,14 @@
 import { renderWithProviders, screen } from '@repo/test-utils';
 import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { CardGridSkeleton, PageSkeleton, SKELETON_DELAY_MS } from '../page-skeletons';
+import { ROW_GUTTER } from '../content-row';
+import {
+  CardGridSkeleton,
+  ContentRowSkeleton,
+  FeaturedGridSkeleton,
+  PageSkeleton,
+  SKELETON_DELAY_MS,
+} from '../page-skeletons';
 
 describe('CardGridSkeleton', () => {
   it('shows only the cards of a grid, for a page that keeps its own heading', () => {
@@ -9,6 +16,26 @@ describe('CardGridSkeleton', () => {
 
     expect(screen.getByTestId('page-skeleton')).toHaveAttribute('aria-busy', 'true');
     expect(container.querySelectorAll('[data-slot="skeleton"]')).toHaveLength(12);
+  });
+});
+
+describe('section skeletons', () => {
+  it('starts a row on the gutter of ContentRow', () => {
+    renderWithProviders(<ContentRowSkeleton />);
+
+    expect(screen.getByTestId('page-skeleton')).toHaveClass(...ROW_GUTTER.split(' '));
+  });
+
+  it("caps Editor's Picks like the grid on Home", () => {
+    renderWithProviders(<FeaturedGridSkeleton />);
+
+    expect(screen.getByTestId('page-skeleton')).toHaveClass(
+      'max-w-page',
+      'mx-auto',
+      'px-4',
+      'sm:px-6',
+      'lg:px-12'
+    );
   });
 });
 
