@@ -28,9 +28,10 @@ export type MovieCardProps = {
 
 export function MovieCard({ movie, action, className }: MovieCardProps) {
   const { title, imageUrl, year, rating, href } = movie;
+  // A coarse pointer has no hover, so there the text shows at rest (Figma `pointer=coarse`).
   const revealClassName = cn(
-    'opacity-0 group-focus-within:opacity-100 group-hover:opacity-100',
-    'translate-y-2 group-focus-within:translate-y-0 group-hover:translate-y-0',
+    'opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 pointer-coarse:opacity-100',
+    'translate-y-2 group-focus-within:translate-y-0 group-hover:translate-y-0 pointer-coarse:translate-y-0',
     'transition duration-300 motion-reduce:transition-none'
   );
 
@@ -38,7 +39,8 @@ export function MovieCard({ movie, action, className }: MovieCardProps) {
     <div
       className={cn(
         'group @container relative grid overflow-hidden rounded-lg transition-transform duration-300',
-        'hover:z-10 motion-safe:hover:scale-105',
+        // The lift and the image zoom follow a fine pointer only: a tap would leave them stuck.
+        'pointer-fine:hover:z-10 pointer-fine:motion-safe:hover:scale-105',
         'has-[a:focus-visible]:ring-ring has-[a:focus-visible]:ring-[3px]',
         className
       )}
@@ -50,17 +52,18 @@ export function MovieCard({ movie, action, className }: MovieCardProps) {
             alt=""
             loading="lazy"
             decoding="async"
-            className="size-full object-cover transition-transform duration-500 motion-safe:group-hover:scale-110"
+            className="size-full object-cover transition-transform duration-500 pointer-fine:motion-safe:group-hover:scale-110"
           />
         ) : (
           <ImagePlaceholder />
         )}
 
-        {/* Hover Overlay */}
+        {/* Overlay: at rest on a coarse pointer, it keeps the muted year at >= 4.5:1 on a white
+            poster down to a 161 px card (the smallest that shows the year). */}
         <div
           className={cn(
             'from-background via-background/60 absolute inset-0 bg-linear-to-t to-transparent',
-            'opacity-0 group-focus-within:opacity-100 group-hover:opacity-100',
+            'opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 pointer-coarse:opacity-100',
             'transition-opacity duration-300'
           )}
         />
