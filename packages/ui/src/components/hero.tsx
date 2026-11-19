@@ -56,7 +56,7 @@ export function Hero({ movie, className }: HeroProps) {
           <ImagePlaceholder />
         )}
         {/* Gradient Overlays */}
-        <div className="from-background via-background/60 absolute inset-0 bg-linear-to-t to-transparent" />
+        <div className="from-background via-background/60 absolute inset-0 bg-linear-to-t via-80% to-transparent" />
         <div className="from-background/80 via-background/40 absolute inset-0 bg-linear-to-r to-transparent" />
       </div>
 
@@ -70,7 +70,7 @@ export function Hero({ movie, className }: HeroProps) {
                 {rating}
               </span>
             )}
-            {year !== null && <span className="text-muted-foreground">{year}</span>}
+            {year !== null && <span className="text-foreground/80">{year}</span>}
           </div>
 
           {/* Title */}
@@ -83,7 +83,9 @@ export function Hero({ movie, className }: HeroProps) {
 
           {/* Description */}
           {description !== null && (
-            <p className="text-muted-foreground fluid-body mb-6 max-w-lg sm:mb-8">{description}</p>
+            <p className="text-foreground/80 fluid-body mb-6 line-clamp-3 max-w-lg sm:mb-8 sm:line-clamp-4">
+              {description}
+            </p>
           )}
 
           {/* On focus, above what a page lays over the hero, as the genre pills of Home touch the

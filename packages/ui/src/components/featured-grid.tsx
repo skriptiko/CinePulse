@@ -33,7 +33,7 @@ const tileImageVariants = cva('relative', {
   variants: { featured: { true: 'aspect-[16/10]', false: 'aspect-video' } },
 });
 
-const tileTitleVariants = cva('text-foreground font-semibold', {
+const tileTitleVariants = cva('text-foreground line-clamp-2 font-semibold', {
   variants: { featured: { true: 'text-xl md:text-2xl', false: 'text-base' } },
 });
 
@@ -84,10 +84,10 @@ function FeaturedTile({ item, featured }: FeaturedTileProps) {
             <ImagePlaceholder />
           )}
 
-          <div className="from-background via-background/40 absolute inset-0 bg-linear-to-t to-transparent opacity-80 transition-opacity group-hover:opacity-90" />
+          <div className="from-background via-background/80 absolute inset-0 bg-linear-to-t via-65% to-transparent opacity-80 transition-opacity group-hover:opacity-90" />
 
           <div className="absolute right-0 bottom-0 left-0 p-4">
-            <div className="text-muted-foreground mb-2 flex items-center gap-2 text-xs">
+            <div className="text-foreground/80 mb-2 flex items-center gap-2 text-xs">
               {rating !== null && (
                 <div className="flex items-center gap-1">
                   <Star aria-hidden="true" className="fill-rating text-rating size-3" />

@@ -31,7 +31,7 @@ A rule in this document that cites a standard follows it. Where we go further th
 
 **Glass is only for chrome over content.** `glass` (60 % opaque) is for small chips on images, such as the "Top Rated" badge on a Featured Tile. `glass-bar` (90 % opaque) is for the scrolled Header. Both take the `glass-border` stroke and `glass-blur`. Choose between them by contrast, not by looks.
 
-**Text on an image sits on a gradient.** Every image with text on it has a gradient from `background` to transparent, so it is dark in the dark theme and light in the light one: bottom-up on cards and tiles (a Featured Tile 0 → 80 → 100 %), bottom-up and left-to-right on the Hero, a heavier one on the detail hero (70 → 90 → 100 %). Never put text straight on an image. Text on an image meets the same contrast as text on a page, measured on the worst image (white and black).
+**Text on an image sits on a gradient.** Every image with text on it has a gradient from `background` to transparent, so it is dark in the dark theme and light in the light one: bottom-up on cards and tiles (a Featured Tile 0 → 80 % at 65 % of the height → 100 %, at 80 % opacity, 90 % on hover), bottom-up (0 → 60 % at 80 % of the height → 100 %) and left-to-right on the Hero, a heavier one on the detail hero (70 → 90 → 100 %). Secondary text on the Hero, a Featured Tile and the detail hero (year, tagline, metadata, overview) is `foreground` at 80 %, not `muted-foreground`, which fails on a bright image. Long text is clamped only where the full text is one step away: the Hero overview at 3 lines (4 from `sm`) and the Featured Tile title at 2; headings are never clamped. Contrast is checked from 320 to 1920 wide, at viewport heights from 568 to 1440, with WCAG 1.4.12 text spacing. Never put text straight on an image. Text on an image meets the same contrast as text on a page, measured on the worst image (white and black).
 
 **Colour is never the only signal** (WCAG 1.4.1). A state, an error or a choice also has text, an icon or a shape: the rating star has its number, an invalid field has a message.
 
@@ -64,7 +64,7 @@ A rule in this document that cites a standard follows it. Where we go further th
 | Section title (`h2`) | `text-xl` → `text-2xl` from `md`, semibold, tight |
 | Reading text | `text-base` (overviews: `fluid-body`), line height ≥ 1.5 |
 | Secondary text, controls | `text-sm` |
-| Metadata, labels | `text-xs`, `muted-foreground` |
+| Metadata, labels | `text-xs`, `muted-foreground`; on an image `foreground/80` |
 
 ## 3. Layout and grid
 
@@ -145,7 +145,6 @@ The file or the code does not yet follow these rules. Each gap is a ticket in No
 | Gap | Ticket |
 | --- | --- |
 | The code still has three page gutters (32 at 768, where Figma has 24), and its grids and rows do not share the capped left edge of Figma | CIN-162, CIN-163, CIN-164 |
-| Text fails 4.5:1 in the code: Featured Tile and detail hero metadata, the mobile Hero description, `text-destructive` and `accent` text in the dark theme | CIN-165 |
 | MovieCard and Hero have no image property: a poster is a fill override on its `Image Placeholder` | none yet |
 | The automated checks run WCAG 2.1 rules; 2.4.11 and 2.5.8 are not checked | CIN-153 |
 | Reading text is 16 px in Figma but still 14 px in the code; `fluid-body` starts at 14 px in `theme.css` | CIN-159, CIN-160 |
