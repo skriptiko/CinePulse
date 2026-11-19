@@ -149,6 +149,5 @@ The file or the code does not yet follow these rules. Each gap is a ticket in No
 | The automated checks run WCAG 2.1 rules; 2.4.11 and 2.5.8 are not checked | CIN-153 |
 | Reading text is 16 px in Figma but still 14 px in some places in the code | CIN-160 |
 | Tokens are kept by hand in two places, not in the W3C format | CIN-158 |
-| Card titles are hover-only in code; Figma shows them at rest on touch (`pointer=coarse`) | CIN-161 |
 
 When a gap is closed, remove its row and update the section above if the rule changed.

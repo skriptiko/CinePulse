@@ -31,6 +31,25 @@ describe('MovieCard', () => {
     expect(container.querySelector('.group-focus-within\\:opacity-100')).not.toBeNull();
   });
 
+  it('shows the title, year and rating at rest on a coarse pointer', () => {
+    const { container } = renderWithProviders(<MovieCard movie={MOVIE} />);
+
+    for (const text of ['Dune', '2021']) {
+      const reveal = screen.getByText(text).closest('.opacity-0');
+      expect(reveal).toHaveClass('pointer-coarse:opacity-100', 'pointer-coarse:translate-y-0');
+    }
+    expect(container.querySelector('.bg-linear-to-t')).toHaveClass('pointer-coarse:opacity-100');
+  });
+
+  it('lifts the card and zooms the image for a fine pointer only', () => {
+    const { container } = renderWithProviders(<MovieCard movie={MOVIE} />);
+
+    expect(container.firstElementChild).toHaveClass('pointer-fine:motion-safe:hover:scale-105');
+    expect(container.querySelector('img')).toHaveClass(
+      'pointer-fine:motion-safe:group-hover:scale-110'
+    );
+  });
+
   it('does not look clickable without an action of its own', () => {
     const { container } = renderWithProviders(<MovieCard movie={MOVIE} />);
 
