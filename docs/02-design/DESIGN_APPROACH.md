@@ -147,7 +147,6 @@ The file or the code does not yet follow these rules. Each gap is a ticket in No
 | `@repo/ui` follows the one gutter and the capped left edge. The catalog grids in `pages-mfe` do not start on the capped left edge yet, and the `user-mfe` pages still have a 32 gutter at 768, where Figma has 24 | CIN-163, CIN-164 |
 | MovieCard and Hero have no image property: a poster is a fill override on its `Image Placeholder` | none yet |
 | The automated checks run WCAG 2.1 rules; 2.4.11 and 2.5.8 are not checked | CIN-153 |
-| Reading text is 16 px in Figma but still 14 px in some places in the code | CIN-160 |
 | Tokens are kept by hand in two places, not in the W3C format | CIN-158 |
 
 When a gap is closed, remove its row and update the section above if the rule changed.

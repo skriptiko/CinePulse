@@ -39,7 +39,7 @@ export function Search() {
 
       <div className="px-4 pt-4 pb-16 sm:px-6 lg:px-12">
         {query === '' ? (
-          <p className="text-muted-foreground py-12 text-center text-sm">
+          <p className="text-muted-foreground py-12 text-center text-base">
             What are you looking for? Enter a title or a name above.
           </p>
         ) : (

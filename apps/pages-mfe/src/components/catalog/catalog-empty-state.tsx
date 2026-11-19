@@ -31,7 +31,7 @@ export function CatalogEmptyState({
       <h2 className="mb-2 max-w-full text-lg font-medium break-words">
         {query ? `No ${noun} found for “${query}”` : `No ${noun} found`}
       </h2>
-      <p className="text-muted-foreground max-w-md text-sm">
+      <p className="text-muted-foreground max-w-md text-base">
         {query ? searchHint : 'Try a different genre or reset the filters.'}
       </p>
       <div className="mt-4 flex gap-2">

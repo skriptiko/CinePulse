@@ -154,7 +154,8 @@ describe('Search page', () => {
       const { container } = renderSearch();
 
       expect(screen.getByRole('heading', { level: 1, name: 'Search' })).toBeInTheDocument();
-      expect(screen.getByText(NO_QUERY_LINE)).toBeInTheDocument();
+      // Reading text is 16 px (DESIGN_APPROACH.md § Typography).
+      expect(screen.getByText(NO_QUERY_LINE)).toHaveClass('text-base');
       expect(document.title).toBe('Search · CinePulse');
       expect(requests).toEqual([]);
       await expectNoA11yViolations(container);
@@ -689,7 +690,10 @@ describe('Search page', () => {
       expect(
         await screen.findByRole('heading', { name: 'No movies found for “dune”' })
       ).toBeInTheDocument();
-      expect(screen.getByText('Check the spelling or try a different title.')).toBeInTheDocument();
+      expect(screen.getByText('Check the spelling or try a different title.')).toHaveClass(
+        'text-base',
+        'max-w-md'
+      );
     });
 
     it('offers to clear the search and nothing about filters', async () => {
