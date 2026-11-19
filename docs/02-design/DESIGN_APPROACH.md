@@ -177,7 +177,7 @@ The file or the code does not yet follow these rules. Each gap is a ticket in No
 
 | Gap | Ticket |
 | --- | --- |
-| On a phone, Shift+Tab back up from the footer of Movies or TV Shows leaves Load more fully under the sticky filters (WCAG 2.4.11) | none yet |
+| On a phone, Shift+Tab back up from the footer of Movies or TV Shows leaves Load more fully under the sticky filters (WCAG 2.4.11) | CIN-173 |
 | MovieCard and Hero have no image property: a poster is a fill override on its `Image Placeholder` | none yet |
 | Tokens are kept by hand in two places, not in the W3C format | CIN-158 |
 | Glass has no solid fallback for reduced transparency or more contrast | CIN-169 |
