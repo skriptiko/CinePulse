@@ -1,6 +1,7 @@
 import { expectNoA11yViolations, renderWithProviders, screen } from '@repo/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import { CategoryLinks, CategoryPills } from '../category-pills';
+import { ROW_GUTTER } from '../content-row';
 
 const CATEGORIES = ['All', 'Action', 'Drama'];
 
@@ -28,6 +29,16 @@ describe('CategoryLinks', () => {
 
     expect(screen.getByRole('link', { name: 'TV Shows' })).toHaveClass('bg-foreground');
     expect(screen.getByRole('link', { name: 'Movies' })).not.toHaveClass('bg-foreground');
+  });
+
+  it('starts the list on the row edge of the cards, and caps it on the nav', () => {
+    renderWithProviders(
+      <CategoryLinks links={LINKS} label="Search results" className="max-w-page mx-auto" />
+    );
+
+    const nav = screen.getByRole('navigation', { name: 'Search results' });
+    expect(nav).toHaveClass('max-w-page', 'mx-auto');
+    expect(screen.getByRole('list')).toHaveClass(...ROW_GUTTER.split(' '));
   });
 
   it('has no structural a11y violations', async () => {
@@ -69,6 +80,12 @@ describe('CategoryPills', () => {
 
     expect(onValueChange).toHaveBeenCalledWith('Drama');
     expect(screen.getByRole('button', { name: 'Action' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('starts the pills on the row edge of the cards', () => {
+    renderWithProviders(<CategoryPills categories={CATEGORIES} label="Genres" />);
+
+    expect(screen.getByRole('group', { name: 'Genres' })).toHaveClass(...ROW_GUTTER.split(' '));
   });
 
   it('has no structural a11y violations', async () => {

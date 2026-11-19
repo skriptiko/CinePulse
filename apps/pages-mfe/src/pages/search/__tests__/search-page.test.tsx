@@ -170,9 +170,10 @@ describe('Search page', () => {
         ...page
       );
       expect(searchInput().closest('search')).toHaveClass(...page);
-      expect(
-        within(screen.getByRole('navigation', { name: 'Search results by type' })).getByRole('list')
-      ).toHaveClass(...page);
+      // The tabs cap the nav and keep the row gutter on the list, so they start at the same edge.
+      const tabs = screen.getByRole('navigation', { name: 'Search results by type' });
+      expect(tabs).toHaveClass('max-w-page', 'mx-auto');
+      expect(within(tabs).getByRole('list')).toHaveClass('px-4', 'sm:px-6', 'lg:px-12');
       expect(screen.getByText(NO_QUERY_LINE).parentElement).toHaveClass(...page);
     });
 
