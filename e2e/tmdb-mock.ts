@@ -338,7 +338,7 @@ function personDetails(id: number) {
   return full();
 }
 
-function paginatedShows(names: string[], page = 1) {
+export function paginatedShows(names: string[], page = 1) {
   return {
     page,
     results: names.map((name, index) => show(page * 100 + index, name)),
