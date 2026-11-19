@@ -171,6 +171,16 @@ describe('WatchlistPage', () => {
     expect(screen.getByText('Lost')).toBeVisible();
   });
 
+  it('keeps the page within the page width and gutter', async () => {
+    renderPage();
+
+    // One gutter and the capped left edge, as on the catalog pages (DESIGN_APPROACH.md).
+    const page = ['max-w-page', 'mx-auto', 'px-4', 'sm:px-6', 'lg:px-12'];
+    expect(
+      (await screen.findByRole('heading', { level: 1, name: 'Watchlist' })).parentElement
+    ).toHaveClass(...page);
+  });
+
   it('shows only the titles of the selected folder', async () => {
     renderPage('/user/watchlist?folder=top');
 

@@ -55,6 +55,16 @@ describe('Settings', () => {
     expect(document.title).toBe('Settings · CinePulse');
   });
 
+  it('keeps the page within the page width and gutter', () => {
+    renderWithProviders(<Settings />);
+
+    // One gutter and the capped left edge, as on the catalog pages (DESIGN_APPROACH.md).
+    const page = ['max-w-page', 'mx-auto', 'px-4', 'sm:px-6', 'lg:px-12'];
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'User Settings' }).parentElement
+    ).toHaveClass(...page);
+  });
+
   it('marks the current theme', () => {
     globalStore.getState().setTheme('system');
     renderWithProviders(<Settings />);

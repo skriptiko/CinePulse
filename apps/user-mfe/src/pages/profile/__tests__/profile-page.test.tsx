@@ -78,6 +78,16 @@ describe('ProfilePage', () => {
     expect(screen.getByText('Member since Oct 31, 2026')).toBeInTheDocument();
   });
 
+  it('keeps the page within the page width and gutter', () => {
+    renderWithProviders(<ProfilePage />);
+
+    // One gutter and the capped left edge, as on the catalog pages (DESIGN_APPROACH.md).
+    const page = ['max-w-page', 'mx-auto', 'px-4', 'sm:px-6', 'lg:px-12'];
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'User Profile' }).parentElement
+    ).toHaveClass(...page);
+  });
+
   it('shows the email once without a display name', () => {
     globalStore.getState().setUser({ ...USER, displayName: null });
     renderWithProviders(<ProfilePage />);
