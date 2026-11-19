@@ -31,7 +31,7 @@ A rule in this document that cites a standard follows it. Where we go further th
 
 **Glass is only for chrome over content.** `glass` (60 % opaque) is for small chips on images, such as the "Top Rated" badge on a Featured Tile. `glass-bar` (90 % opaque) is for the scrolled Header. Both take the `glass-border` stroke and `glass-blur`. Choose between them by contrast, not by looks.
 
-**Text on an image sits on a gradient.** Every image with text on it has a gradient from `background` to transparent: bottom-up on cards and tiles, bottom-up and left-to-right on the Hero, a heavier one on the detail hero. Never put text straight on an image. Text on an image meets the same contrast as text on a page, measured on the worst image (white and black).
+**Text on an image sits on a gradient.** Every image with text on it has a gradient from `background` to transparent, so it is dark in the dark theme and light in the light one: bottom-up on cards and tiles (a Featured Tile 0 → 80 → 100 %), bottom-up and left-to-right on the Hero, a heavier one on the detail hero (70 → 90 → 100 %). Never put text straight on an image. Text on an image meets the same contrast as text on a page, measured on the worst image (white and black).
 
 **Colour is never the only signal** (WCAG 1.4.1). A state, an error or a choice also has text, an icon or a shape: the rating star has its number, an invalid field has a message.
 
@@ -44,7 +44,7 @@ A rule in this document that cites a standard follows it. Where we go further th
 | Icons, borders of controls, focus rings, chart marks | 3:1 against what is next to them |
 | Placeholder and disabled text | Disabled is exempt; placeholder meets 4.5:1 |
 
-**Test art is fictional and many-coloured.** The `Test Images` page holds soft 3D clay renders, each with its own palette. They test the UI against many colours and keep real posters and real people out of the file.
+**Test art is fictional and many-coloured.** The `Test Images` page holds soft 3D clay renders, each with its own palette. They test the UI against many colours and keep real posters and real people out of the file. Names of people (cast, crew, reviewers, users) are made up too.
 
 ## 2. Typography
 
@@ -74,12 +74,12 @@ A rule in this document that cites a standard follows it. Where we go further th
 
 | Frame | Width | Class (Material 3) | Tailwind |
 | --- | --- | --- | --- |
-| Mobile | 390 | Compact (< 600) | base, `sm` |
-| Tablet | 768 | Medium (600–839) | `md` |
+| Mobile | 390 | Compact (< 600) | base |
+| Tablet | 768 | Medium (600–839) | `sm`, `md` |
 | Desktop | 1440 | Large (≥ 1200) | `xl` |
 | Full HD | 1920 | Extra-large | `2xl` |
 
-A component whose layout changes with the width has a `viewport` variant (`mobile`, `desktop`, and `wide` where its inner grid changes at `2xl`).
+A component whose layout changes with the width has a `viewport` variant (`mobile`, `desktop`, `tablet` where its layout changes at `md`, and `wide` where its inner grid changes at `2xl`). On touch widths (390, 768) cards show their title at rest.
 
 **Every layout reflows at 320 px** (WCAG 1.4.10): at 320 CSS px wide, which is also 1280 at 400 % zoom, nothing needs side scrolling except carousels, which scroll on purpose. The 390 frame is drawn; 320 is checked, not drawn.
 
@@ -144,14 +144,11 @@ The file or the code does not yet follow these rules. Each gap is a ticket in No
 
 | Gap | Ticket |
 | --- | --- |
-| No screen is drawn in the light theme; image gradients use raw dark stops; muted metadata is hard to read on bright images | CIN-146 |
-| Mobile frames show only the default view; the refresh toast is not drawn; section order differs from FIGMA_WORKFLOW on 9 pages; file clean-up | CIN-149 |
-| The code still has three page gutters, and its grids and rows do not share the capped left edge of Figma | CIN-162, CIN-163, CIN-164 |
+| The code still has three page gutters (32 at 768, where Figma has 24), and its grids and rows do not share the capped left edge of Figma | CIN-162, CIN-163, CIN-164 |
+| Text fails 4.5:1 in the code: Featured Tile and detail hero metadata, the mobile Hero description, `text-destructive` and `accent` text in the dark theme | CIN-165 |
+| MovieCard and Hero have no image property: a poster is a fill override on its `Image Placeholder` | none yet |
 | The automated checks run WCAG 2.1 rules; 2.4.11 and 2.5.8 are not checked | CIN-153 |
 | Reading text is 16 px in Figma but still 14 px in the code; `fluid-body` starts at 14 px in `theme.css` | CIN-159, CIN-160 |
-| No Tablet 768 frames | CIN-155 |
-| No accessibility notes on the screens | CIN-156 |
-| Component descriptions hold only the code path; library publishes have no notes | CIN-157 |
 | Tokens are kept by hand in two places, not in the W3C format | CIN-158 |
 | Card titles are hover-only in code; Figma shows them at rest on touch (`pointer=coarse`) | CIN-161 |
 
