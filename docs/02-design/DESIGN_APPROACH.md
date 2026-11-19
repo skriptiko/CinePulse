@@ -145,7 +145,6 @@ The file or the code does not yet follow these rules. Each gap is a ticket in No
 | Gap | Ticket |
 | --- | --- |
 | MovieCard and Hero have no image property: a poster is a fill override on its `Image Placeholder` | none yet |
-| The automated checks run WCAG 2.1 rules; 2.4.11 and 2.5.8 are not checked | CIN-153 |
 | Tokens are kept by hand in two places, not in the W3C format | CIN-158 |
 
 When a gap is closed, remove its row and update the section above if the rule changed.
