@@ -63,7 +63,7 @@ function WatchlistContent({ uid }: WatchlistContentProps) {
   }, [view, count]);
 
   return (
-    <div className="max-w-page mx-auto px-4 pt-20 pb-16 sm:px-6 sm:pt-24 md:px-8">
+    <div className="max-w-page mx-auto px-4 pt-20 pb-16 sm:px-6 sm:pt-24 lg:px-12">
       <h1 className="mb-6 text-2xl font-bold">Watchlist</h1>
       <div className="grid gap-8 md:grid-cols-[18rem_minmax(0,1fr)]">
         <FolderTree folders={folders} selectedId={selectedId ?? null} />

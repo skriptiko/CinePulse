@@ -27,7 +27,7 @@ export function ProfilePage() {
   const memberSince = formatTimestamp(createdAt);
 
   return (
-    <div className="max-w-page mx-auto px-4 pt-20 pb-16 sm:px-6 sm:pt-24 md:px-8">
+    <div className="max-w-page mx-auto px-4 pt-20 pb-16 sm:px-6 sm:pt-24 lg:px-12">
       <h1 className="mb-6 text-2xl font-bold">User Profile</h1>
       <div className="flex items-center gap-4">
         {photoUrl && !isPhotoBroken && (
