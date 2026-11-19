@@ -87,7 +87,7 @@ A component whose layout changes with the width has a `viewport` variant (`mobil
 
 **Chrome is capped, content is full width.** At 1920, the Header, Footer, Hero content, detail views and account pages stop at `max-w-page` (1800). Rows and catalog grids keep growing: a Home row shows more cards, and a catalog grid keeps 6 columns with wider cards.
 
-**Columns come from content.** Frames use auto layout; a catalog grid is 2 cards per row at 390 and 6 at 1440 and 1920.
+**Columns come from content; grids are a guide.** Frames use auto layout; a catalog grid is 2 cards per row at 390 and 6 at 1440 and 1920. Each `Default` frame carries the layout grid of its width class (4, 8 or 12 columns), hidden by default, to align new work.
 
 **Even vertical rhythm.** Sections on Home and the detail pages are 48 apart (`gap-12`), a section title is 16 above its content (`mb-4`), and a page starts at 112 or 144 (`pt-28`, `pt-36`) to clear the fixed Header.
 
@@ -146,13 +146,12 @@ The file or the code does not yet follow these rules. Each gap is a ticket in No
 | --- | --- |
 | The watchlist dialog on Movie Detail overflows its panel; dialogs and the offline banner are local frames, not `Dialog` instances | CIN-145 |
 | No screen is drawn in the light theme; image gradients use raw dark stops; muted metadata is hard to read on bright images | CIN-146 |
-| Section titles, overviews and biography text have no text style; many paddings, gaps and radii are not bound; `Spacing` lacks `28` and `36` | CIN-147 |
 | Focus states are missing on Icon Button, pills, nav links, toggle items and cards; no on-image Button variant; mobile frames do not show the 44 px targets | CIN-148 |
 | Mobile frames show only the default view; the refresh toast is not drawn; section order differs from FIGMA_WORKFLOW on 9 pages; file clean-up | CIN-149 |
 | Three page gutters (`px-4 md:px-8`, `px-4 sm:px-6 lg:px-12`, `px-4 sm:px-6 md:px-8`) instead of one | CIN-150 |
 | Card titles show only on hover or focus, so on a touch screen a card shows only the poster | CIN-151 |
 | The automated checks run WCAG 2.1 rules; 2.4.11 and 2.5.8 are not checked | CIN-153 |
-| Reading text is 14 px; line height, line length and the `rem` part of `fluid-*` are not set as rules in the file | CIN-154 |
+| Reading text is 16 px in Figma but still 14 px in the code; `fluid-body` starts at 14 px in `theme.css` | CIN-159, CIN-160 |
 | No Tablet 768 frames | CIN-155 |
 | No accessibility notes on the screens | CIN-156 |
 | Component descriptions hold only the code path; library publishes have no notes | CIN-157 |
