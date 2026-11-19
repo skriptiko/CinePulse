@@ -41,7 +41,7 @@ export type FooterProps = {
 export function Footer({ className }: FooterProps) {
   return (
     <footer className={cn('border-border bg-surface border-t', className)}>
-      <div className="max-w-page mx-auto px-4 py-12 md:px-8 md:py-16">
+      <div className="max-w-page mx-auto px-4 py-12 sm:px-6 md:py-16 lg:px-12">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:grid-cols-5">
           {/* Brand */}
           <div className="col-span-2 mb-4 md:col-span-4 lg:col-span-1 lg:mb-0">

@@ -52,7 +52,7 @@ export function CategoryPills({
     <fieldset
       aria-label={label}
       className={cn(
-        'scrollbar-hide flex min-w-0 gap-2 overflow-x-auto px-4 pb-2 md:px-8',
+        'scrollbar-hide flex min-w-0 gap-2 overflow-x-auto px-4 pb-2 sm:px-6 lg:px-12',
         className
       )}
     >
@@ -90,7 +90,12 @@ export type CategoryLinksProps = {
 export function CategoryLinks({ links, label, className }: CategoryLinksProps) {
   return (
     <nav aria-label={label}>
-      <ul className={cn('scrollbar-hide flex gap-2 overflow-x-auto px-4 pb-2 md:px-8', className)}>
+      <ul
+        className={cn(
+          'scrollbar-hide flex gap-2 overflow-x-auto px-4 pb-2 sm:px-6 lg:px-12',
+          className
+        )}
+      >
         {links.map((link) => (
           <li key={link.href}>
             <Link
