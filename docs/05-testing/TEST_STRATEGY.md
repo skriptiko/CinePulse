@@ -178,6 +178,11 @@ It also runs at 320 and 1280 px:
 2. With nothing trending, the genre pills lie below the Header.
 3. With the trending request failed, the message lies below the Header, and the pills below the message.
 
+`e2e/movie-card.spec.ts` runs on the same fixtures, on Movies:
+
+1. On a touch screen 390 px wide, a card shows its title, year and rating at rest.
+2. Under a mouse, a card hides them until hover.
+
 `e2e/header.spec.ts` runs on the same fixtures, in both themes:
 
 1. The focus of the Logo and of the nav links, in the menu at 320 px too, shows two colours at least 9:1 apart.
