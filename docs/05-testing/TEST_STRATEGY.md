@@ -237,7 +237,8 @@ The fixtures have no backdrop, so the contrast over solid white, mid grey and bl
 `e2e/focus-not-obscured.spec.ts` runs on the same fixtures (WCAG 2.4.11):
 
 1. At 1280 and 375 px, Tab down and Shift+Tab back up Movie Detail and Person: no focused control overlaps the fixed header.
-2. Offline, Tab down Movie Detail: no focused control overlaps the offline banner.
+2. At 1280 and 375 px, Tab down and Shift+Tab back up Movies and TV Shows with 20 cards a page: no focused control overlaps the header or the sticky filters, and the way up reaches Load more from the footer.
+3. Offline, Tab down Movie Detail: no focused control overlaps the offline banner.
 
 `e2e/focus-ring.spec.ts` runs on the same fixtures, read from painted pixels:
 

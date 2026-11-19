@@ -69,7 +69,8 @@ export function CatalogGrid<T extends { id: number }>({
             variant="outline"
             onClick={onLoadMore}
             disabled={isFetching}
-            className="rounded-full px-8"
+            // The filters stay sticky to the end of the page, so they can cover this button too.
+            className="scroll-mt-52 rounded-full px-8"
           >
             {isFetchingNextPage && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
             {loadMoreLabel(isFetchingNextPage, isFetchNextPageError)}
