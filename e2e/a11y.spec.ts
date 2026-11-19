@@ -8,8 +8,8 @@ test.use({ bypassCSP: true });
 
 const AXE_PATH = createRequire(__filename).resolve('axe-core/axe.min.js');
 
-/** WCAG 2.1 A and AA, the target in the PRD. Unlike jsdom, a browser computes contrast. */
-const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
+/** WCAG 2.2 A and AA, the target in the PRD. Unlike jsdom, a browser computes contrast and size. */
+const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
 const PUBLIC_PAGES = [
   { path: '/', heading: null },

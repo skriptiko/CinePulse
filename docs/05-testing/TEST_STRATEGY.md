@@ -54,7 +54,7 @@ e2e/                             # <scenario>.spec.ts
   - `renderWithProviders`;
   - the MSW `server` with `onUnhandledFrame: 'error'`, reset after each test;
   - `buildMovie` / `buildPaginated`;
-  - the axe helper.
+  - the axe helper (`expectNoA11yViolations`: the WCAG 2.2 A and AA tags and the axe best practices, without `color-contrast` and `target-size`, which jsdom cannot judge).
 - [x] Add `pnpm test` to the CI `quality` job.
 - [x] Write the first tests:
   - unit: `buildQueryString`, `getImageUrl`;
@@ -231,8 +231,13 @@ The fixtures have no backdrop, so the contrast over solid white, mid grey and bl
 
 `e2e/a11y.spec.ts` runs on the same fixtures and the Auth emulator:
 
-1. Every public page and, signed in, every account page has no WCAG 2.1 A or AA violation by axe in the browser, contrast included, in both themes.
+1. Every public page and, signed in, every account page has no WCAG 2.2 A or AA violation by axe in the browser, contrast and target size included, in both themes.
 2. Tab reaches the last control of each of those pages through visible stops.
+
+`e2e/focus-not-obscured.spec.ts` runs on the same fixtures (WCAG 2.4.11):
+
+1. At 1280 and 375 px, Tab down and Shift+Tab back up Movie Detail and Person: no focused control overlaps the fixed header.
+2. Offline, Tab down Movie Detail: no focused control overlaps the offline banner.
 
 `e2e/focus-ring.spec.ts` runs on the same fixtures, read from painted pixels:
 
