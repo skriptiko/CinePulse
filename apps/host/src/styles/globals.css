@@ -5,3 +5,11 @@
 @source "../../../../packages/ui/src";
 @source "../../../pages-mfe/src";
 @source "../../../user-mfe/src";
+
+@layer base {
+  /* While the offline banner or a toast lies at the bottom, focus scrolls a control clear of it
+     (WCAG 2.4.11). Only then: with nothing there, a control at the bottom edge stays put. */
+  html:has([data-slot="offline-banner"], [data-sonner-toast]) {
+    scroll-padding-bottom: 5rem;
+  }
+}
