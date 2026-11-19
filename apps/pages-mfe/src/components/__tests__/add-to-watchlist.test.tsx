@@ -169,6 +169,11 @@ describe('AddToWatchlist', () => {
 
     expect(await screen.findByRole('checkbox', { name: 'Top, level 1' })).toBeChecked();
     expect(screen.getByRole('checkbox', { name: 'Child, level 2' })).not.toBeChecked();
+    // The theme cannot set the border of a native box; `muted-foreground` has 3:1 and more.
+    expect(screen.getByRole('checkbox', { name: 'Child, level 2' })).toHaveClass(
+      'appearance-none',
+      'border-muted-foreground'
+    );
     expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
     await expectNoA11yViolations(screen.getByRole('dialog'));
   });

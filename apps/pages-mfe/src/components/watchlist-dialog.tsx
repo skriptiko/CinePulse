@@ -9,11 +9,19 @@ import { getFolderRows } from '@repo/firebase/watchlist-tree';
 import { ROUTE_PATHS } from '@repo/routes';
 import { AsyncBoundary, Button, buttonVariants, Dialog, DialogContent, Skeleton } from '@repo/ui';
 import { useMutation, useQueryClient, useSuspenseQueries } from '@tanstack/react-query';
+import { Check } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { FallbackProps } from 'react-error-boundary';
 import { Link, useLocation } from 'react-router-dom';
 
 const emitNotification = createTypedEmitter('notification:show');
+
+/**
+ * The unchecked border is `muted-foreground`: 6.3:1 on the dark dialog and 7.4:1 on the light one,
+ * above the 3:1 that WCAG 1.4.11 asks for. `border` would give 1.2:1.
+ */
+const CHECKBOX_CLASS =
+  'peer border-muted-foreground checked:border-primary checked:bg-primary focus-visible:ring-ring size-4 appearance-none rounded-sm border focus-visible:ring-[3px] focus-visible:outline-hidden disabled:opacity-50';
 
 export type WatchlistDialogProps = {
   title: WatchlistTitle;
@@ -169,15 +177,22 @@ function FolderPicker({ uid, title, onClose }: FolderPickerProps) {
                 className="touch-target flex items-center gap-2 py-1.5 text-sm"
                 style={{ paddingInlineStart: `${level}rem` }}
               >
-                <input
-                  type="checkbox"
-                  aria-label={`${folder.name}, level ${level + 1}`}
-                  checked={choices[folder.id] ?? savedIds.has(folder.id)}
-                  className="accent-primary size-4 shrink-0"
-                  onChange={(event) =>
-                    setChoices({ ...choices, [folder.id]: event.target.checked })
-                  }
-                />
+                {/* Drawn by hand: the theme cannot set the border of a native box. */}
+                <span className="relative flex size-4 shrink-0">
+                  <input
+                    type="checkbox"
+                    aria-label={`${folder.name}, level ${level + 1}`}
+                    checked={choices[folder.id] ?? savedIds.has(folder.id)}
+                    className={CHECKBOX_CLASS}
+                    onChange={(event) =>
+                      setChoices({ ...choices, [folder.id]: event.target.checked })
+                    }
+                  />
+                  <Check
+                    aria-hidden="true"
+                    className="text-primary-foreground pointer-events-none absolute inset-0 hidden size-4 peer-checked:block"
+                  />
+                </span>
                 <span className="min-w-0 break-words">{folder.name}</span>
               </label>
             ))}

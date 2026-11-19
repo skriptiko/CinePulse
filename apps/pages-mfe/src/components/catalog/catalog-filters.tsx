@@ -72,7 +72,7 @@ export function CatalogFilters({
 
   return (
     <div className="bg-background/80 border-border sticky top-16 z-30 border-b backdrop-blur-xl sm:top-20">
-      <div className="px-4 py-4 sm:px-6 lg:px-12">
+      <div className="max-w-page mx-auto px-4 py-4 sm:px-6 lg:px-12">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <search className="relative max-w-md flex-1">
