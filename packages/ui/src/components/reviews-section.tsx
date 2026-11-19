@@ -50,7 +50,7 @@ function ReviewItem({ review }: { review: ReviewData }) {
         )}
         {date !== null && <span className="text-muted-foreground">{date}</span>}
       </div>
-      <p className="text-muted-foreground mb-1 line-clamp-6 text-sm leading-relaxed wrap-anywhere whitespace-pre-line">
+      <p className="text-muted-foreground mb-1 line-clamp-6 max-w-prose text-base wrap-anywhere whitespace-pre-line">
         {text}
       </p>
       {url !== null && (
