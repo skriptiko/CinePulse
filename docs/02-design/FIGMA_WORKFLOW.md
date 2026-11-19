@@ -35,39 +35,43 @@ A new route gets its own page. `Explorations` is where a redesign is drawn befor
 
 ## Screen sizes
 
-The design and the code support three widths; every screen page has a frame for each:
+The design and the code support four widths; every screen page has a frame for each:
 
 | Frame | Width | What it checks |
 | --- | --- | --- |
 | Mobile | 390 | The phone layout: one column, the mobile Header and Footer, `fluid-*` text at the bottom of its `clamp()` |
+| Tablet | 768 | `sm` and `md`, below `lg`. The Header keeps the menu button and shows the wordmark; gutter 24. Catalog grids in 4 columns of 168 (gap 16); detail views put the 256 poster beside the text; Cast in 6 columns, videos in 2, images in 3, seasons in 2; Editor's Picks in 2 columns; Watchlist keeps the 288 sidebar. Type: `fluid-display/tablet` 54, `fluid-heading/tablet` 31, `fluid-body/mobile`; the detail overview is 18 (`sm:text-lg`) |
 | Desktop | 1440 | The laptop layout from `xl`: `fluid-*` text at the top of its `clamp()` |
 | Full HD | 1920 | The `2xl` layout (1536 and up). All content sits in one centred area, `max-w-page` (1800, `--container-page`) with the 48 gutter inside, so every left edge is at 108: Header, Footer, the Hero content, page titles, catalog grids (6 columns of 264 in 1704), the detail views and their sections, Editor's Picks and the account pages. A horizontal row starts at that edge (`row-start-wide` = 108) and runs to the right edge of the screen, so it shows more `w-48` cards. `2xl` steps: Cast in 12 columns (`CAST_LIMIT`). Type is the same as at 1440 |
 
-Widths in between are not drawn: the breakpoints of the code decide them. A new screen gets all three frames; its loading, empty and error states are drawn at least at 1440 and 1920.
+Widths in between are not drawn: the breakpoints of the code decide them. A new screen gets all four frames; its loading, empty and error states are drawn at 390, 1440 and 1920. Home, Movies, Movie Detail and Settings also have a `Light theme` section right after `Default` (390 and 1440, explicit mode `Light`).
 
 ## States on a screen page
 
 A screen page holds one Figma section per state, so a state is easy to find and every screen size of it sits side by side:
 
 - **Section:** named after the state (`Default`, `Loading`, `Error`…). A screen with several default views, such as the Search tabs, names the view first: `Results, People tab`, `No results, Movies tab`.
-- **Columns:** inside a section the frames stand left to right: 390 at x = 160, 1440 at x = 670, 1920 at x = 2230. A state drawn only at 1440 and 1920 leaves the 390 column empty.
-- **Order:** sections run top to bottom from the usual view to the rare one: default views, `Loading`, empty states, `Not found`, `Error`, section errors, list states (`Load more`, `End of list`), `Offline`, the forms and dialogs, then the app-level failures (`Remote unavailable`, `App crash`).
-- **Frame name:** `<Page> — <Mobile 390|Desktop 1440|Desktop 1920> — <State>`. The app-level failures on `Not Found` are `App — …`, as they are not tied to a route.
+- **Columns:** inside a section the frames stand left to right: 390 at x = 160, 1440 at x = 670, 1920 at x = 2230, 768 at x = 4270 (it came last, so the other columns did not move). A state not drawn at a width leaves its column empty.
+- **Order:** sections run top to bottom from the usual view to the rare one, 240 apart from y 0: default views (with `Light theme`), `Loading`, empty states, `Not found`, `Error`, section errors, list states (`Load more`, `End of list`), `Offline`, the forms and dialogs, the app-level failures (`Remote unavailable`, `App crash`), then `Explorations` last.
+- **Status:** each section has a `Section Status` instance at x 160, y 64: `Ready` (the frames match the code), `In progress` (being drawn or changed) or `Outdated` (the code changed; the frames need an update). It is a file annotation, not a code component.
+- **Explorations:** each screen page ends with an `Explorations` section ("Ideas that are not in the code. Not for build."), set to the `Light` mode so its note reads. Larger redesigns still go on the `Explorations` page.
+- **A11y layer:** one 1440 frame on each screen page (the `Default` one; on Search `Results, Movies tab`) has a hidden `A11y` frame on top, made of `A11y Annotation` tags: landmarks, headings, focus order, names of icon-only controls and live regions, each taken from the code. Turn it on to review; keep it hidden in screenshots.
+- **Frame name:** `<Page> — <Mobile 390|Tablet 768|Desktop 1440|Desktop 1920> — <State>`; the usual view is `— Default`, a light frame `— Light`. The app-level failures on `Not Found` are `App — …`, as they are not tied to a route.
 
 Each state copies its text from the code, so the frame shows what the user reads:
 
 | Page | States besides Default |
 | --- | --- |
-| Home | Loading, Section error (Trending and Editor's Picks fail), Offline (the offline banner) |
-| Movies, TV Shows | Loading, Empty search, Empty filters, Error, Load more loading, Load more failed, End of list |
-| Movie Detail, TV Detail | Loading, Empty sections (every section shows its `DetailSection` empty text), Not found, Error, and on Movie Detail the watchlist dialog: signed out, folders, saving |
+| Home | Light theme, Loading, Section error (Trending and Editor's Picks fail), Offline (the `OfflineBanner`) |
+| Movies, TV Shows | Loading, Empty search, Empty filters, Error, Background refresh failed (Movies: data on screen and the error `Toast`, as `handleQueryError` shows a toast only over data), Load more loading (`Icon/Loader2` before "Loading..."), Load more failed, End of list; Movies also Light theme |
+| Movie Detail, TV Detail | Light theme (Movie Detail), Loading, Empty sections (every section shows its `DetailSection` empty text), Not found, Error, and on Movie Detail the watchlist dialog: signed out, folders, saving |
 | Person | Loading, Empty sections, Not found, Error |
 | Search | Before a query, Loading results, No results (Movies and People tabs), Results error |
-| Watchlist | Loading, Empty, Error, Filter empty, Folder rename, Folder move, Folder delete, Remove confirm |
+| Watchlist | Loading, Empty, Error, Filter empty, Folder rename, Folder move, Folder delete, Remove confirm (inline forms, as in `folder-actions.tsx` and `remove-title-form.tsx`, not dialogs) |
 | Profile | Loading, Stats loading, Stats error, Stats empty |
-| Settings | Loading |
+| Settings | Light theme (the toggle shows Light), Loading |
 | Login | Loading, Error, Popup blocked |
-| Not Found | Page error, Remote unavailable, App crash |
+| Not Found | Page error, Remote unavailable, App crash (Header, fallback, Footer, as in `AppLayout`) |
 
 A new state goes into its own section in this order. A state the code adds is drawn in the same ticket.
 
@@ -77,7 +81,8 @@ A new state goes into its own section in this order. A state the code adds is dr
 - **Layout:** `container-page` = 1800 and `row-start-wide` = 108 (in `Spacing`). The page gutter is 16 below 640, 24 from 640, 48 from 1024 (`px-4 sm:px-6 lg:px-12`) everywhere. Capped components hold an inner `page` frame (fill width, max width `container-page`, padding 48, centred), so one variant gives 48 at 1440 and 108 at 1920; `ContentRow` has `viewport=wide` for the row start.
 - **Radius:** collection `Radius`: `radius-none` = 0, `radius-sm` = 4, `radius-md` = 6, `radius-lg` = 8 (`--radius` and its `calc()` steps), `radius-full` for pills and avatars.
 - **Spacing:** collection `Spacing`, the Tailwind 4 scale (`--spacing` = 4 px), named after the class step: `1` = 4, `2` = 8, `4` = 16, `6` = 24…; a half step is `0-5`, `1-5`, `2-5`; `28` = 112 and `36` = 144 are the page tops below the fixed Header (`pt-28`, `pt-36`). A value off the scale in a design is a question, not a new token.
-- **Type:** Geist, text styles named after their Tailwind classes: `text-sm/medium` is `text-sm font-medium`, for `xs`…`3xl` and `6xl` in four weights. The fluid utilities have one style for each end of their `clamp()`: `fluid-heading/mobile` (390 frames) and `fluid-heading/desktop` (1440 and 1920 frames), bold and tight like their headings in code. `fluid-body` is 16 → 18 with line height 24 / 28. Section titles use `heading-section/mobile` (20/28) and `heading-section/desktop` (24/32), SemiBold, −2.5 % (`text-xl md:text-2xl font-semibold tracking-tight`). The Logo wordmark uses `logo/wordmark` (20/28, Header) and `logo/wordmark-sm` (18/28, Footer).
+- **Type:** Geist, text styles named after their Tailwind classes: `text-sm/medium` is `text-sm font-medium`, for `xs`…`3xl` and `6xl` in four weights. The fluid utilities have one style for each end of their `clamp()`: `fluid-heading/mobile` (390 frames), `fluid-heading/tablet` (768) and `fluid-heading/desktop` (1440 and 1920 frames), the same for `fluid-display`,, bold and tight like their headings in code. `fluid-body` is 16 → 18 with line height 24 / 28. Section titles use `heading-section/mobile` (20/28) and `heading-section/desktop` (24/32), SemiBold, −2.5 % (`text-xl md:text-2xl font-semibold tracking-tight`). The Logo wordmark uses `logo/wordmark` (20/28, Header) and `logo/wordmark-sm` (18/28, Footer).
+- **Theme booleans:** `theme/is-dark` (Dark true, Light false) and `theme/is-light` (the opposite). A layer that must differ by theme beyond its tokens comes in a `dark` and a `light` copy whose visibility is bound to them, as one layer cannot be bound to the opposite of a variable.
 - **Effects:** `shadow-xs`, `shadow`, `shadow-md`, `shadow-lg` (the Tailwind 4 values) and `glass-blur`, the `backdrop-filter: blur(20px)` of `glass` and `glass-bar`, used with the `glass`/`glass-bar` fill and the `glass-border` stroke. Its Figma value is 40: a Figma background blur of 40 renders like CSS `blur(20px)`.
 - **Layout grids:** one grid style per width class, applied to every `Default` frame and hidden by default (toggle with Ctrl+G). `grid/mobile-390`: 4 columns, margin 16, gutter 16. `grid/tablet-768`: 8 columns, margin 24, gutter 24. `grid/desktop-1440`: 12 columns, margin 48, gutter 24. `grid/desktop-1920`: 12 columns of 120, gutter 24, centred, so the content spans 1704 (the 1800 cap minus 48 on each side). The grid is a guide: layout is still auto layout.
 
@@ -89,12 +94,14 @@ A new token is added in Figma and in `theme.css` in the same ticket. Never bind 
 - Variant properties use the names and values of the code props: `variant=default|destructive|outline|secondary|ghost|link`, `size=default|sm|lg|icon|icon-sm|icon-lg`. A state the code draws (`hover`, `focus-visible`, `disabled`) is a `state` property. Every interactive component has `state=…|focus-visible` with the ring the code gives it: Button and Input a 3 px `ring`; Category Pill and Toggle Group Item a 2 px ring inside (`focus-ring-inset` layer); Nav Link the two-colour ring for links on images; MovieCard a 3 px `ring` stroke outside. Icon Button states are drawn for `size=icon` only, as Button states are for `size=default`. Carousel Arrow has no focus state: it is `tabIndex={-1}` and `aria-hidden` in code.
 - `onImage` (boolean, Button and Icon Button) shows the `on-image ring` layer in `focus-visible`: a 2 px band of `background`, then a 3 px ring of `foreground` (`BUTTON_ON_IMAGE_CLASS`). Turn it on for a button laid on an image.
 - `hitArea` (boolean, Icon Button, Category Pill, Avatar, Carousel Arrow) shows the `hit area 44` layer: a dashed 44 × 44 frame of the touch target (`touch-target`). It is an annotation, off in screens; turn it on to check spacing on a phone layout.
-- `MovieCard` has `pointer=fine|coarse`: `fine` reveals the title, year and rating on hover or focus; `coarse` shows them at rest, as a touch screen has no hover. The 390 frames use `coarse`, the other frames `fine`.
+- `MovieCard` has `pointer=fine|coarse`: `fine` reveals the title, year and rating on hover or focus; `coarse` shows them at rest, as a touch screen has no hover. The 390 and 768 frames use `coarse`, 1440 and 1920 `fine`.
 - A domain component takes the content of its UI model (`MovieCardData`: title, year, rating, poster) as text and instance-swap properties, not as variants.
 - Icons are `lucide-react`, the same as the code: `Icon/<Name>` components at 16 px (`size-4`), swapped with instance-swap properties. An icon the code starts to import is added on the `Primitives` page.
-- Components that change with the breakpoint (Header, Footer, Hero, ContentRow, the details views and sections, the skeletons) have a `viewport=desktop|mobile` variant at 1440 and 390. Those whose inner grid changes at 1920 also have `viewport=wide`: MovieDetailView, CastSection, MediaSection, SeasonsSection, MovieGridSkeleton, HeroSkeleton, FeaturedGridSkeleton and ContentRowSkeleton. The others are widened in the 1920 frame.
-- Images (posters, backdrops, photos, provider logos) are `Image Placeholder` instances, filled with the test images of the `Test Images` page: soft 3D clay renders with rounded shapes, studio light and soft shadows. Every image has its own subject and its own palette (red, green, pink, teal, purple, orange, blue), so a screen shows how the UI reads next to many colours in both the `Dark` and the `Light` mode; neighbouring cards get different images. 2:3 posters and portraits, 16:9 backdrops (also the media thumbnails) and square provider logos. The art is fictional, so a design never shows a real poster or a real person. A new image in the pack keeps the same style and goes on that page first. An image keeps the size its component has in `@repo/ui` (a Hero or a backdrop fills its frame, a detail poster is `w-64`, a provider logo `size-10`): never reset the overrides of an `Image Placeholder`, it brings back the default 192×288.
-- Gradients over images use the dark background color directly: a gradient stop bound to a variable loses its alpha in Figma.
+- Components that change with the breakpoint (Header, Footer, Hero, ContentRow, the details views and sections, the skeletons) have a `viewport=desktop|mobile` variant at 1440 and 390. Those whose layout changes at `md` also have `viewport=tablet`: Header, Footer, Hero, ContentRow, MovieDetailView, PersonDetailView, CastSection, MediaSection and SeasonsSection; the others use `mobile` on a 768 frame with the gutter at 24 and `heading-section/desktop` titles. Those whose inner grid changes at 1920 also have `viewport=wide`: MovieDetailView, CastSection, MediaSection, SeasonsSection, MovieGridSkeleton, HeroSkeleton, FeaturedGridSkeleton, ContentRowSkeleton, CardGridSkeleton and HomeSkeleton. The others are widened in the 1920 frame.
+- Images (posters, backdrops, photos, provider logos) are `Image Placeholder` instances, filled with the test images of the `Test Images` page: soft 3D clay renders with rounded shapes, studio light and soft shadows. Every image has its own subject and its own palette (red, green, pink, teal, purple, orange, blue), so a screen shows how the UI reads next to many colours in both the `Dark` and the `Light` mode; neighbouring cards get different images, and a title keeps one poster on every page. 2:3 posters and portraits, 16:9 backdrops (also the media thumbnails) and square provider logos. The art is fictional, so a design never shows a real poster or a real person: cast, crew, reviewers, Person pages and the sample user have made-up names, and TV crew is the `created_by` line ("<name> Creator"). Movie titles may be real; each card shows its own year. A new image in the pack keeps the same style and goes on that page first. An image keeps the size its component has in `@repo/ui` (a Hero or a backdrop fills its frame, a detail poster is `w-64`, a provider logo `size-10`): never reset the overrides of an `Image Placeholder`, it brings back the default 192×288.
+- Each gradient over an image (Hero, MovieCard, Featured Tile, MovieDetailView, Avatar) has a `<name> dark` and a `<name> light` layer bound to the theme booleans; the stops are raw colours (the dark or light `background`, the light or dark `accent` on Avatar), as a gradient stop bound to a variable loses its alpha in Figma.
+- A paint opacity on a variable-bound paint in a main component does not reach its instances, which then show 100 %. Put the tint on its own layer with layer opacity and leave the frame fill empty (Rating Badge `tint` at 10 %; destructive Button `fill dark` at 60 % and `fill light` at 100 %, hover `fill` at 90 %; the outline, hover and focus-visible Buttons and Icon Buttons, every Input state and Section Error Fallback; a `stroke` layer on Toggle Group Item `state=on`). Instances keep no fill override. Variables that hold their own alpha (`glass`, `glass-bar`) are safe. To check a component, place a fresh instance and read its paint.
+- A dialog on a screen frame is absolute and centred in the first view, over the `background` 80 % overlay (`bg-background/80`); at 390 it is full width minus 16 on each side.
 - Components follow the dark spec, as the app is dark-first. Where a component differs in light beyond its tokens (a `dark:` class in code), its description says so.
 
 ### Component map and Code Connect
@@ -127,17 +134,19 @@ The Professional plan has Code Connect (one framework at a time, React here). It
 | Detail Section Empty | `packages/ui/src/components/detail-section.tsx` | ✅ |
 | Section Error Fallback, Page Error Fallback | `section-error-fallback.tsx`, `page-error-fallback.tsx` | ✅ |
 | NotFound | `packages/ui/src/components/not-found.tsx` | ✅ |
-| HeroSkeleton, ContentRowSkeleton, FeaturedGridSkeleton, MovieDetailSkeleton, MovieGridSkeleton, PageSkeleton | `packages/ui/src/components/page-skeletons.tsx` | ✅ |
+| HeroSkeleton, ContentRowSkeleton, FeaturedGridSkeleton, MovieDetailSkeleton, MovieGridSkeleton, PageSkeleton, CardGridSkeleton (Search results), HomeSkeleton (the Home route fallback) | `packages/ui/src/components/page-skeletons.tsx` | ✅ |
 | Add to Watchlist, Watchlist Folder Picker (`state=folders|saving`, the body of its Dialog) | `apps/pages-mfe/src/components/add-to-watchlist.tsx` and the dialog it loads | ✅ |
-| OfflineBanner | the offline banner of the host error channel (`apps/host/src/error-channel/`) | ✅ |
+| OfflineBanner | `apps/host/src/error-channel/offline-banner.tsx` | ✅ |
+| Toast (`variant=default|error`, `Message`; 356 wide, bottom-right 24 from the edges, below 600 full width minus 16), Icon/CircleAlert | `apps/host/src/error-channel/toaster.tsx` (sonner) | ✅ |
+| Section Status, A11y Annotation (`type=landmark|heading|focus-order|label|live-region`, tag letters L/H/F/A/R; `Number`, `Note`, `Show note`; for a heading the number is its level) | none: file annotations | ✅ |
 
 ## The loop: from a design change to the code
 
 1. **Design.** Draw the change in `Explorations`, by hand or with Claude through the Figma MCP ("make the MovieCard rating a badge on the poster"). Agree on it, then move it into the component or screen it changes.
 2. **Ticket.** One Notion ticket per area, as in [CONVENTIONS § MFE workflow](../04-development/CONVENTIONS.md): tokens and components are `@repo/ui` tickets and merge first; a screen that changes a page's layout is a ticket in its MFE. The ticket links the Figma node (*Copy link to selection*, `?node-id=…`).
 3. **Implement.** Claude reads the node (see the order below), maps it to existing components and tokens through the table above, and changes the code. A token change edits `theme.css` only. The output of `get_design_context` is a reference to adapt, never code to paste: the code keeps its conventions (no JSX spread, `Pick<ComponentProps<…>>`, `cn()`, kebab-case files).
-4. **Verify.** The usual checks for the area, plus the page side by side with the Figma frames at 390, 1440 and 1920.
-5. **Close.** Mark the row in the component map, and set the Figma section's status to *Implemented* with the ticket number.
+4. **Verify.** The usual checks for the area, plus the page side by side with the Figma frames at 390, 768, 1440 and 1920.
+5. **Close.** Mark the row in the component map, set the section's `Section Status` to `Ready`, and add an entry to `Library release notes` on Cover: the date, what changed and the ticket, newest on top. Every library publish gets one.
 
 **Drift rule:** a visual change made in code without a design (a bug fix, an a11y fix) is mirrored in Figma in the same ticket, so the file never falls behind.
 
