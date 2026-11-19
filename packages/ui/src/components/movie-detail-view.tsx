@@ -43,7 +43,7 @@ export function MovieDetailView({ movie, action, children }: MovieDetailViewProp
             decoding="async"
             className="size-full object-cover"
           />
-          <div className="from-background via-background/80 to-background/40 absolute inset-0 bg-linear-to-t" />
+          <div className="from-background via-background/90 to-background/70 absolute inset-0 bg-linear-to-t" />
         </div>
       )}
 
@@ -61,10 +61,10 @@ export function MovieDetailView({ movie, action, children }: MovieDetailViewProp
             {title}
           </h1>
           {tagline !== null && (
-            <p className="text-muted-foreground mb-4 wrap-anywhere italic">{tagline}</p>
+            <p className="text-foreground/80 mb-4 wrap-anywhere italic">{tagline}</p>
           )}
 
-          <div className="text-muted-foreground mb-4 flex flex-wrap items-center gap-2 text-sm sm:gap-3">
+          <div className="text-foreground/80 mb-4 flex flex-wrap items-center gap-2 text-sm sm:gap-3">
             {rating !== null && (
               <span className="bg-foreground text-background rounded px-2 py-1 font-medium">
                 {rating}
@@ -90,7 +90,7 @@ export function MovieDetailView({ movie, action, children }: MovieDetailViewProp
           {action !== undefined && <div className="mb-6">{action}</div>}
 
           {description !== null && (
-            <p className="text-muted-foreground leading-relaxed wrap-anywhere sm:text-lg">
+            <p className="text-foreground/80 leading-relaxed wrap-anywhere sm:text-lg">
               {description}
             </p>
           )}
