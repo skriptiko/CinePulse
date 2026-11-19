@@ -161,6 +161,21 @@ describe('Search page', () => {
       await expectNoA11yViolations(container);
     });
 
+    it('keeps the header, form, tabs and results within the page width', () => {
+      renderSearch();
+
+      // One gutter and the capped left edge, as in the rows of `@repo/ui` (DESIGN_APPROACH.md).
+      const page = ['max-w-page', 'mx-auto', 'px-4', 'sm:px-6', 'lg:px-12'];
+      expect(screen.getByRole('heading', { level: 1, name: 'Search' }).parentElement).toHaveClass(
+        ...page
+      );
+      expect(searchInput().closest('search')).toHaveClass(...page);
+      expect(
+        within(screen.getByRole('navigation', { name: 'Search results by type' })).getByRole('list')
+      ).toHaveClass(...page);
+      expect(screen.getByText(NO_QUERY_LINE).parentElement).toHaveClass(...page);
+    });
+
     it('counts an empty or blank q as no query', () => {
       const requests = recordSearches();
       renderSearch('/search?q=%20%20&type=tv');

@@ -28,16 +28,12 @@ export function Search() {
     <div className="pt-20 sm:pt-24">
       <CatalogHeader title={PAGE_TITLE} noun="movies, TV shows and people" />
       <SearchForm query={query} onSubmit={submit} />
-      <CategoryLinks
-        links={tabs}
-        label="Search results by type"
-        className="px-4 sm:px-6 md:px-6 lg:px-12"
-      />
+      <CategoryLinks links={tabs} label="Search results by type" className="max-w-page mx-auto" />
 
       {/* Out of the boundary: a live region that arrives with its text may not be announced. */}
       <output className="sr-only">{liveCount}</output>
 
-      <div className="px-4 pt-4 pb-16 sm:px-6 lg:px-12">
+      <div className="max-w-page mx-auto px-4 pt-4 pb-16 sm:px-6 lg:px-12">
         {query === '' ? (
           <p className="text-muted-foreground py-12 text-center text-base">
             What are you looking for? Enter a title or a name above.

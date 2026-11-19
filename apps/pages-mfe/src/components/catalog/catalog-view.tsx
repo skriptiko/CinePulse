@@ -81,12 +81,15 @@ export function CatalogView<T extends { id: number }>({
         onViewModeChange={setViewMode}
       />
 
-      <div className="px-4 py-4 sm:px-6 lg:px-12">
+      <div className="max-w-page mx-auto px-4 py-4 sm:px-6 lg:px-12">
         <CatalogCount total={totalResults} singular={labels.singular} plural={labels.plural} />
       </div>
 
       <div
-        className={cn('px-4 pb-16 transition-opacity sm:px-6 lg:px-12', isStale && 'opacity-60')}
+        className={cn(
+          'max-w-page mx-auto px-4 pb-16 transition-opacity sm:px-6 lg:px-12',
+          isStale && 'opacity-60'
+        )}
         aria-busy={isStale}
       >
         {cards.length > 0 ? (

@@ -99,6 +99,22 @@ describe('Movies page', () => {
     expect(await screen.findByRole('group', { name: 'Sort by' })).toBeInTheDocument();
   });
 
+  it('keeps the header, filters, count and grid within the page width', async () => {
+    mockTmdb();
+    renderMovies();
+
+    const card = await screen.findByText('Discover p1 a');
+    // One gutter and the capped left edge, as in the rows of `@repo/ui` (DESIGN_APPROACH.md).
+    const page = ['max-w-page', 'mx-auto', 'px-4', 'sm:px-6', 'lg:px-12'];
+    expect(screen.getByRole('heading', { level: 1, name: 'Movies' }).parentElement).toHaveClass(
+      ...page
+    );
+    expect(
+      screen.getByRole('searchbox', { name: 'Search movies' }).closest('.max-w-page')
+    ).toHaveClass(...page);
+    expect(card.closest('.max-w-page')).toHaveClass(...page, 'pb-16');
+  });
+
   it('switches the card size with a radio group', async () => {
     mockTmdb();
     const { user } = renderMovies();
