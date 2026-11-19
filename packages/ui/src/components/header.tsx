@@ -84,7 +84,7 @@ export function Header({ className }: HeaderProps) {
           isScrolled && 'opacity-0'
         )}
       />
-      <div className="max-w-page mx-auto px-4 md:px-8">
+      <div className="max-w-page mx-auto px-4 sm:px-6 lg:px-12">
         <div className="flex items-center justify-between gap-8">
           <div className="flex items-center gap-8">
             <Logo labelClassName="text-xl hidden sm:block" />

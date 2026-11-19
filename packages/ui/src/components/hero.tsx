@@ -61,7 +61,7 @@ export function Hero({ movie, className }: HeroProps) {
       </div>
 
       {/* Content */}
-      <div className="max-w-page relative mx-auto w-full px-4 pt-24 pb-12 sm:px-6 sm:pt-32 sm:pb-16 md:px-8 md:pb-24">
+      <div className="max-w-page relative mx-auto w-full px-4 pt-24 pb-12 sm:px-6 sm:pt-32 sm:pb-16 md:pb-24 lg:px-12">
         <div className="max-w-2xl">
           {/* Metadata */}
           <div className="mb-3 flex flex-wrap items-center gap-2 text-xs sm:mb-4 sm:gap-3 sm:text-sm">

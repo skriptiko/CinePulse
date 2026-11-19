@@ -40,7 +40,8 @@ export function HeroSkeleton() {
 
 export function ContentRowSkeleton() {
   return (
-    <SkeletonFrame className="px-4 sm:px-6 lg:px-12">
+    // The gutter of `ContentRow`, so the placeholder starts where the row will.
+    <SkeletonFrame className="px-4 sm:px-6 lg:px-12 2xl:pl-[max(3rem,calc((100%-var(--container-page))/2+3rem))]">
       <CardRowSkeleton />
     </SkeletonFrame>
   );
@@ -48,7 +49,7 @@ export function ContentRowSkeleton() {
 
 export function FeaturedGridSkeleton() {
   return (
-    <SkeletonFrame className="px-4 md:px-8">
+    <SkeletonFrame className="px-4 sm:px-6 lg:px-12">
       <Skeleton className="mb-6 h-6 w-40" />
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <Skeleton className="col-span-2 row-span-2 aspect-video rounded-lg md:aspect-auto" />

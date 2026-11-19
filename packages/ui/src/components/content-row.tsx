@@ -5,6 +5,14 @@ import { cn } from '../lib/utils';
 import { MovieCard, type MovieCardData } from './movie-card';
 import { Button } from './ui/button';
 
+/**
+ * The page gutter, and from `2xl` the capped left edge of `max-w-page`: the heading and the first
+ * card start where the Header does, and the cards run on to the right edge of the screen.
+ * `max()` keeps the gutter at 48 while the screen is still narrower than the cap.
+ */
+const ROW_GUTTER =
+  'px-4 sm:px-6 lg:px-12 2xl:pl-[max(3rem,calc((100%-var(--container-page))/2+3rem))]';
+
 export type ContentRowProps = {
   title: string;
   movies: MovieCardData[];
@@ -19,7 +27,7 @@ export function ContentRow({
   title,
   movies,
   renderCardAction,
-  gutterClassName = 'px-4 md:px-8',
+  gutterClassName = ROW_GUTTER,
   className,
 }: ContentRowProps) {
   const { ref, canScrollLeft, canScrollRight, scroll } = useHorizontalScroll<HTMLUListElement>();

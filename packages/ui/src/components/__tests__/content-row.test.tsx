@@ -36,6 +36,16 @@ describe('ContentRow', () => {
     ).toEqual(['Dune', 'Arrival']);
   });
 
+  it('starts on the page gutter and, from 2xl, on the capped left edge', () => {
+    renderWithProviders(<ContentRow title="Trending Now" movies={MOVIES} />);
+
+    const capped = '2xl:pl-[max(3rem,calc((100%-var(--container-page))/2+3rem))]';
+    for (const element of [screen.getByRole('heading', { level: 2 }), screen.getByRole('list')]) {
+      expect(element).toHaveClass('px-4', 'sm:px-6', 'lg:px-12', capped);
+      expect(element).not.toHaveClass('md:px-8');
+    }
+  });
+
   it('puts its heading and cards on the gutter of the page it sits on', () => {
     renderWithProviders(
       <ContentRow title="Trending Now" movies={MOVIES} gutterClassName="px-4 lg:px-12" />
