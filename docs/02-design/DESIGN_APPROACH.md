@@ -2,21 +2,47 @@
 
 # Design approach
 
-The design ideas behind the CinePulse Figma file and `@repo/ui`. Read this before you draw a new screen or component: it explains *why* the file looks the way it does. The rules for working in the file (names, pages, tokens, the loop to code) are in [FIGMA_WORKFLOW](./FIGMA_WORKFLOW.md); behaviour is in [UX_NOTES](./UX_NOTES.md).
+The design ideas behind the CinePulse Figma file and `@repo/ui`, and the industry standards they follow. Read this before you draw a new screen or component: it explains *why* the file looks the way it does. The rules for working in the file (names, pages, tokens, the loop to code) are in [FIGMA_WORKFLOW](./FIGMA_WORKFLOW.md); behaviour is in [UX_NOTES](./UX_NOTES.md).
 
-The approaches were drawn out of a design review of the file on 2026-11-18 (CIN-144). Where the file does not yet follow an approach, the gap and its ticket are listed in [Known gaps](#known-gaps).
+The approaches were drawn out of a design review of the file on 2026-11-18 (CIN-144) and checked against the standards below on 2026-11-19 (CIN-152). Where the file or the code does not yet follow a rule, the gap and its ticket are in [Known gaps](#known-gaps).
+
+## Standards we follow
+
+A rule in this document that cites a standard follows it. Where we go further than the standard, the rule says so.
+
+| Standard | Version | What it governs here |
+| --- | --- | --- |
+| [WCAG](https://www.w3.org/TR/WCAG22/) | 2.2, level AA (= [ISO/IEC 40500:2025](https://www.w3.org/WAI/news/2025-10-21/wcag22-iso)) | Contrast, focus, target size, reflow, motion, states. The EU baseline: [EN 301 549 v4.1.1](https://www.deque.com/blog/en-301-549-v4-1-1-is-final-what-changed-what-it-means-and-what-you-should-do/) moved to WCAG 2.2 AA |
+| [WAI-ARIA Authoring Practices](https://www.w3.org/WAI/ARIA/apg/) | current | Roles and keyboard behaviour of dialogs, menus, radio groups, tabs (through Radix) |
+| [ISO 24495-1](https://www.iso.org/standard/78907.html) | 2023 | Plain language in every UI text, error and empty state |
+| [W3C Design Tokens Format](https://www.designtokens.org/tr/2025.10/) | 2025.10 (first stable) | How tokens are named, typed and grouped |
+| [Material Design 3](https://m3.material.io/) | current | Dark theme, elevation, window size classes, 4 dp grid, motion |
+| [Apple Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines/) | current | Touch targets, type size on phones |
+| [Nielsen Norman Group](https://www.nngroup.com/articles/ten-usability-heuristics/) | 10 heuristics, response time limits | States, feedback, consistency, error messages |
+| [Atomic Design](https://atomicdesign.bradfrost.com/) | — | Layers of the component library |
 
 ## 1. Visual language
 
 **Posters carry the colour.** The palette is near-black with a slight blue tint (`background`, `card`, `surface`, `surface-elevated`) and has only three saturated colours: blue `accent`/`ring`/`highlight`, red `destructive` and yellow `rating`. A catalog shows hundreds of posters, so the interface stays neutral and lets the art stand out.
 
-**Dark first.** `Dark` is the default mode of the `Color` collection, and components are drawn to the dark spec. Every colour also has a `Light` value, because the app ships light, dark and system themes.
+**Dark first, never pure black.** `Dark` is the default mode of the `Color` collection, and components are drawn to the dark spec. Surfaces are dark grey, not `#000`, as Material's dark theme asks: pure black makes light text smear on many screens. Every colour also has a `Light` value, because the app ships light, dark and system themes, and both themes must meet the same contrast rules.
 
-**Depth comes from lightness, not shadow.** On dark, a raised surface is a lighter one: `background` → `card`/`surface` → `surface-elevated` → `popover`. The shadow styles are the stock Tailwind ones and barely show on near-black; use them only where a surface would otherwise merge with the page.
+**Depth comes from lightness, not shadow.** On dark, a raised surface is a lighter one: `background` → `card`/`surface` → `surface-elevated` → `popover` (Material: elevation by tonal surface). Shadows barely show on near-black; use them only where a surface would otherwise merge with the page.
 
-**Glass is only for chrome over content.** `glass` (60 % opaque) is for small chips on images, such as the "Top Rated" badge on a Featured Tile. `glass-bar` (90 % opaque) is for the scrolled Header. Both take the `glass-border` stroke and `glass-blur`. Choose between them by contrast, not by looks: text must stay readable on any image (UX_NOTES § Accessibility).
+**Glass is only for chrome over content.** `glass` (60 % opaque) is for small chips on images, such as the "Top Rated" badge on a Featured Tile. `glass-bar` (90 % opaque) is for the scrolled Header. Both take the `glass-border` stroke and `glass-blur`. Choose between them by contrast, not by looks.
 
-**Text on an image sits on a gradient.** Every image with text on it has a gradient from `background` to transparent: bottom-up on cards and tiles, bottom-up and left-to-right on the Hero, a heavier one on the detail hero. Never put text straight on an image.
+**Text on an image sits on a gradient.** Every image with text on it has a gradient from `background` to transparent: bottom-up on cards and tiles, bottom-up and left-to-right on the Hero, a heavier one on the detail hero. Never put text straight on an image. Text on an image meets the same contrast as text on a page, measured on the worst image (white and black).
+
+**Colour is never the only signal** (WCAG 1.4.1). A state, an error or a choice also has text, an icon or a shape: the rating star has its number, an invalid field has a message.
+
+**Contrast** (WCAG 1.4.3, 1.4.11):
+
+| What | Minimum |
+| --- | --- |
+| Text under 24 px (under 18.66 px bold) | 4.5:1 |
+| Larger text | 3:1 |
+| Icons, borders of controls, focus rings, chart marks | 3:1 against what is next to them |
+| Placeholder and disabled text | Disabled is exempt; placeholder meets 4.5:1 |
 
 **Test art is fictional and many-coloured.** The `Test Images` page holds soft 3D clay renders, each with its own palette. They test the UI against many colours and keep real posters and real people out of the file.
 
@@ -24,50 +50,85 @@ The approaches were drawn out of a design review of the file on 2026-11-18 (CIN-
 
 **One family, styles named after classes.** Geist only. A text style is named after its Tailwind classes (`text-sm/medium` = `text-sm font-medium`), so a developer reads the class from the style name.
 
-**Fluid type is drawn at both ends.** `fluid-display`, `fluid-heading` and `fluid-body` each have a `/mobile` style (390 frames) and a `/desktop` style (1440 and 1920 frames). Display and heading styles are bold and tight (`tracking-tight`, −2.5 %).
+**Text people read is 16 px.** Material (body-large) and Apple (body, 17 pt) set reading text at 16 px or more. Overviews, biographies, reviews and state messages are 16 px; 14 px is for secondary text and controls; 12 px only for short labels and metadata.
 
-**One loud title per page.** Each page has one large title: `fluid-display` on the Hero, `fluid-heading` on a detail page. Below it the hierarchy stays calm and even:
+**Readable lines** (WCAG 1.4.8, 1.4.12): reading text has a line height of at least 1.5 and lines of at most 75 characters (`max-w-prose`). A layout keeps working when a user sets line height 1.5, paragraph spacing 2×, letter spacing 0.12 em and word spacing 0.16 em.
+
+**Fluid type is drawn at both ends and grows with zoom.** `fluid-display`, `fluid-heading` and `fluid-body` each have a `/mobile` style (390 frames) and a `/desktop` style (1440 and 1920 frames). Each `clamp()` has a `rem` part, so text still doubles at 200 % zoom (WCAG 1.4.4); a size in `vw` alone does not grow with zoom. Display and heading styles are bold and tight (`tracking-tight`, −2.5 %).
+
+**One loud title per page.** Each page has one `h1`, and headings do not skip a level (WCAG 1.3.1). Below the title the hierarchy stays calm and even:
 
 | Level | Style |
 | --- | --- |
-| Page title | `fluid-display` or `fluid-heading`, bold, tight |
-| Section title | `text-xl` → `text-2xl` from `md`, semibold, tight |
-| Body | `text-sm` (overviews: `fluid-body`) |
-| Metadata | `text-xs`, `muted-foreground` |
+| Page title (`h1`) | `fluid-display` or `fluid-heading`, bold, tight |
+| Section title (`h2`) | `text-xl` → `text-2xl` from `md`, semibold, tight |
+| Reading text | `text-base` (overviews: `fluid-body`), line height ≥ 1.5 |
+| Secondary text, controls | `text-sm` |
+| Metadata, labels | `text-xs`, `muted-foreground` |
 
 ## 3. Layout and grid
 
-**One spacing scale.** Every gap, padding and margin is a step of the Tailwind 4 scale (4 px), kept as the `Spacing` collection. A value off the scale is a question to settle, not a new token.
+**One spacing scale on a 4 px grid.** Every gap, padding and margin is a step of the Tailwind 4 scale (4 px), kept as the `Spacing` collection; this is Material's 4 dp grid. Prefer steps of 8 for layout and keep 4 for small parts. A value off the scale is a question to settle, not a new token.
 
-**Three drawn widths; the code decides the rest.** Screens are drawn at 390, 1440 and 1920. Widths in between follow the breakpoints of the code. A component whose layout changes with the width has a `viewport` variant (`mobile`, `desktop`, and `wide` where its inner grid changes at `2xl`).
+**Design for each width class; the code decides between them.** Material 3 asks for a layout per window size class, not per device. We draw:
+
+| Frame | Width | Class (Material 3) | Tailwind |
+| --- | --- | --- | --- |
+| Mobile | 390 | Compact (< 600) | base, `sm` |
+| Tablet | 768 | Medium (600–839) | `md` |
+| Desktop | 1440 | Large (≥ 1200) | `xl` |
+| Full HD | 1920 | Extra-large | `2xl` |
+
+A component whose layout changes with the width has a `viewport` variant (`mobile`, `desktop`, and `wide` where its inner grid changes at `2xl`).
+
+**Every layout reflows at 320 px** (WCAG 1.4.10): at 320 CSS px wide, which is also 1280 at 400 % zoom, nothing needs side scrolling except carousels, which scroll on purpose. The 390 frame is drawn; 320 is checked, not drawn.
+
+**One page gutter.** The Header, the page title and the first card start on the same left edge at every width. Material margins are 16 at compact and 24 at medium; we use 16 / 24 / 48.
 
 **Chrome is capped, content is full width.** At 1920, the Header, Footer, Hero content, detail views and account pages stop at `max-w-page` (1800). Rows and catalog grids keep growing: a Home row shows more cards, and a catalog grid keeps 6 columns with wider cards.
 
-**Columns come from content, not layout grids.** Frames use auto layout; a catalog grid is 2 cards per row at 390 and 6 at 1440 and 1920.
+**Columns come from content.** Frames use auto layout; a catalog grid is 2 cards per row at 390 and 6 at 1440 and 1920.
 
 **Even vertical rhythm.** Sections on Home and the detail pages are 48 apart (`gap-12`), a section title is 16 above its content (`mb-4`), and a page starts at 112 or 144 (`pt-28`, `pt-36`) to clear the fixed Header.
 
 ## 4. Components
 
-**Three layers, mirrored from the code.** `Primitives` (one section per `components/ui/*` file) → `Components` (domain parts and the page frame) → screens built only from instances. A change to a component reaches every screen.
+**Three layers, mirrored from the code** (Atomic Design: atoms, molecules and organisms, templates, pages). `Primitives` (one section per `components/ui/*` file) → `Components` (domain parts and the page frame) → screens built only from instances. A change to a component reaches every screen.
 
 **Props, not copies.** Variant properties use the names and values of the code props (`variant`, `size`, `state`). Content (title, year, rating, image) is a text or instance-swap property, not a variant. A variant is only for a real visual mode.
 
-**One icon set, one image component.** Icons are the `lucide-react` icons the code imports, as `Icon/<Name>` at 16 px, swapped by property. Every image is an `Image Placeholder` instance that keeps the size of its slot.
+**Every interactive component has its states**: `default`, `hover`, `focus-visible`, `pressed` or `selected` where it has one, `disabled`. A state the user can reach is drawn.
+
+**Behaviour follows WAI-ARIA patterns.** A dialog, a menu, a radio group or a tab list behaves as its [APG pattern](https://www.w3.org/WAI/ARIA/apg/patterns/) says: focus moves into a dialog and back, Escape closes it, arrow keys move inside a group. Radix gives this in code; a new component that has no Radix base follows the pattern by hand.
+
+**Each component is documented.** Its Figma description holds the code path, one sentence on what it is for, when not to use it, and its role and keys.
+
+**One icon set, one image component.** Icons are the `lucide-react` icons the code imports, as `Icon/<Name>` at 16 px, swapped by property. An icon without text has an accessible name. Every image is an `Image Placeholder` instance that keeps the size of its slot; an image says whether it has alt text or is decorative (WCAG 1.1.1).
+
+**Essential information is never hover-only.** A title, a price or a rating that the user needs is visible without a pointer: touch screens have no hover. Hover may reveal extras (WCAG 1.4.13 then applies: the extra content can be dismissed, hovered and stays until the pointer leaves).
+
+**Tokens follow the W3C format.** A token has a name, a type (`color`, `dimension`, `fontFamily`, `shadow`…) and a value per mode, as the Design Tokens Format 2025.10 defines. Names are semantic (`background`, `muted-foreground`), the same in Figma and in `theme.css`.
 
 ## 5. States
 
-**Every state is drawn, with the real text.** Each screen page has one section per state, from the usual view to the rare one: default, loading, empty, not found, error, list states, offline, dialogs, app failures. A state uses the strings from the code, so the frame shows what the user reads.
+**Every state is drawn, with the real text.** Each screen page has one section per state, from the usual view to the rare one: default, loading, empty, not found, error, list states, offline, dialogs, app failures (NN/g: visibility of system status). A state uses the strings from the code, so the frame shows what the user reads.
 
-**Skeletons match the layout.** A skeleton has the shape of what it replaces (`HeroSkeleton`, `ContentRowSkeleton`, `MovieGridSkeleton`…), so the page does not jump when data arrives.
+**Loading follows the response time limits** (NN/g: 0.1 s, 1 s, 10 s). Under 300 ms nothing shows, so fast loads do not flicker; then a skeleton with the shape of what it replaces, so the page does not jump when data arrives. A wait that can pass 10 s, such as an upload, shows progress.
 
-**Errors stay local.** One failed Home row shows `Section Error Fallback` and the rest of the page works. A page shows `Page Error Fallback`, a missing title shows `NotFound`, and only a failed remote or a crash takes the whole app.
+**Errors stay local and say what to do.** One failed Home row shows `Section Error Fallback` and the rest of the page works; only a failed remote or a crash takes the whole app. An error message says what happened and how to fix it, in plain words, with an action such as **Try again** (WCAG 3.3.1, 3.3.3; NN/g error message guidelines).
+
+**Status messages are announced.** A toast, the offline banner and a list that loaded more items reach screen readers through a live region without moving focus (WCAG 4.1.3). A toast with an action stays until it is dismissed (WCAG 2.2.1).
 
 ## 6. Accessibility in the visuals
 
-- **Focus is visible.** Controls have a drawn focus state: a 3 px `ring` on Button and Input. On an image the ring has two colours, and in a scroller it sits inside (`focus-ring-inset`).
-- **Contrast is decided, not hoped for.** The scrim, `glass-bar` and the gradients exist so text stays readable on any image; the numbers are in UX_NOTES § Accessibility.
-- **Touch targets are 44 px.** Icon buttons and pills get a 44 × 44 hit area on touch screens (`touch-target`), even where the drawn control is smaller.
+The target is **WCAG 2.2 AA**.
+
+- **Focus is visible and never hidden.** Every control has a drawn focus state (WCAG 2.4.7): a 3 px `ring` on Button and Input, a two-colour ring on images, a 2 px ring inside a control in a scroller (`focus-ring-inset`). The ring has 3:1 contrast against its surroundings, as WCAG 2.4.13 (AAA) asks. A focused control is never fully covered by the fixed Header, a banner or a toast (WCAG 2.4.11).
+- **Targets are 44 px on touch, at least 24 px everywhere.** WCAG 2.5.8 asks for 24 × 24 CSS px or enough space around a target. On touch screens we give 44 × 44 (`touch-target`), as Apple's HIG and WCAG 2.5.5 (AAA) ask; Material asks for 48 dp, which we do not adopt.
+- **Motion is optional.** Transitions last 300 ms or less and stop under `prefers-reduced-motion` (WCAG 2.3.3, AAA). Nothing flashes more than 3 times a second (2.3.1), and nothing moves on its own for more than 5 s without a pause control (2.2.2).
+- **Forced colours keep focus and borders.** In Windows high contrast, shadows and backgrounds go away, so focus is a solid outline and filled controls keep a border.
+- **Designs carry accessibility notes.** A screen's default frame at 1440 has an `A11y` layer that marks headings, landmarks (`header`, `nav`, `main`, `footer`), focus order, accessible names of icon buttons, and alt text or "decorative" for images. This is the W3C WAI practice for designers handing work to developers.
+- **Sign-in needs no memory test** (WCAG 3.3.8): it is a Google popup, with no password to recall and no puzzle.
 
 ## 7. How the file is organised
 
@@ -75,10 +136,11 @@ The approaches were drawn out of a design review of the file on 2026-11-18 (CIN-
 - **Names match the code:** variables carry the CSS variable names, components the code names and file paths.
 - **Explore first, then move.** A redesign is drawn in `Explorations` and moves into the real component once agreed.
 - **No drift.** A visual fix made in code is mirrored in Figma in the same ticket.
+- **Every library release says what changed.** A publish of the team library has a note with the change and the ticket number, so a reader can trace any change.
 
 ## Known gaps
 
-The review found places where the file does not yet follow these approaches. Each is a ticket in Notion:
+The file or the code does not yet follow these rules. Each gap is a ticket in Notion:
 
 | Gap | Ticket |
 | --- | --- |
@@ -87,7 +149,13 @@ The review found places where the file does not yet follow these approaches. Eac
 | Section titles, overviews and biography text have no text style; many paddings, gaps and radii are not bound; `Spacing` lacks `28` and `36` | CIN-147 |
 | Focus states are missing on Icon Button, pills, nav links, toggle items and cards; no on-image Button variant; mobile frames do not show the 44 px targets | CIN-148 |
 | Mobile frames show only the default view; the refresh toast is not drawn; section order differs from FIGMA_WORKFLOW on 9 pages; file clean-up | CIN-149 |
-| Three page gutters (`px-4 md:px-8`, `px-4 sm:px-6 lg:px-12`, `px-4 sm:px-6 md:px-8`), so the logo, the page title and the first card do not line up | CIN-150 |
-| Card titles show only on hover or focus, so on a touch screen a card shows only the poster | CIN-151 (needs a decision) |
+| Three page gutters (`px-4 md:px-8`, `px-4 sm:px-6 lg:px-12`, `px-4 sm:px-6 md:px-8`) instead of one | CIN-150 |
+| Card titles show only on hover or focus, so on a touch screen a card shows only the poster | CIN-151 |
+| The automated checks run WCAG 2.1 rules; 2.4.11 and 2.5.8 are not checked | CIN-153 |
+| Reading text is 14 px; line height, line length and the `rem` part of `fluid-*` are not set as rules in the file | CIN-154 |
+| No Tablet 768 frames | CIN-155 |
+| No accessibility notes on the screens | CIN-156 |
+| Component descriptions hold only the code path; library publishes have no notes | CIN-157 |
+| Tokens are kept by hand in two places, not in the W3C format | CIN-158 |
 
-When a gap is closed, remove its row and update the section above if the approach changed.
+When a gap is closed, remove its row and update the section above if the rule changed.
