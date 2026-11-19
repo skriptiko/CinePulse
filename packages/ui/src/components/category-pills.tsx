@@ -2,6 +2,7 @@ import { cva } from 'class-variance-authority';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
+import { ROW_GUTTER } from './content-row';
 
 const pillVariants = cva(
   'focus-ring-inset rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors duration-200 disabled:pointer-events-none disabled:opacity-50',
@@ -52,7 +53,8 @@ export function CategoryPills({
     <fieldset
       aria-label={label}
       className={cn(
-        'scrollbar-hide flex min-w-0 gap-2 overflow-x-auto px-4 pb-2 sm:px-6 lg:px-12',
+        'scrollbar-hide flex min-w-0 gap-2 overflow-x-auto pb-2',
+        ROW_GUTTER,
         className
       )}
     >
@@ -83,19 +85,18 @@ export type CategoryLinksProps = {
   links: CategoryLink[];
   /** Accessible name of the link list, e.g. "Browse by genre". */
   label: string;
+  /**
+   * Goes on the `nav`, so a width cap such as `max-w-page mx-auto` is the box the list's capped
+   * gutter is measured against: a percentage padding resolves against the parent's width.
+   */
   className?: string;
 };
 
 /** Pills that navigate (e.g. Home → Movies filtered by genre) instead of selecting in place. */
 export function CategoryLinks({ links, label, className }: CategoryLinksProps) {
   return (
-    <nav aria-label={label}>
-      <ul
-        className={cn(
-          'scrollbar-hide flex gap-2 overflow-x-auto px-4 pb-2 sm:px-6 lg:px-12',
-          className
-        )}
-      >
+    <nav aria-label={label} className={className}>
+      <ul className={cn('scrollbar-hide flex gap-2 overflow-x-auto pb-2', ROW_GUTTER)}>
         {links.map((link) => (
           <li key={link.href}>
             <Link
