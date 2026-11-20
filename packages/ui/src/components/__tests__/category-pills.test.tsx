@@ -88,6 +88,23 @@ describe('CategoryPills', () => {
     expect(screen.getByRole('group', { name: 'Genres' })).toHaveClass(...ROW_GUTTER.split(' '));
   });
 
+  it('drops the row gutter when gutter is false, so the first pill starts on its block edge', () => {
+    renderWithProviders(<CategoryPills categories={CATEGORIES} label="Genres" gutter={false} />);
+
+    const group = screen.getByRole('group', { name: 'Genres' });
+    for (const gutterClass of ROW_GUTTER.split(' ')) {
+      expect(group).not.toHaveClass(gutterClass);
+    }
+  });
+
+  it('keeps the consumer className when gutter is false', () => {
+    renderWithProviders(
+      <CategoryPills categories={CATEGORIES} label="Genres" gutter={false} className="-mx-4" />
+    );
+
+    expect(screen.getByRole('group', { name: 'Genres' })).toHaveClass('-mx-4');
+  });
+
   it('has no structural a11y violations', async () => {
     const { container } = renderWithProviders(<CategoryPills categories={CATEGORIES} />);
 
