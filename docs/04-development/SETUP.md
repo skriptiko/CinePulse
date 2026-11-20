@@ -91,7 +91,7 @@ pnpm build:deploy   # empty the dist folders, build, merge the dist of all MFEs 
 
 | Command | Purpose |
 |---------|-------------|
-| `pnpm lint` | Linting via Biome (turbo for the packages, then `e2e/` and `playwright.config.ts`) plus the JSX-spread/`asChild` check (`pnpm lint:jsx-spread`) |
+| `pnpm lint` | Linting via Biome (turbo for the packages, then `e2e/` and `playwright.config.ts`) plus the JSX-spread check (`pnpm lint:jsx-spread`) and the token check (`pnpm lint:tokens`: fails when `packages/ui/src/tokens.css` is stale) |
 | `pnpm format` | Formatting via Biome |
 | `pnpm check` | Biome check with fixes applied automatically |
 | `pnpm typecheck` | TypeScript type checking (turbo for the packages, then `e2e/` and `playwright.config.ts`) |

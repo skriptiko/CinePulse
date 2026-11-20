@@ -23,7 +23,7 @@ Packages are consumed via `@repo/*` aliases (`@repo/api`, `@repo/ui`, `@repo/rou
 
 ## Linting and formatting
 
-The single tool is **Biome** (`biome.json`); it replaces ESLint + Prettier. JSX spread (`{...props}`) and `asChild` are forbidden too: Biome does not catch them, so `pnpm lint` also runs `scripts/check-jsx-spread.js` (`pnpm lint:jsx-spread`).
+The single tool is **Biome** (`biome.json`); it replaces ESLint + Prettier. JSX spread (`{...props}`) and `asChild` are forbidden too. Biome catches neither, so `pnpm lint` also runs `scripts/check-jsx-spread.js` (`pnpm lint:jsx-spread`). That script catches only JSX spread: nothing checks the `asChild` ban automatically, so review catches it.
 
 Formatting:
 - quotes — **single** (`quoteStyle: single`)
@@ -117,6 +117,6 @@ Format: `CIN-<number>: <short description in the imperative mood>`. The number i
 
 ## Known tech debt
 
-- ✅ **Fixed (2026-10-29, CIN-5): conditional hook call in `Movies.tsx`.** It used to have `searchQuery ? useSearchMovies(searchQuery) : useMovies('popular')`, which violates the React rules of hooks. It is now an unconditional `useMoviesOrSearch(searchQuery)` from `@repo/api`.
+- ✅ **Fixed (2026-10-29, CIN-5): conditional hook call on the Movies page.** It used to have `searchQuery ? useSearchMovies(searchQuery) : useMovies('popular')`, which violates the React rules of hooks. The page is now `apps/pages-mfe/src/pages/movies/movies-page.tsx`, and it calls an unconditional `useMoviesOrSearch(query, filters)` from `@repo/api`.
 
   **Pattern going forward:** suspense hooks (`useSuspenseQuery`/`useSuspenseInfiniteQuery`) do not support `enabled`, so do not pick a hook by a condition. Either switch `queryKey`/`queryFn` inside one query (as `useMoviesOrSearch` does) or move the variants into separate components, each with its own unconditional hook.

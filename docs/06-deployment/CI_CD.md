@@ -13,7 +13,7 @@ Pipeline: [`.github/workflows/firebase-deploy.yml`](../../.github/workflows/fire
 - **Job `quality`** (on every trigger):
   1. checkout, pnpm, Node (`pnpm` cache).
   2. `pnpm install --frozen-lockfile` — fails if `pnpm-lock.yaml` is out of sync with `package.json`.
-  3. `pnpm lint` (Biome, `e2e/` included, + JSX-spread ban).
+  3. `pnpm lint` (Biome, `e2e/` included, + JSX-spread ban + token check `lint:tokens`, so a stale `tokens.css` fails the job).
   4. `pnpm typecheck` (`e2e/` included).
   5. `pnpm test`.
 - **Job `size`** (on every trigger; required for a merge into `main`, and the deploy waits for it): `pnpm turbo build --filter=@repo/host` → `pnpm size` (budget in `.size-limit.json`).
@@ -64,7 +64,7 @@ Before the build, [`scripts/clean-dist.js`](../../scripts/clean-dist.js) empties
 
 **Local deploy scripts** (`package.json`):
 - `pnpm build:deploy` = `pnpm clean-dist && turbo build && pnpm merge-dist` (same as in CI).
-- `pnpm deploy` = `pnpm build:deploy && firebase deploy --only hosting:production`.
+- `pnpm run deploy` = `pnpm build:deploy && firebase deploy --only hosting:production`.
 
 ## Quality gates
 

@@ -16,10 +16,9 @@
 ## Error tracking
 
 ⬜ **None.** Recommendation: connect an error tracking service.
-- Add the SDK to `host` (and, if needed, to each MFE).
-- Integrate with `ErrorBoundary` (`packages/ui`) — report errors caught at the shell/module levels.
-- Listen to the `error:report` event in the host and report `ApiError` by `kind` (`server`, `network` separately), skipping 404 and aborts.
-- Report remoteEntry loading failures (the `mfe:error` event already exists in `EventMap`).
+- Add the SDK to `host` only. All client errors already reach one place: the `error:report` and `mfe:error` listeners in `apps/host/src/error-channel/error-reporting.ts`.
+- Send reports from that `error:report` listener. It already receives errors from the boundaries (`AsyncBoundary`, `PageBoundary`, `ShellBoundary` call `reportBoundaryError`), from failed queries and mutations (`QueryCache` / `MutationCache.onError`) and uncaught window errors. `shouldReport` already skips 404, aborts and network errors while offline. Group `ApiError` by `kind` (`server`, `network` separately).
+- Send remoteEntry loading failures from the `mfe:error` listener in the same file.
 
 ## Logging
 
@@ -36,7 +35,7 @@
 - [ ] Notification channel (email / messenger) — align with [RUNBOOK → Contacts](./RUNBOOK.md#contacts--escalation).
 
 ## Implementation checklist
-- [ ] Connect an error-tracking service (host + MFE), integrate with ErrorBoundary and `apiGet`.
+- [ ] Connect an error-tracking service to the `error:report` and `mfe:error` listeners in `apps/host/src/error-channel/error-reporting.ts`.
 - [x] Structured logs in `tmdbProxy`.
 - [ ] Dashboard of key metrics (Hosting + Function).
 - [ ] Define SLOs and thresholds.

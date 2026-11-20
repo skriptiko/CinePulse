@@ -57,8 +57,8 @@ The principles are not ranked. Where we trade one for another on purpose, we wri
 | **Learnability.** Discovery, exploration, retention | Rows bleed to the edge so they look scrollable; **Show all N credits** states the count; More like this and Back return to the same place; theme and filters are kept | — | Pass |
 | **Controllability.** Interruption | The user can leave any wait: navigate during a skeleton, Escape closes the dialog, controls stay usable while results load | 0 blocking waits | Pass |
 | Flexibility, individualisation | Keyboard and pointer for every action; grid or compact view; theme light, dark or system; OS preferences; browser text size | — | Pass |
-| **Use error robustness.** Avoidance | Double-press guards; one dialog at a time; Remove asks first with Cancel focused; the 100-character limit is stated before input | Guard ≥ the OS double-click time ([§ 1.4](#14-numbers-from-research)) | Change (guard length) |
-| Tolerance | An over-long `q` from the URL is cut, not a crash. A Tab press that drops an unsent search draft is a tolerance risk | 0 silent data loss | Change (draft) |
+| **Use error robustness.** Avoidance | Double-press guards; one dialog at a time; Remove asks first with Cancel focused. The input only stops at 100 characters (`maxLength`): no hint states the limit | Guard ≥ the OS double-click time ([§ 1.4](#14-numbers-from-research)); state the 100-character limit before input | Change (guard length, limit hint) |
+| Tolerance | An over-long `q` from the URL shows the results error, not a crash; a submit cuts it to 100 characters and so leaves the error. A press on a search tab that drops an unsent search draft is a tolerance risk | 0 silent data loss | Change (draft) |
 | Recovery | Every error has a next step: Try again, Reload, Clear search, Reset filters; a failed write keeps the form | 0 dead ends | Pass |
 | **User engagement.** Motivation, trust, involvement | Poster-led layout; motion never delays content; writes show only what the server accepted; external links say they open a new tab; browsing works signed out | 0 deceptive patterns | Pass |
 
@@ -159,7 +159,7 @@ We compared each documented behaviour with GOV.UK, Carbon, Primer, Atlassian, Fl
 | Disclosure (Show more) | A button with `aria-expanded`; opened only by the user (APG, Carbon) | Add `aria-expanded`; expand at once or with opacity, not by animating height | Set |
 | Destructive actions | Confirm with the least destructive action focused, or offer Undo (APG, Vercel) | Inline confirm with Cancel focused | Pass |
 | Optimistic update | Update at once, reconcile, roll back with a message (Vercel) | As documented; loading labels end with "…" ("Saving…") | Pass |
-| Hover on touch | A tap must not leave hover styles (React Aria; Tailwind 4 limits `hover:` to `(hover: hover)`) | Keep the `(hover: hover)` guard | Change |
+| Hover on touch | A tap must not leave hover styles (React Aria; Tailwind 4 limits `hover:` to `(hover: hover)`) | Restore the `(hover: hover)` guard: remove `@custom-variant hover` from `packages/ui/src/theme.css`. This reverses the choice in ADR-0009, which lets card overlays open on tap | Change |
 | Tooltips | A delay on the first, none for its neighbours, instant on focus; none on touch (React Aria, Vercel) | DESIGN_BENCHMARKS § 2.5 | Pass |
 | Theme | `color-scheme` on `<html>` and a matching `theme-color` (Vercel); no colour transition during the switch | Set both per theme; switch at once | Set |
 | Page title | `<title>` reflects the page (Vercel, WCAG 2.4.2) | See [§ 3.4](#34-rules-for-cinepulse-patterns) | Set |
@@ -264,7 +264,7 @@ WebAIM Screen Reader Survey #11 (2026, 1,780 answers) [R]: primary desktop scree
 | Layer | What it catches | What it misses |
 | --- | --- | --- |
 | axe in Vitest (jsdom), `expectNoA11yViolations` | Names, ARIA, labels, lists, landmarks | Anything visual: jsdom has no layout, so contrast and target size return nothing |
-| axe in Playwright (`@axe-core/playwright`) on the built app, both themes | Contrast on plain backgrounds, target size, scrollable regions | Contrast over images, alt quality |
+| axe-core in Playwright (`e2e/a11y.spec.ts`, injected with `page.addScriptTag`) on the built app, both themes | Contrast on plain backgrounds, target size, scrollable regions | Contrast over images, alt quality |
 | Playwright scripts | Focus moves, focus not obscured, page title, reflow width, `emulateMedia` for motion, colours and contrast | Whether a message is actually spoken |
 | Manual keyboard and screen reader pass | Live regions, reading order, link purpose, timing, hover content | — |
 
@@ -314,7 +314,7 @@ The field targets are in DESIGN_BENCHMARKS § 2.1 (LCP ≤ 2.0 s, INP ≤ 150 ms
 
 | Budget | Benchmark | Target for CinePulse | How to check |
 | --- | --- | --- | --- |
-| JS on the critical path of a hard load | Russell 2026, JS-heavy site, 3 s: 0.62 MiB JS, 1.2 MiB total [R]; Web Almanac 2025 mobile median JS 646 KB [R] | ≤ 300 KiB brotli (host + one remote + shared), tolerance 350 KiB | `pnpm size` for the host; add per-remote budgets |
+| JS on the critical path of a hard load | Russell 2026, JS-heavy site, 3 s: 0.62 MiB JS, 1.2 MiB total [R]; Web Almanac 2025 mobile median JS 646 KB [R] | ≤ 300 KiB brotli (host + one remote + shared), tolerance 350 KiB | `pnpm size` for the host, but it measures gzip today (`"gzip": true` in `.size-limit.json`): switch it to `"brotli": true` or restate the target in gzip; add per-remote budgets |
 | Total on the critical path | Same | ≤ 1.0 MiB transfer (HTML, JS, CSS, fonts, hero image), tolerance 1.2 MiB | Lighthouse network table; WebPageTest |
 | After sign-in | Russell 2026, 5 s: 1.15 MiB JS [R] | ≤ 600 KiB JS brotli on any route, Firebase chunks included | Same |
 | CSS | Web Almanac median 79 KB [R] | ≤ 30 KiB | Same |
@@ -322,7 +322,7 @@ The field targets are in DESIGN_BENCHMARKS § 2.1 (LCP ≤ 2.0 s, INP ≤ 150 ms
 | Images in the first viewport | Web Almanac median 911 KB [R] | ≤ 600 KB on phones, ≤ 1 MB on desktop | HAR in Playwright |
 | Requests before the first interaction | Web Almanac median 72 [R] | ≤ 40 | Same |
 | `remoteEntry.js` | No published number | ≤ 10 KiB brotli per remote | Bundle size |
-| Budget change | web.dev: enforce budgets in CI [G] | A breach fails CI; raising a budget needs a ticket | `pnpm size`, Lighthouse CI assertions |
+| Budget change | web.dev: enforce budgets in CI [G] | A breach fails CI; raising a budget needs a ticket | `pnpm size` (gzip today), Lighthouse CI assertions |
 
 ### 4.3 Rendering and runtime
 
@@ -360,9 +360,9 @@ TMDB serves JPEG at fixed widths; we cannot change the format without our own im
 | `modulepreload` [S] | Fetch a module graph early | The host preloads its own entry; a remote's entry and route chunk load on intent (hover or focus of a link) |
 | Serial steps [G] | Each Module Federation step adds a round trip | ≤ 3 serial JS steps on a direct URL (host entry → `remoteEntry.js` → route chunk, with shared modules in parallel) |
 | Shared singletons [G] | `singleton` + `strictVersion` | 0 duplicate copies of React or Query in a session |
-| Compression [G] | Brotli is smaller than gzip | All text assets served as `br`; budgets in brotli bytes |
-| Hashed assets [G] | `max-age=31536000, immutable` | All Vite `assets/*` of the host and remotes (`firebase.json` headers) |
-| HTML and `remoteEntry.js` [G] | Revalidate on each load | `Cache-Control: no-cache` with ETag, so host and remotes stay in step after a deploy; never `no-store` (it blocks the back/forward cache) |
+| Compression [G] | Brotli is smaller than gzip | All text assets served as `br`; budgets move to brotli bytes (`.size-limit.json` uses gzip today) |
+| Hashed assets [G] | `max-age=31536000, immutable` | All Vite `assets/*` of the host and remotes. Met: `firebase.json` sends `public, max-age=31536000, immutable` for `**/assets/**` |
+| HTML and `remoteEntry.js` [G] | Revalidate on each load | `Cache-Control: no-cache` with ETag, so host and remotes stay in step after a deploy; never `no-store` (it blocks the back/forward cache). Met: `firebase.json` sends `no-cache` for `**/@(remoteEntry.js|index.html)` |
 | Third parties [G] | A top cause of long tasks | 0 third-party scripts on catalog pages |
 | Fonts [G] | `font-display: swap`, metric-matched fallback, self-hosted WOFF2 | 0 shift from the font swap |
 
@@ -419,9 +419,9 @@ Each item needs a decision and its own ticket; until then the documentation deci
 3. **Row arrows become labelled buttons** reachable by keyboard and screen readers ("Next, 3 to 5 of 10"), or the docs state why they stay hidden (BBC GEL, APG).
 4. **Load more keeps its label** with a spinner and moves focus to the first new card, as filmography does (Vercel, Primer).
 5. **Search does not open the keyboard on phones** on page open; it still focuses the input on desktop (Vercel).
-6. **A tap does not trigger hover styles:** keep Tailwind's `(hover: hover)` guard (React Aria).
+6. **A tap does not trigger hover styles:** restore Tailwind's `(hover: hover)` guard by removing `@custom-variant hover` from `theme.css` (React Aria). This reverses the choice in ADR-0009, so card overlays need another way to open on touch.
 7. **The dialog press guard grows from 350 ms to 500 ms**, so a Windows double click cannot pass it.
-8. **The search draft survives a Tab press** (ISO 9241-110 use error tolerance).
+8. **The search draft survives a press on a search tab** (ISO 9241-110 use error tolerance).
 9. **Desktop lists show ≥ 40 items** before the first Load more; phones keep 20 (Baymard).
 10. **Movies and TV keep all loaded pages on Back**, as filmography does (Baymard).
 11. **No-results pages offer one more path** besides Clear search: genres or trending (Baymard).
@@ -432,7 +432,7 @@ Each item needs a decision and its own ticket; until then the documentation deci
 1. Where do the field-measurement beacons go, and who reads the p75 report? Needs an ADR.
 2. Can the hero data request start before the pages remote loads? It is the main lever on LCP load delay.
 3. Is 300 KiB brotli of JS on the critical path realistic with React 19, Router, Query and the Module Federation runtime? Measure the current Home path first.
-4. Which `Cache-Control` do `index.html` and `remoteEntry.js` get today?
+4. Resolved: `firebase.json` sends `Cache-Control: no-cache` for `index.html` and `remoteEntry.js`, and `public, max-age=31536000, immutable` for `assets/**` ([§ 4.5](#45-javascript-caching-and-fonts)).
 5. Do Firebase Auth or Firestore Lite hold a connection that blocks the back/forward cache for signed-in users?
 6. Should Home rows offer one Tab stop a row with arrow keys?
 7. After a route change, should focus go to the `h1` instead of `main`? Test with NVDA, JAWS, VoiceOver and TalkBack.
@@ -450,7 +450,7 @@ Run on a production build (`pnpm build:deploy`, then `pnpm emulators` or a previ
 2. **LCP and INP parts.** Load the web-vitals attribution build in the console or a test page and log `onLCP` and `onINP` with attribution.
 3. **Bytes and requests.** DevTools Network with "Disable cache", throttled to the lab profile; compare transfer sizes with [§ 4.2](#42-budgets). `pnpm size` covers the host.
 4. **Long animation frames and DOM size.** The snapshot script below; read `window.__p` after about 2 s.
-5. **Accessibility.** axe (DevTools extension or `@axe-core/playwright`) on every page state, both themes; then the keyboard and screen reader passes in [§ 3.6](#36-test-matrix).
+5. **Accessibility.** axe (DevTools extension, or axe-core in Playwright as in `e2e/a11y.spec.ts`) on every page state, both themes; then the keyboard and screen reader passes in [§ 3.6](#36-test-matrix).
 6. **Zoom, spacing, preferences.** 320 px and 400 % zoom; the text spacing bookmarklet; DevTools Rendering for `prefers-reduced-motion`, `forced-colors`, `prefers-contrast` and `prefers-reduced-transparency`.
 
 The snapshot script we ran on the reference sites. It gives quick numbers, not an audit; the contrast count skips text on images.

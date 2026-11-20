@@ -94,7 +94,7 @@ From here on, new or changed logic in `packages/*` and new UI states land with t
 Add Playwright (chromium) on the merged `dist/` served by `firebase emulators:start --project demo --only hosting,auth,firestore`. Network goes through `page.route('**/api/tmdb/**')` with fixtures. Scenarios (`e2e/smoke.spec.ts`):
 
 1. Home shows the hero and content rows.
-2. Navigation Home → Movies → Profile across MFEs.
+2. Navigation Home → Movies → Sign in across MFEs.
 3. Search and filters on Movies and TV Shows are reflected in the URL and survive Back/Forward, and a shared TV Shows link opens the same view.
 4. With `remoteEntry.js` of one remote aborted, its section shows the "unavailable" placeholder and the other sections keep working. A remote lost with the connection stays in the app on Try again, and loads on a press once the connection returns.
 5. An unknown URL shows NotFound.

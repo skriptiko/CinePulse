@@ -44,7 +44,7 @@ Every read of `items` costs one read per title. A list of rows also differs from
 
 - The store chunk grows by about 0.02 kB, and host JS does not grow. The host stylesheet, which every visitor loads, grows by about 0.2 kB gzip. The watchlist page chunk grows from 3.9 to 13.7 kB gzip for Radix ToggleGroup, for signed-in visitors only.
 - A kept row can contradict the filter on screen, and the count includes it. The state is local, so it is lost on leaving the page.
-- Each row adds a Tab stop, so a movie row now takes two.
+- Each row now has three Tab stops: the title link, the status switch and `Remove`.
 - A second tab keeps the old status until its next read.
 - A write that lands during a read costs another read of every title. In a burst of presses each read is the running read for the next landing, so one overlap costs one read per landing while presses land faster than a read finishes. A cancelled read also still completes on the server, as `getItems` passes no abort signal. Repeating only after the last landing would need a mutation key and a marker for the owed read, which is not worth it for a burst.
 - A failed press shows the generic toast, which names no title, and each failed press shows its own.
