@@ -15,6 +15,20 @@ describe('Footer', () => {
     );
   });
 
+  it('credits TMDB with its logo and the exact notice from its terms', () => {
+    renderWithProviders(<Footer />);
+
+    expect(screen.getByRole('link', { name: 'TMDB' })).toHaveAttribute(
+      'href',
+      'https://www.themoviedb.org/'
+    );
+    expect(
+      screen.getByText(
+        'This website uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.'
+      )
+    ).toBeInTheDocument();
+  });
+
   it('has no axe violations', async () => {
     const { container } = renderWithProviders(<Footer />);
 

@@ -163,7 +163,7 @@ For privacy notices, WP29/EDPB (WP260 rev.01) recommend layered notices, just-in
 
 | Topic | Target for CinePulse |
 | --- | --- |
-| TMDB credit | Add the logo and the exact notice to the footer of every page and to an About or Credits page. Today the footer (`packages/ui/src/components/footer.tsx`) shows neither. The logo is smaller than the CinePulse wordmark. The notice matches the terms word for word |
+| TMDB credit | Add the logo and the exact notice to the footer of every page and to an About or Credits page. The footer (`packages/ui/src/components/footer.tsx`) shows both since CIN-183; the About or Credits page is still to come. The logo is smaller than the CinePulse wordmark. The notice matches the terms word for word |
 | Rating source | The detail page labels the rating as TMDB: `TMDB 7.4 · 12k votes`. No IMDb ratings |
 | First privacy layer | 1–2 sentences next to Sign in: what is stored (name, email and photo from Google; titles, folders, statuses, dates), where (Firebase, Google Cloud), why (to sync the watchlist), and that browsing works without signing in |
 | Full notice | ≤ 1 press from Sign in, Profile and the footer, in plain language |
@@ -230,7 +230,7 @@ Each item needs a decision and its own ticket, one Area per ticket under the MFE
 | 1 | P1 | docs | Describe flows F1–F7 in the [§ 1.1](#11-format) format and run the first cognitive walkthrough | ISO 9241-210 [S], NN/g [R/G] |
 | 2 | P1 | docs | A content guide: voice, rules for buttons, errors, success and confirmations, the glossary, the contraction and serial comma decisions | ISO 24495-1 [S], GOV.UK, Microsoft, Apple [G] |
 | 3 | P1 | pages-mfe | A guest's pending action in AddToWatchlist: keep the intent before the popup, run it after `user:login`, handle a closed or blocked popup | NN/g, Baymard [R], Firebase [G] |
-| 4 | P1 | host or @repo/ui | Add the TMDB logo and the exact notice (the UI has neither today); an About or Credits page | TMDB terms §3 [S] |
+| 4 | P1 | host or @repo/ui | Add the TMDB logo and the exact notice (in the footer since CIN-183); an About or Credits page | TMDB terms §3 [S] |
 | 5 | P1 | user-mfe | Delete account: ≤ 2 steps, one dialog, re-sign-in, a confirmation page | Apple 5.1.1(v), Google Play [S] |
 | 6 | P1 | user-mfe | Watchlist export as JSON and CSV | GDPR Art. 20 [S] |
 | 7 | P1 | user-mfe | `Move to…` through the folder picker as the single-pointer path for every drag; no moving a folder into itself | WCAG 2.2 SC 2.5.7 [S] |

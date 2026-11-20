@@ -2,6 +2,7 @@ import { ROUTE_PATHS } from '@repo/routes';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { Logo } from './logo';
+import { TmdbLogo } from './tmdb-logo';
 
 type FooterLink = {
   label: string;
@@ -34,6 +35,10 @@ const FOOTER_COLUMNS: FooterColumnData[] = [
 
 const FOOTER_LINK_CLASS = 'text-sm text-muted-foreground hover:text-foreground transition-colors';
 
+/** Word for word from the TMDB terms of use, § 3: required "prominently" on every page. */
+export const TMDB_NOTICE =
+  'This website uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.';
+
 export type FooterProps = {
   className?: string;
 };
@@ -54,6 +59,14 @@ export function Footer({ className }: FooterProps) {
           {FOOTER_COLUMNS.map((column) => (
             <FooterColumn key={column.title} column={column} />
           ))}
+        </div>
+
+        {/* Data credit: the TMDB logo stays smaller than the CinePulse mark (terms § 3). */}
+        <div className="mt-12 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+          <a href="https://www.themoviedb.org/" className="shrink-0 rounded-sm">
+            <TmdbLogo />
+          </a>
+          <p className="text-muted-foreground text-xs">{TMDB_NOTICE}</p>
         </div>
 
         {/* Bottom */}
