@@ -2,7 +2,7 @@
 
 # UX, accessibility and performance benchmarks
 
-The standards CinePulse follows for interaction, accessibility and speed, and the target numbers we take from them. Use this page to review a design, a pull request or a release. It is the companion of [DESIGN_BENCHMARKS](./DESIGN_BENCHMARKS.md), which holds the numbers for look, motion and behaviour timing.
+The standards CinePulse follows for interaction, accessibility and speed, and the target numbers we take from them. Use this page to review a design, a pull request or a release. It is the companion of [DESIGN_BENCHMARKS](./DESIGN_BENCHMARKS.md), which holds the numbers for look, motion and behaviour timing. Standards for whole tasks (flows, navigation, first run, watchlist, account, discovery, trust, UX measurement and UI content) are in [UX_STANDARDS](./UX_STANDARDS.md).
 
 The agreed behaviour of each screen is in [UX_NOTES](./UX_NOTES.md) and [DESIGN_APPROACH](./DESIGN_APPROACH.md). Where this page and those documents differ, those documents still decide. Each difference is listed in [Proposed changes](#proposed-changes) and is decided in its own ticket.
 

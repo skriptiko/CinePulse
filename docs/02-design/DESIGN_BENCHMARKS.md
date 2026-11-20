@@ -4,7 +4,7 @@
 
 Target numbers for how CinePulse looks, moves and behaves. Each target comes from a standard, from user research, or from measurements of reference sites. Use this page to tune the site and to check a design or a pull request. It holds numbers and behaviours only, not styles to copy.
 
-The ideas behind the design are in [DESIGN_APPROACH](./DESIGN_APPROACH.md), the agreed behaviour of each screen is in [UX_NOTES](./UX_NOTES.md). The interaction, accessibility and performance standards, with their targets, are in [QUALITY_BENCHMARKS](./QUALITY_BENCHMARKS.md). Where this page and those documents differ, those documents still decide. The difference is a proposal, listed in [Proposed changes](#proposed-changes) and decided in its own ticket.
+The ideas behind the design are in [DESIGN_APPROACH](./DESIGN_APPROACH.md), the agreed behaviour of each screen is in [UX_NOTES](./UX_NOTES.md). The interaction, accessibility and performance standards, with their targets, are in [QUALITY_BENCHMARKS](./QUALITY_BENCHMARKS.md). Standards for whole tasks and UI content are in [UX_STANDARDS](./UX_STANDARDS.md). Where this page and those documents differ, those documents still decide. The difference is a proposal, listed in [Proposed changes](#proposed-changes) and decided in its own ticket.
 
 Measured and compiled on 2026-11-20 (CIN-176).
 
