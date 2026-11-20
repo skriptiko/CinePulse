@@ -126,7 +126,7 @@ A component whose layout changes with the width has a `viewport` variant (`mobil
 
 **Motion explains, it does not decorate.** A transition shows where something came from or what changed: a card grows into its detail page, a dialog rises from its trigger, a toast slides in from its corner. Motion with no such meaning is left out. This is Material's and Apple's current advice, and it keeps the calm look of the catalog.
 
-**Page changes use View Transitions.** Going from a card to its Movie or TV Detail page, the poster morphs into the detail hero; other page changes inside a remote cross-fade. In code this is React 19.3 `<ViewTransition>` or the `viewTransition` option of React Router 7, on top of the browser's View Transition API (Chrome and Edge 111, Safari 18, Firefox 144). A browser without it changes the page at once, which is fine.
+**Page changes use View Transitions.** Going from a card to its Movie or TV Detail page, the poster morphs into the detail hero; other page changes inside a remote cross-fade. In code this is React 19.3 `<ViewTransition>`: `PageTransition` in pages-mfe wraps every route and is keyed by the path, so only a new path animates and a filter or another page of results updates at once. It works on top of the browser's View Transition API (Chrome and Edge 111, Safari 18, Firefox 144). A browser without it changes the page at once, which is fine.
 
 - **Inside one remote only.** A path that loads another remote shows its skeleton first, so it has no shared element to morph.
 - **The skeleton takes part.** `PageBoundary` shows a page skeleton on every new path, so an element that morphs also exists in the skeleton, with the same `view-transition-name`. Without it, the page falls back to a cross-fade.
@@ -179,6 +179,5 @@ The file or the code does not yet follow these rules. Each gap is a ticket in No
 | Gap | Ticket |
 | --- | --- |
 | MovieCard and Hero have no image property: a poster is a fill override on its `Image Placeholder` | none yet |
-| Card → detail page has no View Transition | CIN-171 |
 
 When a gap is closed, remove its row and update the section above if the rule changed.

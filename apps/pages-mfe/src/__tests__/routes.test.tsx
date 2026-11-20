@@ -9,8 +9,10 @@ import {
   server,
 } from '@repo/test-utils';
 import { delay, HttpResponse, http } from 'msw';
+import { isValidElement } from 'react';
 import { Link, useRoutes } from 'react-router-dom';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { PageTransition } from '../components/page-transition';
 import { routes } from '../routes';
 
 function App() {
@@ -34,6 +36,12 @@ describe('routes', () => {
         HttpResponse.json({ genres: [], results: [], total_results: 0 })
       )
     );
+  });
+
+  it('animates every page change inside pages-mfe', () => {
+    for (const route of routes) {
+      expect(isValidElement(route.element) && route.element.type).toBe(PageTransition);
+    }
   });
 
   it('loads the Movies page on demand', async () => {

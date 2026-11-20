@@ -183,6 +183,15 @@ It also runs at 320 and 1280 px:
 1. On a touch screen 390 px wide, a card shows its title, year and rating at rest.
 2. Under a mouse, a card hides them until hover.
 
+`e2e/page-transition.spec.ts` runs on the same fixtures and records each view transition the page starts:
+
+1. A card on Movies morphs its poster into the detail poster, and focus goes to `main` as before.
+2. A card in More like this morphs into the next detail poster, and the browser does not skip the transition for a doubled name.
+3. A genre filter on Movies starts no transition.
+4. Under reduced motion, a card opens its page with nothing animated.
+
+Only Chromium runs it; Safari and Firefox are not in the Playwright projects.
+
 `e2e/solid-glass.spec.ts` runs on the same fixtures, on Movies scrolled down, for the Header (`glass-bar`) and the watchlist button of a card (`glass`):
 
 1. By default, glass is blurred and translucent.
