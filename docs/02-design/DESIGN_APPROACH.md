@@ -178,7 +178,6 @@ The file or the code does not yet follow these rules. Each gap is a ticket in No
 | Gap | Ticket |
 | --- | --- |
 | MovieCard and Hero have no image property: a poster is a fill override on its `Image Placeholder` | none yet |
-| Glass has no solid fallback for reduced transparency or more contrast | CIN-169 |
 | No motion tokens; no View Transition styles or reduced-motion rule for them | CIN-170 |
 | Card → detail page has no View Transition | CIN-171 |
 
