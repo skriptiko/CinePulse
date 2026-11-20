@@ -2,7 +2,7 @@
 
 # Design approach
 
-The design ideas behind the CinePulse Figma file and `@repo/ui`, and the industry standards they follow. Read this before you draw a new screen or component: it explains *why* the file looks the way it does. The rules for working in the file (names, pages, tokens, the loop to code) are in [FIGMA_WORKFLOW](./FIGMA_WORKFLOW.md); behaviour is in [UX_NOTES](./UX_NOTES.md).
+The design ideas behind the CinePulse Figma file and `@repo/ui`, and the industry standards they follow. Read this before you draw a new screen or component: it explains *why* the file looks the way it does. The rules for working in the file (names, pages, tokens, the loop to code) are in [FIGMA_WORKFLOW](./FIGMA_WORKFLOW.md); behaviour is in [UX_NOTES](./UX_NOTES.md). The target numbers for look, motion and behaviour, measured against standards and reference sites, are in [DESIGN_BENCHMARKS](./DESIGN_BENCHMARKS.md).
 
 The approaches were drawn out of a design review of the file on 2026-11-18 (CIN-144) and checked against the standards below on 2026-11-19 (CIN-152). The same day they were compared with the UI trends of 2026, and the trends that fit became rules (CIN-168): see [Trends of 2026](#trends-of-2026). Where the file or the code does not yet follow a rule, the gap and its ticket are in [Known gaps](#known-gaps).
 
