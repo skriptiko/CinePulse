@@ -125,7 +125,6 @@ One Tailwind 4 theme, `@repo/ui/theme.css`. In the integration only the host's C
 - `pnpm test:rules` — Firestore security rules tests
 - `pnpm size` — host JS budget (run `pnpm build:deploy` first)
 - `pnpm emulators` — `build:deploy`, then the Hosting, Functions, Firestore and Auth emulators
-- `pnpm sync-types` — sync remote module types into the host
 - `pnpm build:deploy` — empty the `dist/` folders, build all applications and merge their `dist/` for Firebase Hosting
 - `pnpm run deploy` — build, merge and deploy to Firebase Hosting (production target)
 

@@ -18,7 +18,7 @@ We chose a **monorepo on pnpm workspaces + Turborepo**:
 
 - Workspace boundaries are in `pnpm-workspace.yaml`: `apps/*`, `packages/*`, `functions`.
 - Shared packages are consumed as `@repo/*` without publishing (workspace protocol).
-- Task orchestration is in `turbo.json`: `build` (`dependsOn: ["^build"]` graph, cached in `dist/**`), `dev` (persistent, no cache), `lint`, `typecheck`, `sync-types` (after `build`, generates remote types in the host).
+- Task orchestration is in `turbo.json`: `build` (`dependsOn: ["^build"]` graph, cached in `dist/**`), `dev` (persistent, no cache), `lint`, `typecheck`. A `sync-types` task was removed in CIN-130: it copied from a folder the build does not create.
 - The package manager is pinned: `pnpm@9.15.4`, Node `>=20`.
 
 ## Consequences

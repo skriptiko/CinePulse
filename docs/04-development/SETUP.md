@@ -100,23 +100,18 @@ pnpm build:deploy   # empty the dist folders, build, merge the dist of all MFEs 
 | `pnpm test:rules` | Firestore rules tests on the emulator |
 | `pnpm size` | Host JS budget from `.size-limit.json` (run `pnpm build:deploy` first) |
 | `pnpm emulators` | `build:deploy`, then Hosting, Functions, Firestore and Auth emulators |
-| `pnpm sync-types` | Sync remote module types into the host |
 | `pnpm build:deploy` | Empty the `dist/` folders, build + merge the MFE `dist/` folders |
 | `pnpm run deploy` | Build, merge and deploy to Firebase Hosting (production) |
 
 ## Remote module types
 
-The host gets the remote types in `apps/host/src/@types/remotes/` and `apps/host/@mf-types/`. After changing a remote module's exposed API, update the types:
-
-```bash
-pnpm sync-types
-```
+The host type-checks a remote's `routes` against the declarations in `apps/host/src/@types/remotes/*.d.ts`, written by hand. After changing what a remote exposes, update its file there. The Module Federation plugin also writes `apps/host/@mf-types/` while the host runs; this folder is ignored by git, and `tsc` does not read it.
 
 ## Troubleshooting
 
 - **Host does not see pages / "This section is unavailable"** — make sure `pages-mfe` (5001) and `user-mfe` (5002) are running and `remoteEntry.js` is reachable. The host logs the loading error in the dev console as `[mfe:error] <name>`.
 - **Port is taken** — because of `strictPort: true` the app will crash; free the port (5000/5001/5002) or stop the previous process.
 - **Empty data / 401 from TMDB** — check `TMDB_API_READ_TOKEN` in the (root) `.env` and that it is the Read Access Token, not the API Key v3.
-- **Remote types out of sync** — run `pnpm sync-types` (requires the remote modules to be built first).
+- **Remote types out of sync** — update the remote's declaration in `apps/host/src/@types/remotes/`.
 - **Unstyled remote in the integration** — only the host's CSS loads, and its `@source` must cover the remote (ADR-0009). Restart the host after adding a remote.
 - **`vite build` of the host fails on `PAGES_MFE_URL` / `USER_MFE_URL`** — production builds read them from `apps/host/.env.production` (the host reads env from its own directory, TMDB variables from the repo root).

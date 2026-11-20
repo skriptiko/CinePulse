@@ -63,7 +63,7 @@ packages:
   - "functions"
 ```
 
-Task orchestration is in `turbo.json`: `build` (with `dependsOn: ["^build"]`, cached in `dist/**`), `dev` (persistent, no cache), `lint`, `typecheck`, `sync-types` (generates remote types in the host after build).
+Task orchestration is in `turbo.json`: `build` (with `dependsOn: ["^build"]`, cached in `dist/**`), `dev` (persistent, no cache), `lint`, `typecheck`.
 
 **Shared packages:**
 
