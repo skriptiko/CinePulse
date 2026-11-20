@@ -46,6 +46,16 @@
   --container-page: 1800px;
 }
 
+/* Motion (DESIGN_APPROACH § Motion): a state change (colour, opacity) takes `duration-state`, a
+   move (a dialog, a page) `duration-move`; ease-out on entry, ease-in on exit. `static` keeps the
+   durations, which no utility reads, in the output. */
+@theme static {
+  --ease-enter: cubic-bezier(0, 0, 0.2, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --duration-state: 200ms;
+  --duration-move: 300ms;
+}
+
 @utility fluid-display {
   font-size: clamp(2rem, 5vw + 1rem, 4.5rem);
   line-height: 1.1;
@@ -126,6 +136,30 @@
     cursor: pointer;
   }
 
+  /* Page changes inside a remote (`<ViewTransition>`): the page cross-fades, and the poster of
+     the opened card morphs into the poster of the detail page or its skeleton. */
+  ::view-transition-group(*),
+  ::view-transition-new(*) {
+    animation-duration: var(--duration-move);
+    animation-timing-function: var(--ease-enter);
+  }
+
+  ::view-transition-old(*) {
+    animation-duration: var(--duration-move);
+    animation-timing-function: var(--ease-exit);
+  }
+
+  [data-detail-poster],
+  [data-opened-poster] {
+    view-transition-name: detail-poster;
+  }
+
+  /* A card opened on a detail page takes the name from the page's own poster: two elements with
+     one name would cancel the transition. */
+  :root:has([data-opened-poster]) [data-detail-poster] {
+    view-transition-name: none;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -134,6 +168,13 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
+    }
+
+    /* `*` does not reach these pseudo-elements. */
+    ::view-transition-group(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+      animation: none !important;
     }
   }
 }

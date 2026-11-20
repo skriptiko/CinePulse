@@ -130,9 +130,10 @@ A component whose layout changes with the width has a `viewport` variant (`mobil
 
 - **Inside one remote only.** A path that loads another remote shows its skeleton first, so it has no shared element to morph.
 - **The skeleton takes part.** `PageBoundary` shows a page skeleton on every new path, so an element that morphs also exists in the skeleton, with the same `view-transition-name`. Without it, the page falls back to a cross-fade.
+- **One name, set on the opened card.** The poster of a detail page and of its skeleton carry `data-detail-poster`; a card marks its poster with `data-opened-poster` when a plain click opens it. Both map to the name `detail-poster` in `theme.css`. Cards never carry a name at rest: the same title often sits in two rows of Home, and two elements with one name cancel the transition. A card opened on a detail page takes the name from that page's poster.
 - **Focus does not move with the motion.** Focus and the scroll position behave as they do without a transition.
 
-**One set of durations and curves.** Small state changes (colour, opacity) take 150–200 ms, larger moves (a dialog, a page) 250–300 ms, an ease-out on entry and an ease-in on exit. These become motion tokens in `theme.css`, next to the colour tokens. Material 3 Expressive's spring motion is not adopted: it draws the eye away from the posters.
+**One set of durations and curves.** Small state changes (colour, opacity) take 150–200 ms, larger moves (a dialog, a page) 250–300 ms, an ease-out on entry and an ease-in on exit. In `theme.css` these are the motion tokens `duration-state` (200 ms), `duration-move` (300 ms), `ease-enter` and `ease-exit`; the page transition uses `duration-move`. Material 3 Expressive's spring motion is not adopted: it draws the eye away from the posters.
 
 **Reduced motion turns it off.** Under `prefers-reduced-motion: reduce`, page changes have no transition and nothing scales or slides. The global reduced-motion rule in `theme.css` matches elements through `*`, which does not reach the `::view-transition-*` pseudo-elements, so they need a rule of their own.
 
@@ -178,7 +179,6 @@ The file or the code does not yet follow these rules. Each gap is a ticket in No
 | Gap | Ticket |
 | --- | --- |
 | MovieCard and Hero have no image property: a poster is a fill override on its `Image Placeholder` | none yet |
-| No motion tokens; no View Transition styles or reduced-motion rule for them | CIN-170 |
 | Card → detail page has no View Transition | CIN-171 |
 
 When a gap is closed, remove its row and update the section above if the rule changed.

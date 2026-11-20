@@ -6,6 +6,7 @@ import {
   CardGridSkeleton,
   ContentRowSkeleton,
   FeaturedGridSkeleton,
+  MovieDetailSkeleton,
   PageSkeleton,
   SKELETON_DELAY_MS,
 } from '../page-skeletons';
@@ -16,6 +17,14 @@ describe('CardGridSkeleton', () => {
 
     expect(screen.getByTestId('page-skeleton')).toHaveAttribute('aria-busy', 'true');
     expect(container.querySelectorAll('[data-slot="skeleton"]')).toHaveLength(12);
+  });
+});
+
+describe('MovieDetailSkeleton', () => {
+  it('names its poster box, so the opened card morphs into it', () => {
+    const { container } = renderWithProviders(<MovieDetailSkeleton />);
+
+    expect(container.querySelectorAll('[data-detail-poster]')).toHaveLength(1);
   });
 });
 
