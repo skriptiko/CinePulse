@@ -6,7 +6,7 @@ The only importer of the `firebase` SDK, always behind a lazy load, so anonymous
 
 - `startAuthSession`: call once before the first render. It restores a known session.
 - `prepareSignIn`: call when the login page mounts, because a popup must open right after the click.
-- `signInWithGoogle`, `signOutUser`.
+- `signInWithGoogle` (returns the user who signed in, or `null` when the popup was closed), `signOutUser`.
 - `getSignInErrorMessage`.
 - `watchlistQueries`: `queryOptions` factories `folders(uid)` and `items(uid)`, plus `all(uid)`, their key prefix.
 - `loadWatchlistStore`: loads Firestore Lite and the store, which writes through `createFolder`, `renameFolder`, `moveFolder`, `deleteFolder`, `saveTitle`, `removeTitle` and `setTitleStatus`.
