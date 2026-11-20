@@ -525,7 +525,10 @@ test('a show on TV Shows is stored as TV', async ({ page, request }) => {
   expect((await readTitle(request, uid, 'tv_100')).status).toBe('planned');
 });
 
-test('a signed-out visitor gets the offer with no Firebase, and comes back', async ({ page }) => {
+test('a signed-out visitor gets the offer with no Firestore, and saves after sign-in', async ({
+  page,
+  request,
+}) => {
   const chunks: string[] = [];
   page.on('request', (request) => {
     const { pathname } = new URL(request.url());
@@ -538,19 +541,27 @@ test('a signed-out visitor gets the offer with no Firebase, and comes back', asy
 
   await addButton(page, 'Action movie 1').click();
   await expect(page.getByRole('dialog', { name: 'Sign in to save Action movie 1' })).toBeVisible();
-  expect(chunks.filter((path) => !path.includes('watchlist-dialog'))).toEqual([]);
+  // Auth loads with the offer, so the popup opens on the press; Firestore waits for the save.
+  expect(chunks.filter((path) => path.includes('watchlist-store'))).toEqual([]);
 
   await page.getByRole('button', { name: 'Close' }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(addButton(page, 'Action movie 1')).toBeFocused();
 
   await addButton(page, 'Action movie 1').click();
-  // Scoped: the header has a link with this name too.
-  await page.getByRole('dialog').getByRole('link', { name: 'Sign in' }).click();
-  await expect(page).toHaveURL(/\/auth\/login$/);
+  await page.evaluate(() => window.scrollTo(0, 40));
+  const scrollY = await page.evaluate(() => window.scrollY);
   await signIn(page);
+
+  await expect(
+    page.getByText('Action movie 1 is in your watchlist, under All titles')
+  ).toBeVisible();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page).toHaveURL(/\/movies\?genre=28$/);
-  await expect(addButton(page, 'Action movie 1')).toBeVisible();
+  expect(await page.evaluate(() => window.scrollY)).toBe(scrollY);
+  await expect(addButton(page, 'Action movie 1')).toBeFocused();
+  const saved = await readTitle(request, await getUid(page), 'movie_100');
+  expect(saved).toMatchObject({ status: 'planned', folderIds: [] });
 });
 
 test('a signed-in catalog page reads nothing until the picker opens', async ({ page }) => {
@@ -804,7 +815,9 @@ test('sign-out with the picker open turns it into the offer', async ({ page }) =
   await expect(page.getByRole('button', { name: 'Add to watchlist' })).toBeVisible();
   await page.evaluate(() => window.__CINEPULSE_STORE__?.getState().setUser(null));
   await expect(page.getByRole('dialog', { name: `Sign in to save ${MOVIE}` })).toBeVisible();
-  await expect(page.getByRole('dialog').getByRole('link', { name: 'Sign in' })).toBeVisible();
+  await expect(
+    page.getByRole('dialog').getByRole('button', { name: 'Continue with Google' })
+  ).toBeVisible();
 });
 
 const CARDS = Array.from({ length: 24 }, (_, index) => `Card ${index + 1}`);
