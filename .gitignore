@@ -42,8 +42,6 @@ coverage
 # Ai
 .ai
 
-# CinePulse Design
-cine-pulse-ui-design
 /.claude/
 
 # Firebase deploy cache
