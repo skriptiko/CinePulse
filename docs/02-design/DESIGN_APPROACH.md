@@ -32,7 +32,7 @@ A rule in this document that cites a standard follows it. Where we go further th
 
 **Glass is only for chrome over content.** `glass` (60 % opaque) is for small chips on images, such as the "Top Rated" badge on a Featured Tile. `glass-bar` (90 % opaque) is for the scrolled Header. Both take the `glass-border` stroke and `glass-blur`. Choose between them by contrast, not by looks. This is the restrained form of Apple's Liquid Glass: glass never sits behind reading text, a form or a dialog, because blur over a bright image is where Liquid Glass lost contrast. When the user asks for less transparency or more contrast (`prefers-reduced-transparency: reduce`, `prefers-contrast: more`), glass becomes a solid `surface-elevated` with no blur and keeps its border.
 
-**Text on an image sits on a gradient.** Every image with text on it has a gradient from `background` to transparent, so it is dark in the dark theme and light in the light one: bottom-up on cards and tiles (a Featured Tile 0 → 80 % at 65 % of the height → 100 %, at 80 % opacity, 90 % on hover), bottom-up (0 → 60 % at 80 % of the height → 100 %) and left-to-right on the Hero, a heavier one on the detail hero (70 → 90 → 100 %). Secondary text on the Hero, a Featured Tile and the detail hero (year, tagline, metadata, overview) is `foreground` at 80 %, not `muted-foreground`, which fails on a bright image. Long text is clamped only where the full text is one step away: the Hero overview at 3 lines (4 from `sm`) and the Featured Tile title at 2; headings are never clamped. Contrast is checked from 320 to 1920 wide, at viewport heights from 568 to 1440, with WCAG 1.4.12 text spacing. Never put text straight on an image. Text on an image meets the same contrast as text on a page, measured on the worst image (white and black).
+**Text on an image sits on a gradient.** Every image with text on it has a gradient from `background` to transparent, so it is dark in the dark theme and light in the light one: bottom-up on cards and tiles (a Featured Tile 0 → 80 % at 65 % of the height → 100 %, at 80 % opacity, 90 % on hover), bottom-up (0 → 60 % at 80 % of the height → 100 %) and left-to-right on the Hero, a heavier one on the detail hero (70 → 90 → 100 %). Secondary text on the Hero, a Featured Tile and the detail hero (year, tagline, metadata, overview) is `foreground` at 80 %, not `muted-foreground`, which fails on a bright image. Long text is clamped only where the full text is one step away: the Hero overview at 3 lines (4 from `sm`); a review at 6, with **Read the full review**; a biography at 6, with Show more; the Featured Tile title, the PersonCard name and the cast name at 2, as each links to its page. Page and section titles (`h1`, `h2`) are never clamped; the card and tile titles above are `h3`. Contrast is checked from 320 to 1920 wide, at viewport heights from 568 to 1440, with WCAG 1.4.12 text spacing. Never put text straight on an image. Text on an image meets the same contrast as text on a page, measured on the worst image (white and black).
 
 **Colour is never the only signal** (WCAG 1.4.1). A state, an error or a choice also has text, an icon or a shape: the rating star has its number, an invalid field has a message.
 
@@ -51,7 +51,7 @@ A rule in this document that cites a standard follows it. Where we go further th
 
 **One family, styles named after classes.** Geist only. A text style is named after its Tailwind classes (`text-sm/medium` = `text-sm font-medium`), so a developer reads the class from the style name. Geist loads as one variable font file (`@fontsource-variable/geist`, `wght` axis), so a weight costs no extra download; still, use only the weights of the type scale (regular, medium, semibold, bold), and never animate the weight.
 
-**Text people read is 16 px.** Material (body-large) and Apple (body, 17 pt) set reading text at 16 px or more. Overviews, biographies, reviews and state messages are 16 px; 14 px is for secondary text and controls; 12 px only for short labels and metadata.
+**Text people read is 16 px.** Material (body-large) and Apple (body, 17 pt) set reading text at 16 px or more. Overviews, biographies, reviews and state messages are at least 16 px (the detail page overview grows to 18 px from `sm`); 14 px is for secondary text and controls; 12 px only for short labels and metadata.
 
 **Readable lines** (WCAG 1.4.8, 1.4.12): reading text has a line height of at least 1.5 and lines of at most 75 characters (`max-w-prose`). A layout keeps working when a user sets line height 1.5, paragraph spacing 2×, letter spacing 0.12 em and word spacing 0.16 em.
 
@@ -92,7 +92,7 @@ A component whose layout changes with the width has a `viewport` variant (`mobil
 
 **Bento is for one featured block, not for every list.** `FeaturedGrid` is a bento grid: the first tile spans 2 × 2 from `sm`, the rest are single tiles. A page has at most one such block, and its biggest tile is its most important item. Tiles keep the reading order of the list: the grid places them, it never reorders them, so keyboard and screen reader order match what the eye sees (WCAG 1.3.2, 2.4.3). A catalog list stays an even grid.
 
-**Even vertical rhythm.** Sections on Home and the detail pages are 48 apart (`gap-12`), a section title is 16 above its content (`mb-4`), and a page starts at 112 or 144 (`pt-28`, `pt-36`) to clear the fixed Header.
+**Even vertical rhythm.** Sections on Home and the detail pages are 48 apart (`gap-12`), a section title is 16 above its content (`mb-4`), and a page starts low enough to clear the fixed Header: a detail page at 112, or 144 from `sm` (`pt-28 sm:pt-36`); the catalog, Search, Home and account pages at 80, or 96 from `sm` (`pt-20 sm:pt-24`); Sign in at 128 (`pt-32`).
 
 ## 4. Components
 
@@ -179,5 +179,10 @@ The file or the code does not yet follow these rules. Each gap is a ticket in No
 | Gap | Ticket |
 | --- | --- |
 | MovieCard and Hero have no image property: a poster is a fill override on its `Image Placeholder` | none yet |
+| A season overview is 14 px (`text-sm`) and clamped at 3 lines with no way to the full text (`packages/ui/src/components/seasons-section.tsx`) | none yet |
+| The Watchlist folder title (`h2`) is cut to one line with `truncate` (`apps/user-mfe/src/pages/watchlist/watchlist-page.tsx`) | none yet |
+| Account page titles (`h1`) are `text-2xl font-bold`, not `fluid-heading` (`apps/user-mfe/src/pages/login.tsx`, `profile/profile-page.tsx`, `settings.tsx`, `watchlist/watchlist-page.tsx`); `NotFound`, `PageErrorFallback` and `ShellBoundary` use `text-2xl font-semibold sm:text-3xl` (`packages/ui/src/components/not-found.tsx`, `page-error-fallback.tsx`, `shell-boundary.tsx`) | none yet |
+| Section titles (`h2`) on Profile, Settings and Watchlist are `text-lg font-semibold`, not `heading-section` (`apps/user-mfe/src/pages/profile/profile-page.tsx`, `settings.tsx`, `watchlist/watchlist-page.tsx`) | none yet |
+| The `FeaturedGrid` title is 24 above its tiles (`mb-6`), not 16 (`packages/ui/src/components/featured-grid.tsx`) | none yet |
 
 When a gap is closed, remove its row and update the section above if the rule changed.

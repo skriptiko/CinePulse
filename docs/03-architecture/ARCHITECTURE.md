@@ -40,7 +40,7 @@ USER_MFE_URL=https://staging.example.com/user-mfe/remoteEntry.js
 
 **Shared dependencies** (one instance for the whole app, `shareScope: 'default'`):
 
-- `react`, `react-dom` — React 19 ([ADR-0007](./decisions/ADR-0007-react-19.md)); every shared dependency is a `singleton`, and `requiredVersion` comes from the pnpm catalog via `scripts/mf-shared.ts` (`strictVersion` for third-party ones)
+- `react`, `react-dom` — React 19 ([ADR-0007](./decisions/ADR-0007-react-19.md)); every shared dependency is a `singleton` (`scripts/mf-shared.ts`). Third-party ones also get `strictVersion` and a `requiredVersion` from the pnpm catalog; the `@repo/*` packages get `singleton: true` only
 - `react-router-dom` — shared router, one `BrowserRouter` in the host
 - `@tanstack/react-query` — shared `QueryClient`
 - `react-error-boundary` — the boundaries in `@repo/ui` (see Error handling below)
@@ -129,7 +129,7 @@ Also:
 - **API errors** — `ApiError` with `kind` (`network`, `not_found`, `server`, `client`, `validation`), `status` and `cause`; an abort is rethrown unchanged. See [API_SPEC.md](./API_SPEC.md#errors).
 - **One channel per error** — `createQueryClient` (`@repo/api`) sets `QueryCache.onError`: every failed query emits `error:report` (`source: 'query'`); a toast (`notification:show`, text from `getErrorMessage`) is emitted only when the query already has data (a failed background refetch), never for a 404 and never when `meta.inlineErrors` is set. Without data the error goes to the page boundary instead. Failed mutations always toast.
 - **Toasts** — the host subscribes to `notification:show` and shows it with sonner; its `Toaster` is lazy-loaded, so sonner is not in the initial bundle. Remotes never import sonner.
-- **Reporting** — boundaries, `QueryCache`/`MutationCache` and the host's `window` `error` / `unhandledrejection` handlers emit `error:report`. The host's single listener drops expected failures (404, aborts, network errors while offline) and, with no vendor chosen, logs the rest in development only.
+- **Reporting** — boundaries, `QueryCache`/`MutationCache`, `@repo/firebase` (a session that fails to restore, `source: 'auth'`) and the host's `window` `error` / `unhandledrejection` handlers emit `error:report`. The host's single listener drops expected failures (404, aborts, network errors while offline) and, with no vendor chosen, logs the rest in development only.
 - **Offline** — the host shows one global banner while `onlineManager` reports offline; data on screen stays.
 
 ## Build and deploy

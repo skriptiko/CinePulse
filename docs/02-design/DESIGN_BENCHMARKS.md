@@ -59,7 +59,7 @@ Two kinds of measurement:
 
 | Parameter | Reference sites | Standard | Target | Tolerance | How to check |
 | --- | --- | --- | --- | --- | --- |
-| Duration steps | Apple TV 100/200/250/300; Netflix 250 dominant, 200/300/400; Linear 100/120/160/200; Vercel 150/200/300 [M] | M3 50–400 in steps of 50; Fluent 50/100/150/200/250/300/400; Atlassian 100/150/200/250/400; Primer 100/200/300 [G] | 100, 150, 200, 250, 300, 400 ms. Today's tokens: `duration-state` 200, `duration-move` 300 | ± 25 ms per step | `theme.css` |
+| Duration steps | Apple TV 100/200/250/300; Netflix 250 dominant, 200/300/400; Linear 100/120/160/200; Vercel 150/200/300 [M] | M3 50–400 in steps of 50; Fluent 50/100/150/200/250/300/400; Atlassian 100/150/200/250/400; Primer 100/200/300 [G] | 100, 150, 200, 250, 300, 400 ms. Today's tokens: `duration-state` 200, `duration-move` 300; curves `ease-enter` `cubic-bezier(0, 0, 0.2, 1)`, `ease-exit` `cubic-bezier(0.4, 0, 1, 1)` | ± 25 ms per step | `theme.css` |
 | Exit vs enter | Apple TV, JustWatch, Linear, Vercel: exit = enter [M]; Netflix: separate exit curve [M] | Atlassian 150/100, 250/200; NN/g popup 300 in / 200–250 out [G][R] | Exit = enter − 50 ms (at least 100 ms) for overlays; symmetric for hover | exit 66–100 % of enter | Recorder |
 | Larger or farther = longer | — | Fluent: larger elements get more time [G]; NN/g: travel distance → longer [R] | ≤ 100 px of travel: 150–200 ms; up to half the viewport: 250–300 ms; full screen: 300–400 ms | — | Review |
 
@@ -86,7 +86,7 @@ Measured on the reference sites with the recorder. "In" is the opening or the ho
 | Focus ring | Appears at once on every site [M] | Atlassian: focus is instant [G] | 0 ms | 0 | Tab through a page |
 | Row arrows show on row hover | Apple TV 250 ms linear [M] | — | 150–200 ms opacity | 100–250 ms | Recorder |
 | Row scroll by an arrow | Apple TV: smooth scroll, one card (276 px) in ~350 ms, ease-out, snap `x mandatory`. Netflix: snap `x mandatory`, scroll `auto` [M] | Browser smooth scroll ≈ 300–500 ms [G] | Native `scroll-behavior: smooth` (the browser times it); under reduced motion `auto` | 250–500 ms | Sample `scrollLeft` every 16 ms |
-| Menu, dropdown, popover | Linear: scale 0.98 → 1 + opacity, 180 / 180 ms `ease`. JustWatch: opacity only, 300 / 300 ms `ease` [M] | Atlassian 150 / 100 ms [G]; shadcn fade + zoom 95 % [G] | 150 / 100 ms; opacity + scale 0.96–0.98 → 1 from the trigger side | in 120–200, out 75–150 | Recorder on the `Select` and menus |
+| Menu, dropdown, popover | Linear: scale 0.98 → 1 + opacity, 180 / 180 ms `ease`. JustWatch: opacity only, 300 / 300 ms `ease` [M] | Atlassian 150 / 100 ms [G]; shadcn fade + zoom 95 % [G] | 150 / 100 ms; opacity + scale 0.96–0.98 → 1 from the trigger side | in 120–200, out 75–150 | Recorder on the sort `DropdownMenu` |
 | Dialog | Vercel: panel scale 0.96 → 1 + opacity 300 / 300 ms, overlay to 80 % 300 ms [M] | Atlassian 250 / 200 ms, scale 0.95 ↔ 1 [G]; NN/g 200–300 ms [R] | Panel 250 / 200 ms, scale 0.96 → 1; overlay 200 / 150 ms | in 200–300, out 150–250 | Recorder on `AddToWatchlist` dialog |
 | Tooltip | — | Atlassian: fade only [G] | 150 / 100 ms fade, optional ≤ 4 px slide | 100–200 ms | Recorder |
 | Toast | — | Carbon 240 ms; Atlassian flag 250 / 200 ms [G] | 250 ms slide ≤ 16 px + fade, out 200 ms fade; the stack reflows in 200 ms | 200–300 ms | Recorder on `notification:show` |
@@ -240,7 +240,7 @@ Measured on the reference sites with the recorder. "In" is the opening or the ho
 | Button height | Apple TV 36, Netflix 40 / 48, JustWatch 32, Vercel 32, Linear 24–32 [M] | — | 32 / 40 / 48 (sm / md / lg) | ± 4 | Measure |
 | Target size | — | WCAG 2.5.8 ≥ 24 × 24 [S]; Apple 44 pt, M3 48 dp [G] | ≥ 24 everywhere, ≥ 44 on touch | 24 hard floor | Measure the hit area |
 | Dialog width | Vercel search ~640 [M] | — | Watchlist dialog 448 (FIGMA_WORKFLOW); scale 400 / 512 / 640 / 960, at most `100vw − 32` | ± 32 | Measure |
-| Toast | — | sonner 356 px, offset 32 (16 on mobile) [G] | 356 px wide, bottom right (UX_NOTES); full width minus 32 below 640 | 320–420 | Measure |
+| Toast | — | sonner 356 px, offset 24 (16 on mobile) [G] | 356 px wide, bottom right (UX_NOTES); full width minus 32 below 640 | 320–420 | Measure |
 | Reflow | — | WCAG 1.4.10: 320 px with no side scroll [S] | 0 px of page overflow at 320 | 0 | Resize to 320 |
 
 ## 5. Colour and contrast
@@ -377,7 +377,7 @@ Sources: UX = [UX_NOTES](./UX_NOTES.md), DA = [DESIGN_APPROACH](./DESIGN_APPROAC
 
 | Behaviour | Documented | Benchmark | Target | Verdict |
 | --- | --- | --- | --- | --- |
-| Toast place and size (UX, FW) | Bottom right, 356 wide, 24 from the edges; below 600 full width minus 16 | sonner 356 px, offset 32 / 16 [G] | As documented | Pass |
+| Toast place and size (UX, FW) | Bottom right, 356 wide, 24 from the edges; below 600 full width minus 16 | sonner 356 px, offset 24 / 16 [G] | As documented | Pass |
 | Toast slides in from its corner (DA § 6) | Not set | Carbon 240 ms; Atlassian 250 / 200 ms [G] | 250 ms slide ≤ 16 px + fade; 200 ms fade out | Set |
 | Toast closes by itself; with an action it stays (UX, DA § 5) | Time not set | sonner 4 s; React Spectrum ≥ 5 s [G]; reading speed [R]; WCAG 2.2.1 [S] | max(5 s, 1.5 s + 300 ms per word), at most 10 s; pauses on hover and focus | Set |
 | Toast stack (UX) | — | sonner 3 [G] | ≤ 3 visible, gap 14 px | Set |
@@ -476,7 +476,7 @@ Sources: UX = [UX_NOTES](./UX_NOTES.md), DA = [DESIGN_APPROACH](./DESIGN_APPROAC
 | Writes of one title run in order (ADR-0015) | — | — | As documented | Pass |
 | Rows ignore presses after a removal (ADR-0015) | 400 ms | Double-tap 300–500 ms [G]; removal motion ≤ 300 ms | 400 ms | Pass |
 | Removal patches the cache, the row goes at once (ADR-0015) | — | — | The row leaves at once (no exit animation, so the next row does not move under the finger) | Set |
-| Folder picker shows `saving` (ADR-0014) | Not set | Feedback ≤ 100 ms [R] | Busy state ≤ 100 ms after the press | Set |
+| Folder picker shows `saving` (FW) | Not set | Feedback ≤ 100 ms [R] | Busy state ≤ 100 ms after the press | Set |
 | Writes do not queue offline (ADR-0013) | — | — | As documented | Pass |
 | Profile counts load and fail on their own (UX) | — | NN/g [R] | As documented | Pass |
 
@@ -487,13 +487,13 @@ Sources: UX = [UX_NOTES](./UX_NOTES.md), DA = [DESIGN_APPROACH](./DESIGN_APPROAC
 | Session restores before the first render; anonymous visitors load no Firebase (ADR-0010) | ~51 kB SDK only when signed in | LCP [S] | The SDK starts loading before the first render (no extra wait from our side) | Pass |
 | Login prepares sign-in on mount, so the popup opens on the click (ADR-0010) | — | HTML user activation [S] | 0 ms of async work before the popup | Pass |
 | Google popup only; no cognitive test (UX, DA) | — | WCAG 3.3.8 [S] | As documented | Pass |
-| Protected pages return to the same page after sign-in (PRD) | — | — | As documented | Pass |
+| Protected pages return to the same page after sign-in (ADR-0014, `RequireAuth`) | — | — | As documented | Pass |
 
 ## Proposed changes
 
 Values where the documentation and the benchmark disagree. Each needs a decision and its own ticket; until then the documentation decides.
 
-1. **Motion tokens get curve values and one more step.** `ease-enter` = `cubic-bezier(0, 0, 0, 1)`, `ease-exit` = `cubic-bezier(0.3, 0, 1, 1)`, `ease-standard` = `cubic-bezier(0.2, 0, 0, 1)`; add `duration-fast` 150 ms (hover, press, menus). The docs give no curve values today.
+1. **Motion tokens get new curves and one more step.** `ease-enter` changes from `cubic-bezier(0, 0, 0.2, 1)` to `cubic-bezier(0, 0, 0, 1)`, `ease-exit` from `cubic-bezier(0.4, 0, 1, 1)` to `cubic-bezier(0.3, 0, 1, 1)`; add `ease-standard` = `cubic-bezier(0.2, 0, 0, 1)` and `duration-fast` 150 ms (hover, press, menus). Today the curves live only in `theme.css`: DESIGN_APPROACH § 6 names them without values.
 2. **Page cross-fade 250 ms, not 300 ms.** The browser default is 250 ms, and the reference catalogs swap at once. The poster morph keeps 300 ms.
 3. **Overlays exit 50 ms faster than they enter:** dialog 250 / 200 ms, menu 150 / 100 ms, toast 250 / 200 ms.
 4. **Header prefetch after 100 ms of hover, not 200 ms.** It wins about 100 ms before the click and stays cheap.

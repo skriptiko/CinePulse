@@ -25,7 +25,7 @@ All TMDB traffic goes through a **server-side proxy at the relative path `/api/t
   - `Cache-Control`: 2xx → `public, max-age=300, s-maxage=3600` (genre lists: `public, max-age=3600, s-maxage=86400`); every error → `no-store`. Firebase Hosting's CDN honours `s-maxage` for function rewrites, so repeated requests do not invoke the function.
   - `cors: false` (the browser reaches the function same-origin through the Hosting rewrite), `maxInstances: 2`. Logs go through `logger` from `firebase-functions` with the TMDB path and status only (no token, no search query).
   - Cost guard: besides `maxInstances` and CDN caching, a GCP budget alert is configured on the project.
-- **Development:** Vite `server.proxy` in `apps/*/vite.config.ts` does the same locally, reading `TMDB_API_READ_TOKEN` from `.env` via `loadEnv`.
+- **Development:** Vite `server.proxy` in `apps/host/vite.config.ts` and `apps/pages-mfe/vite.config.ts` does the same locally, reading `TMDB_API_READ_TOKEN` from `.env` via `loadEnv`.
 - **Client** (`packages/api/src/core`) only ever calls `/api/tmdb/...` (`API_CONFIG.PROXY_BASE_URL`) and knows nothing about the token.
 
 ## Consequences

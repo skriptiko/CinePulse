@@ -6,6 +6,10 @@
 
 Accepted (2026-10-30). Replaces the "email + password, no social login" scope of the PRD. The Firestore entry point and its size budget are set by [ADR-0013](./ADR-0013-firestore-lite-watchlist-store.md).
 
+Amended by [ADR-0014](./ADR-0014-add-to-watchlist-dialog.md): Firestore also loads on catalog pages, from the Add to watchlist dialog after the first press.
+
+Amended by [ADR-0015](./ADR-0015-title-status-write.md): a status write patches the `items` cache and does not reread it.
+
 ## Context
 
 The watchlist is the first feature with user data: a folder tree up to 6 levels deep, a title in several folders, a `watched | planned` status, movies and TV shows, access for the owner only. The project already runs on Firebase and has no server of its own besides `tmdbProxy`. The host's JS budget is nearly spent (204 of 205 kB) and mobile LCP is above the 2.5 s goal, so a large SDK must not join the first load.

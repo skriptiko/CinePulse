@@ -37,7 +37,7 @@
 **Hosting (from a local machine):**
 ```bash
 # build + merge dist + deploy hosting only (production)
-pnpm deploy
+pnpm run deploy
 # equivalent: pnpm build:deploy && firebase deploy --only hosting:production
 ```
 

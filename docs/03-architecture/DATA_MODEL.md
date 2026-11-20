@@ -152,27 +152,48 @@ type GlobalStore = GlobalState & GlobalActions;
 
 > Rules are in `firestore/firestore.rules`, tested with `pnpm test:rules`. Reasoning and trade-offs: [ADR-0010](./decisions/ADR-0010-firebase-auth-firestore-watchlist.md), [ADR-0013](./decisions/ADR-0013-firestore-lite-watchlist-store.md).
 
+The documents in Firestore:
+
+```text
+users/{uid}/folders/{folderId}
+  name: string               // 1–100 characters
+  parentId: string | null    // null = root
+  depth: number              // 1–6, parent's depth + 1
+  createdAt: Timestamp       // set by the server
+
+users/{uid}/items/{mediaType}_{tmdbId}
+  mediaType: 'movie' | 'tv'
+  tmdbId: number
+  title: string              // copied from TMDB
+  posterPath: string | null  // copied from TMDB
+  status: 'watched' | 'planned'
+  folderIds: string[]        // up to 100; a title can be in several folders
+  addedAt: Timestamp         // set by the server
+```
+
+The TypeScript types the app reads differ from the documents. Each type adds `id`, the document ID, and leaves out the timestamp. The store writes `createdAt` and `addedAt`, and uses `addedAt` only to sort the titles.
+
 ```ts
 type WatchStatus = 'watched' | 'planned';
 
-// users/{uid}/folders/{folderId}
-interface WatchlistFolder {
-  name: string; // 1–100 characters
-  parentId: string | null; // null = root
-  depth: number; // 1–6, parent's depth + 1
-  createdAt: Timestamp;
-}
+// @repo/firebase/watchlist-tree (packages/firebase/src/watchlist-tree.ts)
+type WatchlistFolder = {
+  id: string;
+  name: string;
+  parentId: string | null;
+  depth: number;
+};
 
-// users/{uid}/items/{mediaType}_{tmdbId}
-interface WatchlistItem {
+// @repo/firebase (packages/firebase/src/watchlist-store.ts)
+type WatchlistItem = {
+  id: string; // `{mediaType}_{tmdbId}`
   mediaType: 'movie' | 'tv';
   tmdbId: number;
-  title: string; // copied from TMDB
-  posterPath: string | null; // copied from TMDB
+  title: string;
+  posterPath: string | null;
   status: WatchStatus;
-  folderIds: string[]; // up to 100; a title can be in several folders
-  addedAt: Timestamp;
-}
+  folderIds: string[];
+};
 ```
 
 - **Moving a branch:** one batch updates `parentId` on its root and `depth` on every descendant. The client checks for moves into the folder's own branch and past level 6.

@@ -22,7 +22,7 @@ pnpm dev                              # all apps (host 5000, pages-mfe 5001, use
 pnpm --filter @repo/host dev          # a single app (@repo/pages-mfe, @repo/user-mfe)
 pnpm build                            # turbo build (tsc + vite build)
 pnpm typecheck                        # turbo typecheck (tsc --noEmit in each package) + e2e/tsconfig.json
-pnpm lint                             # biome check src/ in each package + JSX-spread ban + biome check e2e/ and playwright.config.ts
+pnpm lint                             # biome check src/ in each package + JSX-spread ban + token check (lint:tokens) + biome check e2e/ and playwright.config.ts
 pnpm check                            # biome check --write across the whole repo
 pnpm --filter @repo/api typecheck     # check a single package
 pnpm build:deploy                     # as in CI: scripts/clean-dist.js, build + scripts/merge-dist.js → root dist/
@@ -50,7 +50,7 @@ Test stack: ADR-0006, plan: `docs/05-testing/TEST_STRATEGY.md`:
 - Mock the network, not our modules (`vi.mock` for `@repo/api` is forbidden).
 - `e2e/tmdb-mock.ts` runs every request through the real `resolveProxyRequest`: a refusal fails the test, and a test that provokes one says so with `expectRefusal`. A spec's own `route.fulfill` skips this check.
 
-The Husky pre-commit hook runs `lint-staged` → `biome check --write --no-errors-on-unmatched` on `*.{js,ts,tsx,json}`; `commit-msg` checks the `CIN-<N>: …` format (≤ 72 characters). Biome (not ESLint/Prettier): single quotes, `;` always, 2 spaces, width 100; errors: `noUnusedImports`/`noUnusedVariables`, `noExplicitAny`, `noNonNullAssertion`, `noDefaultExport` (except `*.config.*`), `useFilenamingConvention` (kebab-case), `useTailwindSortedClasses`, the `a11y` group. Markdown and YAML are excluded. JSX spread (`{...props}`) and `asChild` are forbidden (standards §5.2): Biome does not catch this, so `pnpm lint` also runs `scripts/check-jsx-spread.js`. `@repo/ui` primitives declare `Pick<ComponentProps<…>, …>` with the needed attributes and pass each one explicitly; for a new attribute, add it to the type and the JSX. A Radix trigger is styled with `className={cn(buttonVariants(…), …)}`.
+The Husky pre-commit hook runs `lint-staged` → `biome check --write --no-errors-on-unmatched` on `*.{js,ts,tsx,json}`; `commit-msg` checks the `CIN-<N>: …` format (≤ 72 characters). Biome (not ESLint/Prettier): single quotes, `;` always, 2 spaces, width 100; errors: `noUnusedImports`/`noUnusedVariables`, `noExplicitAny`, `noNonNullAssertion`, `noDefaultExport` (except `*.config.*`), `useFilenamingConvention` (kebab-case), `useTailwindSortedClasses`, the `a11y` group. Markdown and YAML are excluded. JSX spread (`{...props}`) and `asChild` are forbidden (standards §5.2). Biome catches neither, so `pnpm lint` also runs `scripts/check-jsx-spread.js`. That script catches only JSX spread: nothing checks the `asChild` ban automatically, so review catches it. `@repo/ui` primitives declare `Pick<ComponentProps<…>, …>` with the needed attributes and pass each one explicitly; for a new attribute, add it to the type and the JSX. A Radix trigger is styled with `className={cn(buttonVariants(…), …)}`.
 
 TMDB requires `TMDB_API_READ_TOKEN` in the root `.env` (Vite `loadEnv` reads the repo root); the functions emulator uses `functions/.secret.local` (template: `functions/.secret.local.example`); production uses Firebase Secret Manager.
 

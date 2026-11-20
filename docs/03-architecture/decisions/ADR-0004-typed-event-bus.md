@@ -6,6 +6,8 @@
 
 Accepted. The global store part is superseded by [ADR-0008](./ADR-0008-zustand-global-store.md).
 
+Amended: the event list below is kept as decided. `EventMap` now holds `notification:show`, `mfe:error`, `error:report`, `user:login` and `user:logout`: `user:update`, `navigation:change` and `mfe:ready` were removed, and `error:report` was added. `packages/events/src/types.ts` holds the current list.
+
 ## Context
 
 The MFEs (`pages-mfe`, `user-mfe`) load independently and must not import from each other. At the same time they need to exchange events (user login/logout, global notifications) and read shared state (current user, theme). A classic shared React context fits federation poorly: different MFEs may get different provider instances.

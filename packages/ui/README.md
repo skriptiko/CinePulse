@@ -4,12 +4,13 @@ The design system: primitives, domain components, layout and error boundaries.
 
 ## Public API
 
-- **Primitives:** `Button`, `buttonVariants`, `BUTTON_ON_IMAGE_CLASS` (for a button laid straight on an image), `Dialog`, `DialogContent`, `Input`, `DropdownMenu`, `Skeleton`, `ToggleGroup`.
+- **Primitives:** `Button`, `buttonVariants`, `BUTTON_ON_IMAGE_CLASS` (for a button laid straight on an image), `Dialog`, `DialogContent`, `Input`, `DropdownMenu`, `DropdownMenuTrigger`, `DropdownMenuContent`, `DropdownMenuRadioGroup`, `DropdownMenuRadioItem`, `Skeleton`, `ToggleGroup`, `ToggleGroupItem`.
 - **Domain components:** `MovieCard`, `PersonCard`, `Hero`, `ContentRow`, `FeaturedGrid`, `CategoryPills`, `CategoryLinks`, `ImagePlaceholder`, `MovieDetailView`, `PersonDetailView`, and the sections of a details page: `WatchProvidersSection`, `SeasonsSection`, `CastSection`, `MediaSection`, `MoreLikeThisSection`, `ReviewsSection`, `BiographySection`, `KnownForSection`, `FilmographySection`. Each takes one UI model.
 - **Mappers:** `toMovieCardData`, `toHeroData`, `toFeaturedItemData` and others turn TMDB data into UI models. `getViewerRegion` gives the country for `toWatchProvidersData`.
 - **Layout:** `AppLayout`, `Header`, `Footer`, `usePageMeta`.
 - **Formatting:** `formatTimestamp`.
-- **Boundaries:** `AsyncBoundary`, `PageBoundary`, `ShellBoundary`, `NotFound` and page skeletons.
+- **Boundaries:** `AsyncBoundary`, `PageBoundary`, `ShellBoundary`, `SectionErrorFallback`, `PageErrorFallback`, `NotFound`, and page skeletons with `SkeletonFrame` and `SKELETON_DELAY_MS`.
+- **Utilities:** `cn` joins class names and resolves Tailwind conflicts.
 - **Theme:** `@repo/ui/theme.css`, imported after `tailwindcss`.
 
 ```tsx
