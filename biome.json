@@ -77,7 +77,8 @@
       "!**/*.yaml",
       "!**/*.yml",
       "!**/test-results",
-      "!**/playwright-report"
+      "!**/playwright-report",
+      "!!**/.claude"
     ]
   },
   "overrides": [
