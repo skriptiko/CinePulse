@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createFolder,
   deleteFolder,
+  deleteUserData,
   getFolders,
   moveFolder,
   removeTitle,
@@ -51,13 +52,15 @@ const ITEMS: Row[] = [
   { id: 'movie_3', folderIds: ['b'] },
 ];
 
-function toSnapshot(rows: Row[]) {
-  return { docs: rows.map(({ id, ...data }) => ({ id, data: () => data })) };
+function toSnapshot(rows: Row[], path: string) {
+  return {
+    docs: rows.map(({ id, ...data }) => ({ id, ref: { path: `${path}/${id}` }, data: () => data })),
+  };
 }
 
 function mockReads(): void {
   vi.mocked(getDocs).mockImplementation((async (ref: { path: string }) =>
-    toSnapshot(ref.path.endsWith('folders') ? FOLDERS : ITEMS)) as never);
+    toSnapshot(ref.path.endsWith('folders') ? FOLDERS : ITEMS, ref.path)) as never);
 }
 
 describe('watchlist store', () => {
@@ -243,5 +246,30 @@ describe('watchlist store', () => {
     vi.mocked(getDocs).mockRejectedValueOnce(Object.assign(new Error('failed'), { code }));
 
     await expect(getFolders('u')).rejects.toMatchObject({ kind });
+  });
+
+  it('deletes every title and folder of the account', async () => {
+    await deleteUserData('u');
+
+    expect(batch.delete.mock.calls.map(([ref]) => ref.path).sort()).toEqual([
+      'users/u/folders/a',
+      'users/u/folders/b',
+      'users/u/folders/d',
+      'users/u/items/movie_1',
+      'users/u/items/movie_2',
+      'users/u/items/movie_3',
+    ]);
+    expect(batch.commit).toHaveBeenCalledOnce();
+  });
+
+  it('splits a large account into batches of 500 writes', async () => {
+    const many = Array.from({ length: 1001 }, (_, index) => ({ id: `movie_${index}` }));
+    vi.mocked(getDocs).mockImplementation((async (ref: { path: string }) =>
+      toSnapshot(ref.path.endsWith('items') ? many : [], ref.path)) as never);
+
+    await deleteUserData('u');
+
+    expect(batch.delete).toHaveBeenCalledTimes(1001);
+    expect(batch.commit).toHaveBeenCalledTimes(3);
   });
 });

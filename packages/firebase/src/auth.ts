@@ -1,7 +1,9 @@
+import { ApiError } from '@repo/api';
 import { type AuthUser, createTypedEmitter, globalStore } from '@repo/events';
 import type { Auth, User } from 'firebase/auth';
 import { getFirebaseApp, isDemoProject } from './app';
 import { getFirebaseCode, toApiError } from './errors';
+import { loadWatchlistStore } from './watchlist-queries';
 
 const AUTH_EMULATOR_URL = 'http://127.0.0.1:5013';
 
@@ -56,6 +58,28 @@ export async function signInWithGoogle(): Promise<AuthUser | null> {
     return toAuthUser(user);
   } catch (error) {
     if (POPUP_DISMISSED_CODES.includes(getFirebaseCode(error) ?? '')) return null;
+    throw toApiError(error);
+  }
+}
+
+/**
+ * Deletes the signed-in account and everything it stored. Firebase wants a recent sign-in, so this
+ * opens the Google popup first: call it straight from the press. `false`: the popup was closed and
+ * nothing was deleted. The session then ends as on sign-out, with `user:logout`.
+ */
+export async function deleteAccount(): Promise<boolean> {
+  try {
+    const { auth, sdk } = await getSession();
+    const user = auth.currentUser;
+    if (!user) throw new ApiError('client', 'auth/no-current-user');
+
+    await sdk.reauthenticateWithPopup(user, new sdk.GoogleAuthProvider());
+    // Data first: the rules only let the owner delete it, and after `deleteUser` there is none.
+    await (await loadWatchlistStore()).deleteUserData(user.uid);
+    await sdk.deleteUser(user);
+    return true;
+  } catch (error) {
+    if (POPUP_DISMISSED_CODES.includes(getFirebaseCode(error) ?? '')) return false;
     throw toApiError(error);
   }
 }

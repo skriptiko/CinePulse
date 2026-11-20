@@ -1,7 +1,15 @@
 import { createTypedListener, globalStore } from '@repo/events';
 import { server, waitFor } from '@repo/test-utils';
 import { FirebaseError } from 'firebase/app';
-import { connectAuthEmulator, onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
+import {
+  connectAuthEmulator,
+  deleteUser,
+  onAuthStateChanged,
+  reauthenticateWithPopup,
+  signInWithPopup,
+  signOut,
+} from 'firebase/auth';
+import { getDocs, writeBatch } from 'firebase/firestore/lite';
 import { HttpResponse, http } from 'msw';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getSignInErrorMessage } from '../errors';
@@ -10,13 +18,25 @@ vi.mock('firebase/app', async (importOriginal) => ({
   ...(await importOriginal<typeof import('firebase/app')>()),
   initializeApp: (options: { projectId: string }) => ({ options }),
 }));
+const auth = vi.hoisted(() => ({
+  authStateReady: () => Promise.resolve(),
+  currentUser: null as object | null,
+}));
 vi.mock('firebase/auth', () => ({
   connectAuthEmulator: vi.fn(),
-  getAuth: () => ({ authStateReady: () => Promise.resolve() }),
+  deleteUser: vi.fn(),
+  getAuth: () => auth,
   GoogleAuthProvider: class {},
   onAuthStateChanged: vi.fn(),
+  reauthenticateWithPopup: vi.fn(),
   signInWithPopup: vi.fn(),
   signOut: vi.fn(),
+}));
+vi.mock('firebase/firestore/lite', () => ({
+  collection: (_db: unknown, ...path: string[]) => ({ path: path.join('/') }),
+  getDocs: vi.fn(),
+  getFirestore: () => ({}),
+  writeBatch: vi.fn(),
 }));
 
 const FIREBASE_USER = {
@@ -196,5 +216,84 @@ describe('signOutUser', () => {
     await signOutUser();
 
     expect(signOut).toHaveBeenCalledOnce();
+  });
+});
+
+describe('deleteAccount', () => {
+  const batch = { commit: vi.fn(), delete: vi.fn() };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockConfig();
+    auth.currentUser = FIREBASE_USER;
+    vi.mocked(writeBatch).mockReturnValue(batch as never);
+    vi.mocked(getDocs).mockImplementation((async (ref: { path: string }) => ({
+      docs: [{ ref: { path: `${ref.path}/1` } }],
+    })) as never);
+  });
+
+  it('signs in again, then deletes the data and the account in that order', async () => {
+    const { deleteAccount } = await loadAuth();
+
+    await expect(deleteAccount()).resolves.toBe(true);
+
+    expect(reauthenticateWithPopup).toHaveBeenCalledWith(FIREBASE_USER, expect.anything());
+    expect(batch.delete.mock.calls.map(([ref]) => ref.path).sort()).toEqual([
+      'users/uid-1/folders/1',
+      'users/uid-1/items/1',
+    ]);
+    expect(deleteUser).toHaveBeenCalledWith(FIREBASE_USER);
+    const order = [reauthenticateWithPopup, batch.commit, deleteUser].map(
+      (mock) => vi.mocked(mock).mock.invocationCallOrder[0]
+    );
+    expect(order).toEqual([...order].sort((a = 0, b = 0) => a - b));
+  });
+
+  it('deletes nothing when the popup is closed', async () => {
+    vi.mocked(reauthenticateWithPopup).mockRejectedValueOnce(
+      new FirebaseError('auth/popup-closed-by-user', 'closed')
+    );
+    const { deleteAccount } = await loadAuth();
+
+    await expect(deleteAccount()).resolves.toBe(false);
+
+    expect(batch.commit).not.toHaveBeenCalled();
+    expect(deleteUser).not.toHaveBeenCalled();
+  });
+
+  it('keeps the account when the data cannot be deleted', async () => {
+    batch.commit.mockRejectedValueOnce(
+      Object.assign(new Error('offline'), { code: 'unavailable' })
+    );
+    const { deleteAccount } = await loadAuth();
+
+    await expect(deleteAccount()).rejects.toMatchObject({ name: 'ApiError', kind: 'network' });
+
+    expect(deleteUser).not.toHaveBeenCalled();
+  });
+
+  it('explains a re-sign-in with a different Google account', async () => {
+    vi.mocked(reauthenticateWithPopup).mockRejectedValueOnce(
+      new FirebaseError('auth/user-mismatch', 'mismatch')
+    );
+    const { deleteAccount } = await loadAuth();
+
+    const error = await deleteAccount().catch((caught: unknown) => caught);
+
+    expect(getSignInErrorMessage(error)).toBe(
+      'Choose the Google account you signed in with and try again.'
+    );
+    expect(deleteUser).not.toHaveBeenCalled();
+  });
+
+  it('fails without a signed-in user', async () => {
+    auth.currentUser = null;
+    const { deleteAccount } = await loadAuth();
+
+    const error = await deleteAccount().catch((caught: unknown) => caught);
+
+    expect(error).toMatchObject({ name: 'ApiError', kind: 'client' });
+    expect(getSignInErrorMessage(error)).toBe('You are signed out. Sign in and try again.');
+    expect(reauthenticateWithPopup).not.toHaveBeenCalled();
   });
 });
