@@ -152,8 +152,13 @@
 @utility glass {
   background: var(--glass);
   backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
+
+  /* Solid when the user asks for less transparency or more contrast. */
+  @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+    background: var(--surface-elevated);
+    backdrop-filter: none;
+  }
 }
 
 /* More opaque than `glass`: the Header holds muted text, which has to stay legible over a white or
@@ -161,8 +166,13 @@
 @utility glass-bar {
   background: var(--glass-bar);
   backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
+
+  /* Solid when the user asks for less transparency or more contrast. */
+  @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+    background: var(--surface-elevated);
+    backdrop-filter: none;
+  }
 }
 
 @utility scrollbar-hide {

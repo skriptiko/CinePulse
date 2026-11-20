@@ -183,6 +183,11 @@ It also runs at 320 and 1280 px:
 1. On a touch screen 390 px wide, a card shows its title, year and rating at rest.
 2. Under a mouse, a card hides them until hover.
 
+`e2e/solid-glass.spec.ts` runs on the same fixtures, on Movies scrolled down, for the Header (`glass-bar`) and the watchlist button of a card (`glass`):
+
+1. By default, glass is blurred and translucent.
+2. Under `prefers-contrast: more`, glass is solid `surface-elevated`, with no blur and a 1 px border. Playwright cannot emulate `prefers-reduced-transparency`; the same CSS rule covers both queries.
+
 `e2e/header.spec.ts` runs on the same fixtures, in both themes:
 
 1. The focus of the Logo and of the nav links, in the menu at 320 px too, shows two colours at least 9:1 apart.
