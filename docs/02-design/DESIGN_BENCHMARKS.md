@@ -18,6 +18,8 @@ Measured and compiled on 2026-11-20 (CIN-176).
 | **Tolerance** | The range that still passes a review. Outside it, the value needs a reason. |
 | **How to check** | How to measure the value in our own build. |
 
+**Only the frontend is in scope.** We do not control how fast TMDB, Firebase Auth or Firestore answer, so no target here is a server response time. Where a result depends on a server, the target says what the frontend does while it waits: cache, prefetch, skeleton, keeping old data, retry, timeout.
+
 Sources are tagged: **[S]** a normative standard (W3C, WCAG, Core Web Vitals), **[G]** a design system or vendor guideline, **[R]** user research, **[M]** our measurement of a reference site.
 
 ## Reference sites
@@ -125,9 +127,9 @@ Measured on the reference sites with the recorder. "In" is the opening or the ho
 | LCP (p75) | — | Good ≤ 2.5 s [S] | ≤ 2.0 s on mobile, Home and Detail | must stay ≤ 2.5 s | Lighthouse (mobile), web-vitals in the field |
 | INP (p75) | — | Good ≤ 200 ms [S] | ≤ 150 ms (search typing, watchlist toggle, menu open) | must stay ≤ 200 ms | web-vitals; Performance panel |
 | CLS (p75) | — | Good ≤ 0.1 [S] | ≤ 0.05; 0 on catalog lists | must stay ≤ 0.1 | Lighthouse; Performance panel layout shifts |
-| FCP / TTFB | — | Good ≤ 1.8 s / ≤ 0.8 s [G] | ≤ 1.5 s / ≤ 0.6 s | — | Lighthouse |
+| FCP | — | Good ≤ 1.8 s [G] | ≤ 1.5 s (our static files and the first render; TTFB of the API is out of scope) | — | Lighthouse |
 | Long tasks | — | A long task is > 50 ms [S] | No task > 50 ms during a View Transition or a scroll | ≤ 50 ms | Performance panel |
-| Data-backed update | — | Doherty threshold 400 ms [R] | Search results, Load more batch ≤ 400 ms p75 | 300–400 ms | Network panel + Performance panel |
+| Data-backed update | — | Doherty threshold 400 ms [R] | Feedback ≤ 100 ms after the press; a cached answer renders ≤ 100 ms; an uncached one keeps the old results and follows § 2.2 | — | Performance panel |
 | Attention limit | — | 10 s [R] (NN/g) | A request is aborted at ~10 s and shows the error state with **Try again** | 8–15 s | Throttle to offline mid-request |
 
 ### 2.2 Loading
@@ -362,7 +364,7 @@ Sources: UX = [UX_NOTES](./UX_NOTES.md), DA = [DESIGN_APPROACH](./DESIGN_APPROAC
 | Dialog ignores presses right after it opens (ADR-0014) | 350 ms | Android double-tap timeout 300 ms; Windows double-click 500 ms [G] | 350 ms | Pass |
 | A press outside does not close it (ADR-0014) | — | APG: optional [G] | As documented | Pass |
 | Only the save button saves (ADR-0014) | — | APG [G] | As documented | Pass |
-| Sign-in offer waits while the session restores (ADR-0014) | Not set | Feedback ≤ 100 ms, skeleton after 300 ms [R] | Session known ≤ 1 s; a skeleton inside the dialog after 300 ms | Set |
+| Sign-in offer waits while the session restores (ADR-0014) | Not set | Feedback ≤ 100 ms, skeleton after 300 ms [R] | A skeleton inside the dialog after 300 ms while the session restores | Set |
 | Dialog size and overlay (FW) | 448 wide; overlay `background/80` | Vercel overlay 80 % [M] | As documented | Pass |
 | Dialog open and close (DA § 6) | 250–300 ms, `duration-move` | Vercel 300 / 300 ms [M]; Atlassian 250 / 200 ms [G] | 250 ms in, 200 ms out, scale 0.96 → 1 + opacity | Pass (exit shorter) |
 | Dialog overlay fade | Not set | Vercel 300 ms [M] | 200 ms in, 150 ms out | Set |
@@ -470,7 +472,7 @@ Sources: UX = [UX_NOTES](./UX_NOTES.md), DA = [DESIGN_APPROACH](./DESIGN_APPROAC
 | Behaviour | Documented | Benchmark | Target | Verdict |
 | --- | --- | --- | --- | --- |
 | Status switch writes at once, no spinner, keeps focus (UX, ADR-0015) | — | Feedback ≤ 100 ms [R] | Pressed state ≤ 100 ms | Pass |
-| Cache keeps only what the server accepted (ADR-0015) | — | — | Stored state ≤ 400 ms p75 | Set |
+| Cache keeps only what the server accepted (ADR-0015) | — | — | The pressed state shows until the answer; the answer renders in the same frame | Set |
 | Writes of one title run in order (ADR-0015) | — | — | As documented | Pass |
 | Rows ignore presses after a removal (ADR-0015) | 400 ms | Double-tap 300–500 ms [G]; removal motion ≤ 300 ms | 400 ms | Pass |
 | Removal patches the cache, the row goes at once (ADR-0015) | — | — | The row leaves at once (no exit animation, so the next row does not move under the finger) | Set |
@@ -482,7 +484,7 @@ Sources: UX = [UX_NOTES](./UX_NOTES.md), DA = [DESIGN_APPROACH](./DESIGN_APPROAC
 
 | Behaviour | Documented | Benchmark | Target | Verdict |
 | --- | --- | --- | --- | --- |
-| Session restores before the first render; anonymous visitors load no Firebase (ADR-0010) | ~51 kB SDK only when signed in | LCP [S] | Session known ≤ 1 s after load | Set |
+| Session restores before the first render; anonymous visitors load no Firebase (ADR-0010) | ~51 kB SDK only when signed in | LCP [S] | The SDK starts loading before the first render (no extra wait from our side) | Pass |
 | Login prepares sign-in on mount, so the popup opens on the click (ADR-0010) | — | HTML user activation [S] | 0 ms of async work before the popup | Pass |
 | Google popup only; no cognitive test (UX, DA) | — | WCAG 3.3.8 [S] | As documented | Pass |
 | Protected pages return to the same page after sign-in (PRD) | — | — | As documented | Pass |
