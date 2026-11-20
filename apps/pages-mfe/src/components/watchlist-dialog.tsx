@@ -1,7 +1,10 @@
 import { createTypedEmitter, useGlobalStore } from '@repo/events';
 import {
   type FolderChanges,
+  getSignInErrorMessage,
   loadWatchlistStore,
+  prepareSignIn,
+  signInWithGoogle,
   type WatchlistTitle,
   watchlistQueries,
 } from '@repo/firebase';
@@ -12,7 +15,7 @@ import { useMutation, useQueryClient, useSuspenseQueries } from '@tanstack/react
 import { Check } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { FallbackProps } from 'react-error-boundary';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const emitNotification = createTypedEmitter('notification:show');
 
@@ -29,26 +32,117 @@ export type WatchlistDialogProps = {
   onCloseAutoFocus: () => void;
 };
 
+/** A guest's press, kept from the popup until the title is saved. */
+type Resume = 'idle' | 'signing-in' | 'saving';
+
 /** Loaded on the first press; the only runtime path to `@repo/firebase` in this app. */
 export function WatchlistDialog({ title, onClose, onCloseAutoFocus }: WatchlistDialogProps) {
   const uid = useGlobalStore((state) => state.user?.uid);
   const isAnonymous = useGlobalStore((state) => state.authStatus === 'anonymous');
+  const [resume, setResume] = useState<Resume>('idle');
+  const [signInError, setSignInError] = useState<string | null>(null);
+  const [isSignInReady, setIsSignInReady] = useState(false);
+  const queryClient = useQueryClient();
+  const isResumingRef = useRef(false);
+  // A popup outlives the dialog: closed meanwhile, the save still runs, but `onClose` would close
+  // the next dialog of the same button.
+  const isMountedRef = useRef(true);
+  // The store signs the person in before the save lands: the offer stays until it does.
+  const isOffer = isAnonymous || resume !== 'idle';
+
+  // The SDK must be ready before the press: a popup opened after a download is blocked.
+  useEffect(() => {
+    if (isAnonymous) void prepareSignIn().then(() => setIsSignInReady(true));
+  }, [isAnonymous]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  function close(): void {
+    if (isMountedRef.current) onClose();
+  }
+
+  // In this component, not in the offer: the offer unmounts the moment the store has the user.
+  async function handleSignIn(): Promise<void> {
+    if (isResumingRef.current) return;
+    isResumingRef.current = true;
+    setSignInError(null);
+    setResume('signing-in');
+    try {
+      const account = await signInWithGoogle();
+      // A closed popup is a change of mind: nothing is saved, focus goes back to the button.
+      if (account === null) {
+        close();
+        return;
+      }
+      setResume('saving');
+      if (await saveForGuest(account.uid)) close();
+    } catch (error) {
+      setSignInError(getSignInErrorMessage(error));
+    } finally {
+      isResumingRef.current = false;
+      setResume('idle');
+    }
+  }
+
+  /** No folder: a guest had none to choose, and an account that has the title keeps its own. */
+  async function saveForGuest(accountUid: string): Promise<boolean> {
+    try {
+      const items = await queryClient.fetchQuery(watchlistQueries.items(accountUid));
+      const isSaved = items.some(
+        ({ mediaType, tmdbId }) => mediaType === title.mediaType && tmdbId === title.tmdbId
+      );
+      if (!isSaved) {
+        await (await loadWatchlistStore()).saveTitle(accountUid, title, { added: [], removed: [] });
+      }
+      emitNotification({
+        type: 'success',
+        message: isSaved
+          ? `${title.title} was already in your watchlist`
+          : `${title.title} is in your watchlist, under All titles`,
+      });
+      return true;
+    } catch {
+      // Signed in by now, so the dialog turns into the picker, whose button tries again.
+      emitNotification({
+        type: 'error',
+        message: `${title.title} was not saved. Press Add to watchlist to try again.`,
+      });
+      return false;
+    } finally {
+      void queryClient.invalidateQueries({
+        queryKey: watchlistQueries.all(accountUid),
+        refetchType: 'all',
+      });
+    }
+  }
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
       <DialogContent
-        title={isAnonymous ? `Sign in to save ${title.title}` : `Choose folders for ${title.title}`}
+        title={isOffer ? `Sign in to save ${title.title}` : `Choose folders for ${title.title}`}
         description={
-          isAnonymous
-            ? 'Your watchlist keeps titles in your own folders.'
+          isOffer
+            ? 'Sign in with Google, and the title is saved to your watchlist.'
             : 'With no folder, it stays under All titles.'
         }
         onCloseAutoFocus={onCloseAutoFocus}
       >
-        {isAnonymous && <SignInOffer />}
+        {isOffer && (
+          <SignInOffer
+            resume={resume}
+            isReady={isSignInReady}
+            errorMessage={signInError}
+            onSignIn={handleSignIn}
+          />
+        )}
         {/* A known session is still restoring: the press is kept, and this resolves on its own. */}
-        {!isAnonymous && uid === undefined && <PickerSkeleton />}
-        {uid !== undefined && (
+        {!isOffer && uid === undefined && <PickerSkeleton />}
+        {!isOffer && uid !== undefined && (
           <AsyncBoundary fallback={<PickerSkeleton />} errorFallback={PickerError}>
             <FolderPicker uid={uid} title={title} onClose={onClose} />
           </AsyncBoundary>
@@ -58,17 +152,46 @@ export function WatchlistDialog({ title, onClose, onCloseAutoFocus }: WatchlistD
   );
 }
 
-function SignInOffer() {
-  const { pathname, search } = useLocation();
+type SignInOfferProps = {
+  resume: Resume;
+  /** The SDK has loaded: a press before that waits for the network, and the popup is blocked. */
+  isReady: boolean;
+  errorMessage: string | null;
+  onSignIn: () => void;
+};
+
+function SignInOffer({ resume, isReady, errorMessage, onSignIn }: SignInOfferProps) {
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  // The disabled button dropped focus; a failed sign-in enables it again.
+  useEffect(() => {
+    if (errorMessage !== null && document.activeElement === document.body) {
+      buttonRef.current?.focus();
+    }
+  }, [errorMessage]);
 
   return (
-    <Link
-      to={ROUTE_PATHS.AUTH_LOGIN}
-      state={{ from: pathname + search }}
-      className={buttonVariants({ size: 'sm', className: 'touch-target self-start' })}
-    >
-      Sign in
-    </Link>
+    <div className="flex flex-col items-start gap-3">
+      <Button
+        ref={buttonRef}
+        size="sm"
+        disabled={!isReady || resume !== 'idle'}
+        className="touch-target"
+        onClick={onSignIn}
+      >
+        {errorMessage === null ? 'Continue with Google' : 'Try again'}
+      </Button>
+      <output className="text-muted-foreground text-sm">
+        {!isReady && 'Getting sign-in ready...'}
+        {resume === 'signing-in' && 'Finish signing in in the Google window.'}
+        {resume === 'saving' && 'Saving...'}
+      </output>
+      {errorMessage !== null && (
+        <p role="alert" className="text-destructive text-sm">
+          {errorMessage}
+        </p>
+      )}
+    </div>
   );
 }
 

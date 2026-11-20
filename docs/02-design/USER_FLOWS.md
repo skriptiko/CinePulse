@@ -25,7 +25,7 @@ Severity: **blocker** stops the task or loses the person's intent; **major** mis
 
 | Flow | Target | Today | Result | Problems |
 | --- | --- | --- | --- | --- |
-| [F1 Guest saves a title](#f1-guest-saves-a-title) | ≤ 3 presses, no second press after sign-in | 5 steps; the save does not resume after sign-in | Misses | 1 blocker, 2 major, 7 minor |
+| [F1 Guest saves a title](#f1-guest-saves-a-title) | ≤ 3 presses, no second press after sign-in | 2 presses; the save runs after sign-in (CIN-182) | Meets | 2 minor |
 | [F2 What to watch tonight](#f2-what-to-watch-tonight) | ≤ 3 steps to Where to watch | 1 step (plus a scroll on phones) | Meets; the region can be wrong | 1 major, 4 minor |
 | [F3 Search → detail → save](#f3-search--detail--save) | Query + 1 + 1 | 4 steps (save needs a confirm press) | Over by 1 | 1 major, 5 minor |
 | [F4 Move between folders](#f4-move-between-folders) | ≤ 3 presses, with Undo | Title: 6 steps from its detail page; folder: 5 presses; no Undo | Misses | 2 major, 5 minor |
@@ -33,13 +33,12 @@ Severity: **blocker** stops the task or loses the person's intent; **major** mis
 | [F6 Cross-links](#f6-cross-links) | 1 press per move, real URLs | 1 press per move | Meets | 4 minor |
 | [F7 Back to the watchlist](#f7-back-to-the-watchlist) | 1 press from the global navigation | 2 presses signed in, 3 as a guest | Over by 1–2 | 1 major, 3 minor |
 
-**The three problems with the largest effect:**
+**The problems with the largest effect:**
 
-1. **F1: a guest's save is lost at sign-in.** The person comes back to the same page, but the title is not saved and nothing says so (proposal 3).
-2. **F7: the global navigation has no Watchlist link.** Every path goes through the avatar icon and Profile (proposal 19).
-3. **F4 and F5: the watchlist state lives only on the watchlist page.** A title cannot be moved from its row, and no card or detail page shows that a title is saved or watched (proposals 7 and 11).
+1. **F7: the global navigation has no Watchlist link.** Every path goes through the avatar icon and Profile (proposal 19).
+2. **F4 and F5: the watchlist state lives only on the watchlist page.** A title cannot be moved from its row, and no card or detail page shows that a title is saved or watched (proposals 7 and 11).
 
-Problems that no earlier proposal covered became proposals 19–21 in UX_STANDARDS.
+The third, a guest's save lost at sign-in (F1), was fixed by proposal 3 in CIN-182. Problems that no earlier proposal covered became proposals 19–21 in UX_STANDARDS.
 
 ## Flows
 
@@ -48,49 +47,41 @@ Problems that no earlier proposal covered became proposals 19–21 in UX_STANDAR
 - **Persona:** A visitor who is not signed in finds a movie and wants to keep it for later.
 - **Entry point:** Movie Detail, `/movies/:id` (for example, reached from Home or Search)
 - **Preconditions:** Not signed in (`authStatus` is `anonymous`, no session flag in `localStorage`); a Google account; pop-ups allowed.
-- **Success state:** Back on the movie page after sign-in, with the toast `{title} is in your watchlist`.
-- **Step budget:** target ≤ 3 presses on CinePulse's own UI, no second press after sign-in; today 5 steps on the happy path — over by 2
-- **Walkthrough:** 2026-11-20, code walkthrough at `bd1e7a5` — sign-in returns the person to the same URL, but the save does not resume, so they must press Add to watchlist again and confirm.
+- **Success state:** Still on the movie page, at the same scroll position, with the title saved and the toast `{title} is in your watchlist, under All titles`.
+- **Step budget:** target ≤ 3 presses on CinePulse's own UI, no second press after sign-in; today 2 presses on the happy path — meets
+- **Walkthrough:** 2026-11-20, code walkthrough after CIN-182 — sign-in happens in the dialog, and the save runs on its own when the popup closes with an account.
 
 | # | User action | System response | URL | Walkthrough |
 | --- | --- | --- | --- | --- |
-| 1 | Press `Add to watchlist` (in the hero, under the genres) | The dialog chunk loads (the bookmark icon spins), then a dialog opens: `Sign in to save {title}`, `Your watchlist keeps titles in your own folders.`, a `Sign in` link and a `Close` button. Focus goes to the dialog itself; a press outside does not close it (`packages/ui/src/components/ui/dialog.tsx:84-92`) | `/movies/:id` | Pass |
-| 2 | Press `Sign in` | Push to the login page with `state.from = /movies/:id`; the user-mfe remote and the page load (page skeleton). `prepareSignIn()` starts loading the Firebase SDK. Page: `Sign in`, `Keep your watchlist with your Google account.`, `Continue with Google`. Focus moves to `main` | `/auth/login` | Q3 fails: nothing says the title will be saved or that the person comes back here |
-| 3 | Press `Continue with Google` | The button is disabled; the Google popup opens (provider screens not counted). On success the store gets the user, `user:login` fires and the page replaces itself with `state.from`. The new page starts at the top and focus moves to `main` | `/auth/login` → `/movies/:id` (replace) | Q4 fails: the person lands on the page with no message, and the title is not saved |
-| 4 | Press `Add to watchlist` again | The dialog opens as `Choose folders for {title}`, `With no folder, it stays under All titles.`, a skeleton while folders and items load, then the folder checkboxes (or `No folders yet. Create them in your watchlist.`), `Add to watchlist` and `Open watchlist` | `/movies/:id` | Q1 fails: the person already asked for this before sign-in and may believe it is done |
-| 5 | Press `Add to watchlist` in the dialog | The button reads `Saving...`, the dialog closes, focus returns to the trigger, a toast at the bottom right says `{title} is in your watchlist` | `/movies/:id` | Pass |
+| 1 | Press `Add to watchlist` (in the hero, under the genres) | The dialog chunk loads (the bookmark icon spins), then a dialog opens: `Sign in to save {title}`, `Sign in with Google, and the title is saved to your watchlist.`, `Continue with Google` and a `Close` button. The dialog loads the Firebase Auth SDK, so the popup can open on the next press; until it has loaded, the button is disabled and the dialog says `Getting sign-in ready...` (`apps/pages-mfe/src/components/watchlist-dialog.tsx:53-56`). Firestore is not loaded yet | `/movies/:id` | Pass |
+| 2 | Press `Continue with Google` | The button is disabled and the dialog says `Finish signing in in the Google window.`; the Google popup opens (provider screens not counted). On success the dialog reads `Saving...` and saves the title with no folder, for the account the popup returned (`apps/pages-mfe/src/components/watchlist-dialog.tsx:70-122`). The dialog closes, focus returns to `Add to watchlist`, and a toast says `{title} is in your watchlist, under All titles`. The page does not move | `/movies/:id` | Pass |
 
 **Decision points:**
 
-- Step 1, from a poster card (Home, More like this, Search) instead of the hero: the icon button is named `Add {title} to your watchlist`; the same dialog opens, and `state.from` is that page's path and query.
-- Step 1, a returning user whose session is still restoring (`authStatus` is `loading`): the dialog shows the folder skeleton and becomes the picker on its own (`apps/pages-mfe/src/components/watchlist-dialog.tsx:49-50`).
+- Step 1, from a poster card (Home, More like this, Search) instead of the hero: the icon button is named `Add {title} to your watchlist`; the same dialog opens.
+- Step 1, a returning user whose session is still restoring (`authStatus` is `loading`): the dialog shows the folder skeleton and becomes the picker on its own (`apps/pages-mfe/src/components/watchlist-dialog.tsx:143-144`).
 - Step 1, the person presses `Close` or Escape: the dialog closes and focus returns to `Add to watchlist` (`apps/pages-mfe/src/components/add-to-watchlist.tsx:66`).
-- Instead of step 2, the person uses `Sign in` in the header: no `from` state, so after sign-in they land on `/user/profile`, not the movie (`packages/ui/src/components/header.tsx:117-119`, `apps/user-mfe/src/pages/login.tsx:21`).
-- Step 4, the person ticks folders before step 5: the title goes into each ticked folder; with none ticked it stays under All titles.
+- Instead of step 2, the person uses `Sign in` in the header: no `from` state, so after sign-in they land on `/user/profile`, not the movie, and nothing is saved (`packages/ui/src/components/header.tsx:117-119`, `apps/user-mfe/src/pages/login.tsx:21`).
+- Step 2, the account already has the title: nothing is written, the title keeps its folders and status, and the toast says `{title} was already in your watchlist`.
+- During step 2, the person closes the dialog: the popup stays open; if they finish signing in, the title is still saved and the toast shows.
+- After step 2, the person wants a folder: they press `Add to watchlist` again and tick it in the picker.
 
 **Failure and recovery:**
 
 - The dialog chunk fails to load: toast `The watchlist could not be opened. Reload the page and try again.`; the person reloads (`apps/pages-mfe/src/components/add-to-watchlist.tsx:37-41`).
-- The user-mfe remote fails to load: `/auth/login` shows `This section is unavailable` with `Try again`, which reloads the page (`apps/host/src/remotes/remote-unavailable.tsx`); Back returns to the movie.
-- The popup is closed: `signInWithGoogle` returns quietly, no message, the person stays on `/auth/login` and can press `Continue with Google` again (`packages/firebase/src/auth.ts:53`). Focus is lost, because the button was disabled while pending (`apps/user-mfe/src/pages/login.tsx:40`).
-- The popup is blocked: inline alert `Allow pop-ups for this site and try again.`; the same button retries (`packages/firebase/src/errors.ts:33-36`).
-- The SDK has not finished loading when the person presses: the press first waits for the network, the browser may then block the popup, and the person sees the pop-up message although pop-ups are allowed; a second press works (`packages/firebase/src/auth.ts:39-51`).
-- Network failure during sign-in: inline alert `Could not reach the server. Check your connection.`; the same button retries.
-- The save in step 5 fails: a toast with the error text from `getErrorMessage`, the dialog stays open, `Add to watchlist` is enabled again and gets focus (`apps/pages-mfe/src/components/watchlist-dialog.tsx:131-134`). A Firestore 429 or 5xx reads `The movie service is having trouble. Please try again later.`, which names the wrong service (`packages/api/src/core/error-message.ts:10-11`).
-- The pending save itself: none. If the person does not press Add again, nothing is saved and nothing tells them.
+- The popup is closed: nothing is saved, the dialog closes and focus returns to `Add to watchlist` (`apps/pages-mfe/src/components/watchlist-dialog.tsx:77-81`).
+- The popup is blocked: inline alert `Allow pop-ups for this site and try again.`, and the button reads `Try again`; the press is kept, so a successful retry saves the title (`apps/pages-mfe/src/components/watchlist-dialog.tsx:84-85`, `packages/firebase/src/errors.ts:33-36`). Focus returns to the button.
+- The SDK fails to load: the button is enabled anyway, and the press tries again; a failure then shows the network message.
+- Network failure during sign-in: inline alert `Could not reach the server. Check your connection.`; `Try again` retries.
+- The save after sign-in fails: toast `{title} was not saved. Press Add to watchlist to try again.`; the person is signed in, so the dialog turns into the folder picker, and its `Add to watchlist` button retries (`apps/pages-mfe/src/components/watchlist-dialog.tsx:110-116`).
+- A save from the picker fails: a toast with the error text from `getErrorMessage`, the dialog stays open, `Add to watchlist` is enabled again and gets focus. A Firestore 429 or 5xx reads `The movie service is having trouble. Please try again later.`, which names the wrong service (`packages/api/src/core/error-message.ts:10-11`).
 
 **Problems found:**
 
-1. The save does not resume after sign-in. No code keeps the pending title or listens for `user:login` to finish it; the person must press `Add to watchlist` and confirm again, and nothing tells them the title is not saved yet. Fails Q4 at step 3 and Q1 at step 4; misses "no second press" and "≤ 3 presses" (today 5). Blocker. `apps/pages-mfe/src/components/watchlist-dialog.tsx:61-73`, `apps/user-mfe/src/pages/login.tsx:20-22`. Proposal 3.
-2. The scroll position is lost on return. `Navigate replace` is not a Pop, so the page jumps to the top; a guest who started from a card in More like this or a Home row must find it again. Misses "same URL and scroll position". Major. `packages/ui/src/components/app-layout.tsx:58`, `apps/user-mfe/src/pages/login.tsx:21`. Proposal 3.
-3. Focus goes to `main`, not back to `Add to watchlist`, after the return. A keyboard or screen reader user must find the control again. Major. `packages/ui/src/components/app-layout.tsx:57`. Proposal 3.
-4. History holds the movie page twice: the `Sign in` link pushes `/auth/login` and the return replaces it with `/movies/:id`, so the first Back after sign-in shows the same movie page again. Minor. `apps/pages-mfe/src/components/watchlist-dialog.tsx:65-67`, `apps/user-mfe/src/pages/login.tsx:21`.
-5. The guest dialog and the login page do not say what happens next: neither names the title nor says the person comes back to this page. Fails Q3 at step 2. Minor. `apps/pages-mfe/src/components/watchlist-dialog.tsx:40-44`, `apps/user-mfe/src/pages/login.tsx:38-39`.
-6. A closed popup gives no feedback and drops focus to the page body, as the button was disabled while pending. § 1.3 asks for focus back on the control. Minor. `apps/user-mfe/src/pages/login.tsx:40`, `packages/firebase/src/auth.ts:53`. Proposal 3.
-7. A press before the SDK has loaded can get a blocked popup and the message `Allow pop-ups for this site and try again.`, which blames the person's browser for a slow load. `Continue with Google` is not disabled while the SDK loads. Minor. `apps/user-mfe/src/pages/login.tsx:16-18`, `packages/firebase/src/auth.ts:43-51`. Proposal 3.
-8. The success toast names the title but not the folder. Misses "a status message names the title and folder". Minor. `apps/pages-mfe/src/components/watchlist-dialog.tsx:117-118`.
-9. The header `Sign in` link carries no `from`, so a guest who signs in from there lands on Profile, not the page they were on. Minor. `packages/ui/src/components/header.tsx:117-119`. Proposal 21.
-10. A failed Firestore write can read `The movie service is having trouble.`, which names the wrong service. Minor. `packages/api/src/core/error-message.ts:10-11`. Proposal 2.
+1. The header `Sign in` link carries no `from`, so a guest who signs in from there lands on Profile, not the page they were on. Minor. `packages/ui/src/components/header.tsx:117-119`. Proposal 21.
+2. A failed Firestore write from the picker can read `The movie service is having trouble.`, which names the wrong service. Minor. `packages/api/src/core/error-message.ts:10-11`. Proposal 2.
+
+The walkthrough at `bd1e7a5` found a blocker (the save did not resume after sign-in) and five more problems on the way through `/auth/login`: the scroll position and focus were lost on return, history held the movie page twice, nothing said what happens next, and a press before the SDK had loaded could get a blocked popup. Proposal 3 (CIN-182) fixed them by keeping sign-in in the dialog.
 
 ### F2 What to watch tonight
 

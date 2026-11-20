@@ -11,9 +11,11 @@ import {
 } from '@repo/test-utils';
 import { toMovieCardData } from '@repo/ui';
 import { onlineManager } from '@tanstack/react-query';
+import { FirebaseError } from 'firebase/app';
+import { signInWithPopup } from 'firebase/auth';
 import { getDoc, getDocs, setDoc, writeBatch } from 'firebase/firestore/lite';
 import { HttpResponse, http } from 'msw';
-import { Route, Routes, useLocation } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MovieDetail } from '../../pages/movie-detail/movie-detail-page';
 import { TVDetail } from '../../pages/tv-detail/tv-detail-page';
@@ -22,6 +24,13 @@ import { AddToWatchlist, renderAddToWatchlist } from '../add-to-watchlist';
 vi.mock('firebase/app', async (importOriginal) => ({
   ...(await importOriginal<typeof import('firebase/app')>()),
   initializeApp: (options: object) => ({ options }),
+}));
+vi.mock('firebase/auth', () => ({
+  connectAuthEmulator: vi.fn(),
+  getAuth: () => ({ authStateReady: () => Promise.resolve() }),
+  GoogleAuthProvider: class {},
+  onAuthStateChanged: vi.fn(),
+  signInWithPopup: vi.fn(),
 }));
 vi.mock('firebase/firestore/lite', () => ({
   arrayRemove: (...ids: string[]) => ({ arrayRemove: ids }),
@@ -46,6 +55,7 @@ const FOLDERS = [
 ];
 const STORED = { id: 'movie_1', ...TITLE, status: 'watched', folderIds: ['top', 'elsewhere'] };
 const ACCOUNT = { uid: 'u', displayName: null, email: null, photoUrl: null, createdAt: null };
+const FIREBASE_USER = { uid: 'u', displayName: null, email: null, photoURL: null, metadata: {} };
 
 const batch = { commit: vi.fn(), update: vi.fn() };
 
@@ -59,18 +69,33 @@ function mockReads(folders: typeof FOLDERS, items: (typeof STORED)[]) {
   vi.mocked(getDoc).mockResolvedValue({ exists: () => items.length > 0 } as never);
 }
 
-function LocationState() {
-  return <output data-testid="from">{useLocation().state?.from}</output>;
+function renderButton(showLabel = false) {
+  return renderWithProviders(<AddToWatchlist title={TITLE} showLabel={showLabel} />, {
+    route: '/movies?genre=28',
+  });
 }
 
-function renderButton(showLabel = false) {
-  return renderWithProviders(
-    <>
-      <AddToWatchlist title={TITLE} showLabel={showLabel} />
-      <LocationState />
-    </>,
-    { route: '/movies?genre=28' }
-  );
+/** The popup signs in; the store hears of it first, as from `onAuthStateChanged`. */
+function mockSignIn() {
+  vi.mocked(signInWithPopup).mockImplementation(async () => {
+    globalStore.getState().setUser(ACCOUNT);
+    return { user: FIREBASE_USER } as never;
+  });
+}
+
+function listenToToasts() {
+  const shown: NotificationPayload[] = [];
+  const stopListening = createTypedListener('notification:show')((payload) => {
+    shown.push(payload);
+  });
+  return { shown, stopListening };
+}
+
+/** Enabled once the SDK has loaded, so the popup can open on the press. */
+async function signInButton() {
+  const button = await screen.findByRole('button', { name: 'Continue with Google' });
+  await waitFor(() => expect(button).toBeEnabled());
+  return button;
 }
 
 const trigger = () => screen.getByRole('button', { name: 'Add Dune to your watchlist' });
@@ -112,20 +137,152 @@ describe('AddToWatchlist', () => {
     );
   });
 
-  it('offers a signed-out visitor a sign-in that returns here, and reads nothing', async () => {
+  it('offers a signed-out visitor a sign-in in place, and reads nothing', async () => {
     globalStore.getState().setUser(null);
     const { user } = renderButton();
 
     await user.click(trigger());
 
-    const link = await screen.findByRole('link', { name: 'Sign in' });
+    expect(await signInButton()).toBeEnabled();
     expect(screen.getByRole('dialog', { name: 'Sign in to save Dune' })).toBeInTheDocument();
-    expect(link).toHaveAttribute('href', '/auth/login');
     await expectNoA11yViolations(screen.getByRole('dialog'));
     expect(getDocs).not.toHaveBeenCalled();
+    expect(signInWithPopup).not.toHaveBeenCalled();
+  });
 
-    await user.click(link);
-    await waitFor(() => expect(screen.getByTestId('from')).toHaveTextContent('/movies?genre=28'));
+  it('saves the title once the guest signs in, with no second press', async () => {
+    globalStore.getState().setUser(null);
+    mockSignIn();
+    const { shown, stopListening } = listenToToasts();
+    const { user } = renderButton();
+
+    await user.click(trigger());
+    await user.click(await signInButton());
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(signInWithPopup).toHaveBeenCalledOnce();
+    expect(setDoc).toHaveBeenCalledOnce();
+    expect(vi.mocked(setDoc).mock.calls[0]).toEqual([
+      { path: 'users/u/items/movie_1' },
+      expect.objectContaining({ tmdbId: 1, title: 'Dune', status: 'planned', folderIds: [] }),
+    ]);
+    expect(shown).toEqual([
+      { type: 'success', message: 'Dune is in your watchlist, under All titles' },
+    ]);
+    await waitFor(() => expect(trigger()).toHaveFocus());
+    stopListening();
+  });
+
+  it('keeps an account’s own folders when the title was already saved', async () => {
+    globalStore.getState().setUser(null);
+    mockSignIn();
+    mockReads(FOLDERS, [STORED]);
+    const { shown, stopListening } = listenToToasts();
+    const { user } = renderButton();
+
+    await user.click(trigger());
+    await user.click(await signInButton());
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(setDoc).not.toHaveBeenCalled();
+    expect(batch.commit).not.toHaveBeenCalled();
+    expect(shown).toEqual([{ type: 'success', message: 'Dune was already in your watchlist' }]);
+    stopListening();
+  });
+
+  it('leaves the next dialog open when an earlier popup ends', async () => {
+    globalStore.getState().setUser(null);
+    let endPopup = () => {};
+    vi.mocked(signInWithPopup).mockReturnValueOnce(
+      new Promise((_resolve, reject) => {
+        endPopup = () => reject(new FirebaseError('auth/cancelled-popup-request', 'cancelled'));
+      })
+    );
+    const { user } = renderButton();
+
+    await user.click(trigger());
+    await user.click(await signInButton());
+    await waitFor(() => expect(signInWithPopup).toHaveBeenCalledOnce());
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await user.click(trigger());
+    await signInButton();
+    endPopup();
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(screen.getByRole('dialog', { name: 'Sign in to save Dune' })).toBeInTheDocument();
+  });
+
+  it('saves nothing when the guest closes the popup, and returns focus', async () => {
+    globalStore.getState().setUser(null);
+    vi.mocked(signInWithPopup).mockRejectedValueOnce(
+      new FirebaseError('auth/popup-closed-by-user', 'closed')
+    );
+    const { user } = renderButton();
+
+    await user.click(trigger());
+    await user.click(await signInButton());
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await waitFor(() => expect(trigger()).toHaveFocus());
+    expect(setDoc).not.toHaveBeenCalled();
+  });
+
+  it('says why sign-in failed and keeps the press for Try again', async () => {
+    globalStore.getState().setUser(null);
+    vi.mocked(signInWithPopup).mockRejectedValueOnce(
+      new FirebaseError('auth/popup-blocked', 'blocked')
+    );
+    const { user } = renderButton();
+
+    await user.click(trigger());
+    await user.click(await signInButton());
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Allow pop-ups for this site and try again.'
+    );
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Try again' })).toHaveFocus());
+    expect(setDoc).not.toHaveBeenCalled();
+
+    mockSignIn();
+    await user.click(screen.getByRole('button', { name: 'Try again' }));
+
+    await waitFor(() => expect(setDoc).toHaveBeenCalledOnce());
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
+
+  it('opens the popup once for two clicks in one tick', async () => {
+    globalStore.getState().setUser(null);
+    mockSignIn();
+    const { user } = renderButton();
+
+    await user.click(trigger());
+    const button = await signInButton();
+    button.click();
+    button.click();
+
+    await waitFor(() => expect(setDoc).toHaveBeenCalledOnce());
+    expect(signInWithPopup).toHaveBeenCalledOnce();
+  });
+
+  it('turns into the picker when the save after sign-in fails', async () => {
+    globalStore.getState().setUser(null);
+    mockSignIn();
+    vi.mocked(setDoc).mockRejectedValueOnce(
+      Object.assign(new Error('failed'), { code: 'unavailable' })
+    );
+    const { shown, stopListening } = listenToToasts();
+    const { user } = renderButton();
+
+    await user.click(trigger());
+    await user.click(await signInButton());
+
+    expect(await screen.findByRole('dialog', { name: 'Choose folders for Dune' })).toBeVisible();
+    expect(await screen.findByRole('checkbox', { name: 'Top, level 1' })).toBeInTheDocument();
+    expect(shown).toEqual([
+      { type: 'error', message: 'Dune was not saved. Press Add to watchlist to try again.' },
+    ]);
+    stopListening();
   });
 
   it('lets a signed-out visitor decline', async () => {
@@ -158,7 +315,7 @@ describe('AddToWatchlist', () => {
     await screen.findByText('Loading your folders');
     globalStore.getState().setUser(null);
 
-    expect(await screen.findByRole('link', { name: 'Sign in' })).toBeInTheDocument();
+    expect(await signInButton()).toBeInTheDocument();
   });
 
   it('shows the tree with the folders of a stored title ticked', async () => {
