@@ -48,7 +48,10 @@ export function MovieDetailView({ movie, action, children }: MovieDetailViewProp
       )}
 
       <div className="max-w-page relative mx-auto flex flex-col gap-6 px-4 pt-28 pb-16 sm:flex-row sm:gap-8 sm:px-6 sm:pt-36 lg:px-12">
-        <div className="aspect-[2/3] w-40 shrink-0 overflow-hidden rounded-lg md:w-64">
+        <div
+          data-detail-poster
+          className="aspect-[2/3] w-40 shrink-0 overflow-hidden rounded-lg md:w-64"
+        >
           {posterUrl === null ? (
             <ImagePlaceholder />
           ) : (

@@ -101,6 +101,26 @@ describe('MovieCard', () => {
     expect(screen.getByText('2021').closest('.pointer-events-none')).not.toBeNull();
   });
 
+  it('names its poster for the page transition when opened with a plain click', async () => {
+    const { container, user } = renderWithProviders(<MovieCard movie={MOVIE} />);
+
+    await user.click(screen.getByRole('link', { name: 'Dune' }));
+
+    expect(container.querySelector('[data-opened-poster]')).toContainElement(
+      container.querySelector('img')
+    );
+  });
+
+  it('leaves its poster unnamed when a modifier opens another tab', async () => {
+    const { container, user } = renderWithProviders(<MovieCard movie={MOVIE} />);
+
+    await user.keyboard('{Control>}');
+    await user.click(screen.getByRole('link', { name: 'Dune' }));
+    await user.keyboard('{/Control}');
+
+    expect(container.querySelector('[data-opened-poster]')).toBeNull();
+  });
+
   it('renders no control without an action', () => {
     renderWithProviders(<MovieCard movie={MOVIE} />);
 

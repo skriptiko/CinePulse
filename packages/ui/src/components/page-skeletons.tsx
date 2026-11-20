@@ -66,7 +66,10 @@ export function FeaturedGridSkeleton() {
 export function MovieDetailSkeleton() {
   return (
     <SkeletonFrame className="flex flex-col gap-6 px-4 pt-28 sm:flex-row sm:gap-8 sm:px-6 sm:pt-36 lg:px-12">
-      <Skeleton className="aspect-[2/3] w-40 shrink-0 rounded-lg md:w-64" />
+      {/* The opened card's poster morphs into this box, as into the poster of the page. */}
+      <div data-detail-poster className="aspect-[2/3] w-40 shrink-0 md:w-64">
+        <Skeleton className="size-full rounded-lg" />
+      </div>
       <div className="w-full max-w-2xl">
         <Skeleton className="mb-4 h-12 w-3/4" />
         <Skeleton className="mb-6 h-4 w-1/2" />

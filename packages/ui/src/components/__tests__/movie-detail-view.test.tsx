@@ -16,6 +16,12 @@ const MOVIE: MovieDetailData = {
 };
 
 describe('MovieDetailView', () => {
+  it('names the poster, so the opened card morphs into it', () => {
+    const { container } = render(<MovieDetailView movie={MOVIE} />);
+
+    expect(container.querySelectorAll('[data-detail-poster]')).toHaveLength(1);
+  });
+
   it('renders the hero alone with no sections', () => {
     render(<MovieDetailView movie={MOVIE} />);
 
