@@ -83,7 +83,7 @@ How the product looks is owned by the Figma file "CinePulse" (ADR-0019): its var
 
 ## Conventions
 
-- Every text written for people to read follows ISO 24495-1 (plain language): UI copy, error and empty-state messages, docs, ADRs, Notion pages, commit and PR descriptions, and session reports. The reader finds what they need, understands it on the first read and can act on it: the main point first, short sentences, common words, one term for one thing, active voice.
+- Every text written for people to read follows ISO 24495-1 (plain language): UI copy, error and empty-state messages, docs, ADRs, Notion pages, commit and PR descriptions, and session reports. The reader finds what they need, understands it on the first read and can act on it: the main point first, short sentences, common words, one term for one thing, active voice. UI text also follows `docs/02-design/CONTENT_GUIDE.md`: voice, patterns for buttons, errors, success and confirmations, and the glossary of UI words.
 - Commits: `CIN-<number>: <short description in the imperative mood>`.
 - Dependency updates: Renovate (`renovate.json`): grouped PRs into `develop` every Monday, no automerge; majors only after approval on the Dependency Dashboard and with a separate ticket. Renovate does not touch Node and pnpm.
 - All files and folders are kebab-case (`home.tsx`, `use-movies.ts`, `app-routes.tsx`), exports are PascalCase/camelCase. Named exports only (default only in `*.config.*`). A page with local hooks/components is a `pages/<name>/` folder with `<name>-page.tsx`.

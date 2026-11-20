@@ -2,7 +2,7 @@
 
 # Glossary
 
-Key project terms. Most are derived from the code (reliable); the watchlist/auth product terms come from the requirements (2026-07-12 session).
+Key project terms. The words people see in the UI, and the ones to avoid, are in the [content guide](../02-design/CONTENT_GUIDE.md#12-glossary-of-ui-words). Most are derived from the code (reliable); the watchlist/auth product terms come from the requirements (2026-07-12 session).
 
 ## Architecture terms
 

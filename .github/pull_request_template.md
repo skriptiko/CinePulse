@@ -18,5 +18,6 @@ Notion task: <!-- link to CIN-N -->
 - [ ] Task acceptance criteria in Notion are met
 - [ ] Self-review of the full diff against the engineering standards checklist
 - [ ] Local review (`/code-review`) for non-trivial changes; findings fixed or consciously declined
+- [ ] UI text follows the [content guide checklist](../docs/02-design/CONTENT_GUIDE.md#13-review-checklist)
 - [ ] ADR added if the architecture changed; package README / TSDoc updated if needed
 - [ ] After merge: Notion task set to *Done*, merge commit hash and PR number in the "Commits" field
