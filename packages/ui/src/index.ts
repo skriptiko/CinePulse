@@ -27,7 +27,7 @@ export type {
 } from './components/filmography-section';
 export { FilmographySection } from './components/filmography-section';
 export type { FooterProps } from './components/footer';
-export { Footer } from './components/footer';
+export { Footer, TMDB_NOTICE } from './components/footer';
 export type { HeaderProps } from './components/header';
 export { Header } from './components/header';
 export type { HeroData, HeroProps } from './components/hero';
@@ -76,6 +76,8 @@ export { SeasonsSection } from './components/seasons-section';
 export { SectionErrorFallback } from './components/section-error-fallback';
 export type { ShellBoundaryProps } from './components/shell-boundary';
 export { ShellBoundary } from './components/shell-boundary';
+export type { TmdbLogoProps } from './components/tmdb-logo';
+export { TmdbLogo } from './components/tmdb-logo';
 export type { ButtonProps } from './components/ui/button';
 export { BUTTON_ON_IMAGE_CLASS, Button, buttonVariants } from './components/ui/button';
 export type { DialogContentProps, DialogProps } from './components/ui/dialog';

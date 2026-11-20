@@ -120,6 +120,7 @@ The Professional plan has Code Connect (one framework at a time, React here). It
 | Skeleton | `packages/ui/src/components/ui/skeleton.tsx` | ✅ |
 | Icon/* (20 icons) | `lucide-react`, the icons the app imports | ✅ |
 | Logo | `packages/ui/src/components/logo.tsx` | ✅ |
+| TMDB Logo (the TMDB "alt short" logo, unchanged, 12 high; smaller than Logo, TMDB terms § 3) | `packages/ui/src/components/tmdb-logo.tsx` | ✅ |
 | Image Placeholder | `packages/ui/src/components/image-placeholder.tsx` | ✅ |
 | MovieCard, Rating Badge | `packages/ui/src/components/movie-card.tsx` | ✅ |
 | PersonCard | `packages/ui/src/components/person-card.tsx` | ✅ |
