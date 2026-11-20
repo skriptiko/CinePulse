@@ -49,7 +49,7 @@ In the integration the host builds one stylesheet for every remote, so MFE style
 
 ## Mockups
 
-> Mockups live in the [CinePulse](https://www.figma.com/design/fhJ2HsroPBivgDcshCTuku) Figma file, built from `@repo/ui` and its tokens in `@repo/ui/theme.css` ([FIGMA_WORKFLOW](./FIGMA_WORKFLOW.md)). Every page is in it (2026-11-18); the prototype in `docs/08-design-files/` is outdated and goes away (CIN-136).
+> Mockups live in the [CinePulse](https://www.figma.com/design/fhJ2HsroPBivgDcshCTuku) Figma file, built from `@repo/ui` and its tokens in `@repo/ui/theme.css` ([FIGMA_WORKFLOW](./FIGMA_WORKFLOW.md)). Every page is in it (2026-11-18).
 
 ## UI states
 

@@ -72,7 +72,6 @@
       "!**/.github",
       "!**/*.d.ts",
       "!**/.__mf__temp",
-      "!**/docs/08-design-files",
       "!**/coverage",
       "!**/*.md",
       "!**/*.yaml",
