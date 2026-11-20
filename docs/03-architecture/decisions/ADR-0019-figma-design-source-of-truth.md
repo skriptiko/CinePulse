@@ -28,6 +28,6 @@ The official Figma MCP server can now write to a Figma file (variables, componen
 
 ## Consequences
 
-- Two places hold the tokens. They are kept identical by naming and by the rule that a token changes on both sides in one ticket.
+- Two places hold the tokens. They are kept identical by naming and by the rule that a token changes on both sides in one ticket. Since ADR-0020 the code side is a pair of DTCG token files, and a script compares them with a Figma export.
 - The team is on Figma Professional with a Full seat: 200 MCP reads a day, variable modes, a page per screen, and Code Connect once the components are published.
 - Design work becomes tickets of its own (stage "2. Design and UX"), ahead of the code tickets that implement it.

@@ -12,7 +12,7 @@ How the design lives in Figma and how a change reaches the code. The decision is
 | --- | --- |
 | How it looks: colour, type, spacing, radius, layout, states | Figma |
 | How it behaves: data, routing, a11y semantics, focus, loading order | Code (`@repo/ui`, the MFEs) and [UX_NOTES](./UX_NOTES.md) |
-| Token values | Figma variables, mirrored one to one in `packages/ui/src/theme.css` |
+| Token values | Figma variables, mirrored one to one in `packages/ui/tokens/*.tokens.json` (DTCG), from which `packages/ui/src/tokens.css` is built (ADR-0020) |
 
 The bootstrap is done (CIN-132…135, 2026-11-18): the file mirrors every token, component and page of the app, so a visual change now starts in Figma. Images in the screens are placeholders until real TMDB images are added.
 
@@ -86,7 +86,7 @@ A new state goes into its own section in this order. A state the code adds is dr
 - **Effects:** `shadow-xs`, `shadow`, `shadow-md`, `shadow-lg` (the Tailwind 4 values) and `glass-blur`, the `backdrop-filter: blur(20px)` of `glass` and `glass-bar`, used with the `glass`/`glass-bar` fill and the `glass-border` stroke. Its Figma value is 40: a Figma background blur of 40 renders like CSS `blur(20px)`.
 - **Layout grids:** one grid style per width class, applied to every `Default` frame and hidden by default (toggle with Ctrl+G). `grid/mobile-390`: 4 columns, margin 16, gutter 16. `grid/tablet-768`: 8 columns, margin 24, gutter 24. `grid/desktop-1440`: 12 columns, margin 48, gutter 24. `grid/desktop-1920`: 12 columns of 120, gutter 24, centred, so the content spans 1704 (the 1800 cap minus 48 on each side). The grid is a guide: layout is still auto layout.
 
-A new token is added in Figma and in `theme.css` in the same ticket. Never bind a raw colour in a component; a one-off colour in an exploration is fine until it is agreed.
+A new token is added in Figma, in both `packages/ui/tokens/*.tokens.json` files (then `pnpm tokens`) and in the `@theme inline` mapping of `theme.css` in the same ticket. A ticket that changes a colour variable checks Figma against the files before it closes: export the `Color` collection from Figma as DTCG JSON, one file per mode, and run `node scripts/tokens.js --figma <light> <dark>`. Never bind a raw colour in a component; a one-off colour in an exploration is fine until it is agreed.
 
 ## Components
 
@@ -145,7 +145,7 @@ The Professional plan has Code Connect (one framework at a time, React here). It
 
 1. **Design.** Draw the change in `Explorations`, by hand or with Claude through the Figma MCP ("make the MovieCard rating a badge on the poster"). Agree on it, then move it into the component or screen it changes.
 2. **Ticket.** One Notion ticket per area, as in [CONVENTIONS § MFE workflow](../04-development/CONVENTIONS.md): tokens and components are `@repo/ui` tickets and merge first; a screen that changes a page's layout is a ticket in its MFE. The ticket links the Figma node (*Copy link to selection*, `?node-id=…`).
-3. **Implement.** Claude reads the node (see the order below), maps it to existing components and tokens through the table above, and changes the code. A token change edits `theme.css` only. The output of `get_design_context` is a reference to adapt, never code to paste: the code keeps its conventions (no JSX spread, `Pick<ComponentProps<…>>`, `cn()`, kebab-case files).
+3. **Implement.** Claude reads the node (see the order below), maps it to existing components and tokens through the table above, and changes the code. A token change edits the `.tokens.json` files and runs `pnpm tokens`; `tokens.css` is never edited by hand, and `pnpm lint` fails when it is out of date. The output of `get_design_context` is a reference to adapt, never code to paste: the code keeps its conventions (no JSX spread, `Pick<ComponentProps<…>>`, `cn()`, kebab-case files).
 4. **Verify.** The usual checks for the area, plus the page side by side with the Figma frames at 390, 768, 1440 and 1920.
 5. **Close.** Mark the row in the component map, set the section's `Section Status` to `Ready`, and add an entry to `Library release notes` on Cover: the date, what changed and the ticket, newest on top. Every library publish gets one.
 
