@@ -28,6 +28,8 @@ import {
 } from './watchlist-tree';
 
 const FIRESTORE_EMULATOR_PORT = 5012;
+/** Firestore takes at most 500 writes in one batch. */
+const MAX_BATCH_WRITES = 500;
 
 export type WatchStatus = 'watched' | 'planned';
 
@@ -203,4 +205,22 @@ export function removeTitle(uid: string, titleId: string): Promise<void> {
 /** Only the status: a title deleted elsewhere is refused here, not brought back. */
 export function setTitleStatus(uid: string, titleId: string, status: WatchStatus): Promise<void> {
   return run((db) => updateDoc(doc(db, 'users', uid, 'items', titleId), { status }));
+}
+
+/**
+ * Everything the account stored. The batches are not one transaction: a failure leaves part of the
+ * data, and running it again deletes the rest.
+ */
+export function deleteUserData(uid: string): Promise<void> {
+  return run(async (db) => {
+    const snapshots = await Promise.all(
+      ['items', 'folders'].map((name) => getDocs(collection(db, 'users', uid, name)))
+    );
+    const refs = snapshots.flatMap(({ docs }) => docs.map((snapshot) => snapshot.ref));
+    for (let start = 0; start < refs.length; start += MAX_BATCH_WRITES) {
+      const batch = writeBatch(db);
+      for (const ref of refs.slice(start, start + MAX_BATCH_WRITES)) batch.delete(ref);
+      await batch.commit();
+    }
+  });
 }

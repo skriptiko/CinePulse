@@ -9,7 +9,13 @@ const NETWORK_FAILURE_CODES = [
 ];
 /** Firestore's HTTP 429, which `shouldRetry` treats like a 5xx. */
 const RATE_LIMIT_CODE = 'resource-exhausted';
-const POPUP_BLOCKED_CODE = 'auth/popup-blocked';
+const SIGN_IN_MESSAGES: Record<string, string> = {
+  'auth/popup-blocked': 'Allow pop-ups for this site and try again.',
+  // Re-sign-in before deleting the account, with a different Google account.
+  'auth/user-mismatch': 'Choose the Google account you signed in with and try again.',
+  // The session ended in another tab before the press.
+  'auth/no-current-user': 'You are signed out. Sign in and try again.',
+};
 
 /** `FirebaseError` by shape: the SDK is loaded lazily, so its class is not at hand here. */
 export function getFirebaseCode(error: unknown): string | null {
@@ -31,6 +37,7 @@ export function toApiError(error: unknown): ApiError {
 }
 
 export function getSignInErrorMessage(error: unknown): string {
-  const isPopupBlocked = isApiError(error) && getFirebaseCode(error.cause) === POPUP_BLOCKED_CODE;
-  return isPopupBlocked ? 'Allow pop-ups for this site and try again.' : getErrorMessage(error);
+  // An `ApiError` of our own carries the code as its message, with no Firebase cause.
+  const code = isApiError(error) ? (getFirebaseCode(error.cause) ?? error.message) : null;
+  return SIGN_IN_MESSAGES[code ?? ''] ?? getErrorMessage(error);
 }
