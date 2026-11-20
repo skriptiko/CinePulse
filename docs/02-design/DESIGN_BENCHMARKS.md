@@ -4,7 +4,7 @@
 
 Target numbers for how CinePulse looks, moves and behaves. Each target comes from a standard, from user research, or from measurements of reference sites. Use this page to tune the site and to check a design or a pull request. It holds numbers and behaviours only, not styles to copy.
 
-The ideas behind the design are in [DESIGN_APPROACH](./DESIGN_APPROACH.md), the agreed behaviour of each screen is in [UX_NOTES](./UX_NOTES.md). Where this page and those documents differ, those documents still decide. The difference is a proposal, listed in [Proposed changes](#proposed-changes) and decided in its own ticket.
+The ideas behind the design are in [DESIGN_APPROACH](./DESIGN_APPROACH.md), the agreed behaviour of each screen is in [UX_NOTES](./UX_NOTES.md). The interaction, accessibility and performance standards, with their targets, are in [QUALITY_BENCHMARKS](./QUALITY_BENCHMARKS.md). Where this page and those documents differ, those documents still decide. The difference is a proposal, listed in [Proposed changes](#proposed-changes) and decided in its own ticket.
 
 Measured and compiled on 2026-11-20 (CIN-176).
 
@@ -175,7 +175,7 @@ Measured on the reference sites with the recorder. "In" is the opening or the ho
 
 | Parameter | Reference sites | Standard | Target | Tolerance | How to check |
 | --- | --- | --- | --- | --- | --- |
-| Duration | — | sonner 4 s [G]; Material 4–10 s [G]; reading speed ~238 words a minute [R] | max(4 s, 1.5 s + 300 ms per word), at most 10 s | 4–10 s | Stopwatch |
+| Duration | — | sonner 4 s [G]; Material 4–10 s [G]; React Spectrum ≥ 5 s, Fluent 7 s [G]; reading speed ~238 words a minute [R] | max(5 s, 1.5 s + 300 ms per word), at most 10 s | 5–10 s | Stopwatch |
 | With an action | — | WCAG 2.2.1 [S] | Stays until dismissed (DESIGN_APPROACH § 5); the timer pauses on hover and focus | — | Hover a toast |
 | How many | — | sonner 3 [G]; Material 1 [G] | ≤ 3 visible; the same message once | 1–3 | Trigger several errors |
 | Announcement | — | WCAG 4.1.3 [S] | `status` (polite); `alert` only for a failed action the user started | — | Screen reader |
@@ -379,7 +379,7 @@ Sources: UX = [UX_NOTES](./UX_NOTES.md), DA = [DESIGN_APPROACH](./DESIGN_APPROAC
 | --- | --- | --- | --- | --- |
 | Toast place and size (UX, FW) | Bottom right, 356 wide, 24 from the edges; below 600 full width minus 16 | sonner 356 px, offset 32 / 16 [G] | As documented | Pass |
 | Toast slides in from its corner (DA § 6) | Not set | Carbon 240 ms; Atlassian 250 / 200 ms [G] | 250 ms slide ≤ 16 px + fade; 200 ms fade out | Set |
-| Toast closes by itself; with an action it stays (UX, DA § 5) | Time not set | sonner 4 s; reading speed [G][R]; WCAG 2.2.1 [S] | max(4 s, 1.5 s + 300 ms per word), at most 10 s; pauses on hover and focus | Set |
+| Toast closes by itself; with an action it stays (UX, DA § 5) | Time not set | sonner 4 s; React Spectrum ≥ 5 s [G]; reading speed [R]; WCAG 2.2.1 [S] | max(5 s, 1.5 s + 300 ms per word), at most 10 s; pauses on hover and focus | Set |
 | Toast stack (UX) | — | sonner 3 [G] | ≤ 3 visible, gap 14 px | Set |
 | Toast only on top of data; mutations always toast (UX, AR) | — | NN/g: feedback near the action [R] | As documented | Pass |
 | Live region announcements (DA § 5) | — | WCAG 4.1.3 [S] | As documented | Pass |
