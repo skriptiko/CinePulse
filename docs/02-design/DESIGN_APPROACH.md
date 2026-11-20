@@ -110,7 +110,7 @@ A component whose layout changes with the width has a `viewport` variant (`mobil
 
 **Essential information is never hover-only.** A title, a price or a rating that the user needs is visible without a pointer: touch screens have no hover. Hover may reveal extras (WCAG 1.4.13 then applies: the extra content can be dismissed, hovered and stays until the pointer leaves).
 
-**Tokens follow the W3C format.** A token has a name, a type (`color`, `dimension`, `fontFamily`, `shadow`…) and a value per mode, as the Design Tokens Format 2025.10 defines. Names are semantic (`background`, `muted-foreground`), the same in Figma and in `theme.css`.
+**Tokens follow the W3C format.** A token has a name, a type (`color`, `dimension`, `fontFamily`, `shadow`…) and a value per mode, as the Design Tokens Format 2025.10 defines. Names are semantic (`background`, `muted-foreground`), the same in Figma and in the token files `packages/ui/tokens/*.tokens.json`, from which the CSS is built (ADR-0020).
 
 ## 5. States
 
@@ -178,7 +178,6 @@ The file or the code does not yet follow these rules. Each gap is a ticket in No
 | Gap | Ticket |
 | --- | --- |
 | MovieCard and Hero have no image property: a poster is a fill override on its `Image Placeholder` | none yet |
-| Tokens are kept by hand in two places, not in the W3C format | CIN-158 |
 | Glass has no solid fallback for reduced transparency or more contrast | CIN-169 |
 | No motion tokens; no View Transition styles or reduced-motion rule for them | CIN-170 |
 | Card → detail page has no View Transition | CIN-171 |

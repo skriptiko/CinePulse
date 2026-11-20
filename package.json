@@ -4,8 +4,10 @@
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
-    "lint": "turbo lint && pnpm lint:jsx-spread && pnpm lint:e2e",
+    "lint": "turbo lint && pnpm lint:jsx-spread && pnpm lint:tokens && pnpm lint:e2e",
     "lint:jsx-spread": "node scripts/check-jsx-spread.js",
+    "lint:tokens": "node scripts/tokens.js --check",
+    "tokens": "node scripts/tokens.js",
     "lint:e2e": "biome check e2e playwright.config.ts",
     "format": "biome format --write .",
     "check": "biome check --write .",
