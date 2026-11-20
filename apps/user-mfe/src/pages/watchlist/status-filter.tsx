@@ -21,7 +21,8 @@ export function StatusFilter({ value, onChange }: StatusFilterProps) {
       value={value === null ? ALL_LABEL : STATUS_LABELS[value]}
       onValueChange={handleChange}
       label="Filter by status"
-      className="[&>button]:touch-target px-0 md:px-0"
+      gutter={false}
+      className="[&>button]:touch-target"
     />
   );
 }
