@@ -86,7 +86,7 @@ A component whose layout changes with the width has a `viewport` variant (`mobil
 
 **One page gutter, one left edge.** The Header, the page title and the first card start on the same left edge at every width: 16 below 640, 24 from 640, 48 from 1024 (Material margins are 16 at compact and 24 at medium).
 
-**Content is capped; rows bleed right.** From `2xl`, all content sits in `max-w-page` (1800) with the gutter inside, so the left edge stays at 108 on a 1920 screen. A horizontal row starts on that edge and runs to the right edge of the screen, so it shows more cards and hints that it scrolls. Category pill rows (`CategoryPills`, `CategoryLinks`) use the same row start (`ROW_GUTTER`), so the first pill lines up with the first card.
+**Content is capped; rows bleed right.** From `2xl`, all content sits in `max-w-page` (1800) with the gutter inside, so the left edge stays at 108 on a 1920 screen. A horizontal row starts on that edge and runs to the right edge of the screen, so it shows more cards and hints that it scrolls. Category pill rows (`CategoryPills`, `CategoryLinks`) use the same row start (`ROW_GUTTER`), so the first pill lines up with the first card. Pills inside a block that already has its padding (the catalog filters, the Watchlist column) start on the edge of that block at every width, with no extra 48: in code, `CategoryPills` takes `gutter={false}`.
 
 **Columns come from content; grids are a guide.** Frames use auto layout; a catalog grid is 2 cards per row at 390 and 6 at 1440 and 1920. Each `Default` frame carries the layout grid of its width class (4, 8 or 12 columns), hidden by default, to align new work.
 

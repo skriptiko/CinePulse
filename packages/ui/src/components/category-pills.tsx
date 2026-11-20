@@ -27,6 +27,13 @@ export type CategoryPillsProps = {
   disabled?: boolean;
   /** Accessible name of the group, e.g. "Filter by genre". */
   label?: string;
+  /**
+   * Adds the row gutter (`ROW_GUTTER`), so the first pill lines up with the first card of a
+   * full-width row. Pass `false` when the pills sit inside a block that already has its own
+   * padding, such as the catalog filters or the Watchlist column: the first pill then starts on
+   * the edge of that block at every breakpoint. Defaults to `true`.
+   */
+  gutter?: boolean;
   className?: string;
 };
 
@@ -37,6 +44,7 @@ export function CategoryPills({
   onValueChange,
   disabled,
   label,
+  gutter = true,
   className,
 }: CategoryPillsProps) {
   const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue ?? categories[0]);
@@ -54,7 +62,7 @@ export function CategoryPills({
       aria-label={label}
       className={cn(
         'scrollbar-hide flex min-w-0 gap-2 overflow-x-auto pb-2',
-        ROW_GUTTER,
+        gutter && ROW_GUTTER,
         className
       )}
     >
