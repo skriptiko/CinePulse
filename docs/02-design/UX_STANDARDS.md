@@ -24,7 +24,7 @@ In the tables, **Source says** holds only values from sources. **Target for Cine
 
 CinePulse is one product on one channel (the web, desktop and phone). The main artefact is a **user flow for one task**, not a journey map: the steps of one task in one product, user actions and system responses, without emotional context (NN/g [R/G]). ISO 9241-210:2019 sets the frame: describe the context of use (users, tasks, environment, clause 7.2) and evaluate designs against it (clause 7.5) [S]. ISO confirmed it in 2025.
 
-Each flow is one Markdown table: ID, persona, entry point, preconditions, steps (user action → system response → URL), decision points, success state, failure and recovery paths, step budget, date and result of the last walkthrough.
+Each flow has a short header list (persona, entry point, preconditions, success state, step budget, date and result of the last walkthrough), one table of steps (user action → system response → URL → walkthrough result), then decision points and failure and recovery paths. The flows and the first walkthrough are in [USER_FLOWS](./USER_FLOWS.md).
 
 **A step** is one press, one typed query or one page change. Scrolling does not count but is noted.
 
@@ -257,6 +257,9 @@ Each item needs a decision and its own ticket, one Area per ticket under the MFE
 | 16 | P3 | user-mfe | Bulk actions (`Select`, `{n} selected`), sort in the URL, `Move up` / `Move down` | SC 2.5.7 [S], our proposal |
 | 17 | P3 | pages-mfe | A "Because you saved X" row and Home row labels that explain the set | Chernev 2015 [R], our proposal |
 | 18 | P3 | pages-mfe | An "available on my services" filter on Movies and TV | Gracenote [R] |
+| 19 | P1 | @repo/ui | A `Watchlist` link in the global navigation (header, phone menu) for a signed-in person; a guest gets `Sign in` there | [USER_FLOWS](./USER_FLOWS.md) F7, § 2 |
+| 20 | P2 | pages-mfe | Save in one press: with no folders, `Add to watchlist` saves to All titles at once; folders stay an optional choice | [USER_FLOWS](./USER_FLOWS.md) F3 |
+| 21 | P3 | @repo/ui | The header `Sign in` link passes the current page as the return path | [USER_FLOWS](./USER_FLOWS.md) F1, F7 |
 
 ## Open questions
 
