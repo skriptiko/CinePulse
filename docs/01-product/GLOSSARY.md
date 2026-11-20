@@ -12,7 +12,7 @@ Key project terms. Most are derived from the code (reliable); the watchlist/auth
 - **Module Federation** — a Vite mechanism (`@module-federation/vite`) that lets one application load code from another at runtime via `remoteEntry.js`.
 - **Shared dependency** — a dependency that the host and remotes share from a single instance (to avoid duplicating React, etc.). In the configs: `react`, `react-dom`, `react-router-dom`, `@tanstack/react-query`, `react-error-boundary`, `zustand`, `@repo/events`, `@repo/routes`, `@repo/api`, `@repo/firebase` (`scripts/mf-shared.ts`); `@repo/ui` is deliberately not shared.
 - **shareScope / entryGlobalName** — Module Federation parameters that define the shared dependency scope and the global name of the remote entry.
-- **Turborepo** — the monorepo task orchestrator (`turbo.json`): caches and parallelizes `build`, `dev`, `lint`, `typecheck`, `sync-types`.
+- **Turborepo** — the monorepo task orchestrator (`turbo.json`): caches and parallelizes `build`, `dev`, `lint`, `typecheck`.
 - **pnpm workspace** — the monorepo package manager; the workspace members are listed in `pnpm-workspace.yaml` (`apps/*`, `packages/*`, `functions`).
 
 ## Data and integrations

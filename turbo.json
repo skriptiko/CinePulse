@@ -15,10 +15,6 @@
     },
     "typecheck": {
       "dependsOn": ["^typecheck"]
-    },
-    "sync-types": {
-      "dependsOn": ["build"],
-      "outputs": ["apps/host/src/@types/remotes/**"]
     }
   }
 }

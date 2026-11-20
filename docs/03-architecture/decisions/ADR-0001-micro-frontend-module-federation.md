@@ -34,5 +34,5 @@ We chose **micro-frontends on `@module-federation/vite`**:
 **Cons / trade-offs:**
 - Shared `react`/`react-router-dom` tightly couple versions across MFEs, so upgrades must be coordinated.
 - A more complex build (`target: chrome89`, `minify: false`, `cssCodeSplit: false`, `modulePreload: false`) and the need for `merge-dist` for Firebase.
-- Extra infrastructure for remote types (`sync-types`, `@mf-types/`).
+- Extra infrastructure for remote types (hand-written declarations in the host, `@mf-types/`).
 - Remote loading failures need their own graceful degradation (implemented by `useRemoteRoutes` with `RemoteUnavailable` and the shell-level `ShellBoundary`, [ADR-0011](./ADR-0011-lazy-remotes-declarative-routing.md)).
