@@ -86,7 +86,7 @@ Empty states share one taxonomy. NN/g asks for a true system status (never "no i
 | Empty folder | A folder with no titles | `No titles in {folder}`; with subfolders only: `Titles are in its subfolders` | Browse movies |
 | All done | Planned filter after watching everything | `You've watched everything in this folder`, no confetti | Show all |
 | No results | Search or filter in the watchlist | `No titles match '{query}'` + the active filters | Clear search / Reset filters |
-| Error | Read failed | `Your watchlist didn't load` | Try again |
+| Error | Read failed | `Your watchlist did not load` | Try again |
 | Signed out | The watchlist route | `Sign in to see your watchlist` | Sign in with Google |
 
 Targets:
@@ -219,19 +219,7 @@ ISO 24495-1:2023 sets four principles: relevant, findable, understandable, usabl
 
 Two conflicts between guides are settled once. **Contractions:** Microsoft encourages them, GOV.UK bans negative ones ("can't"); we allow positive contractions and avoid negative ones in errors and instructions. **Serial comma:** Microsoft uses it, GOV.UK's position is unverified; we use it, because the UI is in US English. Sources give no primary figure for sentence length, reading level (grade 8, CEFR B1) or button word count; those are conventions (unverified).
 
-| Topic | Target for CinePulse |
-| --- | --- |
-| Voice | Leaning casual, no slang; serious (the TMDB content carries the emotion); respectful; matter-of-fact |
-| Buttons | Verb first, sentence case, ≤ 3 words: `Add to watchlist`, `New folder`, `Move to folder…`, `Sign in with Google`, `Try again`, `Clear search`. No `OK`, `Yes`, `Submit`, `Click here` |
-| Confirmations | The heading is a question with the object, the body the consequence, the button repeats verb and noun: `Delete “Horror nights”?` / `The folder and the 12 titles in it are removed from your watchlist. You cannot undo this.` / `Delete folder` + `Cancel`. Cheap reversible actions get Undo instead |
-| Errors | What happened + what to do: `Couldn't load this section. Check your connection and try again.`; unknown cause: `Something went wrong. Try again.`; fields: `Enter a folder name`, `Use 60 characters or fewer`. No "sorry", "please", "invalid" or codes. An apology only for a full failure (the shell error page) |
-| Success | Past tense, the object named, no exclamation mark: `Added Dune to Watched`, `Folder renamed`. Only where the result is not visible |
-| Sign-in prompt | `Sign in to keep a watchlist.` / `Sign in with Google` + `Not now`. Declining sounds neutral |
-| Status messages | Full sentences that make sense alone: `20 movies found`, not `Done` |
-| Numbers and dates | `Intl.NumberFormat` (`12,345 votes`), `Intl.PluralRules` (`1 title`, `2 titles`), one `Intl.DateTimeFormat` format. Runtime `2h 15m`, accessible name `2 hours 15 minutes`. Episodes `S2 E5`, accessible name `Season 2, episode 5`. Ratings with one decimal; under the vote floor `No rating yet`, not `0.0` |
-| Length | A UI message is ≤ 2 sentences, each ≤ 20 words |
-| Glossary | **title** (any movie or TV show), **movie**, **TV show**, **watchlist** (the whole collection; not list, library or collection), **folder** (not list or playlist), status names identical everywhere, **sign in / sign out**, **select** in instructions, **rating** (the TMDB score) ≠ **certification**, **Try again** (not Retry or Reload) |
-| Upkeep | The glossary lives in a content guide in `docs/`; a line in the PR checklist. Vale can lint `docs/**/*.md` and JSX text in `.tsx` [G]; strings in props (`aria-label`, toast text) need a small script like `scripts/check-jsx-spread.js` |
+The rules, patterns and glossary that follow from this research are in [CONTENT_GUIDE](./CONTENT_GUIDE.md) (CIN-181). It decides the wording of every example on this page.
 
 ## Proposed changes
 
