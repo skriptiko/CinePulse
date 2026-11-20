@@ -144,11 +144,17 @@ describe('signInWithGoogle', () => {
     mockConfig();
   });
 
-  it('opens the popup', async () => {
+  it('opens the popup and returns the user who signed in', async () => {
+    vi.mocked(signInWithPopup).mockResolvedValueOnce({ user: FIREBASE_USER } as never);
     const { signInWithGoogle } = await loadAuth();
 
-    await signInWithGoogle();
-
+    await expect(signInWithGoogle()).resolves.toEqual({
+      uid: 'uid-1',
+      displayName: 'Ada',
+      email: 'ada@example.com',
+      photoUrl: 'https://example.com/ada.png',
+      createdAt: 'Sat, 31 Oct 2026 08:00:00 GMT',
+    });
     expect(signInWithPopup).toHaveBeenCalledOnce();
   });
 
@@ -158,7 +164,7 @@ describe('signInWithGoogle', () => {
     );
     const { signInWithGoogle } = await loadAuth();
 
-    await expect(signInWithGoogle()).resolves.toBeUndefined();
+    await expect(signInWithGoogle()).resolves.toBeNull();
   });
 
   it('turns a network failure into a network ApiError', async () => {

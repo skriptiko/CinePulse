@@ -45,12 +45,17 @@ export async function prepareSignIn(): Promise<void> {
   await getSession().catch(() => undefined);
 }
 
-export async function signInWithGoogle(): Promise<void> {
+/**
+ * The user who signed in, or `null` when the popup was closed. From the popup's result: the store
+ * and `user:login` can trail it, so a caller that acts on the sign-in need not wait for them.
+ */
+export async function signInWithGoogle(): Promise<AuthUser | null> {
   try {
     const { auth, sdk } = await getSession();
-    await sdk.signInWithPopup(auth, new sdk.GoogleAuthProvider());
+    const { user } = await sdk.signInWithPopup(auth, new sdk.GoogleAuthProvider());
+    return toAuthUser(user);
   } catch (error) {
-    if (POPUP_DISMISSED_CODES.includes(getFirebaseCode(error) ?? '')) return;
+    if (POPUP_DISMISSED_CODES.includes(getFirebaseCode(error) ?? '')) return null;
     throw toApiError(error);
   }
 }
