@@ -129,7 +129,8 @@ export function CatalogFilters({
             onValueChange={handleGenreChange}
             disabled={isSearching}
             label="Filter by genre"
-            className="-mx-4 px-0 sm:mx-0 sm:px-0"
+            gutter={false}
+            className="-mx-4 sm:mx-0"
           />
 
           {isSearching && (
