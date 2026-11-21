@@ -1,4 +1,4 @@
-import { type APIRequestContext, expect, type Page, test } from '@playwright/test';
+import { type APIRequestContext, type Download, expect, type Page, test } from '@playwright/test';
 import { signIn } from './sign-in';
 import { mockTmdb } from './tmdb-mock';
 
@@ -128,3 +128,36 @@ test('keeps the account and its data when the Google window is closed', async ({
   expect(await countDocuments(request, uid)).toBe(2);
   expect(await accountExists(request, uid)).toBe(true);
 });
+
+test('downloads the watchlist as JSON and CSV before the account is deleted', async ({
+  page,
+  request,
+}) => {
+  await openDeleteDialog(page);
+  const uid = await getUid(page);
+  await seedWatchlist(request, uid);
+  const dialog = page.getByRole('dialog');
+
+  const jsonPromise = page.waitForEvent('download');
+  await dialog.getByRole('button', { name: 'Download JSON' }).click();
+  const json = await jsonPromise;
+  expect(json.suggestedFilename()).toMatch(/^cinepulse-watchlist-\d{4}-\d{2}-\d{2}\.json$/);
+  const data = JSON.parse(await readDownload(json));
+  expect(data.folders).toEqual([{ id: 'f1', name: 'Horror nights', folders: [] }]);
+  expect(data.titles).toEqual([expect.objectContaining({ tmdbId: 100, title: 'Dune' })]);
+
+  const csvPromise = page.waitForEvent('download');
+  await dialog.getByRole('button', { name: 'Download CSV' }).click();
+  const csv = await readDownload(await csvPromise);
+  expect(csv).toMatch(/^﻿title,media_type,tmdb_id,status,added_at,folders\r\n/);
+  expect(csv).toMatch(/\r\nDune,movie,100,planned,[^,]+,Horror nights\r\n$/);
+
+  await expect(dialog).toBeVisible();
+  expect(await countDocuments(request, uid)).toBe(2);
+});
+
+async function readDownload(download: Download): Promise<string> {
+  const chunks: Buffer[] = [];
+  for await (const chunk of await download.createReadStream()) chunks.push(chunk as Buffer);
+  return Buffer.concat(chunks).toString('utf8');
+}

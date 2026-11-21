@@ -3,6 +3,7 @@ import { ROUTE_PATHS } from '@repo/routes';
 import { Button, Dialog, DialogContent } from '@repo/ui';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { WatchlistDownload } from './watchlist-download';
 
 /** Read by the login page, which then confirms the deletion instead of offering a sign-in. */
 export type AccountDeletedState = { accountDeleted: true };
@@ -74,6 +75,8 @@ function DeleteAccountDialog({ onClose, onCloseAutoFocus }: DeleteAccountDialogP
         description="This deletes your watchlist: every title, folder and status. It also removes your Google sign-in from CinePulse. You cannot undo this."
         onCloseAutoFocus={onCloseAutoFocus}
       >
+        <p className="text-sm">Want a copy first? Download your watchlist before you delete it.</p>
+        <WatchlistDownload />
         <p className="text-sm">
           Google opens a window to check that it is you. Your theme stays on this device.
         </p>
