@@ -3,6 +3,7 @@ import { ToggleGroup, ToggleGroupItem, usePageMeta } from '@repo/ui';
 import { useId } from 'react';
 import { DeleteAccount } from '../components/delete-account';
 import { SignOutButton } from '../components/sign-out-button';
+import { WatchlistDownload } from '../components/watchlist-download';
 
 const THEME_LABELS: Record<Theme, string> = { light: 'Light', dark: 'Dark', system: 'System' };
 
@@ -17,6 +18,7 @@ export function Settings() {
   const setTheme = useGlobalStore((state) => state.setTheme);
   const email = useGlobalStore((state) => state.user?.email);
   const appearanceHeadingId = useId();
+  const dataHeadingId = useId();
   const accountHeadingId = useId();
 
   const handleThemeChange = (value: string) => {
@@ -42,6 +44,15 @@ export function Settings() {
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
+      </section>
+      <section aria-labelledby={dataHeadingId} className="mt-8 flex flex-col items-start gap-3">
+        <h2 id={dataHeadingId} className="text-lg font-semibold">
+          Your data
+        </h2>
+        <p className="text-muted-foreground">
+          Download a copy of your watchlist: titles, folders, statuses and the dates you added them.
+        </p>
+        <WatchlistDownload />
       </section>
       <section aria-labelledby={accountHeadingId} className="mt-8 flex flex-col items-start gap-3">
         <h2 id={accountHeadingId} className="text-lg font-semibold">
