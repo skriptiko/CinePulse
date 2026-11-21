@@ -41,6 +41,8 @@ export type WatchlistItem = {
   posterPath: string | null;
   status: WatchStatus;
   folderIds: string[];
+  /** ISO 8601, when the title was first saved; `null` only for a document missing the field. */
+  addedAt: string | null;
 };
 
 /** What the catalog knows about a title; the store fills in the rest of `WatchlistItem`. */
@@ -82,9 +84,24 @@ async function readItems(db: Firestore, uid: string): Promise<WatchlistItem[]> {
     query(collection(db, 'users', uid, 'items'), orderBy('addedAt', 'desc'))
   );
   return docs.map((snapshot) => {
-    const { mediaType, tmdbId, title, posterPath, status, folderIds } = snapshot.data();
-    return { id: snapshot.id, mediaType, tmdbId, title, posterPath, status, folderIds };
+    const { mediaType, tmdbId, title, posterPath, status, folderIds, addedAt } = snapshot.data();
+    return {
+      id: snapshot.id,
+      mediaType,
+      tmdbId,
+      title,
+      posterPath,
+      status,
+      folderIds,
+      addedAt: toIsoDate(addedAt),
+    };
   });
+}
+
+/** A Firestore `Timestamp` by shape, like `getFirebaseCode`: the tests mock the SDK without its classes. */
+function toIsoDate(value: unknown): string | null {
+  if (typeof value !== 'object' || value === null || !('toDate' in value)) return null;
+  return typeof value.toDate === 'function' ? (value.toDate() as Date).toISOString() : null;
 }
 
 async function run<T>(request: (db: Firestore) => Promise<T>): Promise<T> {

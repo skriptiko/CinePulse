@@ -7,6 +7,7 @@ import {
   deleteFolder,
   deleteUserData,
   getFolders,
+  getItems,
   moveFolder,
   removeTitle,
   saveTitle,
@@ -73,6 +74,41 @@ describe('watchlist store', () => {
       )
     );
     mockReads();
+  });
+
+  it('maps title documents with the date each was added', async () => {
+    vi.mocked(getDocs).mockResolvedValueOnce(
+      toSnapshot(
+        [
+          {
+            id: 'movie_1',
+            mediaType: 'movie',
+            tmdbId: 1,
+            title: 'Dune',
+            posterPath: null,
+            status: 'planned',
+            folderIds: [],
+            addedAt: { toDate: () => new Date('2026-11-01T10:00:00Z') },
+          },
+          { id: 'movie_2', folderIds: [] },
+        ],
+        'users/u/items'
+      ) as never
+    );
+
+    const [first, second] = await getItems('u');
+
+    expect(first).toEqual({
+      id: 'movie_1',
+      mediaType: 'movie',
+      tmdbId: 1,
+      title: 'Dune',
+      posterPath: null,
+      status: 'planned',
+      folderIds: [],
+      addedAt: '2026-11-01T10:00:00.000Z',
+    });
+    expect(second?.addedAt).toBeNull();
   });
 
   it('maps folder documents', async () => {
