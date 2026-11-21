@@ -128,10 +128,10 @@ Store rules do not bind a web app, but they are the clearest benchmark. Apple 5.
 | --- | --- |
 | Sign out | 1 press, no confirm (the action is reversible). The person stays on the current public page or goes to Home. User data is cleared; theme, sort and region stay. Settings says so in one line: `Your theme stays on this device` |
 | Export | `Download my watchlist`: JSON (the full tree: folders, titles with TMDB id and media type, status, `addedAt`) and CSV (one row per title, a folder path column). The file is built in the browser from data already read, in ≤ 1 s for ≤ 1,000 titles, network time excluded. A Letterboxd-compatible CSV is a nice extra |
-| Delete account | ≤ 2 navigation steps (Settings → Account → Delete account). One dialog says what is deleted (watchlist, folders, statuses, the Google sign-in link) and what stays, and offers Export first. If needed, the Google re-sign-in popup opens right in the press handler. Focus does not start on `Delete account`. After deletion: sign-out and a confirmation page. A typed confirmation word, if used, can be copied from the screen (WCAG 3.3.8) |
+| Delete account | ≤ 2 navigation steps (Settings → Account → Delete account). One dialog says what is deleted (watchlist, folders, statuses, the Google sign-in link) and what stays, and offers Export first. If needed, the Google re-sign-in popup opens right in the press handler. Focus does not start on `Delete account`. After deletion: sign-out and a confirmation page. A typed confirmation word, if used, can be copied from the screen (WCAG 3.3.8). Built in CIN-184 without a typed word; the dialog offers Export once it exists (CIN-185) |
 | Coming back without dark patterns | No notification permission prompt on the first visit. Reminders only from an explicit control next to the value (`Notify me about new episodes`), each with its own `Turn off`; this needs a backend and is out of scope. No confirmshaming on sign-out or deletion, no streaks. Only factual Home rows for a signed-in user: `Continue watching` (status Watching) |
 
-A guest keeps only the theme in `localStorage`, so no anonymous data has to be merged into an account. Whether deleting a user also removes their Firestore documents is a backend decision and out of scope.
+A guest keeps only the theme in `localStorage`, so no anonymous data has to be merged into an account. Deleting an account also deletes its Firestore documents: the client deletes them after the re-sign-in and before the account (`deleteAccount`, CIN-206), since the rules let only the owner delete them.
 
 ## 6. Discovery and decision support
 
@@ -231,7 +231,7 @@ Each item needs a decision and its own ticket, one Area per ticket under the MFE
 | 2 | P1 | docs | A content guide: voice, rules for buttons, errors, success and confirmations, the glossary, the contraction and serial comma decisions | ISO 24495-1 [S], GOV.UK, Microsoft, Apple [G] |
 | 3 | P1 | pages-mfe | A guest's pending action in AddToWatchlist: keep the intent before the popup, run it after `user:login`, handle a closed or blocked popup | NN/g, Baymard [R], Firebase [G] |
 | 4 | P1 | host or @repo/ui | Add the TMDB logo and the exact notice (in the footer since CIN-183); an About or Credits page | TMDB terms §3 [S] |
-| 5 | P1 | user-mfe | Delete account: ≤ 2 steps, one dialog, re-sign-in, a confirmation page | Apple 5.1.1(v), Google Play [S] |
+| 5 | P1 | user-mfe | Delete account: ≤ 2 steps, one dialog, re-sign-in, a confirmation page (done: CIN-206, CIN-184) | Apple 5.1.1(v), Google Play [S] |
 | 6 | P1 | user-mfe | Watchlist export as JSON and CSV | GDPR Art. 20 [S] |
 | 7 | P1 | user-mfe | `Move to…` through the folder picker as the single-pointer path for every drag; no moving a folder into itself | WCAG 2.2 SC 2.5.7 [S] |
 | 8 | P2 | user-mfe | The six watchlist empty states; a skeleton, not empty text, while loading | NN/g [R], Carbon, Atlassian [G] |
