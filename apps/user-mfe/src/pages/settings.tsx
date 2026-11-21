@@ -1,6 +1,7 @@
 import { THEMES, type Theme, useGlobalStore } from '@repo/events';
 import { ToggleGroup, ToggleGroupItem, usePageMeta } from '@repo/ui';
 import { useId } from 'react';
+import { DeleteAccount } from '../components/delete-account';
 import { SignOutButton } from '../components/sign-out-button';
 
 const THEME_LABELS: Record<Theme, string> = { light: 'Light', dark: 'Dark', system: 'System' };
@@ -49,7 +50,10 @@ export function Settings() {
         {email && (
           <p className="text-muted-foreground max-w-full break-words">Signed in as {email}</p>
         )}
-        <SignOutButton />
+        <div className="flex flex-wrap gap-3">
+          <SignOutButton />
+          <DeleteAccount />
+        </div>
       </section>
     </div>
   );

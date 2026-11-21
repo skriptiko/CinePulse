@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { expect, type Page } from '@playwright/test';
 
-export async function signIn(page: Page) {
+/** Signs in as a new account and returns its email, which a re-sign-in picks from the list. */
+export async function signIn(page: Page): Promise<string> {
   const popupPromise = page.waitForEvent('popup');
   await page.getByRole('button', { name: 'Continue with Google' }).click();
   const popup = await popupPromise;
@@ -17,6 +18,8 @@ export async function signIn(page: Page) {
   await autogen.click();
   // The button draws from 100,000 emails, and a repeated one signs in to the same account, with
   // the data of the test that made it.
-  await popup.locator('#email-input').fill(`${randomUUID()}@example.com`);
+  const email = `${randomUUID()}@example.com`;
+  await popup.locator('#email-input').fill(email);
   await popup.locator('#sign-in').click();
+  return email;
 }

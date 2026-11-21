@@ -1,11 +1,34 @@
 import { useGlobalStore } from '@repo/events';
 import { getSignInErrorMessage, prepareSignIn, signInWithGoogle } from '@repo/firebase';
 import { ROUTE_PATHS } from '@repo/routes';
-import { Button, usePageMeta } from '@repo/ui';
+import { Button, buttonVariants, usePageMeta } from '@repo/ui';
 import { useEffect, useState } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Link, Navigate, useLocation } from 'react-router-dom';
 
 export function Login() {
+  const { state } = useLocation();
+
+  return state?.accountDeleted === true ? <AccountDeleted /> : <SignIn />;
+}
+
+/** Where a deleted account lands (`AccountDeletedState`). */
+function AccountDeleted() {
+  usePageMeta('Account deleted');
+
+  return (
+    <div className="mx-auto flex max-w-sm flex-col items-center gap-4 px-4 pt-32 pb-16 text-center">
+      <h1 className="text-2xl font-bold">Your account is deleted</h1>
+      <p className="text-muted-foreground">
+        Your watchlist and your Google sign-in are gone from CinePulse.
+      </p>
+      <Link to={ROUTE_PATHS.HOME} className={buttonVariants()}>
+        Go to Home
+      </Link>
+    </div>
+  );
+}
+
+function SignIn() {
   usePageMeta('Sign in');
 
   const isAuthenticated = useGlobalStore((state) => state.authStatus === 'authenticated');
